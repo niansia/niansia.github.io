@@ -90,7 +90,7 @@ format:
 :::
 
 ::: {.compact-work}
-<div><span>算法 / 教育</span><h3>CSIE Algorithm Lab</h3><p>涵盖图论、动态规划、优化与数据结构的交互实现和可视化说明。</p><a href="https://github.com/niansia/CSIE_WEB">代码 ↗</a></div>
+<div><span>研究工作流程</span><h3>研究会议教练</h3><p>仍处于早期 alpha 阶段、以证据为核心的 Agent Skill，可将零散进展整理为导师能够快速决策的摘要，并标示缺乏支持的主张与未完成要求。</p><a href="https://github.com/niansia/research-meeting-coach">代码 ↗</a></div>
 <div><span>决策支持</span><h3>房贷决策支持系统</h3><p>用于个人房贷决策的情景比较、蒙特卡洛压力测试与风险指标。</p><a href="https://github.com/niansia/mortgage-decision-support">代码 ↗</a></div>
 <div><span>公民科技</span><h3>花莲互助平台</h3><p>整合灾情需求、志愿者协调与持久化资源数据的全栈原型。</p><a href="https://github.com/niansia/fuxing">代码 ↗</a></div>
 :::

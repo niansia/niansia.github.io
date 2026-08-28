@@ -114,7 +114,7 @@ A desktop-like environment that brings more than 25 interactive applications int
 :::
 
 ::: {.compact-work}
-<div><span>Algorithms / education</span><h3>CSIE Algorithm Lab</h3><p>Interactive implementations and visual explanations for graphs, dynamic programming, optimization, and data structures.</p><a href="https://github.com/niansia/CSIE_WEB">Code ↗</a></div>
+<div><span>Research workflow</span><h3>Research Meeting Coach</h3><p>An early-alpha, evidence-grounded Agent Skill that turns raw progress into an advisor-ready brief while flagging unsupported claims and unfinished requests.</p><a href="https://github.com/niansia/research-meeting-coach">Code ↗</a></div>
 <div><span>Decision support</span><h3>Mortgage Decision Support</h3><p>Scenario comparison, Monte Carlo stress testing, and risk metrics for personal mortgage decisions.</p><a href="https://github.com/niansia/mortgage-decision-support">Code ↗</a></div>
 <div><span>Civic technology</span><h3>Hualien Mutual Aid</h3><p>A full-stack prototype for disaster requests, volunteer coordination, and persistent resource data.</p><a href="https://github.com/niansia/fuxing">Code ↗</a></div>
 :::
