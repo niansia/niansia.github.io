@@ -1,0 +1,145 @@
+---
+title: "Niansia"
+description: "Computer science researcher and engineer working on visual intelligence, trustworthy AI, and quantitative machine learning."
+page-layout: full
+title-block-style: none
+---
+
+::: {.hero}
+::: {.hero-copy}
+<p class="eyebrow">COMPUTER SCIENCE · YUAN ZE UNIVERSITY</p>
+
+# I build learning systems that **see, reason, and hold up under uncertainty.**
+
+I am a final-year Computer Science student exploring computer vision, vision-language models, AI security, and quantitative machine learning. My work turns research questions into reproducible experiments, auditable tools, and working systems.
+
+::: {.hero-actions}
+[Explore research](research.qmd){.button .button-primary}
+[View projects](projects.qmd){.button .button-secondary}
+[Email me](mailto:wilbur930202@gmail.com){.text-link}
+:::
+:::
+
+::: {.hero-aside}
+<p class="aside-label">CURRENT AGENDA</p>
+
+**Reliable intelligence across complex signals**
+
+I am interested in what happens between a promising model and a dependable system: data design, evaluation, failure analysis, security, and decision-making under uncertainty.
+
+<div class="status-line"><span class="status-dot"></span> Open to research conversations</div>
+:::
+:::
+
+::: {.content-shell}
+<p class="section-kicker">RESEARCH PROGRAM</p>
+
+## Three connected lines of inquiry
+
+::: {.research-grid}
+::: {.research-card}
+<span class="card-index">01</span>
+
+### Visual intelligence
+
+How can multimodal systems retain the right evidence, reason across images and language, and reveal where their conclusions become unreliable?
+
+`Computer Vision` `VLMs` `Evaluation`
+:::
+
+::: {.research-card}
+<span class="card-index">02</span>
+
+### Trustworthy AI
+
+How do we make model behavior easier to test, challenge, reproduce, and audit—especially under adversarial or ambiguous conditions?
+
+`AI Security` `Robustness` `Integrity`
+:::
+
+::: {.research-card}
+<span class="card-index">03</span>
+
+### Quantitative ML
+
+How can learning systems support decisions when signals are noisy, risks are asymmetric, and confidence matters as much as a prediction?
+
+`Forecasting` `Risk` `Decision Systems`
+:::
+:::
+
+::: {.section-heading}
+::: {.heading-copy}
+<p class="section-kicker">SELECTED WORK</p>
+
+## Systems, tools, and research artifacts
+:::
+
+[All projects →](projects.qmd){.section-link}
+:::
+
+::: {.featured-project}
+::: {.featured-main}
+<p class="project-type">RESEARCH TOOL · PYTHON</p>
+
+### NoveltyAudit
+
+An evidence-first agent skill for adversarial scholarly novelty audits. It decomposes claims, constructs minimal prior sets, respects historical cutoffs, and exposes bridge-dependent prior-work arguments.
+
+[View repository ↗](https://github.com/niansia/NoveltyAudit){.project-link}
+:::
+
+::: {.featured-meta}
+<div><span>Focus</span><strong>Research integrity</strong></div>
+<div><span>Method</span><strong>Claim decomposition</strong></div>
+<div><span>Output</span><strong>Auditable evidence</strong></div>
+:::
+:::
+
+::: {.project-row}
+::: {.project-mini}
+<p class="project-type">INTERACTIVE SYSTEM</p>
+
+### Fusion OS
+
+A desktop-like environment connecting 25+ applications through a C# / WebView2 shell and a React + TypeScript interface.
+
+[Repository ↗](https://github.com/niansia/1113354_Windowsfinal)
+:::
+
+::: {.project-mini}
+<p class="project-type">LEARNING INFRASTRUCTURE</p>
+
+### CSIE Algorithm Lab
+
+Interactive algorithm implementations and visual learning tools spanning graphs, dynamic programming, optimization, and data structures.
+
+[Repository ↗](https://github.com/niansia/CSIE_WEB)
+:::
+:::
+
+::: {.principles-band}
+::: {.principles-intro}
+<p class="section-kicker light">HOW I WORK</p>
+
+## Research should survive contact with reality.
+:::
+
+::: {.principles-list}
+<div><span>01</span><p><strong>Start with the failure case.</strong><br>Define what would make the idea unconvincing before optimizing the benchmark.</p></div>
+<div><span>02</span><p><strong>Keep evidence inspectable.</strong><br>Build pipelines whose data, assumptions, and intermediate decisions can be traced.</p></div>
+<div><span>03</span><p><strong>Turn theory into artifacts.</strong><br>Use prototypes to expose questions that remain invisible in abstract discussion.</p></div>
+:::
+:::
+
+::: {.contact-strip}
+<div>
+<p class="section-kicker">COLLABORATION</p>
+
+## Have an interesting question, dataset, or failure case?
+</div>
+
+[Start a conversation](mailto:wilbur930202@gmail.com){.button .button-primary}
+:::
+:::
+
