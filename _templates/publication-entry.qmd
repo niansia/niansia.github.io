@@ -1,0 +1,22 @@
+---
+# Copy this block into the Publications section of each language page.
+# Replace every placeholder and add a thumbnail under assets/publications/.
+---
+
+::: {.publication-entry}
+::: {.publication-image}
+![](../assets/publications/paper-thumbnail.jpg){fig-alt="Short description of the paper preview"}
+:::
+::: {.publication-copy}
+<div class="publication-meta"><span>VENUE 20XX</span><span>STATUS</span></div>
+
+### Paper title
+
+**Niansia**, Coauthor One, Coauthor Two
+
+One-sentence description of the contribution and why it matters.
+
+<p class="work-links"><a href="#">Paper</a><span>/</span><a href="#">Code</a><span>/</span><a href="#">Project</a><span>/</span><a href="#">Poster</a><span>/</span><a href="#">Slides</a></p>
+:::
+:::
+
