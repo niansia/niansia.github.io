@@ -1,6 +1,6 @@
 # niansia.github.io
 
-Personal research and engineering website built with [Quarto](https://quarto.org/) and deployed through GitHub Pages.
+Personal academic portfolio built with [Quarto](https://quarto.org/) and deployed through GitHub Pages.
 
 The public site has three language editions:
 
