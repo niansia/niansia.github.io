@@ -1,0 +1,14 @@
+---
+title: "Page not found"
+page-layout: full
+title-block-style: none
+---
+
+::: {.page-intro .error-page}
+<p class="eyebrow">404</p>
+
+# This path does not contain a result—yet.
+
+[Return home](index.qmd){.button .button-primary}
+:::
+

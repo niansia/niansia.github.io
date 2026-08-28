@@ -1,0 +1,48 @@
+---
+title: "About"
+description: "About Niansia, a Computer Science student at Yuan Ze University."
+page-layout: full
+title-block-style: none
+---
+
+::: {.page-intro}
+<p class="eyebrow">ABOUT</p>
+
+# Engineer by practice. Researcher by **curiosity and method.**
+:::
+
+::: {.content-shell}
+::: {.about-layout}
+::: {.about-main}
+## Background
+
+I am a final-year Computer Science student at **Yuan Ze University (YZU)**. My interests span computer vision, vision-language models, cybersecurity, quantitative research, and machine learning.
+
+The common thread is not a particular model architecture. It is a way of working: define the question precisely, build an experiment that can fail, inspect the evidence, and turn what survives into a useful system.
+
+I enjoy moving between research and engineering—from reading papers and reproducing baselines to designing evaluation pipelines, building interfaces, and investigating unexpected model behavior. That movement keeps abstract ideas honest and gives practical work a stronger conceptual foundation.
+
+## Collaboration
+
+I welcome conversations about **CV / VLM reasoning, trustworthy AI, cybersecurity, quantitative machine learning, and research tooling**. I am especially interested in early-stage questions, reproducibility work, unusual datasets, ambiguous benchmarks, and failure cases that deserve closer examination.
+
+If you are looking for a research partner, have a cross-disciplinary problem worth exploring, or want to turn a rough question into a testable prototype, write to [wilbur930202@gmail.com](mailto:wilbur930202@gmail.com). I read thoughtful messages carefully and am happy to meet people who value precise questions and rigorous experiments.
+:::
+
+::: {.about-aside}
+<p class="aside-label">AT A GLANCE</p>
+
+<div class="fact"><span>Based in</span><strong>Taiwan</strong></div>
+<div class="fact"><span>Affiliation</span><strong>Yuan Ze University</strong></div>
+<div class="fact"><span>Field</span><strong>Computer Science</strong></div>
+<div class="fact"><span>Languages</span><strong>Chinese · English</strong></div>
+
+<p class="aside-label tools-label">TOOLS</p>
+
+Python · PyTorch · OpenCV · scikit-learn · Jupyter · C# / .NET · React · TypeScript · Node.js · SQLite · Git
+
+[GitHub profile ↗](https://github.com/niansia){.project-link}
+:::
+:::
+:::
+

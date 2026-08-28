@@ -1,0 +1,83 @@
+---
+title: "Projects"
+description: "Selected research tools, interactive systems, and engineering projects by Niansia."
+page-layout: full
+title-block-style: none
+---
+
+::: {.page-intro}
+<p class="eyebrow">SELECTED PROJECTS</p>
+
+# Ideas become clearer when they become **working artifacts.**
+
+My projects range from research tooling and multimodal interfaces to algorithms, quantitative decision support, and civic technology. Each one is an attempt to make a difficult idea inspectable through software.
+:::
+
+::: {.content-shell}
+::: {.project-catalog}
+::: {.catalog-card .catalog-featured}
+<div class="catalog-top"><span>01 / RESEARCH TOOL</span><span>PYTHON</span></div>
+
+## [NoveltyAudit](https://github.com/niansia/NoveltyAudit)
+
+An evidence-first agent skill for adversarial scholarly novelty audits. The workflow decomposes a claim, searches for a minimal set of earlier work, applies historical cutoffs, and makes bridge-dependent arguments explicit.
+
+**Built around:** scholarly search, research integrity, AI agents, auditable evidence
+
+[Explore the repository ↗](https://github.com/niansia/NoveltyAudit){.project-link}
+:::
+
+::: {.catalog-card}
+<div class="catalog-top"><span>02 / INTERACTIVE SYSTEM</span><span>JAVASCRIPT · C#</span></div>
+
+## [Fusion OS](https://github.com/niansia/1113354_Windowsfinal)
+
+A desktop-like environment that brings together more than 25 interactive applications behind a C# / WebView2 shell and a React + TypeScript interface.
+
+**Built around:** multimodal interaction, AI prototypes, application integration
+:::
+
+::: {.catalog-card}
+<div class="catalog-top"><span>03 / EDUCATION</span><span>JAVASCRIPT · PYTHON</span></div>
+
+## [CSIE Algorithm Lab](https://github.com/niansia/CSIE_WEB)
+
+An interactive collection of algorithm implementations and visual learning tools spanning dynamic programming, graph algorithms, optimization, and data structures.
+
+**Built around:** explainable computation, visualization, algorithmic thinking
+:::
+
+::: {.catalog-card}
+<div class="catalog-top"><span>04 / DECISION SUPPORT</span><span>C# · .NET</span></div>
+
+## [Mortgage Decision Support](https://github.com/niansia/1113354_MortgageCalculator)
+
+A financial decision tool with Monte Carlo stress testing, scenario comparison, risk metrics, and privacy-oriented verification concepts.
+
+**Built around:** quantitative modeling, uncertainty, scenario simulation
+:::
+
+::: {.catalog-card}
+<div class="catalog-top"><span>05 / CIVIC TECHNOLOGY</span><span>HTML · NODE.JS</span></div>
+
+## [Hualien Mutual-Aid Platform](https://github.com/niansia/fuxing)
+
+A full-stack prototype for disaster requests, volunteer coordination, and persistent resource data.
+
+**Built around:** service design, coordination, durable local data
+:::
+:::
+
+::: {.github-callout}
+<div>
+<p class="section-kicker light">OPEN SOURCE</p>
+
+## More experiments live on GitHub.
+
+Repositories include coursework, prototypes, research utilities, and systems under active development.
+</div>
+
+[Browse GitHub ↗](https://github.com/niansia){.button .button-light}
+:::
+:::
+
