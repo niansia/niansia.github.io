@@ -99,6 +99,21 @@ An evidence-first agent skill for adversarial scholarly novelty audits. It decom
 :::
 
 ::: {.work-entry}
+::: {.work-image .work-image--contain}
+![](assets/work/research-meeting-coach.png){fig-alt="Advisor-Aware Research Meeting Coach evidence workflow"}
+:::
+::: {.work-copy}
+<div class="work-meta"><span>Research workflow</span><span>2026</span></div>
+
+### Research Meeting Coach
+
+An evidence-grounded Agent Skill that turns raw research progress into a decision-ready advisor meeting. It separates observations from interpretations, carries unfinished requests forward, and uses schema-backed state plus deterministic checks to keep claims within the supplied evidence.
+
+<p class="work-links"><a href="https://github.com/niansia/research-meeting-coach">Code</a><span>/</span><a href="https://github.com/niansia/research-meeting-coach/tree/main/research-meeting-coach/examples/60-second-demo">60-second demo</a></p>
+:::
+:::
+
+::: {.work-entry}
 ::: {.work-image}
 ![](assets/work/fusion-desktop.png){fig-alt="Fusion OS desktop interface"}
 :::
@@ -114,7 +129,6 @@ A desktop-like environment that brings more than 25 interactive applications int
 :::
 
 ::: {.compact-work}
-<div><span>Research workflow</span><h3>Research Meeting Coach</h3><p>An early-alpha, evidence-grounded Agent Skill that turns raw progress into an advisor-ready brief while flagging unsupported claims and unfinished requests.</p><a href="https://github.com/niansia/research-meeting-coach">Code ↗</a></div>
 <div><span>Decision support</span><h3>Mortgage Decision Support</h3><p>Scenario comparison, Monte Carlo stress testing, and risk metrics for personal mortgage decisions.</p><a href="https://github.com/niansia/mortgage-decision-support">Code ↗</a></div>
 <div><span>Civic technology</span><h3>Hualien Mutual Aid</h3><p>A full-stack prototype for disaster requests, volunteer coordination, and persistent resource data.</p><a href="https://github.com/niansia/fuxing">Code ↗</a></div>
 :::

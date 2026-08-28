@@ -80,12 +80,13 @@ main.content { padding: 0 !important; margin: 0 !important; max-width: none !imp
 .work-image { overflow: hidden; background: #e8e6df; border: 1px solid var(--rule); }
 .work-image p, .work-image figure { margin: 0; }
 .work-image img { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; transition: transform .35s ease; }
+.work-image--contain img { object-fit: contain; }
 .work-entry:hover .work-image img { transform: scale(1.015); }
 .work-copy { align-self: center; }
 .work-meta { display: flex; justify-content: space-between; padding-bottom: .7rem; border-bottom: 1px solid var(--rule); color: var(--faint); font-family: var(--mono); font-size: .64rem; text-transform: uppercase; }
 .work-copy h3 { margin: 1.3rem 0 .8rem; font-family: var(--serif); font-size: clamp(2rem, 3.5vw, 3rem); letter-spacing: -.035em; }
 .work-copy > p:not(.work-links) { color: var(--soft-ink); font-size: .9rem; }
-.compact-work { display: grid; grid-template-columns: repeat(3, 1fr); margin-top: 1rem; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+.compact-work { display: grid; grid-template-columns: repeat(2, 1fr); margin-top: 1rem; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
 .compact-work > div { padding: 1.8rem 1.8rem 2rem 0; }
 .compact-work > div + div { padding-left: 1.8rem; border-left: 1px solid var(--rule); }
 .compact-work span { color: var(--brick); font-family: var(--mono); font-size: .62rem; text-transform: uppercase; }
