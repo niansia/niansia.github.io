@@ -79,11 +79,11 @@ format:
 ![](../assets/work/research-meeting-coach.png){fig-alt="Advisor-Aware Research Meeting Coach 證據工作流程"}
 :::
 ::: {.work-copy}
-<div class="work-meta"><span>研究工作流程</span><span>2026</span></div>
+<div class="work-meta"><span>研究工作流程 · early alpha</span><span>2026</span></div>
 
 ### 研究會議教練
 
-以證據為核心的 Agent Skill，可將零散研究進度轉化為可供指導教授決策的會議內容。系統會區分觀察與詮釋、延續尚未完成的要求，並透過結構化研究狀態與確定性檢查，避免研究主張超出既有證據。
+尚處 early alpha 階段、以證據為核心的 Agent Skill，可將零散研究進度轉化為可供指導教授決策的會議內容。系統會區分觀察與詮釋、延續尚未完成的要求，並透過結構化研究狀態與確定性檢查，避免研究主張超出既有證據。
 
 <p class="work-links"><a href="https://github.com/niansia/research-meeting-coach">程式碼</a><span>/</span><a href="https://github.com/niansia/research-meeting-coach/tree/main/research-meeting-coach/examples/60-second-demo">60 秒示範</a></p>
 :::
