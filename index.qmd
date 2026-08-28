@@ -145,7 +145,7 @@ A desktop-like environment that brings more than 25 interactive applications int
 :::
 :::
 
-::: {.section-block .last-section}
+::: {.section-block .last-section #contact}
 ::: {.section-rail}
 <span>04</span>
 <h2>Contact</h2>
