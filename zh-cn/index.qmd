@@ -86,13 +86,13 @@ format:
 
 以 C# / WebView2 为外壳，搭配 React 与 TypeScript 界面的桌面型环境，整合超过 25 个交互应用程序。
 
-<p class="work-links"><a href="https://github.com/niansia/1113354_Windowsfinal">代码</a><span>/</span><a href="https://github.com/niansia/1113354_Windowsfinal#readme">项目概览</a></p>
+<p class="work-links"><a href="https://github.com/niansia/fusion-os">代码</a><span>/</span><a href="https://github.com/niansia/fusion-os#readme">项目概览</a></p>
 :::
 :::
 
 ::: {.compact-work}
 <div><span>算法 / 教育</span><h3>CSIE Algorithm Lab</h3><p>涵盖图论、动态规划、优化与数据结构的交互实现和可视化说明。</p><a href="https://github.com/niansia/CSIE_WEB">代码 ↗</a></div>
-<div><span>决策支持</span><h3>房贷决策系统</h3><p>用于个人房贷决策的情景比较、蒙特卡洛压力测试与风险指标。</p><a href="https://github.com/niansia/1113354_MortgageCalculator">代码 ↗</a></div>
+<div><span>决策支持</span><h3>房贷决策支持系统</h3><p>用于个人房贷决策的情景比较、蒙特卡洛压力测试与风险指标。</p><a href="https://github.com/niansia/mortgage-decision-support">代码 ↗</a></div>
 <div><span>公民科技</span><h3>花莲互助平台</h3><p>整合灾情需求、志愿者协调与持久化资源数据的全栈原型。</p><a href="https://github.com/niansia/fuxing">代码 ↗</a></div>
 :::
 :::

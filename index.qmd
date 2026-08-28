@@ -116,13 +116,13 @@ An evidence-first agent skill for adversarial scholarly novelty audits. It decom
 
 A desktop-like environment that brings more than 25 interactive applications into a C# / WebView2 shell with a React and TypeScript interface.
 
-<p class="work-links"><a href="https://github.com/niansia/1113354_Windowsfinal">Code</a><span>/</span><a href="https://github.com/niansia/1113354_Windowsfinal#readme">Overview</a></p>
+<p class="work-links"><a href="https://github.com/niansia/fusion-os">Code</a><span>/</span><a href="https://github.com/niansia/fusion-os#readme">Overview</a></p>
 :::
 :::
 
 ::: {.compact-work}
 <div><span>Algorithms / education</span><h3>CSIE Algorithm Lab</h3><p>Interactive implementations and visual explanations for graphs, dynamic programming, optimization, and data structures.</p><a href="https://github.com/niansia/CSIE_WEB">Code ↗</a></div>
-<div><span>Decision support</span><h3>Mortgage Calculator</h3><p>Scenario comparison, Monte Carlo stress testing, and risk metrics for personal mortgage decisions.</p><a href="https://github.com/niansia/1113354_MortgageCalculator">Code ↗</a></div>
+<div><span>Decision support</span><h3>Mortgage Decision Support</h3><p>Scenario comparison, Monte Carlo stress testing, and risk metrics for personal mortgage decisions.</p><a href="https://github.com/niansia/mortgage-decision-support">Code ↗</a></div>
 <div><span>Civic technology</span><h3>Hualien Mutual Aid</h3><p>A full-stack prototype for disaster requests, volunteer coordination, and persistent resource data.</p><a href="https://github.com/niansia/fuxing">Code ↗</a></div>
 :::
 
