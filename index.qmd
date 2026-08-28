@@ -4,6 +4,9 @@ description: "Recent computer science graduate from Yuan Ze University working o
 lang: en
 page-layout: full
 title-block-style: none
+format:
+  html:
+    include-before-body: includes/nav-en.html
 ---
 
 ::: {.home-shell}

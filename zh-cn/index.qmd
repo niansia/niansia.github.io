@@ -1,6 +1,6 @@
 ---
 title: "Niansia — 计算机科学"
-description: "元智大学计算机科学学生，研究计算机视觉、视觉语言模型、可信赖 AI、研究工具与量化机器学习。"
+description: "元智大学计算机科学专业毕业生，研究计算机视觉、视觉语言模型、可信赖 AI、研究工具与量化机器学习。"
 lang: zh-CN
 page-layout: full
 title-block-style: none
@@ -16,18 +16,18 @@ format:
 
 # Niansia
 
-<p class="role-line">计算机科学毕业生，也是用研究方法做工程的人。</p>
+<p class="role-line">计算机科学专业毕业生，专注于研究导向的工程实践。</p>
 
-我今年刚从**元智大学计算机科学专业**毕业，目前投入计算机视觉、视觉语言模型、AI 安全、量化研究与机器学习等交叉领域。
+我于 2026 年毕业于**元智大学计算机科学专业**，目前投入计算机视觉、视觉语言模型、AI 安全、量化研究与机器学习等交叉领域。
 
-比起只让模型在指标上看起来出色，我更在意它何时才能成为可靠的系统：证据如何取得、推理如何失败、不确定性如何呈现，以及另一位研究者能否复现同一个实验。
+相较于仅追求模型在指标上的表现，我更重视其能否成为可靠的系统：证据如何取得、推理如何失败、不确定性如何呈现，以及其他研究者能否复现同一项实验。
 
 <p class="profile-links"><a href="mailto:wilbur930202@gmail.com">Email</a><span>/</span><a href="https://github.com/niansia">GitHub</a><span>/</span><a href="#work">精选作品</a></p>
 :::
 
 ::: {.intro-side}
 <div class="side-note"><span>目前进行</span><p>构建多模态推理与证据导向 AI 所需的数据集、评估标准与研究工具。</p></div>
-<div class="side-note"><span>欢迎交流</span><p>研究构想、复现性工作、特殊数据集，以及值得仔细拆解的模型失败案例。</p></div>
+<div class="side-note"><span>欢迎交流</span><p>研究构想、复现性工作、特殊数据集，以及值得深入分析的模型失效案例。</p></div>
 <div class="side-note contact-note"><span>联系方式</span><p><a href="mailto:wilbur930202@gmail.com">wilbur930202@gmail.com</a></p></div>
 :::
 :::
@@ -51,7 +51,7 @@ format:
 :::
 :::
 
-<p class="quiet-note">这些是进行中的研究方向，并不代表已经完成的成果；代码与研究笔记会在证据足以接受检验时公开。</p>
+<p class="quiet-note">以上为进行中的研究方向，并不代表已经完成的成果；相关代码与研究笔记将在具备充分验证依据后公开。</p>
 :::
 :::
 
@@ -104,7 +104,7 @@ format:
 :::
 ::: {.section-content}
 ::: {.future-output}
-<div class="future-mark">—</div><div><h3>研究成果将整理于此。</h3><p>目前尚未列出公开论文。未来经同行评审的论文、预印本、海报、幻灯片、项目页面与会议记录，都会集中在这个区域。</p><p>每项成果都可以放置视觉预览、完整引用、会议或期刊信息、作者名单，以及 paper、code、poster、slides 等链接。</p></div>
+<div class="future-mark">—</div><div><h3>研究成果将整理于此。</h3><p>目前尚未列出公开论文。未来经同行评审的论文、预印本、海报、幻灯片、项目页面与会议记录，均将集中列于本区域。</p><p>每项成果将包含视觉预览、完整引用、会议或期刊信息、作者名单，以及 paper、code、poster、slides 等链接。</p></div>
 :::
 :::
 :::
@@ -114,7 +114,7 @@ format:
 <span>04</span><h2>联系与合作</h2>
 :::
 ::: {.section-content}
-<p class="contact-copy">如果你也在研究 CV／VLM 推理、可信赖 AI、网络安全、量化机器学习或研究工具，欢迎来信交流构想、数据集、复现结果，或那些怎么看都值得继续追查的失败案例喵。</p>
+<p class="contact-copy">若您亦从事 CV／VLM 推理、可信赖 AI、网络安全、量化机器学习或研究工具等相关工作，欢迎来信交流研究构想、数据集、复现结果，以及值得进一步分析的模型失效案例。</p>
 <p class="contact-action"><a href="mailto:wilbur930202@gmail.com">wilbur930202@gmail.com</a></p>
 :::
 :::
