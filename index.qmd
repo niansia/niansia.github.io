@@ -1,6 +1,6 @@
 ---
 title: "Niansia — Computer Science"
-description: "Computer science student at Yuan Ze University working on visual intelligence, trustworthy AI, research tooling, and quantitative machine learning."
+description: "Recent computer science graduate from Yuan Ze University working on visual intelligence, trustworthy AI, research tooling, and quantitative machine learning."
 lang: en
 page-layout: full
 title-block-style: none
@@ -13,9 +13,9 @@ title-block-style: none
 
 # Niansia
 
-<p class="role-line">Computer science student and research-minded engineer.</p>
+<p class="role-line">Computer science graduate and research-minded engineer.</p>
 
-I am a final-year student at **Yuan Ze University** working across computer vision, vision-language models, AI security, quantitative research, and machine learning.
+I recently graduated with a degree in Computer Science from **Yuan Ze University** and work across computer vision, vision-language models, AI security, quantitative research, and machine learning.
 
 I am most interested in the point where a convincing model becomes a dependable system: how evidence is collected, how reasoning fails, how uncertainty is communicated, and how an experiment can be reproduced by someone else.
 
