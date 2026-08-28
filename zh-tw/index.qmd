@@ -90,7 +90,7 @@ format:
 :::
 
 ::: {.compact-work}
-<div><span>演算法 / 教育</span><h3>CSIE Algorithm Lab</h3><p>涵蓋圖論、動態規劃、最佳化與資料結構的互動實作及視覺化說明。</p><a href="https://github.com/niansia/CSIE_WEB">程式碼 ↗</a></div>
+<div><span>研究工作流程</span><h3>研究會議教練</h3><p>仍在早期 alpha 階段、以證據為核心的 Agent Skill，可將零散進度整理成指導教授能快速決策的摘要，並標示缺乏支持的主張與未完成要求。</p><a href="https://github.com/niansia/research-meeting-coach">程式碼 ↗</a></div>
 <div><span>決策支援</span><h3>房貸決策支援系統</h3><p>用於個人房貸決策的情境比較、蒙地卡羅壓力測試與風險指標。</p><a href="https://github.com/niansia/mortgage-decision-support">程式碼 ↗</a></div>
 <div><span>公民科技</span><h3>花蓮互助平台</h3><p>整合災情需求、志工協調與持久化資源資料的全端原型。</p><a href="https://github.com/niansia/fuxing">程式碼 ↗</a></div>
 :::
