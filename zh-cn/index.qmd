@@ -109,7 +109,7 @@ format:
 :::
 :::
 
-::: {.section-block .last-section}
+::: {.section-block .last-section #contact}
 ::: {.section-rail}
 <span>04</span><h2>联系与合作</h2>
 :::
