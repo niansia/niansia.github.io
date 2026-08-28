@@ -1,6 +1,6 @@
 ---
 title: "Niansia — 计算机科学"
-description: "元智大学计算机科学专业毕业生，研究计算机视觉、视觉语言模型、可信赖 AI、研究工具与量化机器学习。"
+description: "元智大学计算机科学专业毕业生，正在准备申请研究生项目，研究兴趣聚焦 AI 安全、计算机视觉、视觉语言模型与可信赖多模态 AI。"
 lang: zh-CN
 page-layout: full
 title-block-style: none
@@ -16,17 +16,17 @@ format:
 
 # Niansia
 
-<p class="role-line">计算机科学专业毕业生，专注于研究导向的工程实践。</p>
+<p class="role-line">计算机科学专业毕业生，正在准备申请研究生项目，研究兴趣聚焦 AI 安全、计算机视觉与视觉语言模型。</p>
 
-我于 2026 年毕业于**元智大学计算机科学专业**，目前投入计算机视觉、视觉语言模型、AI 安全、量化研究与机器学习等交叉领域。
+我于 2026 年毕业于**元智大学计算机科学专业**，目前正在准备研究生项目申请，并关注视觉与多模态智能系统的安全性、鲁棒性与推理能力。
 
-相较于仅追求模型在指标上的表现，我更重视其能否成为可靠的系统：证据如何取得、推理如何失败、不确定性如何呈现，以及其他研究者能否复现同一项实验。
+我尤其重视证据如何取得、推理如何失败、不确定性如何呈现，以及其他研究者能否复现同一项实验。
 
 <p class="profile-links"><a href="mailto:wilbur930202@gmail.com">Email</a><span>/</span><a href="https://github.com/niansia">GitHub</a><span>/</span><a href="#work">精选作品</a></p>
 :::
 
 ::: {.intro-side}
-<div class="side-note"><span>目前进行</span><p>构建多模态推理与证据导向 AI 所需的数据集、评估标准与研究工具。</p></div>
+<div class="side-note"><span>目前进行</span><p>在准备研究生项目申请的同时，持续探索视觉与多模态 AI 系统的安全性、鲁棒性、评估与推理。</p></div>
 <div class="side-note"><span>欢迎交流</span><p>研究构想、复现性工作、特殊数据集，以及值得深入分析的模型失效案例。</p></div>
 <div class="side-note contact-note"><span>联系方式</span><p><a href="mailto:wilbur930202@gmail.com">wilbur930202@gmail.com</a></p></div>
 :::
@@ -34,24 +34,23 @@ format:
 
 ::: {.section-block #research}
 ::: {.section-rail}
-<span>01</span><h2>研究问题</h2>
+<span>01</span><h2>研究领域</h2>
 :::
 ::: {.section-content}
-<p class="section-lead">目前，我主要围绕三个问题展开研究。</p>
+<p class="section-lead">目前的研究兴趣可归纳为两个彼此关联的领域。</p>
 
 ::: {.question-list}
 ::: {.question-item}
-<span class="question-index">甲</span><div><h3>视觉记忆与多模态推理</h3><p>视觉语言系统在长期交互中应该保留哪些视觉证据？又该如何设计测试，区分有根据的推理与流畅但缺乏依据的猜测？</p><p class="keywords">计算机视觉 · VLM · 记忆 · 评估</p></div>
+<span class="question-index">甲</span><div><h3>AI 与多模态安全</h3><p>如何使视觉与多模态 AI 系统在面对对抗性输入、薄弱证据与现实世界不确定性时，仍保持安全性、鲁棒性与可审计性？</p><p class="keywords">安全性 · 鲁棒性 · 对抗与失效分析 · 内容完整性 · 可信赖评估</p></div>
 :::
 ::: {.question-item}
-<span class="question-index">乙</span><div><h3>信任、来源与对抗性证据</h3><p>如何让模型辅助的研究保留可追溯的证据链，并把薄弱、缺失或不符合历史时间点的依据清楚呈现出来？</p><p class="keywords">AI 安全 · 来源追踪 · 可审计性 · 研究诚信</p></div>
-:::
-::: {.question-item}
-<span class="question-index">丙</span><div><h3>量化决策中的不确定性</h3><p>预测与模拟系统应该如何呈现不确定性、情景敏感度与下行风险，同时避免制造不必要的精确假象？</p><p class="keywords">量化机器学习 · 预测 · 模拟 · 风险</p></div>
+<span class="question-index">乙</span><div><h3>视觉与多模态智能</h3><p>如何使计算机视觉与视觉语言系统保留视觉证据、跨模态与时间进行推理，并依据推理基础而非仅依据语言流畅度进行评估？</p><p class="keywords">计算机视觉 · VLM · 多模态推理 · 记忆 · 评估</p></div>
 :::
 :::
 
-<p class="quiet-note">以上为进行中的研究方向，并不代表已经完成的成果；相关代码与研究笔记将在具备充分验证依据后公开。</p>
+<p class="quiet-note"><strong>延伸兴趣。</strong> 量化机器学习、交互式系统与研究软件。</p>
+
+<p class="quiet-note">目前部分研究仍处于开发或评审阶段，因此保持非公开；相关代码、结果与可复现成果将在适当时机发布。</p>
 :::
 :::
 
@@ -98,23 +97,12 @@ format:
 :::
 :::
 
-::: {.section-block #publications}
-::: {.section-rail}
-<span>03</span><h2>论文与会议成果</h2>
-:::
-::: {.section-content}
-::: {.future-output}
-<div class="future-mark">—</div><div><h3>研究成果将整理于此。</h3><p>目前尚未列出公开论文。未来经同行评审的论文、预印本、海报、幻灯片、项目页面与会议记录，均将集中列于本区域。</p><p>每项成果将包含视觉预览、完整引用、会议或期刊信息、作者名单，以及 paper、code、poster、slides 等链接。</p></div>
-:::
-:::
-:::
-
 ::: {.section-block .last-section #contact}
 ::: {.section-rail}
-<span>04</span><h2>联系与合作</h2>
+<span>03</span><h2>联系与合作</h2>
 :::
 ::: {.section-content}
-<p class="contact-copy">若您亦从事 CV／VLM 推理、可信赖 AI、网络安全、量化机器学习或研究工具等相关工作，欢迎来信交流研究构想、数据集、复现结果，以及值得进一步分析的模型失效案例。</p>
+<p class="contact-copy">若您亦从事 AI 安全、计算机视觉、视觉语言模型、可信赖多模态 AI、实验复现或研究工具等相关工作，欢迎来信交流研究构想、数据集、复现结果，以及值得进一步分析的模型失效案例。</p>
 <p class="contact-action"><a href="mailto:wilbur930202@gmail.com">wilbur930202@gmail.com</a></p>
 :::
 :::

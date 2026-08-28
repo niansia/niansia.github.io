@@ -4,7 +4,7 @@ project:
 
 website:
   title: "Niansia"
-  description: "Computer science researcher and engineer working across computer vision, vision-language models, trustworthy AI, and quantitative machine learning."
+  description: "Computer science graduate preparing for graduate study in AI security, computer vision, vision-language models, and trustworthy multimodal AI."
   site-url: "https://niansia.github.io"
   open-graph: true
   twitter-card: true

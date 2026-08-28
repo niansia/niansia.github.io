@@ -1,6 +1,6 @@
 ---
 title: "Niansia — Computer Science"
-description: "Recent computer science graduate from Yuan Ze University working on visual intelligence, trustworthy AI, research tooling, and quantitative machine learning."
+description: "Computer science graduate preparing for graduate study in AI security, computer vision, vision-language models, and trustworthy multimodal AI."
 lang: en
 page-layout: full
 title-block-style: none
@@ -16,11 +16,11 @@ format:
 
 # Niansia
 
-<p class="role-line">Computer science graduate and research-minded engineer.</p>
+<p class="role-line">Computer science graduate preparing for graduate study in AI security, computer vision, and vision-language models.</p>
 
-I recently graduated with a degree in Computer Science from **Yuan Ze University** and work across computer vision, vision-language models, AI security, quantitative research, and machine learning.
+I graduated in 2026 with a degree in Computer Science from **Yuan Ze University** and am currently preparing applications to graduate programs. My interests center on the security, robustness, and reasoning capabilities of visual and multimodal intelligent systems.
 
-I am most interested in the point where a convincing model becomes a dependable system: how evidence is collected, how reasoning fails, how uncertainty is communicated, and how an experiment can be reproduced by someone else.
+I am especially interested in how evidence is collected, how reasoning fails, how uncertainty is communicated, and how experiments can be reproduced by other researchers.
 
 <p class="profile-links"><a href="mailto:wilbur930202@gmail.com">Email</a><span>/</span><a href="https://github.com/niansia">GitHub</a><span>/</span><a href="#work">Selected work</a></p>
 :::
@@ -28,7 +28,7 @@ I am most interested in the point where a convincing model becomes a dependable 
 ::: {.intro-side}
 <div class="side-note">
   <span>Currently</span>
-  <p>Building datasets, evaluation protocols, and research tools for multimodal reasoning and evidence-grounded AI.</p>
+  <p>Preparing graduate applications while exploring security, robustness, evaluation, and reasoning in visual and multimodal AI systems.</p>
 </div>
 <div class="side-note">
   <span>Open to</span>
@@ -44,42 +44,35 @@ I am most interested in the point where a convincing model becomes a dependable 
 ::: {.section-block #research}
 ::: {.section-rail}
 <span>01</span>
-<h2>Research questions</h2>
+<h2>Research areas</h2>
 :::
 
 ::: {.section-content}
-<p class="section-lead">Three questions currently organize my work.</p>
+<p class="section-lead">My current interests are organized around two closely related research areas.</p>
 
 ::: {.question-list}
 ::: {.question-item}
 <span class="question-index">A</span>
 <div>
-<h3>Visual memory and multimodal reasoning</h3>
-<p>What visual evidence should a vision-language system retain across a long interaction, and which tests can separate grounded reasoning from a fluent guess?</p>
-<p class="keywords">Computer vision · VLMs · memory · evaluation</p>
+<h3>AI &amp; multimodal security</h3>
+<p>How can visual and multimodal AI systems remain secure, robust, and auditable under adversarial inputs, weak evidence, and real-world uncertainty?</p>
+<p class="keywords">Security · robustness · adversarial / failure analysis · content integrity · trustworthy evaluation</p>
 </div>
 :::
 
 ::: {.question-item}
 <span class="question-index">B</span>
 <div>
-<h3>Trust, provenance, and adversarial evidence</h3>
-<p>How can model-assisted research preserve an inspectable evidence chain and make weak, missing, or historically invalid support visible?</p>
-<p class="keywords">AI security · provenance · auditability · research integrity</p>
-</div>
-:::
-
-::: {.question-item}
-<span class="question-index">C</span>
-<div>
-<h3>Uncertainty in quantitative decisions</h3>
-<p>How should forecasting and simulation systems surface uncertainty, scenario sensitivity, and downside risk without creating false precision?</p>
-<p class="keywords">Quantitative ML · forecasting · simulation · risk</p>
+<h3>Vision &amp; multimodal intelligence</h3>
+<p>How can computer vision and vision-language systems preserve visual evidence, reason across modalities and time, and be evaluated for grounding rather than fluency alone?</p>
+<p class="keywords">Computer vision · VLMs · multimodal reasoning · memory · evaluation</p>
 </div>
 :::
 :::
 
-<p class="quiet-note">These are active directions, not claims of completed research. I publish code and notes when the evidence is ready to be inspected.</p>
+<p class="quiet-note"><strong>Additional interests.</strong> Quantitative machine learning, interactive systems, and research software.</p>
+
+<p class="quiet-note">Some active research projects remain private during development and review; code, results, and reproducible artifacts will be released when appropriate.</p>
 :::
 :::
 
@@ -130,32 +123,14 @@ A desktop-like environment that brings more than 25 interactive applications int
 :::
 :::
 
-::: {.section-block #publications}
-::: {.section-rail}
-<span>03</span>
-<h2>Publications & conference work</h2>
-:::
-
-::: {.section-content}
-::: {.future-output}
-<div class="future-mark">—</div>
-<div>
-<h3>Research outputs will appear here.</h3>
-<p>No public papers are listed yet. This section is prepared for peer-reviewed papers, preprints, posters, slides, project pages, and conference reports as they become available.</p>
-<p>Each entry will support a visual preview, full citation, venue and status, author list, and direct links to the paper and supporting artifacts.</p>
-</div>
-:::
-:::
-:::
-
 ::: {.section-block .last-section #contact}
 ::: {.section-rail}
-<span>04</span>
+<span>03</span>
 <h2>Contact</h2>
 :::
 
 ::: {.section-content}
-<p class="contact-copy">If you are working on CV / VLM reasoning, trustworthy AI, cybersecurity, quantitative machine learning, or research tooling, I welcome thoughtful conversations and possible collaborations.</p>
+<p class="contact-copy">If you are working on AI security, computer vision, vision-language models, trustworthy multimodal AI, reproducibility, or research tooling, I welcome thoughtful conversations and possible collaborations.</p>
 
 <p class="contact-action"><a href="mailto:wilbur930202@gmail.com">wilbur930202@gmail.com</a></p>
 :::
