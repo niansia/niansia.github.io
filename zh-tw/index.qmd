@@ -1,5 +1,6 @@
 ---
-title: "Niansia — 資訊工程"
+title: "Niansia | 資訊工程"
+pagetitle: "Niansia | 資訊工程"
 description: "元智大學資訊工程學系畢業生，正準備申請研究所，研究興趣聚焦 AI 安全、電腦視覺、視覺語言模型與可信任多模態 AI。"
 lang: zh-TW
 page-layout: full
@@ -76,6 +77,21 @@ format:
 
 ::: {.work-entry}
 ::: {.work-image .work-image--contain}
+![](../assets/work/chromarecover-architecture.png){fig-alt="ChromaRecover 證據優先的電腦視覺架構"}
+:::
+::: {.work-copy}
+<div class="work-meta"><span>電腦視覺工具 · public alpha</span><span>2026</span></div>
+
+### ChromaRecover
+
+以本機運算為核心的 Python 工具，用於還原由細微色彩差異承載的空間結構。系統會比較多種色彩證據假設，保留遮罩、疊圖、品質訊號與來源紀錄，並在證據不足時回傳不確定或建議重新取樣的狀態，而非強制作出標籤判定。
+
+<p class="work-links"><a href="https://github.com/niansia/ChromaRecover">程式碼</a><span>/</span><a href="https://github.com/niansia/ChromaRecover/blob/main/docs/algorithm.md">演算法說明</a></p>
+:::
+:::
+
+::: {.work-entry}
+::: {.work-image .work-image--contain}
 ![](../assets/work/research-meeting-coach.png){fig-alt="Advisor-Aware Research Meeting Coach 證據工作流程"}
 :::
 ::: {.work-copy}
@@ -89,23 +105,8 @@ format:
 :::
 :::
 
-::: {.work-entry}
-::: {.work-image}
-![](../assets/work/fusion-desktop.png){fig-alt="Fusion OS 桌面介面"}
-:::
-::: {.work-copy}
-<div class="work-meta"><span>互動式系統</span><span>2026</span></div>
-
-### Fusion OS
-
-以 C# / WebView2 為外殼，搭配 React 與 TypeScript 介面的桌面型環境，整合超過 25 個互動應用程式。
-
-<p class="work-links"><a href="https://github.com/niansia/fusion-os">程式碼</a><span>/</span><a href="https://github.com/niansia/fusion-os#readme">專案概覽</a></p>
-:::
-:::
-
 ::: {.compact-work}
-<div><span>決策支援</span><h3>房貸決策支援系統</h3><p>用於個人房貸決策的情境比較、蒙地卡羅壓力測試與風險指標。</p><a href="https://github.com/niansia/mortgage-decision-support">程式碼 ↗</a></div>
+<div><span>互動式系統</span><h3>Fusion OS</h3><p>以 C# / WebView2 為外殼，搭配 React 與 TypeScript 介面，整合超過 25 個互動應用程式的桌面型環境。</p><a href="https://github.com/niansia/fusion-os">程式碼 ↗</a></div>
 <div><span>公民科技</span><h3>花蓮互助平台</h3><p>整合災情需求、志工協調與持久化資源資料的全端原型。</p><a href="https://github.com/niansia/fuxing">程式碼 ↗</a></div>
 :::
 :::

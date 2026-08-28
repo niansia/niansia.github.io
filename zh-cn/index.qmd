@@ -1,5 +1,6 @@
 ---
-title: "Niansia — 计算机科学"
+title: "Niansia | 计算机科学"
+pagetitle: "Niansia | 计算机科学"
 description: "元智大学计算机科学专业毕业生，正在准备申请研究生项目，研究兴趣聚焦 AI 安全、计算机视觉、视觉语言模型与可信赖多模态 AI。"
 lang: zh-CN
 page-layout: full
@@ -76,6 +77,21 @@ format:
 
 ::: {.work-entry}
 ::: {.work-image .work-image--contain}
+![](../assets/work/chromarecover-architecture.png){fig-alt="ChromaRecover 证据优先的计算机视觉架构"}
+:::
+::: {.work-copy}
+<div class="work-meta"><span>计算机视觉工具 · public alpha</span><span>2026</span></div>
+
+### ChromaRecover
+
+以本地运行为核心的 Python 工具，用于恢复由细微色彩差异承载的空间结构。系统会比较多种色彩证据假设，保留掩膜、叠加图、质量信号与来源记录，并在证据不足时返回不确定或建议重新采样的状态，而非强制作出标签判断。
+
+<p class="work-links"><a href="https://github.com/niansia/ChromaRecover">代码</a><span>/</span><a href="https://github.com/niansia/ChromaRecover/blob/main/docs/algorithm.md">算法说明</a></p>
+:::
+:::
+
+::: {.work-entry}
+::: {.work-image .work-image--contain}
 ![](../assets/work/research-meeting-coach.png){fig-alt="Advisor-Aware Research Meeting Coach 证据工作流程"}
 :::
 ::: {.work-copy}
@@ -89,23 +105,8 @@ format:
 :::
 :::
 
-::: {.work-entry}
-::: {.work-image}
-![](../assets/work/fusion-desktop.png){fig-alt="Fusion OS 桌面界面"}
-:::
-::: {.work-copy}
-<div class="work-meta"><span>交互式系统</span><span>2026</span></div>
-
-### Fusion OS
-
-以 C# / WebView2 为外壳，搭配 React 与 TypeScript 界面的桌面型环境，整合超过 25 个交互应用程序。
-
-<p class="work-links"><a href="https://github.com/niansia/fusion-os">代码</a><span>/</span><a href="https://github.com/niansia/fusion-os#readme">项目概览</a></p>
-:::
-:::
-
 ::: {.compact-work}
-<div><span>决策支持</span><h3>房贷决策支持系统</h3><p>用于个人房贷决策的情景比较、蒙特卡洛压力测试与风险指标。</p><a href="https://github.com/niansia/mortgage-decision-support">代码 ↗</a></div>
+<div><span>交互式系统</span><h3>Fusion OS</h3><p>以 C# / WebView2 为外壳，搭配 React 与 TypeScript 界面，整合超过 25 个交互应用程序的桌面型环境。</p><a href="https://github.com/niansia/fusion-os">代码 ↗</a></div>
 <div><span>公民科技</span><h3>花莲互助平台</h3><p>整合灾情需求、志愿者协调与持久化资源数据的全栈原型。</p><a href="https://github.com/niansia/fuxing">代码 ↗</a></div>
 :::
 :::
