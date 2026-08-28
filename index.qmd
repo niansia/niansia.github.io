@@ -1,5 +1,6 @@
 ---
-title: "Niansia — Computer Science"
+title: "Niansia | Computer Science"
+pagetitle: "Niansia | Computer Science"
 description: "Computer science graduate preparing for graduate study in AI security, computer vision, vision-language models, and trustworthy multimodal AI."
 lang: en
 page-layout: full
@@ -100,6 +101,21 @@ An evidence-first agent skill for adversarial scholarly novelty audits. It decom
 
 ::: {.work-entry}
 ::: {.work-image .work-image--contain}
+![](assets/work/chromarecover-architecture.png){fig-alt="ChromaRecover evidence-first computer vision architecture"}
+:::
+::: {.work-copy}
+<div class="work-meta"><span>Computer vision tool · public alpha</span><span>2026</span></div>
+
+### ChromaRecover
+
+A local-first Python toolkit for recovering spatial structure carried by subtle color differences. It compares competing chromatic hypotheses, preserves masks, overlays, quality signals and provenance, and returns an uncertain or retry status instead of forcing a label when evidence is weak.
+
+<p class="work-links"><a href="https://github.com/niansia/ChromaRecover">Code</a><span>/</span><a href="https://github.com/niansia/ChromaRecover/blob/main/docs/algorithm.md">Algorithm notes</a></p>
+:::
+:::
+
+::: {.work-entry}
+::: {.work-image .work-image--contain}
 ![](assets/work/research-meeting-coach.png){fig-alt="Advisor-Aware Research Meeting Coach evidence workflow"}
 :::
 ::: {.work-copy}
@@ -113,23 +129,8 @@ An early-alpha, evidence-grounded Agent Skill that turns raw research progress i
 :::
 :::
 
-::: {.work-entry}
-::: {.work-image}
-![](assets/work/fusion-desktop.png){fig-alt="Fusion OS desktop interface"}
-:::
-::: {.work-copy}
-<div class="work-meta"><span>Interactive system</span><span>2026</span></div>
-
-### Fusion OS
-
-A desktop-like environment that brings more than 25 interactive applications into a C# / WebView2 shell with a React and TypeScript interface.
-
-<p class="work-links"><a href="https://github.com/niansia/fusion-os">Code</a><span>/</span><a href="https://github.com/niansia/fusion-os#readme">Overview</a></p>
-:::
-:::
-
 ::: {.compact-work}
-<div><span>Decision support</span><h3>Mortgage Decision Support</h3><p>Scenario comparison, Monte Carlo stress testing, and risk metrics for personal mortgage decisions.</p><a href="https://github.com/niansia/mortgage-decision-support">Code ↗</a></div>
+<div><span>Interactive system</span><h3>Fusion OS</h3><p>A desktop-like environment integrating more than 25 applications through a C# / WebView2 shell and a React + TypeScript interface.</p><a href="https://github.com/niansia/fusion-os">Code ↗</a></div>
 <div><span>Civic technology</span><h3>Hualien Mutual Aid</h3><p>A full-stack prototype for disaster requests, volunteer coordination, and persistent resource data.</p><a href="https://github.com/niansia/fuxing">Code ↗</a></div>
 :::
 
