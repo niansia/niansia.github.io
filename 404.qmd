@@ -1,14 +1,19 @@
 ---
 title: "Page not found"
+description: "The requested page could not be found."
+lang: en
 page-layout: full
 title-block-style: none
 ---
 
-::: {.page-intro .error-page}
-<p class="eyebrow">404</p>
+::: {.home-shell}
+::: {.not-found}
+<p class="micro-label">404 / NOT FOUND</p>
 
-# This path does not contain a result—yet.
+# This page is not in the archive.
 
-[Return home](index.qmd){.button .button-primary}
+The address may have changed, or the page may not have been published yet.
+
+[Return to the homepage](/)
 :::
-
+:::

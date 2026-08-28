@@ -1,145 +1,160 @@
 ---
-title: "Niansia"
-description: "Computer science researcher and engineer working on visual intelligence, trustworthy AI, and quantitative machine learning."
+title: "Niansia — Computer Science"
+description: "Computer science student at Yuan Ze University working on visual intelligence, trustworthy AI, research tooling, and quantitative machine learning."
+lang: en
 page-layout: full
 title-block-style: none
 ---
 
-::: {.hero}
-::: {.hero-copy}
-<p class="eyebrow">COMPUTER SCIENCE · YUAN ZE UNIVERSITY</p>
+::: {.home-shell}
+::: {.profile-intro #about}
+::: {.intro-main}
+<p class="micro-label">PROFILE / 2026</p>
 
-# I build learning systems that **see, reason, and hold up under uncertainty.**
+# Niansia
 
-I am a final-year Computer Science student exploring computer vision, vision-language models, AI security, and quantitative machine learning. My work turns research questions into reproducible experiments, auditable tools, and working systems.
+<p class="role-line">Computer science student and research-minded engineer.</p>
 
-::: {.hero-actions}
-[Explore research](research.qmd){.button .button-primary}
-[View projects](projects.qmd){.button .button-secondary}
-[Email me](mailto:wilbur930202@gmail.com){.text-link}
+I am a final-year student at **Yuan Ze University** working across computer vision, vision-language models, AI security, quantitative research, and machine learning.
+
+I am most interested in the point where a convincing model becomes a dependable system: how evidence is collected, how reasoning fails, how uncertainty is communicated, and how an experiment can be reproduced by someone else.
+
+<p class="profile-links"><a href="mailto:wilbur930202@gmail.com">Email</a><span>/</span><a href="https://github.com/niansia">GitHub</a><span>/</span><a href="#work">Selected work</a></p>
+:::
+
+::: {.intro-side}
+<div class="side-note">
+  <span>Currently</span>
+  <p>Building datasets, evaluation protocols, and research tools for multimodal reasoning and evidence-grounded AI.</p>
+</div>
+<div class="side-note">
+  <span>Open to</span>
+  <p>Research conversations, reproducibility work, unusual datasets, and well-defined failure cases.</p>
+</div>
+<div class="side-note contact-note">
+  <span>Contact</span>
+  <p><a href="mailto:wilbur930202@gmail.com">wilbur930202@gmail.com</a></p>
+</div>
 :::
 :::
 
-::: {.hero-aside}
-<p class="aside-label">CURRENT AGENDA</p>
+::: {.section-block #research}
+::: {.section-rail}
+<span>01</span>
+<h2>Research questions</h2>
+:::
 
-**Reliable intelligence across complex signals**
+::: {.section-content}
+<p class="section-lead">Three questions currently organize my work.</p>
 
-I am interested in what happens between a promising model and a dependable system: data design, evaluation, failure analysis, security, and decision-making under uncertainty.
+::: {.question-list}
+::: {.question-item}
+<span class="question-index">A</span>
+<div>
+<h3>Visual memory and multimodal reasoning</h3>
+<p>What visual evidence should a vision-language system retain across a long interaction, and which tests can separate grounded reasoning from a fluent guess?</p>
+<p class="keywords">Computer vision · VLMs · memory · evaluation</p>
+</div>
+:::
 
-<div class="status-line"><span class="status-dot"></span> Open to research conversations</div>
+::: {.question-item}
+<span class="question-index">B</span>
+<div>
+<h3>Trust, provenance, and adversarial evidence</h3>
+<p>How can model-assisted research preserve an inspectable evidence chain and make weak, missing, or historically invalid support visible?</p>
+<p class="keywords">AI security · provenance · auditability · research integrity</p>
+</div>
+:::
+
+::: {.question-item}
+<span class="question-index">C</span>
+<div>
+<h3>Uncertainty in quantitative decisions</h3>
+<p>How should forecasting and simulation systems surface uncertainty, scenario sensitivity, and downside risk without creating false precision?</p>
+<p class="keywords">Quantitative ML · forecasting · simulation · risk</p>
+</div>
 :::
 :::
 
-::: {.content-shell}
-<p class="section-kicker">RESEARCH PROGRAM</p>
-
-## Three connected lines of inquiry
-
-::: {.research-grid}
-::: {.research-card}
-<span class="card-index">01</span>
-
-### Visual intelligence
-
-How can multimodal systems retain the right evidence, reason across images and language, and reveal where their conclusions become unreliable?
-
-`Computer Vision` `VLMs` `Evaluation`
-:::
-
-::: {.research-card}
-<span class="card-index">02</span>
-
-### Trustworthy AI
-
-How do we make model behavior easier to test, challenge, reproduce, and audit—especially under adversarial or ambiguous conditions?
-
-`AI Security` `Robustness` `Integrity`
-:::
-
-::: {.research-card}
-<span class="card-index">03</span>
-
-### Quantitative ML
-
-How can learning systems support decisions when signals are noisy, risks are asymmetric, and confidence matters as much as a prediction?
-
-`Forecasting` `Risk` `Decision Systems`
+<p class="quiet-note">These are active directions, not claims of completed research. I publish code and notes when the evidence is ready to be inspected.</p>
 :::
 :::
 
-::: {.section-heading}
-::: {.heading-copy}
-<p class="section-kicker">SELECTED WORK</p>
-
-## Systems, tools, and research artifacts
+::: {.section-block #work}
+::: {.section-rail}
+<span>02</span>
+<h2>Selected work</h2>
 :::
 
-[All projects →](projects.qmd){.section-link}
+::: {.section-content}
+::: {.work-entry}
+::: {.work-image}
+![](assets/work/noveltyaudit-architecture.png){fig-alt="NoveltyAudit evidence pipeline and citation-graph architecture"}
 :::
-
-::: {.featured-project}
-::: {.featured-main}
-<p class="project-type">RESEARCH TOOL · PYTHON</p>
+::: {.work-copy}
+<div class="work-meta"><span>Research tool</span><span>2026</span></div>
 
 ### NoveltyAudit
 
-An evidence-first agent skill for adversarial scholarly novelty audits. It decomposes claims, constructs minimal prior sets, respects historical cutoffs, and exposes bridge-dependent prior-work arguments.
+An evidence-first agent skill for adversarial scholarly novelty audits. It decomposes claims, searches for minimal prior sets, applies historical cutoffs, and records bridge-dependent prior-work arguments.
 
-[View repository ↗](https://github.com/niansia/NoveltyAudit){.project-link}
-:::
-
-::: {.featured-meta}
-<div><span>Focus</span><strong>Research integrity</strong></div>
-<div><span>Method</span><strong>Claim decomposition</strong></div>
-<div><span>Output</span><strong>Auditable evidence</strong></div>
+<p class="work-links"><a href="https://github.com/niansia/NoveltyAudit">Code</a><span>/</span><a href="https://github.com/niansia/NoveltyAudit#readme">Documentation</a></p>
 :::
 :::
 
-::: {.project-row}
-::: {.project-mini}
-<p class="project-type">INTERACTIVE SYSTEM</p>
+::: {.work-entry}
+::: {.work-image}
+![](assets/work/fusion-desktop.png){fig-alt="Fusion OS desktop interface"}
+:::
+::: {.work-copy}
+<div class="work-meta"><span>Interactive system</span><span>2026</span></div>
 
 ### Fusion OS
 
-A desktop-like environment connecting 25+ applications through a C# / WebView2 shell and a React + TypeScript interface.
+A desktop-like environment that brings more than 25 interactive applications into a C# / WebView2 shell with a React and TypeScript interface.
 
-[Repository ↗](https://github.com/niansia/1113354_Windowsfinal)
-:::
-
-::: {.project-mini}
-<p class="project-type">LEARNING INFRASTRUCTURE</p>
-
-### CSIE Algorithm Lab
-
-Interactive algorithm implementations and visual learning tools spanning graphs, dynamic programming, optimization, and data structures.
-
-[Repository ↗](https://github.com/niansia/CSIE_WEB)
+<p class="work-links"><a href="https://github.com/niansia/1113354_Windowsfinal">Code</a><span>/</span><a href="https://github.com/niansia/1113354_Windowsfinal#readme">Overview</a></p>
 :::
 :::
 
-::: {.principles-band}
-::: {.principles-intro}
-<p class="section-kicker light">HOW I WORK</p>
-
-## Research should survive contact with reality.
+::: {.compact-work}
+<div><span>Algorithms / education</span><h3>CSIE Algorithm Lab</h3><p>Interactive implementations and visual explanations for graphs, dynamic programming, optimization, and data structures.</p><a href="https://github.com/niansia/CSIE_WEB">Code ↗</a></div>
+<div><span>Decision support</span><h3>Mortgage Calculator</h3><p>Scenario comparison, Monte Carlo stress testing, and risk metrics for personal mortgage decisions.</p><a href="https://github.com/niansia/1113354_MortgageCalculator">Code ↗</a></div>
+<div><span>Civic technology</span><h3>Hualien Mutual Aid</h3><p>A full-stack prototype for disaster requests, volunteer coordination, and persistent resource data.</p><a href="https://github.com/niansia/fuxing">Code ↗</a></div>
 :::
 
-::: {.principles-list}
-<div><span>01</span><p><strong>Start with the failure case.</strong><br>Define what would make the idea unconvincing before optimizing the benchmark.</p></div>
-<div><span>02</span><p><strong>Keep evidence inspectable.</strong><br>Build pipelines whose data, assumptions, and intermediate decisions can be traced.</p></div>
-<div><span>03</span><p><strong>Turn theory into artifacts.</strong><br>Use prototypes to expose questions that remain invisible in abstract discussion.</p></div>
+<p class="section-more"><a href="https://github.com/niansia?tab=repositories">All repositories →</a></p>
 :::
 :::
 
-::: {.contact-strip}
+::: {.section-block #publications}
+::: {.section-rail}
+<span>03</span>
+<h2>Publications & conference work</h2>
+:::
+
+::: {.section-content}
+::: {.future-output}
+<div class="future-mark">—</div>
 <div>
-<p class="section-kicker">COLLABORATION</p>
-
-## Have an interesting question, dataset, or failure case?
+<h3>Research outputs will appear here.</h3>
+<p>No public papers are listed yet. This section is prepared for peer-reviewed papers, preprints, posters, slides, project pages, and conference reports as they become available.</p>
+<p>Each entry will support a visual preview, full citation, venue and status, author list, and direct links to the paper and supporting artifacts.</p>
 </div>
-
-[Start a conversation](mailto:wilbur930202@gmail.com){.button .button-primary}
 :::
 :::
+:::
 
+::: {.section-block .last-section}
+::: {.section-rail}
+<span>04</span>
+<h2>Contact</h2>
+:::
+
+::: {.section-content}
+<p class="contact-copy">If you are working on CV / VLM reasoning, trustworthy AI, cybersecurity, quantitative machine learning, or research tooling, I welcome thoughtful conversations and possible collaborations.</p>
+
+<p class="contact-action"><a href="mailto:wilbur930202@gmail.com">wilbur930202@gmail.com</a></p>
+:::
+:::
+:::

@@ -9,26 +9,6 @@ website:
   open-graph: true
   twitter-card: true
   search: false
-  navbar:
-    title: "NIANSIA / RESEARCH"
-    pinned: true
-    collapse-below: md
-    left:
-      - href: index.qmd
-        text: Home
-      - href: research.qmd
-        text: Research
-      - href: projects.qmd
-        text: Projects
-      - href: about.qmd
-        text: About
-    right:
-      - icon: github
-        href: https://github.com/niansia
-        aria-label: GitHub
-      - icon: envelope
-        href: mailto:wilbur930202@gmail.com
-        aria-label: Email
   page-footer:
     left: "© 2026 Niansia"
     right: "Built with Quarto · [Source](https://github.com/niansia/niansia.github.io)"
@@ -39,10 +19,10 @@ format:
     toc: false
     smooth-scroll: true
     link-external-newwindow: true
+    include-before-body: includes/nav-en.html
     include-in-header:
       text: |
         <meta name="theme-color" content="#f4f1e8">
 
 execute:
   freeze: auto
-
