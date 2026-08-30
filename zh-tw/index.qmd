@@ -61,17 +61,17 @@ format:
 :::
 ::: {.section-content}
 ::: {.work-entry}
-::: {.work-image}
-![](../assets/work/noveltyaudit-architecture.png){fig-alt="NoveltyAudit 證據管線與引用圖架構"}
+::: {.work-image .work-image--contain}
+![](../assets/work/merriv-release-evidence-flow.svg){fig-alt="Merriv 模型發布證據架構"}
 :::
 ::: {.work-copy}
-<div class="work-meta"><span>研究工具</span><span>2026</span></div>
+<div class="work-meta"><span>模型發布基礎設施 · pre-alpha</span><span>2026</span></div>
 
-### NoveltyAudit
+### Merriv
 
-以證據為核心、用於對抗式學術新穎性稽核的 Agent Skill。系統會拆解主張、搜尋最小先前研究集合、套用歷史截止時間，並記錄仰賴跨文獻連結的先前技術論證。
+仍處 pre-alpha 階段、面向可部署 AI 模型的廠商中立發布證據層。系統將確切模型產物、配對評估、統計政策、來源資訊與回歸起點綁定為可攜式 Model Change Report，供模型升版前獨立驗證。
 
-<p class="work-links"><a href="https://github.com/niansia/NoveltyAudit">程式碼</a><span>/</span><a href="https://github.com/niansia/NoveltyAudit#readme">說明文件</a></p>
+<p class="work-links"><a href="https://github.com/niansia/Merriv">程式碼</a><span>/</span><a href="https://github.com/niansia/Merriv/blob/main/docs/release-evidence-case-study.md">案例研究</a></p>
 :::
 :::
 
@@ -91,23 +91,22 @@ format:
 :::
 
 ::: {.work-entry}
-::: {.work-image .work-image--contain}
-![](../assets/work/research-meeting-coach.png){fig-alt="Advisor-Aware Research Meeting Coach 證據工作流程"}
+::: {.work-image}
+![](../assets/work/noveltyaudit-architecture.png){fig-alt="NoveltyAudit 證據管線與引用圖架構"}
 :::
 ::: {.work-copy}
-<div class="work-meta"><span>研究工作流程 · early alpha</span><span>2026</span></div>
+<div class="work-meta"><span>研究工具</span><span>2026</span></div>
 
-### 研究會議教練
+### NoveltyAudit
 
-尚處 early alpha 階段、以證據為核心的 Agent Skill，可將零散研究進度轉化為可供指導教授決策的會議內容。系統會區分觀察與詮釋、延續尚未完成的要求，並透過結構化研究狀態與確定性檢查，避免研究主張超出既有證據。
+以證據為核心、用於對抗式學術新穎性稽核的 Agent Skill。系統會拆解主張、搜尋最小先前研究集合、套用歷史截止時間，並記錄仰賴跨文獻連結的先前技術論證。
 
-<p class="work-links"><a href="https://github.com/niansia/research-meeting-coach">程式碼</a><span>/</span><a href="https://github.com/niansia/research-meeting-coach/tree/main/research-meeting-coach/examples/60-second-demo">60 秒示範</a></p>
+<p class="work-links"><a href="https://github.com/niansia/NoveltyAudit">程式碼</a><span>/</span><a href="https://github.com/niansia/NoveltyAudit#readme">說明文件</a></p>
 :::
 :::
 
-::: {.compact-work}
-<div><span>互動式系統</span><h3>Fusion OS</h3><p>以 C# / WebView2 為外殼，搭配 React 與 TypeScript 介面，整合超過 25 個互動應用程式的桌面型環境。</p><a href="https://github.com/niansia/fusion-os">程式碼 ↗</a></div>
-<div><span>公民科技</span><h3>花蓮互助平台</h3><p>整合災情需求、志工協調與持久化資源資料的全端原型。</p><a href="https://github.com/niansia/fuxing">程式碼 ↗</a></div>
+::: {.compact-work .compact-work--single}
+<div><span>研究工作流程 · early alpha</span><h3>研究會議教練</h3><p>以證據為核心的 Agent Skill，可將零散研究進度整理成可供指導教授決策的會議內容，並限制研究主張不超出既有證據。</p><a href="https://github.com/niansia/research-meeting-coach">程式碼 ↗</a></div>
 :::
 :::
 :::

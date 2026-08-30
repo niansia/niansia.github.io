@@ -87,6 +87,8 @@ main.content { padding: 0 !important; margin: 0 !important; max-width: none !imp
 .work-copy h3 { margin: 1.3rem 0 .8rem; font-family: var(--serif); font-size: clamp(2rem, 3.5vw, 3rem); letter-spacing: -.035em; }
 .work-copy > p:not(.work-links) { color: var(--soft-ink); font-size: .9rem; }
 .compact-work { display: grid; grid-template-columns: repeat(2, 1fr); margin-top: 1rem; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+.compact-work--single { grid-template-columns: minmax(0, 1fr); }
+.compact-work--single > div { max-width: 760px; }
 .compact-work > div { padding: 1.8rem 1.8rem 2rem 0; }
 .compact-work > div + div { padding-left: 1.8rem; border-left: 1px solid var(--rule); }
 .compact-work span { color: var(--brick); font-family: var(--mono); font-size: .62rem; text-transform: uppercase; }
