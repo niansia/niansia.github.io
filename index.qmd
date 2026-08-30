@@ -85,17 +85,17 @@ I am especially interested in how evidence is collected, how reasoning fails, ho
 
 ::: {.section-content}
 ::: {.work-entry}
-::: {.work-image}
-![](assets/work/noveltyaudit-architecture.png){fig-alt="NoveltyAudit evidence pipeline and citation-graph architecture"}
+::: {.work-image .work-image--contain}
+![](assets/work/merriv-release-evidence-flow.svg){fig-alt="Merriv release evidence architecture"}
 :::
 ::: {.work-copy}
-<div class="work-meta"><span>Research tool</span><span>2026</span></div>
+<div class="work-meta"><span>Model release infrastructure · pre-alpha</span><span>2026</span></div>
 
-### NoveltyAudit
+### Merriv
 
-An evidence-first agent skill for adversarial scholarly novelty audits. It decomposes claims, searches for minimal prior sets, applies historical cutoffs, and records bridge-dependent prior-work arguments.
+A vendor-neutral release-evidence layer for deployable AI models, currently in pre-alpha. It binds exact artifacts, paired evaluation, statistical policy, provenance, and regression onset into a portable Model Change Report that can be independently checked before promotion.
 
-<p class="work-links"><a href="https://github.com/niansia/NoveltyAudit">Code</a><span>/</span><a href="https://github.com/niansia/NoveltyAudit#readme">Documentation</a></p>
+<p class="work-links"><a href="https://github.com/niansia/Merriv">Code</a><span>/</span><a href="https://github.com/niansia/Merriv/blob/main/docs/release-evidence-case-study.md">Case study</a></p>
 :::
 :::
 
@@ -115,23 +115,22 @@ A local-first Python toolkit for recovering spatial structure carried by subtle 
 :::
 
 ::: {.work-entry}
-::: {.work-image .work-image--contain}
-![](assets/work/research-meeting-coach.png){fig-alt="Advisor-Aware Research Meeting Coach evidence workflow"}
+::: {.work-image}
+![](assets/work/noveltyaudit-architecture.png){fig-alt="NoveltyAudit evidence pipeline and citation-graph architecture"}
 :::
 ::: {.work-copy}
-<div class="work-meta"><span>Research workflow · early alpha</span><span>2026</span></div>
+<div class="work-meta"><span>Research tool</span><span>2026</span></div>
 
-### Research Meeting Coach
+### NoveltyAudit
 
-An early-alpha, evidence-grounded Agent Skill that turns raw research progress into a decision-ready advisor meeting. It separates observations from interpretations, carries unfinished requests forward, and uses schema-backed state plus deterministic checks to keep claims within the supplied evidence.
+An evidence-first agent skill for adversarial scholarly novelty audits. It decomposes claims, searches for minimal prior sets, applies historical cutoffs, and records bridge-dependent prior-work arguments.
 
-<p class="work-links"><a href="https://github.com/niansia/research-meeting-coach">Code</a><span>/</span><a href="https://github.com/niansia/research-meeting-coach/tree/main/research-meeting-coach/examples/60-second-demo">60-second demo</a></p>
+<p class="work-links"><a href="https://github.com/niansia/NoveltyAudit">Code</a><span>/</span><a href="https://github.com/niansia/NoveltyAudit#readme">Documentation</a></p>
 :::
 :::
 
-::: {.compact-work}
-<div><span>Interactive system</span><h3>Fusion OS</h3><p>A desktop-like environment integrating more than 25 applications through a C# / WebView2 shell and a React + TypeScript interface.</p><a href="https://github.com/niansia/fusion-os">Code ↗</a></div>
-<div><span>Civic technology</span><h3>Hualien Mutual Aid</h3><p>A full-stack prototype for disaster requests, volunteer coordination, and persistent resource data.</p><a href="https://github.com/niansia/fuxing">Code ↗</a></div>
+::: {.compact-work .compact-work--single}
+<div><span>Research workflow · early alpha</span><h3>Research Meeting Coach</h3><p>An evidence-grounded Agent Skill that turns raw research progress into decision-ready advisor meetings while keeping claims within the supplied evidence.</p><a href="https://github.com/niansia/research-meeting-coach">Code ↗</a></div>
 :::
 
 <p class="section-more"><a href="https://github.com/niansia?tab=repositories">All repositories →</a></p>
