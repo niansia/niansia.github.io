@@ -76,51 +76,6 @@ I am especially interested in how evidence is collected, how reasoning fails, ho
 :::
 :::
 
-::: {.section-block #work}
-::: {.section-rail}
-<h2>Selected work</h2>
-:::
-
-::: {.section-content}
-::: {.work-entry}
-::: {.work-image .work-image--contain}
-![](assets/work/contextsec-decision-flow.svg){fig-alt="ContextSec deterministic product-security decision flow"}
-:::
-::: {.work-copy}
-<div class="work-meta"><span>AI security · research preview</span><span>2026</span></div>
-
-### ContextSec
-
-A deterministic product-security decision layer for AI coding agents. It turns bounded repository evidence into an explicit product-risk profile, composes only applicable controls, and produces a Control Evaluation Ledger with reproducible release-gate semantics.
-
-<p class="work-links"><a href="https://github.com/niansia/ContextSec">Code</a><span>/</span><a href="https://github.com/niansia/ContextSec/blob/main/docs/architecture.md">Architecture</a></p>
-:::
-:::
-
-::: {.work-entry}
-::: {.work-image .work-image--contain}
-![](assets/work/ai-repo-gardener-demo.gif){fig-alt="AI Repo Gardener evidence-backed repository analysis demo"}
-:::
-::: {.work-copy}
-<div class="work-meta"><span>Repository analysis · public alpha</span><span>2026</span></div>
-
-### AI Repo Gardener
-
-A deterministic static-analysis tool and portable Agent Skill for AI-edited Python repositories. It combines import reachability, Git chronology, and normalized-AST evidence, keeps weak findings review-only, and requires a reviewed, hash-bound plan plus isolated validation before deletion.
-
-<p class="work-links"><a href="https://github.com/niansia/ai-repo-gardener">Code</a><span>/</span><a href="https://github.com/niansia/ai-repo-gardener/blob/main/benchmarks/safety-benchmark.md">Safety benchmark</a></p>
-:::
-:::
-
-::: {.compact-work}
-<div><span>Model release evidence · pre-alpha</span><h3>Merriv</h3><p>A vendor-neutral evidence layer that binds exact model artifacts, paired evaluation, statistical policy, provenance, and regression onset into a portable Model Change Report.</p><a href="https://github.com/niansia/Merriv">Code ↗</a></div>
-<div><span>Computer vision · public alpha</span><h3>ChromaRecover</h3><p>A local-first toolkit for recovering spatial structure carried by subtle color differences. It preserves auditable artifacts and abstains when evidence is weak.</p><a href="https://github.com/niansia/ChromaRecover">Code ↗</a></div>
-:::
-
-<p class="section-more"><a href="/work/">View the categorized portfolio →</a></p>
-:::
-:::
-
 ::: {.section-block .last-section #contact}
 ::: {.section-rail}
 <h2>Contact</h2>
