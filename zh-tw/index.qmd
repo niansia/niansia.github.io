@@ -23,7 +23,7 @@ format:
 
 我特別重視證據如何取得、推理如何失敗、不確定性如何呈現，以及其他研究者能否重現同一項實驗。
 
-<p class="profile-links"><a href="mailto:wilbur930202@gmail.com">Email</a><span>/</span><a href="https://github.com/niansia">GitHub</a><span>/</span><a href="#work">精選作品</a></p>
+<p class="profile-links"><a href="mailto:wilbur930202@gmail.com">Email</a><span>/</span><a href="https://github.com/niansia">GitHub</a><span>/</span><a href="/zh-tw/work/">作品集</a></p>
 :::
 
 ::: {.intro-side}
@@ -35,17 +35,17 @@ format:
 
 ::: {.section-block #research}
 ::: {.section-rail}
-<span>01</span><h2>研究領域</h2>
+<h2>研究領域</h2>
 :::
 ::: {.section-content}
 <p class="section-lead">目前的研究興趣可歸納為兩個彼此關聯的領域。</p>
 
 ::: {.question-list}
 ::: {.question-item}
-<span class="question-index">甲</span><div><h3>AI 與多模態安全</h3><p>如何使視覺與多模態 AI 系統在面對對抗性輸入、薄弱證據與真實世界不確定性時，仍維持安全性、穩健性與可稽核性？</p><p class="keywords">安全性 · 穩健性 · 對抗與失效分析 · 內容完整性 · 可信任評估</p></div>
+<span class="question-index">甲</span><div><h3>AI 與多模態安全</h3><p>如何使視覺與多模態 AI 系統在面對對抗性輸入、薄弱證據與真實世界不確定性時，仍維持安全性、穩健性與可稽核性？</p><p class="keywords">安全性 / 穩健性 / 對抗與失效分析 / 內容完整性 / 可信任評估</p></div>
 :::
 ::: {.question-item}
-<span class="question-index">乙</span><div><h3>視覺與多模態智慧</h3><p>如何使電腦視覺與視覺語言系統保留視覺證據、跨模態與時間進行推理，並以推理根據而非僅以語句流暢度進行評估？</p><p class="keywords">電腦視覺 · VLM · 多模態推理 · 記憶 · 評估</p></div>
+<span class="question-index">乙</span><div><h3>視覺與多模態智慧</h3><p>如何使電腦視覺與視覺語言系統保留視覺證據、跨模態與時間進行推理，並以推理根據而非僅以語句流暢度進行評估？</p><p class="keywords">電腦視覺 / VLM / 多模態推理 / 記憶 / 評估</p></div>
 :::
 :::
 
@@ -57,63 +57,51 @@ format:
 
 ::: {.section-block #work}
 ::: {.section-rail}
-<span>02</span><h2>精選作品</h2>
+<h2>精選作品</h2>
 :::
 ::: {.section-content}
 ::: {.work-entry}
 ::: {.work-image .work-image--contain}
-![](../assets/work/merriv-release-evidence-flow.svg){fig-alt="Merriv 模型發布證據架構"}
+![](../assets/work/contextsec-decision-flow.svg){fig-alt="ContextSec 確定性產品安全決策流程"}
 :::
 ::: {.work-copy}
-<div class="work-meta"><span>模型發布基礎設施 · pre-alpha</span><span>2026</span></div>
+<div class="work-meta"><span>AI 安全 · research preview</span><span>2026</span></div>
 
-### Merriv
+### ContextSec
 
-仍處 pre-alpha 階段、面向可部署 AI 模型的廠商中立發布證據層。系統將確切模型產物、配對評估、統計政策、來源資訊與回歸起點綁定為可攜式 Model Change Report，供模型升版前獨立驗證。
+面向 AI 程式代理的確定性產品安全決策層。系統會將有界的儲存庫證據轉化為明確的產品風險輪廓，只組合實際適用的控制項，並產生具可重現發布閘門語義的 Control Evaluation Ledger。
 
-<p class="work-links"><a href="https://github.com/niansia/Merriv">程式碼</a><span>/</span><a href="https://github.com/niansia/Merriv/blob/main/docs/release-evidence-case-study.md">案例研究</a></p>
+<p class="work-links"><a href="https://github.com/niansia/ContextSec">程式碼</a><span>/</span><a href="https://github.com/niansia/ContextSec/blob/main/docs/architecture.md">架構說明</a></p>
 :::
 :::
 
 ::: {.work-entry}
 ::: {.work-image .work-image--contain}
-![](../assets/work/chromarecover-architecture.png){fig-alt="ChromaRecover 證據優先的電腦視覺架構"}
+![](../assets/work/ai-repo-gardener-demo.gif){fig-alt="AI Repo Gardener 證據導向儲存庫分析示範"}
 :::
 ::: {.work-copy}
-<div class="work-meta"><span>電腦視覺工具 · public alpha</span><span>2026</span></div>
+<div class="work-meta"><span>儲存庫分析 · public alpha</span><span>2026</span></div>
 
-### ChromaRecover
+### AI Repo Gardener
 
-以本機運算為核心的 Python 工具，用於還原由細微色彩差異承載的空間結構。系統會比較多種色彩證據假設，保留遮罩、疊圖、品質訊號與來源紀錄，並在證據不足時回傳不確定或建議重新取樣的狀態，而非強制作出標籤判定。
+面向 AI 編輯 Python 儲存庫的確定性靜態分析工具與可攜式 Agent Skill。系統結合匯入可達性、Git 時序與正規化 AST 證據，將薄弱判斷限制為僅供審查，並在刪除前要求經審閱且綁定雜湊的計畫與隔離驗證。
 
-<p class="work-links"><a href="https://github.com/niansia/ChromaRecover">程式碼</a><span>/</span><a href="https://github.com/niansia/ChromaRecover/blob/main/docs/algorithm.md">演算法說明</a></p>
+<p class="work-links"><a href="https://github.com/niansia/ai-repo-gardener">程式碼</a><span>/</span><a href="https://github.com/niansia/ai-repo-gardener/blob/main/benchmarks/safety-benchmark.md">安全基準</a></p>
 :::
 :::
 
-::: {.work-entry}
-::: {.work-image}
-![](../assets/work/noveltyaudit-architecture.png){fig-alt="NoveltyAudit 證據管線與引用圖架構"}
-:::
-::: {.work-copy}
-<div class="work-meta"><span>研究工具</span><span>2026</span></div>
-
-### NoveltyAudit
-
-以證據為核心、用於對抗式學術新穎性稽核的 Agent Skill。系統會拆解主張、搜尋最小先前研究集合、套用歷史截止時間，並記錄仰賴跨文獻連結的先前技術論證。
-
-<p class="work-links"><a href="https://github.com/niansia/NoveltyAudit">程式碼</a><span>/</span><a href="https://github.com/niansia/NoveltyAudit#readme">說明文件</a></p>
-:::
+::: {.compact-work}
+<div><span>模型發布證據 · pre-alpha</span><h3>Merriv</h3><p>廠商中立的模型發布證據層，將確切模型產物、配對評估、統計政策、來源資訊與回歸起點綁定為可攜式 Model Change Report。</p><a href="https://github.com/niansia/Merriv">程式碼 ↗</a></div>
+<div><span>電腦視覺 · public alpha</span><h3>ChromaRecover</h3><p>以本機運算為核心的工具，用於還原由細微色彩差異承載的空間結構。系統保留可稽核產物，並在證據不足時選擇不作判定。</p><a href="https://github.com/niansia/ChromaRecover">程式碼 ↗</a></div>
 :::
 
-::: {.compact-work .compact-work--single}
-<div><span>研究工作流程 · early alpha</span><h3>研究會議教練</h3><p>以證據為核心的 Agent Skill，可將零散研究進度整理成可供指導教授決策的會議內容，並限制研究主張不超出既有證據。</p><a href="https://github.com/niansia/research-meeting-coach">程式碼 ↗</a></div>
-:::
+<p class="section-more"><a href="/zh-tw/work/">查看分類作品集 →</a></p>
 :::
 :::
 
 ::: {.section-block .last-section #contact}
 ::: {.section-rail}
-<span>03</span><h2>聯絡與合作</h2>
+<h2>聯絡與合作</h2>
 :::
 ::: {.section-content}
 <p class="contact-copy">若您亦從事 AI 安全、電腦視覺、視覺語言模型、可信任多模態 AI、實驗重現或研究工具等相關工作，歡迎來信交流研究構想、資料集、重現結果，以及值得進一步分析的模型失效案例。</p>
