@@ -1,6 +1,6 @@
 ---
-title: "作品集 | Niansia"
-pagetitle: "作品集 | Niansia"
+title: "个人作品集 | Niansia"
+pagetitle: "个人作品集 | Niansia"
 description: "按研究问题分类的公开作品集，涵盖 AI 安全、可靠模型发布、代码仓库分析、计算机视觉与研究工具。"
 lang: zh-CN
 page-layout: full
@@ -12,27 +12,28 @@ format:
 
 ::: {.home-shell .portfolio-shell}
 ::: {.portfolio-intro}
-<p class="micro-label">作品集 / 公开项目</p>
+<p class="micro-label">个人作品集 / 公开项目</p>
 
-# 按研究问题整理的作品。
+# 按研究问题整理的个人作品集。
 
-<p class="portfolio-lead">首页展示四项核心作品；本页按研究问题、成熟度与可检查证据整理完整的公开作品。</p>
+<p class="portfolio-lead">六项公开作品，按所处理的研究问题与可检查证据分类。</p>
 
 <p class="profile-links"><a href="/zh-cn/">个人档案</a><span>/</span><a href="https://github.com/niansia?tab=repositories">所有代码仓库</a></p>
 :::
 
+```{=html}
 <section class="portfolio-group" id="reliable-ai">
   <header class="portfolio-group__header"><h2>AI 安全与可靠发布</h2><p>让产品风险、模型变更与发布决策变得明确，并可由他人独立检查的系统。</p></header>
   <div class="portfolio-grid">
     <article class="portfolio-card portfolio-card--core">
-      <div class="portfolio-card__meta"><span>核心作品</span><span>Research preview</span></div>
+      <div class="portfolio-card__meta"><span>AI 安全</span><span>Research preview</span></div>
       <h3><a href="https://github.com/niansia/ContextSec">ContextSec</a></h3>
       <p>面向 AI 编程代理的确定性产品安全决策层。系统从有界的代码仓库证据推导适用控制项，并将每项决策记录于 Control Evaluation Ledger。</p>
       <p class="portfolio-proof"><strong>公开证据</strong> 16 个风险包、116 项控制、9 条组合规则、风险画像与变异测试用例、真实代码仓库评估，以及跨平台 CI。</p>
       <p class="portfolio-card__links"><a href="https://github.com/niansia/ContextSec">代码</a><span>/</span><a href="https://github.com/niansia/ContextSec/blob/main/docs/architecture.md">架构说明</a></p>
     </article>
     <article class="portfolio-card portfolio-card--core">
-      <div class="portfolio-card__meta"><span>核心作品</span><span>Pre-alpha</span></div>
+      <div class="portfolio-card__meta"><span>模型发布</span><span>Pre-alpha</span></div>
       <h3><a href="https://github.com/niansia/Merriv">Merriv</a></h3>
       <p>面向可部署 AI 模型的厂商中立发布证据层。系统将确切模型产物、配对评估、统计策略、来源信息与回归起点绑定为可移植的 Model Change Report。</p>
       <p class="portfolio-proof"><strong>公开证据</strong> 可复现发布记录、明确升级策略、来源信息、回归定位与独立验证路径。</p>
@@ -45,20 +46,20 @@ format:
   <header class="portfolio-group__header"><h2>代码仓库与研究推理</h2><p>以可检查证据、明确审查边界与可复现中间产物约束自动化的工具。</p></header>
   <div class="portfolio-grid portfolio-grid--three">
     <article class="portfolio-card portfolio-card--core">
-      <div class="portfolio-card__meta"><span>核心作品</span><span>Public alpha</span></div>
+      <div class="portfolio-card__meta"><span>代码仓库分析</span><span>Public alpha</span></div>
       <h3><a href="https://github.com/niansia/ai-repo-gardener">AI Repo Gardener</a></h3>
       <p>面向 AI 编辑 Python 代码仓库的静态分析工具与可移植 Agent Skill。薄弱判断仅供审查；删除前必须具备经过审阅、绑定哈希的计划与隔离验证。</p>
       <p class="portfolio-proof"><strong>公开证据</strong> 导入可达性、Git 时序、规范化 AST 证据、25 个对抗式安全场景、真实代码仓库冒烟测试，以及跨平台 CI。</p>
       <p class="portfolio-card__links"><a href="https://github.com/niansia/ai-repo-gardener">代码</a><span>/</span><a href="https://github.com/niansia/ai-repo-gardener/blob/main/benchmarks/safety-benchmark.md">安全基准</a></p>
     </article>
-    <article class="portfolio-card">
-      <div class="portfolio-card__meta"><span>延伸作品</span><span>研究工具</span></div>
+    <article class="portfolio-card portfolio-card--core">
+      <div class="portfolio-card__meta"><span>学术推理</span><span>研究工具</span></div>
       <h3><a href="https://github.com/niansia/NoveltyAudit">NoveltyAudit</a></h3>
       <p>用于对抗式学术新颖性审计的证据导向工具，包含研究主张拆解、历史截止时间、最小既有研究集合与 bridge-aware 既有工作分析。</p>
       <p class="portfolio-card__links"><a href="https://github.com/niansia/NoveltyAudit">代码</a><span>/</span><a href="https://github.com/niansia/NoveltyAudit#readme">说明文档</a></p>
     </article>
-    <article class="portfolio-card">
-      <div class="portfolio-card__meta"><span>延伸作品</span><span>Early alpha</span></div>
+    <article class="portfolio-card portfolio-card--core">
+      <div class="portfolio-card__meta"><span>研究工作流程</span><span>Early alpha</span></div>
       <h3><a href="https://github.com/niansia/research-meeting-coach">Research Meeting Coach</a></h3>
       <p>以证据为核心的 Agent Skill，可将零散研究进展整理成导师能够据此决策的会议内容，并限制每项研究主张不超出所提供的证据。</p>
       <p class="portfolio-card__links"><a href="https://github.com/niansia/research-meeting-coach">代码</a><span>/</span><a href="https://github.com/niansia/research-meeting-coach#readme">说明文档</a></p>
@@ -67,21 +68,16 @@ format:
 </section>
 
 <section class="portfolio-group" id="visual-systems">
-  <header class="portfolio-group__header"><h2>视觉证据与交互系统</h2><p>用于保存微弱视觉信号，以及将异构工具整合为连贯界面的应用系统。</p></header>
-  <div class="portfolio-grid">
+  <header class="portfolio-group__header"><h2>视觉证据与恢复</h2><p>用于保存微弱视觉信号，并使不确定的恢复决策可供检查的计算机视觉工作。</p></header>
+  <div class="portfolio-grid portfolio-grid--single">
     <article class="portfolio-card portfolio-card--core">
-      <div class="portfolio-card__meta"><span>核心作品</span><span>Public alpha</span></div>
+      <div class="portfolio-card__meta"><span>计算机视觉</span><span>Public alpha</span></div>
       <h3><a href="https://github.com/niansia/ChromaRecover">ChromaRecover</a></h3>
       <p>以本地运行为核心的计算机视觉工具，用于恢复由细微色彩差异承载的空间结构。系统比较多种假设、保留可审计产物，并在证据不足时选择不作判断。</p>
       <p class="portfolio-proof"><strong>公开证据</strong> 掩膜、叠加图、质量信号、来源记录、不确定状态与算法说明。</p>
       <p class="portfolio-card__links"><a href="https://github.com/niansia/ChromaRecover">代码</a><span>/</span><a href="https://github.com/niansia/ChromaRecover/blob/main/docs/algorithm.md">算法说明</a></p>
     </article>
-    <article class="portfolio-card">
-      <div class="portfolio-card__meta"><span>延伸作品</span><span>交互系统</span></div>
-      <h3><a href="https://github.com/niansia/fusion-os">Fusion OS</a></h3>
-      <p>类桌面环境，通过 C# 与 WebView2 shell、React 与 TypeScript 界面，整合超过 25 个交互应用程序。</p>
-      <p class="portfolio-card__links"><a href="https://github.com/niansia/fusion-os">代码</a><span>/</span><a href="https://github.com/niansia/fusion-os#readme">项目概览</a></p>
-    </article>
   </div>
 </section>
+```
 :::

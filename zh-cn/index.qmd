@@ -23,7 +23,7 @@ format:
 
 我尤其重视证据如何取得、推理如何失败、不确定性如何呈现，以及其他研究者能否复现同一项实验。
 
-<p class="profile-links"><a href="mailto:wilbur930202@gmail.com">Email</a><span>/</span><a href="https://github.com/niansia">GitHub</a><span>/</span><a href="/zh-cn/work/">作品集</a></p>
+<p class="profile-links"><a href="mailto:wilbur930202@gmail.com">Email</a><span>/</span><a href="https://github.com/niansia">GitHub</a><span>/</span><a href="/zh-cn/work/">个人作品集</a></p>
 :::
 
 ::: {.intro-side}
@@ -52,50 +52,6 @@ format:
 <p class="quiet-note"><strong>延伸兴趣。</strong> 量化机器学习、交互式系统与研究软件。</p>
 
 <p class="quiet-note">目前部分研究仍处于开发或评审阶段，因此保持非公开；相关代码、结果与可复现成果将在适当时机发布。</p>
-:::
-:::
-
-::: {.section-block #work}
-::: {.section-rail}
-<h2>精选作品</h2>
-:::
-::: {.section-content}
-::: {.work-entry}
-::: {.work-image .work-image--contain}
-![](../assets/work/contextsec-decision-flow.svg){fig-alt="ContextSec 确定性产品安全决策流程"}
-:::
-::: {.work-copy}
-<div class="work-meta"><span>AI 安全 · research preview</span><span>2026</span></div>
-
-### ContextSec
-
-面向 AI 编程代理的确定性产品安全决策层。系统会将有界的代码仓库证据转化为明确的产品风险画像，只组合实际适用的控制项，并生成具备可复现发布门禁语义的 Control Evaluation Ledger。
-
-<p class="work-links"><a href="https://github.com/niansia/ContextSec">代码</a><span>/</span><a href="https://github.com/niansia/ContextSec/blob/main/docs/architecture.md">架构说明</a></p>
-:::
-:::
-
-::: {.work-entry}
-::: {.work-image .work-image--contain}
-![](../assets/work/ai-repo-gardener-demo.gif){fig-alt="AI Repo Gardener 证据导向代码仓库分析演示"}
-:::
-::: {.work-copy}
-<div class="work-meta"><span>代码仓库分析 · public alpha</span><span>2026</span></div>
-
-### AI Repo Gardener
-
-面向 AI 编辑 Python 代码仓库的确定性静态分析工具与可移植 Agent Skill。系统结合导入可达性、Git 时序与规范化 AST 证据，将薄弱判断限制为仅供审查，并在删除前要求经过审阅且绑定哈希的计划与隔离验证。
-
-<p class="work-links"><a href="https://github.com/niansia/ai-repo-gardener">代码</a><span>/</span><a href="https://github.com/niansia/ai-repo-gardener/blob/main/benchmarks/safety-benchmark.md">安全基准</a></p>
-:::
-:::
-
-::: {.compact-work}
-<div><span>模型发布证据 · pre-alpha</span><h3>Merriv</h3><p>厂商中立的模型发布证据层，将确切模型产物、配对评估、统计策略、来源信息与回归起点绑定为可移植的 Model Change Report。</p><a href="https://github.com/niansia/Merriv">代码 ↗</a></div>
-<div><span>计算机视觉 · public alpha</span><h3>ChromaRecover</h3><p>以本地运行为核心的工具，用于恢复由细微色彩差异承载的空间结构。系统保留可审计产物，并在证据不足时选择不作判断。</p><a href="https://github.com/niansia/ChromaRecover">代码 ↗</a></div>
-:::
-
-<p class="section-more"><a href="/zh-cn/work/">查看分类作品集 →</a></p>
 :::
 :::
 

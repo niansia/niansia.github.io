@@ -23,7 +23,7 @@ format:
 
 我特別重視證據如何取得、推理如何失敗、不確定性如何呈現，以及其他研究者能否重現同一項實驗。
 
-<p class="profile-links"><a href="mailto:wilbur930202@gmail.com">Email</a><span>/</span><a href="https://github.com/niansia">GitHub</a><span>/</span><a href="/zh-tw/work/">作品集</a></p>
+<p class="profile-links"><a href="mailto:wilbur930202@gmail.com">Email</a><span>/</span><a href="https://github.com/niansia">GitHub</a><span>/</span><a href="/zh-tw/work/">個人作品集</a></p>
 :::
 
 ::: {.intro-side}
@@ -52,50 +52,6 @@ format:
 <p class="quiet-note"><strong>延伸興趣。</strong> 量化機器學習、互動式系統與研究軟體。</p>
 
 <p class="quiet-note">目前部分研究仍在開發或審查階段，因此維持非公開；相關程式碼、結果與可重現成果將於合適時機釋出。</p>
-:::
-:::
-
-::: {.section-block #work}
-::: {.section-rail}
-<h2>精選作品</h2>
-:::
-::: {.section-content}
-::: {.work-entry}
-::: {.work-image .work-image--contain}
-![](../assets/work/contextsec-decision-flow.svg){fig-alt="ContextSec 確定性產品安全決策流程"}
-:::
-::: {.work-copy}
-<div class="work-meta"><span>AI 安全 · research preview</span><span>2026</span></div>
-
-### ContextSec
-
-面向 AI 程式代理的確定性產品安全決策層。系統會將有界的儲存庫證據轉化為明確的產品風險輪廓，只組合實際適用的控制項，並產生具可重現發布閘門語義的 Control Evaluation Ledger。
-
-<p class="work-links"><a href="https://github.com/niansia/ContextSec">程式碼</a><span>/</span><a href="https://github.com/niansia/ContextSec/blob/main/docs/architecture.md">架構說明</a></p>
-:::
-:::
-
-::: {.work-entry}
-::: {.work-image .work-image--contain}
-![](../assets/work/ai-repo-gardener-demo.gif){fig-alt="AI Repo Gardener 證據導向儲存庫分析示範"}
-:::
-::: {.work-copy}
-<div class="work-meta"><span>儲存庫分析 · public alpha</span><span>2026</span></div>
-
-### AI Repo Gardener
-
-面向 AI 編輯 Python 儲存庫的確定性靜態分析工具與可攜式 Agent Skill。系統結合匯入可達性、Git 時序與正規化 AST 證據，將薄弱判斷限制為僅供審查，並在刪除前要求經審閱且綁定雜湊的計畫與隔離驗證。
-
-<p class="work-links"><a href="https://github.com/niansia/ai-repo-gardener">程式碼</a><span>/</span><a href="https://github.com/niansia/ai-repo-gardener/blob/main/benchmarks/safety-benchmark.md">安全基準</a></p>
-:::
-:::
-
-::: {.compact-work}
-<div><span>模型發布證據 · pre-alpha</span><h3>Merriv</h3><p>廠商中立的模型發布證據層，將確切模型產物、配對評估、統計政策、來源資訊與回歸起點綁定為可攜式 Model Change Report。</p><a href="https://github.com/niansia/Merriv">程式碼 ↗</a></div>
-<div><span>電腦視覺 · public alpha</span><h3>ChromaRecover</h3><p>以本機運算為核心的工具，用於還原由細微色彩差異承載的空間結構。系統保留可稽核產物，並在證據不足時選擇不作判定。</p><a href="https://github.com/niansia/ChromaRecover">程式碼 ↗</a></div>
-:::
-
-<p class="section-more"><a href="/zh-tw/work/">查看分類作品集 →</a></p>
 :::
 :::
 
