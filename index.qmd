@@ -23,7 +23,7 @@ I graduated in 2026 with a degree in Computer Science from **Yuan Ze University*
 
 I am especially interested in how evidence is collected, how reasoning fails, how uncertainty is communicated, and how experiments can be reproduced by other researchers.
 
-<p class="profile-links"><a href="mailto:wilbur930202@gmail.com">Email</a><span>/</span><a href="https://github.com/niansia">GitHub</a><span>/</span><a href="#work">Selected work</a></p>
+<p class="profile-links"><a href="mailto:wilbur930202@gmail.com">Email</a><span>/</span><a href="https://github.com/niansia">GitHub</a><span>/</span><a href="/work/">Portfolio</a></p>
 :::
 
 ::: {.intro-side}
@@ -44,7 +44,6 @@ I am especially interested in how evidence is collected, how reasoning fails, ho
 
 ::: {.section-block #research}
 ::: {.section-rail}
-<span>01</span>
 <h2>Research areas</h2>
 :::
 
@@ -57,7 +56,7 @@ I am especially interested in how evidence is collected, how reasoning fails, ho
 <div>
 <h3>AI &amp; multimodal security</h3>
 <p>How can visual and multimodal AI systems remain secure, robust, and auditable under adversarial inputs, weak evidence, and real-world uncertainty?</p>
-<p class="keywords">Security · robustness · adversarial / failure analysis · content integrity · trustworthy evaluation</p>
+<p class="keywords">Security / robustness / adversarial and failure analysis / content integrity / trustworthy evaluation</p>
 </div>
 :::
 
@@ -66,7 +65,7 @@ I am especially interested in how evidence is collected, how reasoning fails, ho
 <div>
 <h3>Vision &amp; multimodal intelligence</h3>
 <p>How can computer vision and vision-language systems preserve visual evidence, reason across modalities and time, and be evaluated for grounding rather than fluency alone?</p>
-<p class="keywords">Computer vision · VLMs · multimodal reasoning · memory · evaluation</p>
+<p class="keywords">Computer vision / VLMs / multimodal reasoning / memory / evaluation</p>
 </div>
 :::
 :::
@@ -79,67 +78,51 @@ I am especially interested in how evidence is collected, how reasoning fails, ho
 
 ::: {.section-block #work}
 ::: {.section-rail}
-<span>02</span>
 <h2>Selected work</h2>
 :::
 
 ::: {.section-content}
 ::: {.work-entry}
 ::: {.work-image .work-image--contain}
-![](assets/work/merriv-release-evidence-flow.svg){fig-alt="Merriv release evidence architecture"}
+![](assets/work/contextsec-decision-flow.svg){fig-alt="ContextSec deterministic product-security decision flow"}
 :::
 ::: {.work-copy}
-<div class="work-meta"><span>Model release infrastructure · pre-alpha</span><span>2026</span></div>
+<div class="work-meta"><span>AI security · research preview</span><span>2026</span></div>
 
-### Merriv
+### ContextSec
 
-A vendor-neutral release-evidence layer for deployable AI models, currently in pre-alpha. It binds exact artifacts, paired evaluation, statistical policy, provenance, and regression onset into a portable Model Change Report that can be independently checked before promotion.
+A deterministic product-security decision layer for AI coding agents. It turns bounded repository evidence into an explicit product-risk profile, composes only applicable controls, and produces a Control Evaluation Ledger with reproducible release-gate semantics.
 
-<p class="work-links"><a href="https://github.com/niansia/Merriv">Code</a><span>/</span><a href="https://github.com/niansia/Merriv/blob/main/docs/release-evidence-case-study.md">Case study</a></p>
+<p class="work-links"><a href="https://github.com/niansia/ContextSec">Code</a><span>/</span><a href="https://github.com/niansia/ContextSec/blob/main/docs/architecture.md">Architecture</a></p>
 :::
 :::
 
 ::: {.work-entry}
 ::: {.work-image .work-image--contain}
-![](assets/work/chromarecover-architecture.png){fig-alt="ChromaRecover evidence-first computer vision architecture"}
+![](assets/work/ai-repo-gardener-demo.gif){fig-alt="AI Repo Gardener evidence-backed repository analysis demo"}
 :::
 ::: {.work-copy}
-<div class="work-meta"><span>Computer vision tool · public alpha</span><span>2026</span></div>
+<div class="work-meta"><span>Repository analysis · public alpha</span><span>2026</span></div>
 
-### ChromaRecover
+### AI Repo Gardener
 
-A local-first Python toolkit for recovering spatial structure carried by subtle color differences. It compares competing chromatic hypotheses, preserves masks, overlays, quality signals and provenance, and returns an uncertain or retry status instead of forcing a label when evidence is weak.
+A deterministic static-analysis tool and portable Agent Skill for AI-edited Python repositories. It combines import reachability, Git chronology, and normalized-AST evidence, keeps weak findings review-only, and requires a reviewed, hash-bound plan plus isolated validation before deletion.
 
-<p class="work-links"><a href="https://github.com/niansia/ChromaRecover">Code</a><span>/</span><a href="https://github.com/niansia/ChromaRecover/blob/main/docs/algorithm.md">Algorithm notes</a></p>
+<p class="work-links"><a href="https://github.com/niansia/ai-repo-gardener">Code</a><span>/</span><a href="https://github.com/niansia/ai-repo-gardener/blob/main/benchmarks/safety-benchmark.md">Safety benchmark</a></p>
 :::
 :::
 
-::: {.work-entry}
-::: {.work-image}
-![](assets/work/noveltyaudit-architecture.png){fig-alt="NoveltyAudit evidence pipeline and citation-graph architecture"}
-:::
-::: {.work-copy}
-<div class="work-meta"><span>Research tool</span><span>2026</span></div>
-
-### NoveltyAudit
-
-An evidence-first agent skill for adversarial scholarly novelty audits. It decomposes claims, searches for minimal prior sets, applies historical cutoffs, and records bridge-dependent prior-work arguments.
-
-<p class="work-links"><a href="https://github.com/niansia/NoveltyAudit">Code</a><span>/</span><a href="https://github.com/niansia/NoveltyAudit#readme">Documentation</a></p>
-:::
+::: {.compact-work}
+<div><span>Model release evidence · pre-alpha</span><h3>Merriv</h3><p>A vendor-neutral evidence layer that binds exact model artifacts, paired evaluation, statistical policy, provenance, and regression onset into a portable Model Change Report.</p><a href="https://github.com/niansia/Merriv">Code ↗</a></div>
+<div><span>Computer vision · public alpha</span><h3>ChromaRecover</h3><p>A local-first toolkit for recovering spatial structure carried by subtle color differences. It preserves auditable artifacts and abstains when evidence is weak.</p><a href="https://github.com/niansia/ChromaRecover">Code ↗</a></div>
 :::
 
-::: {.compact-work .compact-work--single}
-<div><span>Research workflow · early alpha</span><h3>Research Meeting Coach</h3><p>An evidence-grounded Agent Skill that turns raw research progress into decision-ready advisor meetings while keeping claims within the supplied evidence.</p><a href="https://github.com/niansia/research-meeting-coach">Code ↗</a></div>
-:::
-
-<p class="section-more"><a href="https://github.com/niansia?tab=repositories">All repositories →</a></p>
+<p class="section-more"><a href="/work/">View the categorized portfolio →</a></p>
 :::
 :::
 
 ::: {.section-block .last-section #contact}
 ::: {.section-rail}
-<span>03</span>
 <h2>Contact</h2>
 :::
 
