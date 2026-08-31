@@ -1,7 +1,7 @@
 ---
 title: "个人作品集 | Niansia"
 pagetitle: "个人作品集 | Niansia"
-description: "按研究问题分类的公开作品集，涵盖 AI 安全、可靠模型发布、代码仓库分析、计算机视觉与研究工具。"
+description: "按研究问题分类的公开作品集，涵盖系统可靠性、AI 安全、模型发布、代码仓库分析、计算机视觉与研究工具。"
 lang: zh-CN
 page-layout: full
 title-block-style: none
@@ -22,6 +22,19 @@ format:
 :::
 
 ```{=html}
+<section class="portfolio-group" id="systems-reliability">
+  <header class="portfolio-group__header"><h2>系统可靠性与失效证据</h2><p>用于复现底层系统失效，同时保留精确识别、来源信息与可独立检查证据的研究基础设施。</p></header>
+  <div class="portfolio-grid portfolio-grid--single">
+    <article class="portfolio-card portfolio-card--core">
+      <div class="portfolio-card__meta"><span>系统可靠性</span><span>证据冻结</span></div>
+      <h3><a href="https://github.com/niansia/KCrashLab">KCrashLab</a></h3>
+      <p>以模拟为优先的 Windows 驱动程序可靠性研究平台，用于执行确定且可复现的实验。系统会规范化案例、续跑中断的实验、最小化保留精确签名的触发条件，并生成可供独立验证的证据包。</p>
+      <p class="portfolio-proof"><strong>公开证据</strong> Canonical Case IR、种子化调度、append-only SQLite journal、精确签名、3/3 模拟重放、G3、E1、E2 与最小化记录、语义验证，以及跨平台 CI。</p>
+      <p class="portfolio-card__links"><a href="https://github.com/niansia/KCrashLab">代码</a><span>/</span><a href="https://github.com/niansia/KCrashLab/blob/main/docs/research-claims.md">研究主张账册</a></p>
+    </article>
+  </div>
+</section>
+
 <section class="portfolio-group" id="reliable-ai">
   <header class="portfolio-group__header"><h2>AI 安全与可靠发布</h2><p>让产品风险、模型变更与发布决策变得明确，并可由他人独立检查的系统。</p></header>
   <div class="portfolio-grid">
@@ -44,7 +57,7 @@ format:
 
 <section class="portfolio-group" id="repository-reasoning">
   <header class="portfolio-group__header"><h2>代码仓库与研究推理</h2><p>以可检查证据、明确审查边界与可复现中间产物约束自动化的工具。</p></header>
-  <div class="portfolio-grid portfolio-grid--three">
+  <div class="portfolio-grid">
     <article class="portfolio-card portfolio-card--core">
       <div class="portfolio-card__meta"><span>代码仓库分析</span><span>Public alpha</span></div>
       <h3><a href="https://github.com/niansia/ai-repo-gardener">AI Repo Gardener</a></h3>
@@ -57,12 +70,6 @@ format:
       <h3><a href="https://github.com/niansia/NoveltyAudit">NoveltyAudit</a></h3>
       <p>用于对抗式学术新颖性审计的证据导向工具，包含研究主张拆解、历史截止时间、最小既有研究集合与 bridge-aware 既有工作分析。</p>
       <p class="portfolio-card__links"><a href="https://github.com/niansia/NoveltyAudit">代码</a><span>/</span><a href="https://github.com/niansia/NoveltyAudit#readme">说明文档</a></p>
-    </article>
-    <article class="portfolio-card portfolio-card--core">
-      <div class="portfolio-card__meta"><span>研究工作流程</span><span>Early alpha</span></div>
-      <h3><a href="https://github.com/niansia/research-meeting-coach">Research Meeting Coach</a></h3>
-      <p>以证据为核心的 Agent Skill，可将零散研究进展整理成导师能够据此决策的会议内容，并限制每项研究主张不超出所提供的证据。</p>
-      <p class="portfolio-card__links"><a href="https://github.com/niansia/research-meeting-coach">代码</a><span>/</span><a href="https://github.com/niansia/research-meeting-coach#readme">说明文档</a></p>
     </article>
   </div>
 </section>

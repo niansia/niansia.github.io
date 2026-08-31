@@ -1,7 +1,7 @@
 ---
 title: "Portfolio | Niansia"
 pagetitle: "Portfolio | Niansia"
-description: "A categorized portfolio of public work in AI security, reliable model release, repository analysis, computer vision, and research tooling."
+description: "A categorized portfolio of public work in systems reliability, AI security, model release, repository analysis, computer vision, and research tooling."
 lang: en
 page-layout: full
 title-block-style: none
@@ -22,6 +22,19 @@ format:
 :::
 
 ```{=html}
+<section class="portfolio-group" id="systems-reliability">
+  <header class="portfolio-group__header"><h2>Systems reliability and failure evidence</h2><p>Research infrastructure for reproducing low-level failures while preserving exact identity, provenance, and independently checkable evidence.</p></header>
+  <div class="portfolio-grid portfolio-grid--single">
+    <article class="portfolio-card portfolio-card--core">
+      <div class="portfolio-card__meta"><span>Systems reliability</span><span>Evidence freeze</span></div>
+      <h3><a href="https://github.com/niansia/KCrashLab">KCrashLab</a></h3>
+      <p>A simulation-first research platform for deterministic, reproducible Windows driver reliability experiments. It normalizes cases, resumes interrupted campaigns, minimizes exact-signature triggers, and produces independently verifiable evidence bundles.</p>
+      <p class="portfolio-proof"><strong>Evidence surfaced</strong> Canonical Case IR, seeded scheduling, an append-only SQLite journal, exact signatures, 3/3 simulated replay, recorded G3, E1, E2, and minimization artifacts, semantic verification, and multi-platform CI.</p>
+      <p class="portfolio-card__links"><a href="https://github.com/niansia/KCrashLab">Code</a><span>/</span><a href="https://github.com/niansia/KCrashLab/blob/main/docs/research-claims.md">Claims ledger</a></p>
+    </article>
+  </div>
+</section>
+
 <section class="portfolio-group" id="reliable-ai">
   <header class="portfolio-group__header"><h2>AI security and reliable releases</h2><p>Systems that make product risk, model change, and release decisions explicit and independently checkable.</p></header>
   <div class="portfolio-grid">
@@ -44,7 +57,7 @@ format:
 
 <section class="portfolio-group" id="repository-reasoning">
   <header class="portfolio-group__header"><h2>Repository and research reasoning</h2><p>Tools that constrain automation with inspectable evidence, explicit review boundaries, and reproducible intermediate artifacts.</p></header>
-  <div class="portfolio-grid portfolio-grid--three">
+  <div class="portfolio-grid">
     <article class="portfolio-card portfolio-card--core">
       <div class="portfolio-card__meta"><span>Repository analysis</span><span>Public alpha</span></div>
       <h3><a href="https://github.com/niansia/ai-repo-gardener">AI Repo Gardener</a></h3>
@@ -57,12 +70,6 @@ format:
       <h3><a href="https://github.com/niansia/NoveltyAudit">NoveltyAudit</a></h3>
       <p>Evidence-first tooling for adversarial scholarly novelty audits, including claim decomposition, historical cutoffs, minimal prior sets, and bridge-aware prior-work analysis.</p>
       <p class="portfolio-card__links"><a href="https://github.com/niansia/NoveltyAudit">Code</a><span>/</span><a href="https://github.com/niansia/NoveltyAudit#readme">Documentation</a></p>
-    </article>
-    <article class="portfolio-card portfolio-card--core">
-      <div class="portfolio-card__meta"><span>Research workflow</span><span>Early alpha</span></div>
-      <h3><a href="https://github.com/niansia/research-meeting-coach">Research Meeting Coach</a></h3>
-      <p>An evidence-grounded Agent Skill that turns raw research progress into decision-ready advisor meetings while keeping every claim within the supplied evidence.</p>
-      <p class="portfolio-card__links"><a href="https://github.com/niansia/research-meeting-coach">Code</a><span>/</span><a href="https://github.com/niansia/research-meeting-coach#readme">Documentation</a></p>
     </article>
   </div>
 </section>
