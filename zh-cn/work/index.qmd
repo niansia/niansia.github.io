@@ -1,7 +1,7 @@
 ---
 title: "个人作品集 | Niansia"
 pagetitle: "个人作品集 | Niansia"
-description: "按研究问题分类的公开作品集，涵盖系统可靠性、AI 安全、模型发布、代理治理、代码仓库分析与计算机视觉。"
+description: "完整收录八项公开作品，涵盖系统可靠性、AI 安全、代理治理、代码仓库分析、学术推理、研究工作流程与计算机视觉。"
 lang: zh-CN
 page-layout: full
 title-block-style: none
@@ -14,9 +14,9 @@ format:
 ::: {.portfolio-intro}
 <p class="micro-label">个人作品集 / 公开项目</p>
 
-# 按研究问题整理的个人作品集。
+# 按研究问题整理的公开作品。
 
-<p class="portfolio-lead">六项公开作品，按所处理的研究问题与可检查证据分类。</p>
+<p class="portfolio-lead">八项公开作品，按所处理的研究问题与可检查证据分类。</p>
 
 <p class="profile-links"><a href="/zh-cn/">个人档案</a><span>/</span><a href="https://github.com/niansia?tab=repositories">所有代码仓库</a></p>
 :::
@@ -71,6 +71,26 @@ format:
       <p>可安装的运行环境、MCP 服务器与可移植 Agent Skill，为编程代理提供持久的任务、变更、审查与完成边界。系统将验证绑定当前工作树、保存项目决策、阻止未授权修改，并在确定性的 SHIPPABLE gate 结束审查。</p>
       <p class="portfolio-proof"><strong>公开证据</strong> 116 项测试、Windows、macOS 与 Linux 上的 Python 3.10 和 3.13 CI、7 个附校验和的版本、确定性边界与机制基准，以及公开研究评估计划。历史 agentic A/B 结果仍保留，但已明确标记为 superseded。</p>
       <p class="portfolio-card__links"><a href="https://github.com/niansia/PSG">代码</a><span>/</span><a href="https://github.com/niansia/PSG/blob/main/research/evaluation-plan.md">评估计划</a></p>
+    </article>
+  </div>
+</section>
+
+<section class="portfolio-group" id="scholarly-workflows">
+  <header class="portfolio-group__header"><h2>学术推理与研究工作流程</h2><p>用于检验学术新颖性主张，并将尚未完成的研究进展整理为证据有界之导师会议的研究工具。</p></header>
+  <div class="portfolio-grid">
+    <article class="portfolio-card portfolio-card--core">
+      <div class="portfolio-card__meta"><span>学术推理</span><span>Alpha</span></div>
+      <h3><a href="https://github.com/niansia/NoveltyAudit">NoveltyAudit</a></h3>
+      <p>以证据为优先的学术新颖性对抗审查 Agent Skill。系统在检索前冻结主张、找出 Minimal Prior Sets、应用历史时间截点、检验桥接证据，并记录搜索未能建立的部分。</p>
+      <p class="portfolio-proof"><strong>公开证据</strong> 主张图、跨供应商规范化记录、证据绑定既有研究集合、时间状态、引文图桥接、确定性报告不变量、三类公开案例研究，以及 82 条审稿人标注案例的探索性测量。</p>
+      <p class="portfolio-card__links"><a href="https://github.com/niansia/NoveltyAudit">代码</a><span>/</span><a href="https://github.com/niansia/NoveltyAudit/blob/main/docs/empirical-status.md">实证状态</a></p>
+    </article>
+    <article class="portfolio-card portfolio-card--core">
+      <div class="portfolio-card__meta"><span>研究工作流程</span><span>Early alpha</span></div>
+      <h3><a href="https://github.com/niansia/research-meeting-coach">Research Meeting Coach</a></h3>
+      <p>以证据为基础的 Agent Skill，将原始研究进展整理为可供导师决策的会议内容。系统区分观察与解释、延续尚未完成的请求，并在不虚构完成状态的前提下提出一项导师可回答的决策。</p>
+      <p class="portfolio-proof"><strong>公开证据</strong> 可移植 Research Meeting State 验证、来源与数值依据检查、15 个行为与对抗式案例定义、8 个路由冲突案例、纵向留出结构，以及包含 6 个任务的跨平台 CI。</p>
+      <p class="portfolio-card__links"><a href="https://github.com/niansia/research-meeting-coach">代码</a><span>/</span><a href="https://github.com/niansia/research-meeting-coach/blob/main/AUDIT_REPORT.md">证据审计</a></p>
     </article>
   </div>
 </section>
