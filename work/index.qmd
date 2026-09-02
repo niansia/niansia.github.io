@@ -1,7 +1,7 @@
 ---
 title: "Portfolio | Niansia"
 pagetitle: "Portfolio | Niansia"
-description: "A categorized portfolio of public work in systems reliability, AI security, model release, agent governance, repository analysis, and computer vision."
+description: "A complete eight-project portfolio spanning systems reliability, AI security, agent governance, repository analysis, scholarly reasoning, research workflow, and computer vision."
 lang: en
 page-layout: full
 title-block-style: none
@@ -14,9 +14,9 @@ format:
 ::: {.portfolio-intro}
 <p class="micro-label">PERSONAL PORTFOLIO / PUBLIC WORK</p>
 
-# Selected work, organized by research question.
+# Public work, organized by research question.
 
-<p class="portfolio-lead">Six public projects, grouped by the research problem they address and the evidence they expose.</p>
+<p class="portfolio-lead">Eight public projects, grouped by the research problem they address and the evidence they expose.</p>
 
 <p class="profile-links"><a href="/">Profile</a><span>/</span><a href="https://github.com/niansia?tab=repositories">All repositories</a></p>
 :::
@@ -71,6 +71,26 @@ format:
       <p>An installable runtime, MCP server, and portable Agent Skill that gives coding agents persistent task, mutation, review, and completion boundaries. It binds verification to the current worktree, preserves project decisions, blocks unauthorized edits, and ends review at a deterministic SHIPPABLE gate.</p>
       <p class="portfolio-proof"><strong>Evidence surfaced</strong> 116 collected tests, Windows, macOS, and Linux CI across Python 3.10 and 3.13, seven versioned releases with checksums, deterministic boundary and mechanics benchmarks, and a published research evaluation plan. The historical agentic A/B result is retained but explicitly marked superseded.</p>
       <p class="portfolio-card__links"><a href="https://github.com/niansia/PSG">Code</a><span>/</span><a href="https://github.com/niansia/PSG/blob/main/research/evaluation-plan.md">Evaluation plan</a></p>
+    </article>
+  </div>
+</section>
+
+<section class="portfolio-group" id="scholarly-workflows">
+  <header class="portfolio-group__header"><h2>Scholarly reasoning and research workflow</h2><p>Research tools for stress-testing novelty claims and turning incomplete progress into evidence-bounded advisor conversations.</p></header>
+  <div class="portfolio-grid">
+    <article class="portfolio-card portfolio-card--core">
+      <div class="portfolio-card__meta"><span>Scholarly reasoning</span><span>Alpha</span></div>
+      <h3><a href="https://github.com/niansia/NoveltyAudit">NoveltyAudit</a></h3>
+      <p>An evidence-first Agent Skill for adversarial scholarly novelty audits. It freezes claims before retrieval, identifies Minimal Prior Sets, applies historical cutoffs, tests bridge evidence, and records what the search could not establish.</p>
+      <p class="portfolio-proof"><strong>Evidence surfaced</strong> Claim maps, provider-normalized records, evidence-bound prior sets, temporal states, citation-graph bridges, deterministic report invariants, three public case-study classes, and exploratory measurements from 82 reviewer-annotated cases.</p>
+      <p class="portfolio-card__links"><a href="https://github.com/niansia/NoveltyAudit">Code</a><span>/</span><a href="https://github.com/niansia/NoveltyAudit/blob/main/docs/empirical-status.md">Empirical status</a></p>
+    </article>
+    <article class="portfolio-card portfolio-card--core">
+      <div class="portfolio-card__meta"><span>Research workflow</span><span>Early alpha</span></div>
+      <h3><a href="https://github.com/niansia/research-meeting-coach">Research Meeting Coach</a></h3>
+      <p>An evidence-grounded Agent Skill that turns raw research progress into a decision-ready advisor meeting. It separates observations from interpretation, carries unresolved requests forward, and frames one advisor-answerable decision without inventing completion.</p>
+      <p class="portfolio-proof"><strong>Evidence surfaced</strong> Portable Research Meeting State validation, source and numeric grounding checks, 15 behavioral and adversarial case definitions, eight routing-collision cases, longitudinal holdout structure, and six-job cross-platform CI.</p>
+      <p class="portfolio-card__links"><a href="https://github.com/niansia/research-meeting-coach">Code</a><span>/</span><a href="https://github.com/niansia/research-meeting-coach/blob/main/AUDIT_REPORT.md">Evidence audit</a></p>
     </article>
   </div>
 </section>
