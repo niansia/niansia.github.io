@@ -1,7 +1,7 @@
 ---
 title: "个人作品集 | Niansia"
 pagetitle: "个人作品集 | Niansia"
-description: "按研究问题分类的公开作品集，涵盖系统可靠性、AI 安全、模型发布、代码仓库分析、计算机视觉与研究工具。"
+description: "按研究问题分类的公开作品集，涵盖系统可靠性、AI 安全、模型发布、代理治理、代码仓库分析与计算机视觉。"
 lang: zh-CN
 page-layout: full
 title-block-style: none
@@ -56,7 +56,7 @@ format:
 </section>
 
 <section class="portfolio-group" id="repository-reasoning">
-  <header class="portfolio-group__header"><h2>代码仓库与研究推理</h2><p>以可检查证据、明确审查边界与可复现中间产物约束自动化的工具。</p></header>
+  <header class="portfolio-group__header"><h2>代码仓库分析与代理治理</h2><p>以可检查证据、明确变更权限与可复现中间产物，让自动化维持在有界任务内的系统。</p></header>
   <div class="portfolio-grid">
     <article class="portfolio-card portfolio-card--core">
       <div class="portfolio-card__meta"><span>代码仓库分析</span><span>Public alpha</span></div>
@@ -66,10 +66,11 @@ format:
       <p class="portfolio-card__links"><a href="https://github.com/niansia/ai-repo-gardener">代码</a><span>/</span><a href="https://github.com/niansia/ai-repo-gardener/blob/main/benchmarks/safety-benchmark.md">安全基准</a></p>
     </article>
     <article class="portfolio-card portfolio-card--core">
-      <div class="portfolio-card__meta"><span>学术推理</span><span>研究工具</span></div>
-      <h3><a href="https://github.com/niansia/NoveltyAudit">NoveltyAudit</a></h3>
-      <p>用于对抗式学术新颖性审计的证据导向工具，包含研究主张拆解、历史截止时间、最小既有研究集合与 bridge-aware 既有工作分析。</p>
-      <p class="portfolio-card__links"><a href="https://github.com/niansia/NoveltyAudit">代码</a><span>/</span><a href="https://github.com/niansia/NoveltyAudit#readme">说明文档</a></p>
+      <div class="portfolio-card__meta"><span>代理治理</span><span>v1.1.4</span></div>
+      <h3><a href="https://github.com/niansia/PSG">PSG - Project State Graph</a></h3>
+      <p>可安装的运行环境、MCP 服务器与可移植 Agent Skill，为编程代理提供持久的任务、变更、审查与完成边界。系统将验证绑定当前工作树、保存项目决策、阻止未授权修改，并在确定性的 SHIPPABLE gate 结束审查。</p>
+      <p class="portfolio-proof"><strong>公开证据</strong> 116 项测试、Windows、macOS 与 Linux 上的 Python 3.10 和 3.13 CI、7 个附校验和的版本、确定性边界与机制基准，以及公开研究评估计划。历史 agentic A/B 结果仍保留，但已明确标记为 superseded。</p>
+      <p class="portfolio-card__links"><a href="https://github.com/niansia/PSG">代码</a><span>/</span><a href="https://github.com/niansia/PSG/blob/main/research/evaluation-plan.md">评估计划</a></p>
     </article>
   </div>
 </section>
