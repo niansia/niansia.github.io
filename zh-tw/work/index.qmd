@@ -1,7 +1,7 @@
 ---
 title: "個人作品集 | Niansia"
 pagetitle: "個人作品集 | Niansia"
-description: "依研究問題分類的公開作品集，涵蓋系統可靠性、AI 安全、模型發布、儲存庫分析、電腦視覺與研究工具。"
+description: "依研究問題分類的公開作品集，涵蓋系統可靠性、AI 安全、模型發布、代理治理、儲存庫分析與電腦視覺。"
 lang: zh-TW
 page-layout: full
 title-block-style: none
@@ -56,7 +56,7 @@ format:
 </section>
 
 <section class="portfolio-group" id="repository-reasoning">
-  <header class="portfolio-group__header"><h2>儲存庫與研究推理</h2><p>以可檢視證據、明確審查邊界與可重現中間產物約束自動化的工具。</p></header>
+  <header class="portfolio-group__header"><h2>儲存庫分析與代理治理</h2><p>以可檢視證據、明確變更權限與可重現中間產物，讓自動化維持在有界任務內的系統。</p></header>
   <div class="portfolio-grid">
     <article class="portfolio-card portfolio-card--core">
       <div class="portfolio-card__meta"><span>儲存庫分析</span><span>Public alpha</span></div>
@@ -66,10 +66,11 @@ format:
       <p class="portfolio-card__links"><a href="https://github.com/niansia/ai-repo-gardener">程式碼</a><span>/</span><a href="https://github.com/niansia/ai-repo-gardener/blob/main/benchmarks/safety-benchmark.md">安全基準</a></p>
     </article>
     <article class="portfolio-card portfolio-card--core">
-      <div class="portfolio-card__meta"><span>學術推理</span><span>研究工具</span></div>
-      <h3><a href="https://github.com/niansia/NoveltyAudit">NoveltyAudit</a></h3>
-      <p>用於對抗式學術新穎性稽核的證據導向工具，包含研究主張拆解、歷史截止時間、最小先前研究集合與 bridge-aware 先前工作分析。</p>
-      <p class="portfolio-card__links"><a href="https://github.com/niansia/NoveltyAudit">程式碼</a><span>/</span><a href="https://github.com/niansia/NoveltyAudit#readme">說明文件</a></p>
+      <div class="portfolio-card__meta"><span>代理治理</span><span>v1.1.4</span></div>
+      <h3><a href="https://github.com/niansia/PSG">PSG - Project State Graph</a></h3>
+      <p>可安裝的執行環境、MCP 伺服器與可攜式 Agent Skill，為程式代理提供持久的任務、變更、審查與完成邊界。系統將驗證綁定目前工作樹、保存專案決策、阻擋未授權修改，並在確定性的 SHIPPABLE gate 結束審查。</p>
+      <p class="portfolio-proof"><strong>公開證據</strong> 116 項測試、Windows、macOS 與 Linux 上的 Python 3.10 和 3.13 CI、7 個附校驗和的版本、確定性邊界與機制基準，以及公開研究評估計畫。歷史 agentic A/B 結果仍保留，但已明確標示為 superseded。</p>
+      <p class="portfolio-card__links"><a href="https://github.com/niansia/PSG">程式碼</a><span>/</span><a href="https://github.com/niansia/PSG/blob/main/research/evaluation-plan.md">評估計畫</a></p>
     </article>
   </div>
 </section>
