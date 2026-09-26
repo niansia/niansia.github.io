@@ -9,7 +9,7 @@
   const MODEL_ID = 'yuki-qwen2.5-1.5b-q4f16_1';
   const MODEL_LIB = 'https://raw.githubusercontent.com/mlc-ai/binary-mlc-llm-libs/main/web-llm-models/v0_2_84/base/Qwen2-1.5B-Instruct-q4f16_1_cs1k-webgpu.wasm';
   // Published weights; a local override helps testing before the Hugging Face upload.
-  const PUBLISHED_URL = '';
+  const PUBLISHED_URL = 'https://huggingface.co/niansia/yuki-qwen2.5-1.5b-q4f16_1-MLC';
   const store = key => { try { return localStorage.getItem(key); } catch { return null; } };
   // Local testing only: http://localhost:<port>/?yuki-llm=<weights url> points Yuki at unpublished weights.
   if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) {
