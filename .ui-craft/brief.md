@@ -2,29 +2,31 @@
 
 ## Identity
 
-Niansia is a computer science graduate preparing for graduate study. The site is a formal, research-oriented personal profile rather than an engineering-product landing page.
+Niansia is a computer science researcher and maker of evidence-oriented tools. The site should feel like a friendly, working research lab: curious, technically capable, and careful about claims.
 
 ## Audience
 
-- Graduate admissions reviewers and prospective advisors
-- Researchers and technical collaborators
-- Recruiters for research-oriented roles
+- Researchers and prospective collaborators
+- Graduate advisors and research-oriented recruiters
+- Developers and educators exploring the public projects
 
-## Voice
+## Voice and design
 
-Precise, calm, evidence-aware, and formal in all three languages. Avoid cute phrasing, exaggerated claims, and generic marketing copy.
+- Clear and specific in English, Traditional Chinese, and Simplified Chinese.
+- A cozy dark lab palette with a small animal companion, precise monospaced details, and readable body text.
+- A real keyboard-accessible terminal explorer on each homepage. Arrow keys change selection; Enter opens the selected destination. Typed commands are optional shortcuts.
+- Animation adds character but must not block reading or interaction; reduced-motion visitors get a still mascot image.
+- Public project status and capabilities must match the source repositories.
 
 ## Information architecture
 
-- The homepage contains profile, research interests, application context, and contact information.
-- Public project descriptions live on a separate trilingual Personal Portfolio route linked from the main navigation.
-- The portfolio presents the complete eight-project public research body, grouped by research question rather than repository chronology.
-- Publications remain a separate future section when real papers, posters, or conference results are available.
+- Each language homepage presents profile, interactive exploration, research areas, selected links, and contact.
+- Each language portfolio route contains all nine public projects grouped by the problem they address.
+- GitHub profile highlights are a shorter selection and may differ from the complete website portfolio.
 
 ## Learned constraints
 
-- Do not duplicate project showcases on the homepage and portfolio page.
-- Do not expose raw or escaped HTML in rendered Quarto pages. Use explicit raw HTML fences for nested markup.
-- Keep all visible copy formal in English, Traditional Chinese, and Simplified Chinese.
-- Preserve the editorial paper-like visual language and avoid presentation-scale titles.
-- Keep website portfolio membership independent from GitHub's six pinned-repository limit. GitHub pins are a concise, visually balanced summary; the website remains the complete record of NoveltyAudit, PSG, KCrashLab, ContextSec, AI Repo Gardener, Research Meeting Coach, Merriv, and ChromaRecover.
+- Use explicit raw HTML fences for nested markup inside Quarto pages so HTML is not escaped.
+- Preserve English, Traditional Chinese, and Simplified Chinese route parity.
+- Keep the website's full public record: NoveltyAudit, PSG, KCrashLab, ContextSec, AI Repo Gardener, Research Meeting Coach, Merriv, ChromaRecover, and Taiwan Exam.
+- Taiwan Exam currently supports seven GSAT subjects. CAP and subject-test support remain in development.

@@ -2,29 +2,31 @@
 
 ## Color
 
-- Paper: `#f6f4ef`
-- Ink: `#20211f`
-- Soft ink: `#555852`
-- Faint text: `#81837d`
-- Rule: `#c8c6bd`
-- Blue link: `#244f96`
-- Brick accent: `#a9442e`
+- Night background: `#101820`
+- Surface: `#15242b`
+- Raised surface: `#1b3038`
+- Lines: `#365158`
+- Main text: `#eaf3ee`
+- Secondary text: `#afc5c3`
+- Muted text: `#87a4a2`
+- Single interface accent: `#75d8bf`
+- Accent ink: `#0e2926`
+- Character art alone may use pale yellow and lavender to echo the existing avatar.
 
 ## Type
 
-- Display serif: Newsreader with CJK serif fallbacks
-- Body sans: Noto Sans with CJK system fallbacks
-- Metadata mono: IBM Plex Mono
+- Headings: Nunito with Noto Sans CJK fallbacks
+- Body: Noto Sans with CJK system fallbacks
+- Terminal and metadata: IBM Plex Mono
 
 ## Shape and structure
 
-- Square corners
-- Hairline rules for grouping
-- No card shadows or decorative gradients
-- Asymmetric editorial grids, with long-form rows for supporting work
+- 16px large panels, 12px cards, 8px controls
+- Fine borders and spacing instead of default card shadows
+- A split hero, a functional console, structured research rows, and a project directory
 
 ## Motion
 
-- Low motion intensity
-- Short ease-out image hover only on pointer devices
-- Respect reduced-motion preferences
+- One restrained page entrance and purposeful terminal selection feedback
+- Transform and opacity only for animated CSS properties
+- Reduced-motion image source and CSS fallback

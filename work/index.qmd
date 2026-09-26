@@ -1,7 +1,7 @@
 ---
 title: "Portfolio | Niansia"
 pagetitle: "Portfolio | Niansia"
-description: "A complete eight-project portfolio spanning systems reliability, AI security, agent governance, repository analysis, scholarly reasoning, research workflow, and computer vision."
+description: "A complete nine-project portfolio spanning systems reliability, AI security, agent governance, repository analysis, scholarly reasoning, educational assessment, and computer vision."
 lang: en
 page-layout: full
 title-block-style: none
@@ -12,16 +12,19 @@ format:
 
 ::: {.home-shell .portfolio-shell}
 ::: {.portfolio-intro}
-<p class="micro-label">PERSONAL PORTFOLIO / PUBLIC WORK</p>
+<p class="micro-label">PROJECT DIRECTORY / 09 ENTRIES</p>
 
-# Public work, organized by research question.
+# Projects from the lab.
 
-<p class="portfolio-lead">Eight public projects, grouped by the research problem they address and the evidence they expose.</p>
+<p class="portfolio-lead">Nine public projects, grouped by the questions they explore and the evidence they leave behind.</p>
 
 <p class="profile-links"><a href="/">Profile</a><span>/</span><a href="https://github.com/niansia?tab=repositories">All repositories</a></p>
 :::
 
 ```{=html}
+<nav class="directory-nav" aria-label="Project categories">
+  <a href="#systems-reliability">Systems reliability</a><a href="#reliable-ai">AI security</a><a href="#repository-reasoning">Repository tools</a><a href="#scholarly-workflows">Research workflow</a><a href="#educational-assessment">Education</a><a href="#visual-systems">Computer vision</a>
+</nav>
 <section class="portfolio-group" id="systems-reliability">
   <header class="portfolio-group__header"><h2>Systems reliability and failure evidence</h2><p>Research infrastructure for reproducing low-level failures while preserving exact identity, provenance, and independently checkable evidence.</p></header>
   <div class="portfolio-grid portfolio-grid--single">
@@ -91,6 +94,20 @@ format:
       <p>An evidence-grounded Agent Skill that turns raw research progress into a decision-ready advisor meeting. It separates observations from interpretation, carries unresolved requests forward, and frames one advisor-answerable decision without inventing completion.</p>
       <p class="portfolio-proof"><strong>Evidence surfaced</strong> Portable Research Meeting State validation, source and numeric grounding checks, 15 behavioral and adversarial case definitions, eight routing-collision cases, longitudinal holdout structure, and six-job cross-platform CI.</p>
       <p class="portfolio-card__links"><a href="https://github.com/niansia/research-meeting-coach">Code</a><span>/</span><a href="https://github.com/niansia/research-meeting-coach/blob/main/AUDIT_REPORT.md">Evidence audit</a></p>
+    </article>
+  </div>
+</section>
+
+<section class="portfolio-group" id="educational-assessment">
+  <header class="portfolio-group__header"><h2>Educational assessment tools</h2><p>Tools for producing original practice exams with explicit answer checks and reviewable output.</p></header>
+  <div class="portfolio-grid portfolio-grid--single">
+    <article class="portfolio-card portfolio-card--core portfolio-card--exam">
+      <div class="portfolio-card__meta"><span>Agent Skill</span><span>GSAT seven subjects</span></div>
+      <h3><a href="https://github.com/niansia/taiwan-exam">Taiwan Exam</a></h3>
+      <img class="portfolio-card__visual" src="/assets/work/taiwan-exam-social-preview.png" width="1280" height="640" alt="Taiwan Exam project artwork introducing original GSAT exams and separate question and solution PDFs.">
+      <p>An Agent Skill for creating original Taiwan GSAT practice exams. It checks answers and difficulty, applies official exam layout templates, and delivers separate question and worked-solution PDFs. CAP and subject-test support remain in development.</p>
+      <p class="portfolio-proof"><strong>Evidence surfaced</strong> Subject-specific guidance, source and answer checks, layout validation, exam templates, and public installation instructions.</p>
+      <p class="portfolio-card__links"><a href="https://github.com/niansia/taiwan-exam">Code</a><span>/</span><a href="https://github.com/niansia/taiwan-exam/blob/main/SKILL.md">Skill specification</a></p>
     </article>
   </div>
 </section>

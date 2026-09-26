@@ -1,7 +1,7 @@
 ---
 title: "Niansia | 计算机科学"
 pagetitle: "Niansia | 计算机科学"
-description: "元智大学计算机科学专业毕业生，正在准备申请研究生项目，研究兴趣聚焦 AI 安全、计算机视觉、视觉语言模型与可信赖多模态 AI。"
+description: "Niansia 是阳明交通大学硕士生，关注 AI 安全、计算机视觉、可复现研究与证据导向工具。"
 lang: zh-CN
 page-layout: full
 title-block-style: none
@@ -13,25 +13,47 @@ format:
 ::: {.home-shell}
 ::: {.profile-intro #about}
 ::: {.intro-main}
-<p class="micro-label">个人研究档案 / 2026</p>
+<p class="micro-label"><span class="status-orb" aria-hidden="true"></span> 小小研究室 / PERSONAL LAB</p>
 
 # Niansia
 
-<p class="role-line">计算机科学专业毕业生，正在准备申请研究生项目，研究兴趣聚焦 AI 安全、计算机视觉与视觉语言模型。</p>
+<p class="role-line">AI 安全、计算机视觉，以及以证据为核心的研究工具。</p>
 
-我于 2026 年毕业于**元智大学计算机科学专业**，目前正在准备研究生项目申请，并关注视觉与多模态智能系统的安全性、鲁棒性与推理能力。
+我毕业于**元智大学计算机科学专业**，目前就读**国立阳明交通大学硕士班**，现正休学一年。我关注视觉与多模态系统在证据薄弱或存在不确定性时的安全性、鲁棒性与推理能力。
 
-我尤其重视证据如何取得、推理如何失败、不确定性如何呈现，以及其他研究者能否复现同一项实验。
+我喜欢把研究过程做成可以检查的工具：看得到观察与验证步骤，也能让其他人复现结果。
 
-<p class="profile-links"><a href="mailto:wilbur930202@gmail.com">Email</a><span>/</span><a href="https://github.com/niansia">GitHub</a><span>/</span><a href="/zh-cn/work/">个人作品集</a></p>
+<p class="profile-links"><a class="primary-link" href="/zh-cn/work/">看看全部作品 <span aria-hidden="true">↗</span></a><a href="mailto:wilbur930202@gmail.com">电子邮件</a><a href="https://github.com/niansia">GitHub</a></p>
 :::
 
 ::: {.intro-side}
-<div class="side-note"><span>目前进行</span><p>在准备研究生项目申请的同时，持续探索视觉与多模态 AI 系统的安全性、鲁棒性、评估与推理。</p></div>
-<div class="side-note"><span>欢迎交流</span><p>研究构想、复现性工作、特殊数据集，以及值得深入分析的模型失效案例。</p></div>
-<div class="side-note contact-note"><span>联系方式</span><p><a href="mailto:wilbur930202@gmail.com">wilbur930202@gmail.com</a></p></div>
+<div class="mascot-panel"><picture><source media="(prefers-reduced-motion: reduce)" srcset="/assets/lab/research-lab-still.png"><img src="/assets/lab/research-lab.gif" width="960" height="280" alt="戴蜗牛帽的小猫在研究终端前工作，旁边的证据检查轮流亮起。"></picture><p><strong>认识研究室伙伴</strong><span>好奇、仔细，常常待在键盘前。</span></p></div>
+<div class="side-note"><span>目前探索</span><p>AI 安全、实验复现、视觉推理，以及 <a href="https://github.com/niansia/taiwan-exam">Taiwan Exam</a> 等实用工具。</p></div>
 :::
 :::
+
+```{=html}
+<section class="lab-section" aria-labelledby="lab-title">
+  <div class="lab-section__intro"><p class="micro-label">可以亲手操作的小角落</p><h2 id="lab-title">从终端逛逛研究室。</h2><p>先点输入框，再用方向键选择、按 Enter 打开；也可以输入指令或直接点击。</p></div>
+  <div class="lab-console" data-lab-terminal data-help-message="可用指令：about、research、projects、contact；输入 clear 可重置。" data-unknown-message="找不到指令">
+    <div class="lab-console__bar"><span class="window-dots" aria-hidden="true"><i></i><i></i><i></i></span><span>niansia / lab-console</span><span class="console-state">本地演示</span></div>
+    <div class="lab-console__body">
+      <div class="lab-console__choices">
+        <p class="console-path">niansia@lab:~$ <span data-terminal-command>ls</span><span class="console-cursor" aria-hidden="true">▌</span></p>
+        <nav class="console-options" aria-label="探索网站">
+          <a href="#about" data-terminal-option data-alias="about,profile,关于" data-command="cat about.md" data-summary="认识研究者，以及这些实验和工具背后的想法。"><span class="option-arrow" aria-hidden="true">›</span><span>about.md</span><small>关于我</small></a>
+          <a href="#research" data-terminal-option data-alias="research,interests,研究" data-command="cat research.md" data-summary="看看 AI 安全与多模态推理的研究问题。"><span class="option-arrow" aria-hidden="true">›</span><span>research.md</span><small>研究方向</small></a>
+          <a href="/zh-cn/work/" data-terminal-option data-alias="projects,work,portfolio,作品" data-command="ls projects/" data-summary="浏览九项公开作品，包括 Taiwan Exam。"><span class="option-arrow" aria-hidden="true">›</span><span>projects/</span><small>9 项作品</small></a>
+          <a href="#contact" data-terminal-option data-alias="contact,email,联系" data-command="open contact.txt" data-summary="找到电子邮件，交流值得深入研究的想法。"><span class="option-arrow" aria-hidden="true">›</span><span>contact.txt</span><small>联系方式</small></a>
+        </nav>
+        <label class="console-input-line" for="lab-input-cn"><span aria-hidden="true">$</span><span class="sr-only">输入研究室指令</span><input id="lab-input-cn" data-terminal-input type="text" autocomplete="off" spellcheck="false" aria-describedby="lab-help-cn" placeholder="输入指令，或直接按 Enter"></label>
+      </div>
+      <div class="lab-console__preview"><span class="preview-heading">预览 / 当前选项</span><p data-terminal-output role="status" aria-live="polite">选择一个方向，这里会显示简介。</p><div class="preview-signal" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div></div>
+    </div>
+    <div class="lab-console__foot" id="lab-help-cn"><span><kbd>↑</kbd><kbd>↓</kbd> 选择 <kbd>Enter</kbd> 打开</span><span>Tab 也可以 · <button type="button" data-terminal-focus>聚焦输入框</button></span></div>
+  </div>
+</section>
+```
 
 ::: {.section-block #research}
 ::: {.section-rail}
@@ -54,6 +76,17 @@ format:
 <p class="quiet-note">目前部分研究仍处于开发或评审阶段，因此保持非公开；相关代码、结果与可复现成果将在适当时机发布。</p>
 :::
 :::
+
+```{=html}
+<section class="project-peek" id="projects" aria-labelledby="project-peek-title">
+  <div><p class="micro-label">研究工作桌</p><h2 id="project-peek-title">每个作品都留得下检查线索。</h2><p>完整作品集收录九项公开项目，可继续查看方法、代码与成果证据。</p><a class="text-link" href="/zh-cn/work/">打开作品目录 <span aria-hidden="true">↗</span></a></div>
+  <div class="project-peek__list">
+    <a href="https://github.com/niansia/taiwan-exam"><span>Taiwan Exam</span><small>原创学测模拟考 · Agent Skill</small><span aria-hidden="true">↗</span></a>
+    <a href="https://github.com/niansia/KCrashLab"><span>KCrashLab</span><small>可复现的驱动程序可靠性研究</small><span aria-hidden="true">↗</span></a>
+    <a href="/zh-cn/work/"><span>全部作品</span><small>九项公开研究与工具项目</small><span aria-hidden="true">↗</span></a>
+  </div>
+</section>
+```
 
 ::: {.section-block .last-section #contact}
 ::: {.section-rail}

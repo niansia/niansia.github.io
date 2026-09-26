@@ -1,7 +1,7 @@
 ---
 title: "个人作品集 | Niansia"
 pagetitle: "个人作品集 | Niansia"
-description: "完整收录八项公开作品，涵盖系统可靠性、AI 安全、代理治理、代码仓库分析、学术推理、研究工作流程与计算机视觉。"
+description: "完整收录九项公开作品，涵盖系统可靠性、AI 安全、代理治理、代码仓库分析、学术推理、教育评估与计算机视觉。"
 lang: zh-CN
 page-layout: full
 title-block-style: none
@@ -12,16 +12,19 @@ format:
 
 ::: {.home-shell .portfolio-shell}
 ::: {.portfolio-intro}
-<p class="micro-label">个人作品集 / 公开项目</p>
+<p class="micro-label">作品目录 / 09 项</p>
 
-# 按研究问题整理的公开作品。
+# 研究室的公开作品。
 
-<p class="portfolio-lead">八项公开作品，按所处理的研究问题与可检查证据分类。</p>
+<p class="portfolio-lead">九项公开作品，按探索的问题与留下的可检查证据分类。</p>
 
 <p class="profile-links"><a href="/zh-cn/">个人档案</a><span>/</span><a href="https://github.com/niansia?tab=repositories">所有代码仓库</a></p>
 :::
 
 ```{=html}
+<nav class="directory-nav" aria-label="作品分类">
+  <a href="#systems-reliability">系统可靠性</a><a href="#reliable-ai">AI 安全</a><a href="#repository-reasoning">代码仓库工具</a><a href="#scholarly-workflows">研究工作流程</a><a href="#educational-assessment">教育评估</a><a href="#visual-systems">计算机视觉</a>
+</nav>
 <section class="portfolio-group" id="systems-reliability">
   <header class="portfolio-group__header"><h2>系统可靠性与失效证据</h2><p>用于复现底层系统失效，同时保留精确识别、来源信息与可独立检查证据的研究基础设施。</p></header>
   <div class="portfolio-grid portfolio-grid--single">
@@ -91,6 +94,20 @@ format:
       <p>以证据为基础的 Agent Skill，将原始研究进展整理为可供导师决策的会议内容。系统区分观察与解释、延续尚未完成的请求，并在不虚构完成状态的前提下提出一项导师可回答的决策。</p>
       <p class="portfolio-proof"><strong>公开证据</strong> 可移植 Research Meeting State 验证、来源与数值依据检查、15 个行为与对抗式案例定义、8 个路由冲突案例、纵向留出结构，以及包含 6 个任务的跨平台 CI。</p>
       <p class="portfolio-card__links"><a href="https://github.com/niansia/research-meeting-coach">代码</a><span>/</span><a href="https://github.com/niansia/research-meeting-coach/blob/main/AUDIT_REPORT.md">证据审计</a></p>
+    </article>
+  </div>
+</section>
+
+<section class="portfolio-group" id="educational-assessment">
+  <header class="portfolio-group__header"><h2>教育评估工具</h2><p>通过明确的答案检查与可检查的成果，支持原创模拟考试制作。</p></header>
+  <div class="portfolio-grid portfolio-grid--single">
+    <article class="portfolio-card portfolio-card--core portfolio-card--exam">
+      <div class="portfolio-card__meta"><span>Agent Skill</span><span>学测七科</span></div>
+      <h3><a href="https://github.com/niansia/taiwan-exam">Taiwan Exam</a></h3>
+      <img class="portfolio-card__visual" src="/assets/work/taiwan-exam-social-preview.png" width="1280" height="640" alt="Taiwan Exam 作品主视觉，介绍原创学测模拟考以及分别交付的试题与详解 PDF。">
+      <p>用于生成原创学测模拟考的 Agent Skill。流程包括答案与难度检查、套用正式考试版式，并分别交付试题 PDF 和答案详解 PDF。会考与分科测验仍在制作中。</p>
+      <p class="portfolio-proof"><strong>公开证据</strong> 分科命题指引、来源与答案检查、版式验证、试卷模板，以及公开的安装说明。</p>
+      <p class="portfolio-card__links"><a href="https://github.com/niansia/taiwan-exam">代码</a><span>/</span><a href="https://github.com/niansia/taiwan-exam/blob/main/SKILL.md">Skill 规范</a></p>
     </article>
   </div>
 </section>

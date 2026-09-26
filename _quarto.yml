@@ -3,7 +3,7 @@ project:
   output-dir: _site
 
 website:
-  description: "Computer science graduate preparing for graduate study in AI security, computer vision, vision-language models, and trustworthy multimodal AI."
+  description: "Niansia is an NYCU master's student exploring AI security, computer vision, reproducible research, and evidence-oriented tools."
   site-url: "https://niansia.github.io"
   open-graph: true
   twitter-card: true
@@ -20,7 +20,8 @@ format:
     link-external-newwindow: true
     include-in-header:
       text: |
-        <meta name="theme-color" content="#f4f1e8">
+        <meta name="theme-color" content="#101820">
+        <script src="/assets/js/lab-terminal.js" defer></script>
 
 execute:
   freeze: auto
