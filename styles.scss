@@ -46,6 +46,7 @@ button { cursor: pointer; }
 .page-columns { display: block; }
 main.content { max-width: none !important; margin: 0 !important; padding: 0 !important; }
 h1, h2, h3 { color: var(--text); text-wrap: balance; }
+main.content h2 { padding-bottom: 0; border-bottom: 0 !important; }
 p { text-wrap: pretty; }
 
 .skip-link { position: fixed; z-index: 50; top: 8px; left: 16px; padding: 9px 14px; border-radius: 8px; background: var(--accent); color: var(--accent-ink); transform: translateY(-150%); }
