@@ -85,11 +85,73 @@ window.NIANSIA_COPY = {
   }
 };
 Object.assign(window.NIANSIA_COPY.en, {
-  inlineCommand:'Command in the upper terminal',typeHere:'type a command here',output:'Command output',historyHint:'↑ ↓ history · Tab complete · Enter run',usage:'Usage',noMatches:'No matching projects.',quoteError:'A quote is still open. Close it and try again.',invalid:'Invalid argument.',done:'Command completed.',historyEmpty:'No commands yet.',userSet:'Local display name',trailOn:'Heart trail enabled.',trailOff:'Heart trail disabled.',commandHint:'Try help to discover all 37 commands.',emptyName:'Use a name of 1–24 characters.',commandHelp:'37 commands · help <command> for details'
+  inlineCommand:'Command in the upper terminal',typeHere:'type a command or a question',output:'Command output',historyHint:'↑ ↓ history · Tab complete · Enter run · questions go to Yuki',usage:'Usage',noMatches:'No matching projects.',quoteError:'A quote is still open. Close it and try again.',invalid:'Invalid argument.',done:'Command completed.',historyEmpty:'No commands yet.',userSet:'Local display name',trailOn:'Pointer trail enabled.',trailOff:'Pointer trail disabled.',commandHint:'Try help to discover all {n} commands.',emptyName:'Use a name of 1–24 characters.',commandHelp:'{n} commands · help <command> for details · anything else is answered by Yuki'
 });
 Object.assign(window.NIANSIA_COPY['zh-TW'], {
-  inlineCommand:'上方終端指令',typeHere:'在這裡輸入指令',output:'指令輸出',historyHint:'↑ ↓ 歷史 · Tab 補全 · Enter 執行',usage:'用法',noMatches:'沒有符合的作品。',quoteError:'引號尚未關閉，請補上另一個引號再試一次。',invalid:'參數不正確。',done:'指令執行完成。',historyEmpty:'還沒有指令紀錄。',userSet:'本機顯示暱稱',trailOn:'已開啟愛心拖尾。',trailOff:'已關閉愛心拖尾。',commandHint:'輸入 help，探索全部 37 個指令。',emptyName:'請使用 1–24 個字元的暱稱。',commandHelp:'37 個指令 · help <指令> 查看詳細用法'
+  inlineCommand:'上方終端指令',typeHere:'輸入指令，或直接問問題',output:'指令輸出',historyHint:'↑ ↓ 歷史 · Tab 補全 · Enter 執行 · 問句會交給 Yuki 回答',usage:'用法',noMatches:'沒有符合的作品。',quoteError:'引號尚未關閉，請補上另一個引號再試一次。',invalid:'參數不正確。',done:'指令執行完成。',historyEmpty:'還沒有指令紀錄。',userSet:'本機顯示暱稱',trailOn:'已開啟滑鼠拖尾。',trailOff:'已關閉滑鼠拖尾。',commandHint:'輸入 help，探索全部 {n} 個指令。',emptyName:'請使用 1–24 個字元的暱稱。',commandHelp:'{n} 個指令 · help <指令> 查看用法 · 其他句子會由 Yuki 回答'
 });
 Object.assign(window.NIANSIA_COPY['zh-CN'], {
-  inlineCommand:'上方终端指令',typeHere:'在这里输入指令',output:'指令输出',historyHint:'↑ ↓ 历史 · Tab 补全 · Enter 执行',usage:'用法',noMatches:'没有符合的作品。',quoteError:'引号尚未关闭，请补上另一个引号再试一次。',invalid:'参数不正确。',done:'指令执行完成。',historyEmpty:'还没有指令记录。',userSet:'本地显示昵称',trailOn:'已开启爱心拖尾。',trailOff:'已关闭爱心拖尾。',commandHint:'输入 help，探索全部 37 个指令。',emptyName:'请使用 1–24 个字符的昵称。',commandHelp:'37 个指令 · help <指令> 查看详细用法'
+  inlineCommand:'上方终端指令',typeHere:'输入指令，或直接问问题',output:'指令输出',historyHint:'↑ ↓ 历史 · Tab 补全 · Enter 执行 · 问句会交给 Yuki 回答',usage:'用法',noMatches:'没有符合的作品。',quoteError:'引号尚未关闭，请补上另一个引号再试一次。',invalid:'参数不正确。',done:'指令执行完成。',historyEmpty:'还没有指令记录。',userSet:'本地显示昵称',trailOn:'已开启鼠标拖尾。',trailOff:'已关闭鼠标拖尾。',commandHint:'输入 help，探索全部 {n} 个指令。',emptyName:'请使用 1–24 个字符的昵称。',commandHelp:'{n} 个指令 · help <指令> 查看用法 · 其他句子会由 Yuki 回答'
+});
+/* Desktop pet, styles, window chrome and the chat panel. */
+Object.assign(window.NIANSIA_COPY.en, {
+  theme:'Toggle light / dark', style:'Page style', themeNames:{light:'Porcelain',dark:'Ink',sakura:'Sakura',matcha:'Matcha',retro:'Retro CRT'},
+  winClose:'Nice try — this terminal can’t be closed. Yuki lives here!', winMin:'Minimized. Click the title bar to restore.', winMax:'Focus mode', winRestore:'Restore window',
+  askTitle:'Ask Yuki', askIntro:'A tiny neural network running in your browser answers questions about this portfolio — it can also switch languages and styles for you.',
+  askChips:['What projects are there?','Recommend a project','Any project about vision?','Sakura style please'],
+  quickTitle:'Try a command', latestCard:'Newest project',
+  petLabel:'Yuki, desktop companion. Enter opens her menu; drag to move her.',
+  petActions:{pat:'Pat',feed:'Feed',play:'Play',lie:'Lie down',sleep:'Sleep',wake:'Wake',trick:'Trick',chat:'Chat',hide:'Hide',show:'Come back'},
+  stats:{food:'Fullness',mood:'Mood',energy:'Energy',level:'Lv'},
+  moodWords:{happy:'Happy',ok:'Relaxed',hungry:'Hungry',sleepy:'Sleepy',lonely:'Lonely',asleep:'Asleep'},
+  chatSubtitle:'Runs a small neural network locally — nothing you type leaves this page.', typing:'Yuki is typing…',
+  brainLoading:'Waking up my brain…', brainOff:'My brain didn’t load, so I’m answering with simple rules.',
+  sizes:{s:'small',m:'medium',l:'large'}, trails:{hearts:'hearts',paws:'paw prints',stars:'stars',petals:'petals',off:'off'},
+  sudo:'Permission denied: only cats have root here. (=^･ω･^=)', unread:'new message'
+});
+Object.assign(window.NIANSIA_COPY['zh-TW'], {
+  theme:'切換淺色／深色', style:'網頁風格', themeNames:{light:'瓷白',dark:'墨夜',sakura:'櫻花',matcha:'抹茶',retro:'復古 CRT'},
+  winClose:'想關掉？沒辦法喔，Yuki 住在這裡！', winMin:'視窗縮小了，點標題列就能還原。', winMax:'專注模式', winRestore:'還原視窗',
+  askTitle:'問問 Yuki', askIntro:'在你的瀏覽器裡運作的小型神經網路，可以回答這個作品集的問題，也能幫你切換語言與網頁風格。',
+  askChips:['他有什麼作品？','推薦一個作品','有做電腦視覺的作品嗎？','換成櫻花風格'],
+  quickTitle:'試試指令', latestCard:'最新作品',
+  petLabel:'桌寵 Yuki。按 Enter 打開選單，也可以拖曳她。',
+  petActions:{pat:'摸摸',feed:'餵食',play:'玩耍',lie:'趴下',sleep:'睡覺',wake:'叫醒',trick:'表演',chat:'聊天',hide:'躲起來',show:'回來'},
+  stats:{food:'飽足',mood:'心情',energy:'體力',level:'Lv'},
+  moodWords:{happy:'開心',ok:'悠閒',hungry:'肚子餓',sleepy:'想睡',lonely:'有點寂寞',asleep:'睡著了'},
+  chatSubtitle:'在本機運作的小型神經網路，你輸入的內容不會離開這個頁面。', typing:'Yuki 正在輸入…',
+  brainLoading:'正在叫醒我的腦袋…', brainOff:'腦袋沒有載入成功，先用簡單規則回答你。',
+  sizes:{s:'小',m:'中',l:'大'}, trails:{hearts:'愛心',paws:'貓掌印',stars:'星星',petals:'花瓣',off:'關閉'},
+  sudo:'權限不足：這裡只有貓咪有 root。(=^･ω･^=)', unread:'則新訊息'
+});
+Object.assign(window.NIANSIA_COPY['zh-CN'], {
+  theme:'切换浅色／深色', style:'网页风格', themeNames:{light:'瓷白',dark:'墨夜',sakura:'樱花',matcha:'抹茶',retro:'复古 CRT'},
+  winClose:'想关掉？没办法哦，Yuki 住在这里！', winMin:'窗口缩小了，点标题栏就能还原。', winMax:'专注模式', winRestore:'还原窗口',
+  askTitle:'问问 Yuki', askIntro:'在你的浏览器里运行的小型神经网络，可以回答这个作品集的问题，也能帮你切换语言与网页风格。',
+  askChips:['他有什么作品？','推荐一个作品','有做计算机视觉的作品吗？','换成樱花风格'],
+  quickTitle:'试试指令', latestCard:'最新作品',
+  petLabel:'桌宠 Yuki。按 Enter 打开菜单，也可以拖动她。',
+  petActions:{pat:'摸摸',feed:'喂食',play:'玩耍',lie:'趴下',sleep:'睡觉',wake:'叫醒',trick:'表演',chat:'聊天',hide:'躲起来',show:'回来'},
+  stats:{food:'饱足',mood:'心情',energy:'体力',level:'Lv'},
+  moodWords:{happy:'开心',ok:'悠闲',hungry:'肚子饿',sleepy:'想睡',lonely:'有点寂寞',asleep:'睡着了'},
+  chatSubtitle:'在本地运行的小型神经网络，你输入的内容不会离开这个页面。', typing:'Yuki 正在输入…',
+  brainLoading:'正在叫醒我的脑袋…', brainOff:'脑袋没有加载成功，先用简单规则回答你。',
+  sizes:{s:'小',m:'中',l:'大'}, trails:{hearts:'爱心',paws:'猫掌印',stars:'星星',petals:'花瓣',off:'关闭'},
+  sudo:'权限不足：这里只有猫咪有 root。(=^･ω･^=)', unread:'条新消息'
+});
+/* Full-size Yuki (on-device 1.5B language model). */
+Object.assign(window.NIANSIA_COPY.en, {
+  llmTitle:'Wake up full Yuki', llmBody:'A 1.5B-parameter language model fine-tuned with QLoRA. She understands longer questions and follow-ups. First load downloads about 1 GB, then stays cached in your browser. Everything runs on your device.',
+  llmWake:'Wake her up', llmLoading:'Waking up…', llmRetry:'Try again', llmError:'Couldn’t load the model. The small model will keep you company.',
+  llmNoGpu:'This browser has no WebGPU, so the small model will keep you company. Try desktop Chrome or Edge.', llmNoF16:'This GPU lacks 16-bit shader support needed by the model.', llmUnpublished:'The full model hasn’t been published yet.', llmDismiss:'Hide'
+});
+Object.assign(window.NIANSIA_COPY['zh-TW'], {
+  llmTitle:'喚醒完整版 Yuki', llmBody:'以 QLoRA 微調的 1.5B 參數語言模型，聽得懂更長的問題與追問。首次需下載約 1 GB，之後會快取在瀏覽器；全程在你的裝置上運作。',
+  llmWake:'喚醒她', llmLoading:'正在喚醒…', llmRetry:'再試一次', llmError:'模型載入失敗，先由小模型陪你。',
+  llmNoGpu:'這個瀏覽器不支援 WebGPU，先由小模型陪你。可以試試桌機版 Chrome 或 Edge。', llmNoF16:'這張顯示卡不支援模型需要的 16 位元著色器。', llmUnpublished:'完整版模型還沒發布。', llmDismiss:'收起'
+});
+Object.assign(window.NIANSIA_COPY['zh-CN'], {
+  llmTitle:'唤醒完整版 Yuki', llmBody:'以 QLoRA 微调的 1.5B 参数语言模型，听得懂更长的问题与追问。首次需下载约 1 GB，之后会缓存在浏览器；全程在你的设备上运行。',
+  llmWake:'唤醒她', llmLoading:'正在唤醒…', llmRetry:'再试一次', llmError:'模型加载失败，先由小模型陪你。',
+  llmNoGpu:'这个浏览器不支持 WebGPU，先由小模型陪你。可以试试桌面版 Chrome 或 Edge。', llmNoF16:'这张显卡不支持模型需要的 16 位着色器。', llmUnpublished:'完整版模型还没发布。', llmDismiss:'收起'
 });

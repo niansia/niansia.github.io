@@ -40,3 +40,14 @@ The companion has local prepared conversations and contextual project descriptio
 - `echo` containing an HTML image tag renders literal text, with no injected image element.
 - Mobile check at 390 × 844: no horizontal body overflow; upper input width 249px.
 - Reviewed and corrected mobile nickname visibility and the small terminal identity illustration after the first visual pass.
+
+
+## Follow-up: desktop pet, local model and styles (2026-09-27)
+
+Checked against a static preview assembled from the last Quarto render plus the current sources (Quarto isn't installed locally), in the in-app Chromium browser; `styles.scss` rules separately compiled with Dart Sass 1.x without errors.
+
+- The companion pane is gone; the workspace is two columns. Yuki stands on the command line, can be dragged (pendulum swing, gravity, squash on landing, dizzy after high drops), and walks, blinks and wags on her own.
+- Poses checked at 3x scale: idle with a separate tail layer, bed (lie), sleep with blanket, eat with bowl. Mobile (375 px) tucks her at the edge and opens chat as a bottom sheet.
+- Needs persist in localStorage; nudges back off 1.6x per unanswered message; auto-sleep after 3 idle minutes; welcome-back after one or more minutes hidden.
+- Model: 61k parameters, 43 intents, 99.0% validation, 99.1% on 109 held-out questions (EN / 繁 / 简). JS feature hashes match Python on probe strings. Chat verified for project lists, topic retrieval (vision to ChromaRecover), style switching (sakura) and language switching (to English).
+- Scripted terminal run (help, theme, trail, cursor, yuki, brain, feed, lie, trick, sudo, natural-language questions, neofetch, status, hide) produced no console errors.

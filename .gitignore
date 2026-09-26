@@ -5,3 +5,5 @@ Thumbs.db
 
 
 **/*.quarto_ipynb
+
+__pycache__/
