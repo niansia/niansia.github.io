@@ -71,7 +71,7 @@
         <footer class="terminal-status"><span><kbd>↑</kbd><kbd>↓</kbd> ${c.selected} <kbd>Enter</kbd> ${c.open} <kbd>Esc</kbd> ${c.back}</span><button data-view="help" aria-label="${c.nav[5]}">${icon('help')}<span>${c.nav[5]}</span></button><span class="status-signature" translate="no">made with curiosity <span>✦</span></span></footer>
       </section><div class="desktop-footer"><span>© ${new Date().getFullYear()} Niansia</span><span>Quarto + a little cat magic</span></div>
     </div>
-    <button class="pet-follower" data-pet="pat" aria-label="${c.pet}" hidden tabindex="-1"><span class="character-sprite" data-mood="0" aria-hidden="true"></span><span class="follower-name" translate="no">Yuki</span></button>
+    <span class="pet-follower" aria-hidden="true" hidden><span class="character-sprite" data-mood="0"></span></span>
     <div class="toast" role="status" hidden></div>
     <dialog class="chat-dialog" aria-labelledby="chat-title"><header><span>${icon('chat')} <strong id="chat-title">${c.chatTitle}</strong></span><button class="icon-button" data-action="close-chat" aria-label="${c.close}">${icon('close')}</button></header><div class="chat-companion"><button class="chat-character" data-pet="pat" aria-label="${c.pet}"><span class="character-sprite" data-mood="0" aria-hidden="true"></span></button><div><p class="chat-note">${c.chatSubtitle}</p><div class="chat-pet-actions"><button data-pet="pat">${c.pet}</button><button data-pet="feed">${c.feed}</button><button data-pet="play">${c.play}</button><button data-pet="sleep"><span class="sleep-label">${c.sleep}</span></button></div></div></div><div class="chat-log" role="log" aria-live="polite" aria-relevant="additions"></div><div class="chat-chips">${c.chatChips.map(text=>`<button data-chat-chip="${esc(text)}">${text}</button>`).join('')}</div><form class="chat-form"><label class="sr-only" for="chat-input">${c.chatPlaceholder}</label><input id="chat-input" placeholder="${c.chatPlaceholder}" autocomplete="off" maxlength="400"><button type="submit" aria-label="${c.chatSend}">${icon('arrow')}</button></form></dialog>`;
     setTheme(); applyMotion(); setMood(sleeping ? 3 : 0); screen(false);
@@ -241,9 +241,10 @@
   document.addEventListener('pointermove',event=>{
     if(!fine.matches||!follow||!motion()||event.target.closest('.pet-follower')||$('.chat-dialog').open)return;
     const follower=$('.pet-follower');
-    targetX=Math.max(0,Math.min(innerWidth-72,event.clientX+24));targetY=Math.max(0,Math.min(innerHeight-166,event.clientY+22));
+    follower.hidden=false;
+    targetX=Math.max(0,Math.min(innerWidth-follower.offsetWidth-4,event.clientX+12));targetY=Math.max(0,Math.min(innerHeight-follower.offsetHeight-4,event.clientY+10));
     if(!hasPointer){x=targetX;y=targetY;hasPointer=true;}
-    follower.hidden=false;if(!frame)frame=requestAnimationFrame(tick);
+    if(!frame)frame=requestAnimationFrame(tick);
   });
   document.addEventListener('pointerout',event=>{if(!event.relatedTarget){$('.pet-follower').hidden=true;hasPointer=false;cancelAnimationFrame(frame);frame=0;}});
   document.addEventListener('visibilitychange',()=>{if(document.hidden){cancelAnimationFrame(frame);frame=0;$('.pet-follower').hidden=true;hasPointer=false;}});

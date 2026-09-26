@@ -35,3 +35,5 @@ Niansia is a computer science researcher and maker of evidence-oriented tools. T
 ## Current redesign supersedes the original layout
 
 Read [terminal-redesign.md](terminal-redesign.md). The user now requires a whole terminal desktop, dual themes and a normal-proportion anime cat-eared young woman. No chibi or animal kitten art. The conventional hero/section layout is rejected.
+
+- 2026-09-26 correction: the pointer companion must be approximately normal cursor size. Use 12 × 32px at every breakpoint, no name badge, and let pointer events pass through. The separate companion panel retains its readable character size.
