@@ -2,7 +2,7 @@
 (() => {
   'use strict';
   const root = document.querySelector('[data-terminal-app]');
-  if (!root || !window.NIANSIA_COPY || !window.NIANSIA_PROJECTS) return;
+  if (!root || !window.NIANSIA_COPY || !window.NIANSIA_PROJECTS || !window.NIANSIA_TERMINAL) return;
   const esc = value => String(value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
   const store = { get(key, fallback) { try { return localStorage.getItem(`niansia-${key}`) ?? fallback; } catch { return fallback; } }, set(key,value) { try { localStorage.setItem(`niansia-${key}`,value); } catch {} } };
   const paths = ['home','about','projects','research','contact','help'];
@@ -22,6 +22,9 @@
   let theme = store.get('theme','light'), paused = store.get('motion','on') === 'off', follow = store.get('follow','on') !== 'off';
   let mood = 0, sleeping = false, moodTimer, toastTimer, lastFocus, chatMessages = [], commandHistory = [], historyIndex = 0;
   let frame = 0, x = 0, y = 0, targetX = 0, targetY = 0, hasPointer = false;
+  let trail = store.get('trail','on') !== 'off', trailTime = 0, trailX = 0, trailY = 0;
+  let username = store.get('user','niansia').slice(0,24), historyDraft = '', commandEntries = [];
+  const catalogue = window.NIANSIA_TERMINAL.commands;
   const reduced = matchMedia('(prefers-reduced-motion: reduce)'), fine = matchMedia('(pointer: fine)');
   const t = () => window.NIANSIA_COPY[locale];
   const projects = () => window.NIANSIA_PROJECTS[locale];
@@ -41,7 +44,7 @@
     if (button) { button.innerHTML = icon(motion() ? 'pause' : 'play'); button.setAttribute('aria-pressed',String(!motion())); }
     const follower = $('.pet-follower');
     if (follower) follower.hidden = !(follow && fine.matches && motion() && hasPointer);
-    if (!motion()) { cancelAnimationFrame(frame); frame = 0; }
+    if (!motion()) { cancelAnimationFrame(frame); frame = 0; document.querySelectorAll('.heart-trail,.click-spark').forEach(el=>el.remove()); }
   }
   function readLocation() {
     const routeLocale = location.pathname.startsWith('/zh-tw') ? 'zh-TW' : location.pathname.startsWith('/zh-cn') ? 'zh-CN' : 'en';
@@ -67,7 +70,7 @@
           <div class="terminal-main"><div class="pane-bar"><span class="pane-path" translate="no"></span><span class="pane-shortcut"><kbd>Esc</kbd> ${c.back}</span></div><div class="terminal-output" id="terminal-content" tabindex="-1"></div></div>
           <div class="companion-pane" role="complementary" aria-label="${c.companion}"><div class="companion-header"><span>${icon('paw')} yuki.exe</span><span class="state-dot" aria-hidden="true"></span></div><div class="companion-stage"><div class="stage-orbit" aria-hidden="true"></div><button class="character-button" data-pet="pat" aria-label="${c.pet}"><span class="character-sprite" data-mood="0" aria-hidden="true"></span></button><span class="pet-state">${c.moods[0]}</span></div><div class="companion-info"><h2 translate="no">Yuki<span> / ゆき</span></h2><p>${c.petSub}</p></div><p class="pet-bubble" aria-live="polite">${c.petHint}</p><div class="pet-actions"><button data-pet="pat">${icon('heart')}${c.pet}</button><button data-pet="feed">${icon('paw')}${c.feed}</button><button data-pet="play">${icon('play')}${c.play}</button><button data-pet="sleep">${icon('moon')}<span class="sleep-label">${c.sleep}</span></button></div><button class="chat-launch" data-action="chat">${icon('chat')}${c.talk}<span>↗</span></button><label class="follow-control"><input type="checkbox" data-follow ${follow?'checked':''}><span>${c.follow}</span></label></div>
         </div>
-        <div class="command-area"><div class="command-message" role="status" aria-live="polite">${c.ready}</div><form class="command-form"><label for="terminal-command" class="prompt" translate="no">niansia<span>@home</span><b>:~$</b><span class="sr-only">${c.command}</span></label><input id="terminal-command" autocomplete="off" spellcheck="false" autocapitalize="none" placeholder="${c.placeholder}" aria-label="${c.command}"><button type="submit" aria-label="${c.run}">${icon('arrow')}<span>${c.run}</span></button></form></div>
+        <div class="command-area"><div class="command-message" role="status" aria-live="polite">${c.ready}</div><form class="command-form"><label for="terminal-command" class="prompt" translate="no"><span class="session-user">${esc(username)}</span><span>@home</span><b>:~$</b><span class="sr-only">${c.command}</span></label><input id="terminal-command" data-command-input maxlength="500" autocomplete="off" spellcheck="false" autocapitalize="none" placeholder="${c.placeholder}" aria-label="${c.command}"><button type="submit" aria-label="${c.run}">${icon('arrow')}<span>${c.run}</span></button></form></div>
         <footer class="terminal-status"><span><kbd>↑</kbd><kbd>↓</kbd> ${c.selected} <kbd>Enter</kbd> ${c.open} <kbd>Esc</kbd> ${c.back}</span><button data-view="help" aria-label="${c.nav[5]}">${icon('help')}<span>${c.nav[5]}</span></button><span class="status-signature" translate="no">made with curiosity <span>✦</span></span></footer>
       </section><div class="desktop-footer"><span>© ${new Date().getFullYear()} Niansia</span><span>Quarto + a little cat magic</span></div>
     </div>
@@ -78,7 +81,12 @@
     $('.chat-dialog').addEventListener('close',()=>lastFocus?.isConnected && lastFocus.focus());
     $('.chat-dialog').addEventListener('cancel',()=>setMood(sleeping?3:0));
   }
-  function commandTitle(command) { return `<div class="output-command" translate="no"><span>❯</span> ${command}<i class="text-cursor" aria-hidden="true"></i></div>`; }
+  function commandTitle(command) {
+    return `<form class="output-command inline-command-form"><label for="screen-command" aria-hidden="true">❯</label><input id="screen-command" data-command-input maxlength="500" autocomplete="off" autocapitalize="none" spellcheck="false" aria-label="${t().inlineCommand}" aria-describedby="screen-command-hint" placeholder="${esc(command)} · ${t().typeHere}"><button type="submit" aria-label="${t().run}"><kbd>Enter</kbd><span>↵</span></button></form><div id="screen-command-hint" class="command-hint">${t().historyHint}</div><section class="command-results" aria-label="${t().output}" hidden></section>`;
+  }
+  function commandCatalogue() {
+    return `<p class="comment-line">${t().commandHelp}</p><div class="command-catalogue">${catalogue.map(c=>`<button data-command-fill="${esc(c.example)}"><code>${esc(c.usage)}</code><span>${esc(c.description[locale])}</span></button>`).join('')}</div>`;
+  }
   function button(path,label,primary=false) { return `<button class="action-button ${primary?'primary':''}" data-view="${path}">${label}${icon('arrow')}</button>`; }
   function screen(animate=true) {
     const c=t(), items=projects(), item=items.find(p=>p.id===projectId);
@@ -89,10 +97,10 @@
     if (view==='about') html=`${commandTitle('cat about.md')}<h1>${c.aboutTitle}</h1><div class="reading"><p>${c.bio}</p><p>${c.bio2}</p><p>${c.bio3}</p><h2>${c.education}</h2><ul class="education-list"><li>${c.undergrad}</li><li>${c.graduate}<small>${c.leave}</small></li></ul><p class="comment-line">// ${c.interests}</p></div>${button('research',c.nav[3],true)}`;
     if (view==='research') html=`${commandTitle('cat research.md')}<h1>${c.researchTitle}</h1><p class="screen-intro">${c.researchIntro}</p><div class="research-entry"><span>01</span><div><h2>${c.researchA}</h2><p>${c.researchABody}</p><small>security / robustness / evaluation</small></div></div><div class="research-entry"><span>02</span><div><h2>${c.researchB}</h2><p>${c.researchBBody}</p><small>vision / reasoning / grounding</small></div></div><p class="comment-line">${c.researchNote}</p>`;
     if (view==='contact') html=`${commandTitle('cat contact.txt')}<h1>${c.contactTitle}</h1><div class="reading"><p>${c.contactBody}</p><div class="contact-address"><span translate="no">email:</span><a href="mailto:wilbur930202@gmail.com" translate="no">wilbur930202@gmail.com</a></div><div class="output-actions"><a class="action-button primary" href="mailto:wilbur930202@gmail.com">${icon('mail')}${c.send}</a><button class="action-button" data-action="copy">${icon('copy')}${c.copy}</button></div><a class="github-link" href="https://github.com/niansia" target="_blank" rel="noopener noreferrer">github.com/niansia ${icon('link')}</a></div>`;
-    if (view==='help') html=`${commandTitle('help')}<h1>${c.guideTitle}</h1><p>${c.guideIntro}</p><dl class="keyboard-guide">${c.keys.map(([key,description])=>`<div><dt><kbd>${key}</kbd></dt><dd>${description}</dd></div>`).join('')}</dl><h2>${c.commands}</h2><div class="command-chips">${['about','research','projects','contact','theme','pet','chat','clear'].map(cmd=>`<button data-command="${cmd}" translate="no">${cmd}</button>`).join('')}</div><p class="comment-line">${c.simulation}</p>`;
+    if (view==='help') html=`${commandTitle('help')}<h1>${c.guideTitle}</h1><p>${c.guideIntro}</p><dl class="keyboard-guide">${c.keys.map(([key,description])=>`<div><dt><kbd>${key}</kbd></dt><dd>${description}</dd></div>`).join('')}</dl><h2>${c.commands}</h2>${commandCatalogue()}<p class="comment-line">${c.simulation}</p>`;
     if (view==='projects' && !item) html=`${commandTitle('ls ./projects/')}<div class="directory-heading"><h1>${c.all}</h1><span>09 ${c.directory}</span></div><p class="screen-intro">${c.projectIntro}</p><div class="project-directory" aria-label="${c.all}">${items.map((p,i)=>`<button class="project-row ${i===selectedProject?'is-selected':''}" data-project="${p.id}" data-project-index="${i}"><span class="row-index">${String(i+1).padStart(2,'0')}</span><span class="project-row-title"><strong translate="no">${p.name}</strong><small>${p.category}</small></span><span class="project-status">${p.status}</span><span class="row-arrow">↗</span></button>`).join('')}</div>`;
     if (view==='projects' && item) html=`${commandTitle('cat projects/'+esc(item.id)+'/README.md')}<button class="back-link" data-view="projects">← ${c.all}</button><div class="project-detail"><p class="detail-meta">${esc(item.category)}<span>${esc(item.status)}</span></p><h1 translate="no">${esc(item.name)}</h1><p class="project-description">${esc(item.description)}</p>${item.id==='taiwan-exam'?'<img class="project-art" src="/assets/work/taiwan-exam-social-preview.png" width="1280" height="640" alt="Taiwan Exam" loading="lazy">':''}<h2>${c.evidence}</h2><p>${esc(item.evidence)}</p><div class="output-actions"><a class="action-button primary" href="${esc(item.url)}" target="_blank" rel="noopener noreferrer">${c.source}${icon('link')}</a><a class="action-button" href="${esc(item.reference)}" target="_blank" rel="noopener noreferrer">${esc(item.referenceLabel)}${icon('link')}</a></div><div class="project-pagination"><button data-project-step="-1">← ${c.prev}</button><span>${items.indexOf(item)+1} / 9</span><button data-project-step="1">${c.next} →</button></div></div>`;
-    const output=$('.terminal-output'); output.innerHTML=html; output.scrollTop=0;
+    const output=$('.terminal-output'); output.innerHTML=html; output.scrollTop=0; renderJournal();
     output.classList.toggle('screen-enter',animate && motion());
     root.querySelectorAll('[data-nav-index]').forEach((el,i)=>{el.classList.toggle('is-current',i===paths.indexOf(view));el.classList.toggle('is-selected',i===selectedNav);el.setAttribute('aria-current',i===paths.indexOf(view)?'page':'false');});
   }
@@ -107,7 +115,7 @@
   }
   function goBack() {
     if ($('.chat-dialog').open) { $('.chat-dialog').close();return; }
-    const input=$('#terminal-command');
+    const input=document.activeElement?.matches('[data-command-input]') ? document.activeElement : $('#terminal-command');
     if (document.activeElement===input && input.value) {input.value='';message(t().ready);return;}
     if (projectId) {navigate('projects','',{keyboard:true});$(`[data-project-index="${selectedProject}"]`)?.focus({preventScroll:true});}
     else if (view!=='home') navigate('home','',{keyboard:true});
@@ -143,21 +151,131 @@
     if(inDirectory){selectedProject=index;root.querySelectorAll('[data-project-index]').forEach((el,i)=>el.classList.toggle('is-selected',i===index));const el=$(`[data-project-index="${index}"]`);el.focus({preventScroll:true});el.scrollIntoView({block:'nearest'});}
     else {selectedNav=index;selectNav();}
   }
+  function changeLanguage(next) {
+    locale=next;store.set('language',locale);
+    history.pushState(null,'',`${langBase()}#${view}${projectId?'/'+projectId:''}`);
+    chatMessages=[];shell();
+  }
+  function renderJournal() {
+    const region=$('.command-results');if(!region)return;
+    region.hidden=!commandEntries.length;
+    region.innerHTML=commandEntries.map(entry=>`<div class="command-entry"><div class="command-entry-input" translate="no">❯ ${esc(entry.command)}</div><pre>${esc(entry.text)}</pre>${entry.links?.length?`<div class="result-links">${entry.links.map(link=>link.id?`<button data-project="${esc(link.id)}">${esc(link.label)} ↗</button>`:`<a href="${esc(link.url)}" target="_blank" rel="noopener noreferrer">${esc(link.label)} ↗</a>`).join('')}</div>`:''}</div>`).join('');
+    region.scrollTop=region.scrollHeight;
+  }
+  function record(command,text,links=[]) {
+    commandEntries.push({command,text:String(text),links});
+    if(commandEntries.length>20)commandEntries.shift();
+    renderJournal();$('.terminal-output').scrollTop=0;message(String(text).split('\n')[0]||t().done);
+  }
+  function complete(value) {
+    const split=value.indexOf(' '),head=split<0?value:value.slice(0,split),tail=split<0?'':value.slice(split+1).toLowerCase();
+    if(split<0)return catalogue.map(c=>c.name).filter(name=>name.startsWith(head.toLowerCase()));
+    const values={theme:['light','dark'],lang:['en','zh-tw','zh-cn'],motion:['on','off'],follow:['on','off'],trail:['on','off'],help:catalogue.map(c=>c.name)};
+    const destinations=['home','about.md','research.md','contact.txt','projects/',...projects().map(p=>p.id),...projects().map(p=>'projects/'+p.id+'/README.md')];
+    return (values[head]||(['cd','cat','open','github'].includes(head)?destinations:[])).filter(item=>item.startsWith(tail)).map(item=>head+' '+item);
+  }
+  function resolveTarget(value) {
+    const name=value.toLowerCase().replace(/^(~\/|\.\/|\/)/,'').replace(/\/readme\.md$/,'').replace(/\/$/,'');
+    const aliases={'':'home','~':'home','start.sh':'home','about.md':'about','profile':'about','research.md':'research','contact.txt':'contact','work':'projects','portfolio':'projects'};
+    const path=aliases[name]||name;
+    if(paths.includes(path))return {view:path};
+    const item=projects().find(p=>p.id===name.replace(/^projects\//,'')||p.name.toLowerCase()===name);
+    return item?{view:'projects',id:item.id}:null;
+  }
   function runCommand(raw) {
-    const value=raw.trim();
-    if (!value) {if(view==='projects'&&!projectId)navigate('projects',projects()[selectedProject].id,{keyboard:true});else navigate(paths[selectedNav],'',{keyboard:true});return;}
+    const value=raw.trim().slice(0,500);if(!value)return;
     commandHistory.push(value);if(commandHistory.length>50)commandHistory.shift();historyIndex=commandHistory.length;
-    const command=value.toLowerCase().replace(/^(cat|cd|open)\s+/,'').replace(/\.(md|txt)$/,'').replace(/\/$/,'');
-    const aliases={ls:'projects',work:'projects',portfolio:'projects',profile:'about','start.sh':'home','./start.sh':'home','~':'home',email:'contact','?':'help','作品':'projects','研究':'research','聯絡':'contact','联系':'contact','關於':'about','关于':'about'};
-    const next=aliases[command]||command;
-    if(paths.includes(next))navigate(next,'',{keyboard:true});
-    else if(command.startsWith('projects/')){const id=command.slice(9);if(projects().some(p=>p.id===id))navigate('projects',id,{keyboard:true});else message(t().noProject);}
-    else if(command==='theme'){toggleTheme();}
-    else if(command==='pet'||command==='meow'){react('pat');}
-    else if(command==='chat'){openChat();}
-    else if(command==='clear'){message(t().ready);}
-    else if(command==='pwd'){message('~/'+(view==='projects'?'projects/'+projectId:view));}
-    else {const item=projects().find(p=>p.id===command||p.name.toLowerCase()===command);if(item)navigate('projects',item.id,{keyboard:true});else message(t().unknown);}
+    const parsed=window.NIANSIA_TERMINAL.parse(value);
+    if(parsed.error){record(value,t().quoteError);return;}
+    const aliases={'?':'help',work:'projects',portfolio:'projects',profile:'about','./start.sh':'home','start.sh':'home',meow:'pet',search:'find','作品':'projects','研究':'research','聯絡':'contact','联系':'contact','關於':'about','关于':'about'};
+    const name=aliases[parsed.name]||parsed.name,args=parsed.args,arg=args.join(' '),lower=arg.toLowerCase();
+    const definition=catalogue.find(c=>c.name===name);
+    const usage=()=>record(value,`${t().usage}: ${definition?.usage||'help'}\n${definition?.description[locale]||t().unknown}`);
+    const finish=(text,links)=>record(value,text,links);
+    const projectLinks=items=>items.map(p=>({id:p.id,label:p.name}));
+    const showTarget=target=>{navigate(target.view,target.id||'',{keyboard:true});finish(t().routeReplies[target.view]);};
+    if(paths.includes(name)&&name!=='help'){
+      if(args.length){usage();return;}showTarget({view:name});return;
+    }
+    switch(name){
+      case 'help': {
+        if(!arg){navigate('help','',{keyboard:true});finish(t().commandHelp);}
+        else {const command=catalogue.find(c=>c.name===lower);if(command)finish(`${command.usage}\n${command.description[locale]}\n> ${command.example}`);else finish(t().unknown);}
+        break;
+      }
+      case 'whoami':finish(`Niansia\n${t().role}\n${t().leave}\n${t().interests}`);break;
+      case 'ls': {
+        const location=lower|| (view==='projects'?'projects':'~');
+        if(['projects','projects/','./projects/','~/projects/','~/projects'].includes(location))finish(projects().map(p=>`${p.id}/  [${p.status}]`).join('\n'),projectLinks(projects()));
+        else if(['~','/','.','./'].includes(location))finish(files.join('\n'));
+        else {const target=resolveTarget(arg);if(target?.id)finish('README.md\n'+projects().find(p=>p.id===target.id).category);else usage();}
+        break;
+      }
+      case 'cd':case 'cat':case 'open': {
+        if(name==='cd'&&['..','../'].includes(lower)){goBack();finish(t().routeReplies[view]);break;}
+        if(!arg&&name!=='cd'){usage();break;}
+        const target=resolveTarget(arg);if(target)showTarget(target);else finish(t().noMatches);
+        break;
+      }
+      case 'pwd':finish(view==='projects'?'~/projects/'+projectId:'~/');break;
+      case 'tree':finish('~/\n├── start.sh\n├── about.md\n├── research.md\n├── contact.txt\n└── projects/\n'+projects().map((p,i)=>`    ${i===projects().length-1?'└':'├'}── ${p.id}/`).join('\n'));break;
+      case 'find':case 'skills': {
+        if(name==='find'&&!arg){usage();break;}
+        const matches=projects().filter(p=>name==='skills'?/skill/i.test(p.description):`${p.name} ${p.id} ${p.description} ${p.category}`.toLowerCase().includes(lower));
+        finish(matches.length?matches.map(p=>`${p.name} · ${p.category}`).join('\n'):t().noMatches,projectLinks(matches));break;
+      }
+      case 'status':finish(`theme: ${theme}\nlanguage: ${locale}\nanimation: ${motion()?'on':'off'}\nfollow: ${follow?'on':'off'}\nheart trail: ${trail?'on':'off'}\nprojects: ${projects().length}\nyuki: ${t().moods[mood]}`);break;
+      case 'email':finish('wilbur930202@gmail.com',[{label:t().send,url:'mailto:wilbur930202@gmail.com'}]);break;
+      case 'github': {
+        const item=arg?projects().find(p=>p.id===lower||p.name.toLowerCase()===lower):null;
+        if(arg&&!item){finish(t().noMatches);break;}
+        const url=item?.url||'https://github.com/niansia';finish(url,[{label:item?.name||'Niansia · GitHub',url}]);break;
+      }
+      case 'date':finish(new Intl.DateTimeFormat(locale,{dateStyle:'full'}).format(new Date()));break;
+      case 'time':finish(new Intl.DateTimeFormat(locale,{timeStyle:'long'}).format(new Date()));break;
+      case 'theme':if(!arg)toggleTheme();else if(['light','dark'].includes(lower)){theme=lower;store.set('theme',theme);setTheme();}else {usage();break;}finish(`theme: ${theme}`);break;
+      case 'lang': {
+        const codes={en:'en','zh-tw':'zh-TW','zh-cn':'zh-CN'};
+        if(!codes[lower]){usage();break;}changeLanguage(codes[lower]);finish(`language: ${locale}`);break;
+      }
+      case 'pet':case 'feed':case 'play':react(name==='pet'?'pat':name);finish($('.pet-bubble').textContent);break;
+      case 'sleep':if(!sleeping)react('sleep');finish(t().petReplies[3]);break;
+      case 'wake':if(sleeping)react('sleep');else react('pat');finish(t().petReplies[4]);break;
+      case 'chat':openChat();if(arg)chat(arg);finish(t().chatTitle);break;
+      case 'follow':case 'motion':case 'trail': {
+        if(arg&&!['on','off'].includes(lower)){usage();break;}
+        if(name==='follow'){follow=arg?lower==='on':!follow;store.set('follow',follow?'on':'off');$('[data-follow]').checked=follow;applyMotion();finish(follow?t().followOn:t().followOff);}
+        if(name==='motion'){paused=arg?lower==='off':!paused;store.set('motion',paused?'off':'on');applyMotion();finish(motion()?t().motionOn:t().motionOff);}
+        if(name==='trail'){trail=arg?lower==='on':!trail;store.set('trail',trail?'on':'off');if(!trail)document.querySelectorAll('.heart-trail').forEach(el=>el.remove());finish(trail?t().trailOn:t().trailOff);}
+        break;
+      }
+      case 'clear':commandEntries=[];renderJournal();message(t().commandHint);break;
+      case 'history':finish(commandHistory.length?commandHistory.map((cmd,i)=>`${String(i+1).padStart(2,'0')}  ${cmd}`).join('\n'):t().historyEmpty);break;
+      case 'echo':if(!args.length)usage();else finish(arg);break;
+      case 'user': {
+        if(!arg){finish(`${t().userSet}: ${username}`);break;}
+        if(arg.length>24||!arg.trim()){finish(t().emptyName);break;}
+        username=arg;store.set('user',username);root.querySelectorAll('.session-user').forEach(el=>el.textContent=username);finish(`${t().userSet}: ${username}`);break;
+      }
+      case 'neofetch':finish(`(=^･ω･^=)  niansia.terminal
+${t().role}
+
+${projects().length} projects / 3 languages / 37 commands
+${t().interests}`);break;
+      case 'shortcuts':finish(t().keys.map(([key,description])=>`${key.padEnd(14)} ${description}`).join('\n')+'\n'+t().historyHint);break;
+      default: {const target=resolveTarget(value);if(target)showTarget(target);else finish(t().unknown);}
+    }
+  }
+  function heartTrail(event) {
+    if(!trail)return;
+    const now=performance.now(),distance=Math.hypot(event.clientX-trailX,event.clientY-trailY);
+    if(now-trailTime<65||distance<9)return;
+    trailTime=now;trailX=event.clientX;trailY=event.clientY;
+    const existing=document.querySelectorAll('.heart-trail');if(existing.length>=16)existing[0].remove();
+    const heart=document.createElement('span');heart.className='heart-trail';heart.textContent='♥';heart.setAttribute('aria-hidden','true');
+    heart.style.left=`${event.clientX+4}px`;heart.style.top=`${event.clientY+6}px`;document.body.append(heart);
+    const animation=heart.animate([{opacity:.6,transform:'translate(-50%,-50%) scale(.7)'},{opacity:0,transform:`translate(calc(-50% + ${Math.random()*14-7}px),-24px) scale(.3)`}],{duration:780,easing:'ease-out'});
+    animation.onfinish=()=>heart.remove();
   }
   function toggleTheme() {theme=theme==='light'?'dark':'light';store.set('theme',theme);setTheme();setMood(sleeping?3:2);clearTimeout(moodTimer);if(!sleeping)moodTimer=setTimeout(()=>setMood(0),1500);}
   function openChat() {
@@ -191,9 +309,10 @@
     if(target.dataset.view){event.preventDefault();navigate(target.dataset.view,'',{keyboard:event.detail===0});}
     if(target.dataset.project){navigate('projects',target.dataset.project,{keyboard:event.detail===0});}
     if(target.dataset.projectStep){const i=projects().findIndex(p=>p.id===projectId);navigate('projects',projects()[(i+Number(target.dataset.projectStep)+9)%9].id);}
-    if(target.dataset.lang){locale=target.dataset.lang;store.set('language',locale);history.pushState(null,'',`${langBase()}#${view}${projectId?'/'+projectId:''}`);chatMessages=[];shell();}
+    if(target.dataset.lang){changeLanguage(target.dataset.lang);}
     if(target.dataset.pet)react(target.dataset.pet);
     if(target.dataset.command)runCommand(target.dataset.command);
+    if(target.dataset.commandFill){const input=$('#screen-command');input.value=target.dataset.commandFill;input.focus();input.select();}
     if(target.dataset.chatChip)chat(target.dataset.chatChip);
     switch(target.dataset.action){
       case 'theme':toggleTheme();break;
@@ -206,7 +325,7 @@
   root.addEventListener('change',event=>{if(event.target.matches('[data-follow]')){follow=event.target.checked;store.set('follow',follow?'on':'off');applyMotion();say(follow?t().followOn:t().followOff);}});
   root.addEventListener('submit',event=>{
     event.preventDefault();
-    if(event.target.matches('.command-form')){const input=$('#terminal-command');const value=input.value;input.value='';runCommand(value);}
+    if(event.target.matches('.command-form,.inline-command-form')){const input=event.target.querySelector('[data-command-input]'),id=input.id,value=input.value;input.value='';historyDraft='';runCommand(value);if(!$('.chat-dialog').open)$('#'+id)?.focus({preventScroll:true});}
     if(event.target.matches('.chat-form')){const input=$('#chat-input');const value=input.value;input.value='';chat(value);}
   });
   document.addEventListener('keydown',event=>{
@@ -215,13 +334,22 @@
     const target=event.target,editable=target.matches('input,textarea,select,[contenteditable="true"]');
     if(event.key==='Escape'){event.preventDefault();goBack();return;}
     if(editable){
-      if(target.id==='terminal-command'&&['ArrowUp','ArrowDown'].includes(event.key)){
-        if(target.value||commandHistory.length){event.preventDefault();historyIndex=Math.max(0,Math.min(commandHistory.length,historyIndex+(event.key==='ArrowUp'?-1:1)));target.value=commandHistory[historyIndex]||'';}
-        else {event.preventDefault();moveSelection(event.key);}
+      if(target.matches('[data-command-input]')) {
+        if(event.key==='Tab'&&!event.shiftKey&&target.value.trim()) {
+          const candidates=complete(target.value);
+          if(candidates.length){event.preventDefault();if(candidates.length===1)target.value=candidates[0];else message(candidates.join(' · '));}
+        }
+        if(['ArrowUp','ArrowDown'].includes(event.key)){
+          event.preventDefault();
+          if(historyIndex===commandHistory.length)historyDraft=target.value;
+          historyIndex=Math.max(0,Math.min(commandHistory.length,historyIndex+(event.key==='ArrowUp'?-1:1)));
+          target.value=historyIndex===commandHistory.length?historyDraft:commandHistory[historyIndex]||'';
+          target.setSelectionRange(target.value.length,target.value.length);
+        }
       }
       return;
     }
-    if(event.key==='/'){event.preventDefault();$('#terminal-command').focus();return;}
+    if(event.key==='/'){event.preventDefault();$('#screen-command').focus();return;}
     if(event.key==='ArrowLeft'){event.preventDefault();goBack();return;}
     if(['ArrowUp','ArrowDown','Home','End'].includes(event.key)&&!projectId){event.preventDefault();moveSelection(event.key);return;}
     if(event.key==='ArrowRight'||(event.key==='Enter'&&!target.closest('button,a'))){event.preventDefault();if(view==='projects'&&!projectId)navigate('projects',projects()[selectedProject].id,{keyboard:true});else if(!projectId)navigate(paths[selectedNav],'',{keyboard:true});}
@@ -239,7 +367,9 @@
     if(Math.abs(dx)+Math.abs(dy)>.8&&follow&&motion())frame=requestAnimationFrame(tick);else frame=0;
   }
   document.addEventListener('pointermove',event=>{
-    if(!fine.matches||!follow||!motion()||event.target.closest('.pet-follower')||$('.chat-dialog').open)return;
+    if(!fine.matches||!motion()||$('.chat-dialog').open)return;
+    heartTrail(event);
+    if(!follow)return;
     const follower=$('.pet-follower');
     follower.hidden=false;
     targetX=Math.max(0,Math.min(innerWidth-follower.offsetWidth-4,event.clientX+12));targetY=Math.max(0,Math.min(innerHeight-follower.offsetHeight-4,event.clientY+10));
@@ -247,7 +377,7 @@
     if(!frame)frame=requestAnimationFrame(tick);
   });
   document.addEventListener('pointerout',event=>{if(!event.relatedTarget){$('.pet-follower').hidden=true;hasPointer=false;cancelAnimationFrame(frame);frame=0;}});
-  document.addEventListener('visibilitychange',()=>{if(document.hidden){cancelAnimationFrame(frame);frame=0;$('.pet-follower').hidden=true;hasPointer=false;}});
+  document.addEventListener('visibilitychange',()=>{if(document.hidden){document.querySelectorAll('.heart-trail').forEach(el=>el.remove());cancelAnimationFrame(frame);frame=0;$('.pet-follower').hidden=true;hasPointer=false;}});
   reduced.addEventListener('change',applyMotion);fine.addEventListener('change',applyMotion);
   window.addEventListener('popstate',()=>{const before=locale;readLocation();if(before!==locale)shell();else screen(false);});
   readLocation();shell();

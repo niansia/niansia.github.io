@@ -117,3 +117,32 @@ kbd{background:var(--surface);border:1px solid var(--line);box-shadow:0 1px 0 va
 .chat-pet-actions button:hover{background:var(--wash);color:var(--accent);}
 @media(max-width:720px){.command-form input{font-size:16px;}.command-form input::placeholder{font-size:11px;}.chat-companion{gap:12px;}.chat-pet-actions button{min-height:40px;}.chat-log{max-height:30dvh;min-height:120px;}}
 .mini-avatar{display:block;width:30px;height:30px;border-radius:50%;background:var(--wash) url('/assets/lab/yuki-sprites.png') no-repeat 0 0 / 400% auto;border:1px solid var(--line);}
+/* Editable terminal prompt and command transcript. */
+.inline-command-form{border:1px solid var(--line);border-radius:6px;background:var(--rail);padding:8px 10px;margin-bottom:6px;gap:10px;}
+.inline-command-form:focus-within{border-color:var(--accent);box-shadow:0 0 0 2px var(--wash);}
+.inline-command-form label{color:var(--accent);font-size:16px;}
+.inline-command-form input{flex:1;min-width:0;color:var(--ink);background:transparent;border:0;border-radius:3px;font:12px var(--mono);padding:7px 2px;}
+.inline-command-form input::placeholder{color:var(--muted);opacity:1;}
+.inline-command-form button{display:flex;align-items:center;gap:5px;min-height:32px;padding:3px;color:var(--accent);}
+.command-hint{font:9px var(--mono);color:var(--muted);line-height:1.8;margin:0 0 24px 2px;}
+.command-results{max-height:220px;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;background:var(--rail);border:1px solid var(--line);border-radius:6px;padding:14px 16px;margin:0 0 24px;}
+.command-results[hidden]{display:none;}
+.command-entry+.command-entry{border-top:1px dashed var(--line);margin-top:14px;padding-top:14px;}
+.command-entry-input{color:var(--accent);font:11px/1.6 var(--mono);overflow-wrap:anywhere;}
+.command-entry pre{white-space:pre-wrap;overflow-wrap:anywhere;color:var(--ink);font:12px/1.8 var(--mono);margin:6px 0 0;background:none;border:0;padding:0;}
+.result-links{display:flex;flex-wrap:wrap;gap:8px 14px;margin-top:9px;}
+.result-links button,.result-links a{color:var(--accent);font:11px/1.8 var(--mono);padding:2px 0;text-align:left;text-decoration:underline;text-underline-offset:3px;}
+.command-catalogue{display:flex;flex-direction:column;margin-top:18px;}
+.command-catalogue>button{display:grid;grid-template-columns:minmax(160px,1fr) 1.25fr;gap:18px;text-align:left;padding:13px 6px;border-top:1px solid var(--line);align-items:center;}
+.command-catalogue code{color:var(--accent);background:none;padding:0;font:12px/1.6 var(--mono);overflow-wrap:anywhere;}
+.command-catalogue span{font-size:12px;line-height:1.7;color:var(--muted);}
+.command-catalogue>button:hover{background:var(--wash);}
+.prompt .session-user{color:var(--accent);}
+.heart-trail{position:fixed;z-index:60;pointer-events:none;user-select:none;color:#bc698d;font:12px/1 Georgia,serif;will-change:transform,opacity;}
+:root[data-theme='dark'] .heart-trail{color:#e9a4c0;}
+.follower-name{display:none!important;}
+:root[data-motion='off'] .heart-trail{display:none;}
+@media(prefers-reduced-motion:reduce){.heart-trail{display:none!important;}}
+@media(max-width:720px){.inline-command-form{padding:6px 9px;gap:6px;}.inline-command-form input{font-size:16px;}.inline-command-form input::placeholder{font-size:11px;}.inline-command-form button kbd{display:none;}.inline-command-form button{min-width:30px;min-height:36px;}.command-hint{font-size:8px;}.command-catalogue>button{grid-template-columns:1fr;gap:4px;}.command-results{max-height:190px;padding:12px;}.command-entry pre{font-size:11px;}}
+.inline-command-form input:focus-visible{outline:none;}
+@media(max-width:720px){.prompt>span.session-user{display:inline;}}

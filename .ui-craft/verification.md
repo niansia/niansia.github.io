@@ -28,3 +28,15 @@ Verified 2026-09-26 against a real Quarto render in the in-app Chromium browser.
 ## Scope
 
 The companion has local prepared conversations and contextual project descriptions. It does not send chat input to an external AI service. Walking uses sprite pose changes and pointer interpolation, not Live2D. No GitHub profile files were modified in this redesign.
+
+
+## Follow-up: cursor size, hearts and commands
+
+- Follower is 12 × 32 CSS pixels, has no name badge and ignores pointer events. Confirmed from rendered bounds.
+- Pointer movement emits small hearts (65ms minimum interval, 16 maximum). Observed intermediate opacity 0.54, then zero remaining particles after expiry. Pause, hidden-tab and trail-off paths remove particles.
+- Upper decorative command text is now a real labeled form. Upper and lower input share the same dispatcher and session history.
+- All 37 catalogue commands were executed through the real upper input and returned results; lower input navigation was separately exercised. All three language variants have command descriptions.
+- Checked Tab completion (`pro` → `projects`), history recall, quoted strings, Unicode names, clear, and chat with an inline message.
+- `echo` containing an HTML image tag renders literal text, with no injected image element.
+- Mobile check at 390 × 844: no horizontal body overflow; upper input width 249px.
+- Reviewed and corrected mobile nickname visibility and the small terminal identity illustration after the first visual pass.
