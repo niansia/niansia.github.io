@@ -30,3 +30,8 @@ Niansia is a computer science researcher and maker of evidence-oriented tools. T
 - Preserve English, Traditional Chinese, and Simplified Chinese route parity.
 - Keep the website's full public record: NoveltyAudit, PSG, KCrashLab, ContextSec, AI Repo Gardener, Research Meeting Coach, Merriv, ChromaRecover, and Taiwan Exam.
 - Taiwan Exam currently supports seven GSAT subjects. CAP and subject-test support remain in development.
+
+
+## Current redesign supersedes the original layout
+
+Read [terminal-redesign.md](terminal-redesign.md). The user now requires a whole terminal desktop, dual themes and a normal-proportion anime cat-eared young woman. No chibi or animal kitten art. The conventional hero/section layout is rejected.

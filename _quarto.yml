@@ -1,6 +1,8 @@
 project:
   type: website
   output-dir: _site
+  resources:
+    - assets/
 
 website:
   description: "Niansia is an NYCU master's student exploring AI security, computer vision, reproducible research, and evidence-oriented tools."
@@ -8,19 +10,20 @@ website:
   open-graph: true
   twitter-card: true
   search: false
-  page-footer:
-    left: "© 2026 Niansia"
-    right: "Built with Quarto · [Source](https://github.com/niansia/niansia.github.io)"
 
 format:
   html:
     theme: [cosmo, styles.scss]
     toc: false
-    smooth-scroll: true
+    smooth-scroll: false
     link-external-newwindow: true
     include-in-header:
       text: |
-        <meta name="theme-color" content="#101820">
+        <meta name="theme-color" content="#edf0f7">
+        <meta name="google" content="notranslate">
+        <script>try{document.documentElement.dataset.theme=localStorage.getItem("niansia-theme")||"light";}catch(e){}</script>
+        <script src="/assets/js/portfolio-data.js" defer></script>
+        <script src="/assets/js/terminal-copy.js" defer></script>
         <script src="/assets/js/lab-terminal.js" defer></script>
 
 execute:
