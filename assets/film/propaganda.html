@@ -207,7 +207,7 @@ function sampleShape(text, {font = MONO, weight = 800, size = 180, width = 44, d
   c.width = 1800; c.height = 420 * lines;
   let fs = size, rows;
   const wrap = str => { g.font = `${weight} ${fs}px ${font}`; const cjk = /[\u3000-\u9fff]/.test(str) && !/\s/.test(str.trim()); const parts = cjk ? [...str] : str.split(/(\s+)/); const out = []; let ln = ''; for (const p of parts) { if (g.measureText(ln + p).width > c.width * .96 && ln.trim()) { out.push(ln.trim()); ln = p.trimStart(); } else ln += p; } if (ln.trim()) out.push(ln.trim()); return out; };
-  for (;;) { rows = wrap(text); if (rows.length <= lines || fs < 30) break; fs *= .92; }
+  for (;;) { rows = wrap(text); g.font = `${weight} ${fs}px ${font}`; const widest = Math.max(...rows.map(r => g.measureText(r).width)); if ((rows.length <= lines && widest <= c.width * .96) || fs < 30) break; fs *= .92; }
   g.fillStyle = '#fff'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.direction = dir; g.font = `${weight} ${fs}px ${font}`;
   const lh = fs * 1.2; rows.forEach((r, i) => g.fillText(r, c.width / 2, c.height / 2 + (i - (rows.length - 1) / 2) * lh));
   const img = g.getImageData(0, 0, c.width, c.height).data, pts = [];
