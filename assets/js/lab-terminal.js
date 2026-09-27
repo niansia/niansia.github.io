@@ -552,7 +552,7 @@
         const matches=projects().filter(p=>name==='skills'?/skill/i.test(p.description):`${p.name} ${p.id} ${p.description} ${p.category}`.toLowerCase().includes(lower));
         finish(matches.length?matches.map(p=>`${p.name} · ${p.category}`).join('\n'):t().noMatches,projectLinks(matches));break;
       }
-      case 'status':finish(`theme: ${theme}\nlanguage: ${locale}\nanimation: ${motion()?'on':'off'}\nfollow: ${fx()?.state().follow?'on':'off'}\ntrail: ${fx()?.state().trail||'off'}\ncursor: ${fx()?.state().size||'m'}\nprojects: ${projects().length}\nyuki: ${yuki()?.summary()||'-'}`);break;
+      case 'status':finish(`theme: ${theme}\nlanguage: ${locale}\nanimation: ${motion()?'on':'off'}\nfollow: ${fx()?.state().follow?'on':'off'}\nyuki stay: ${yuki()?.stay()?'on':'off'}\ntrail: ${fx()?.state().trail||'off'}\ncursor: ${fx()?.state().size||'m'}\nprojects: ${projects().length}\nyuki: ${yuki()?.summary()||'-'}`);break;
       case 'email':finish('niansia930202@gmail.com',[{label:t().send,url:'mailto:niansia930202@gmail.com'}]);break;
       case 'github': {
         const item=arg?projects().find(p=>p.id===lower||p.name.toLowerCase()===lower):null;
@@ -571,6 +571,7 @@
       }
       case 'pet':case 'feed':case 'play':case 'sleep':case 'wake':case 'lie':case 'trick':case 'hide':petCommand(name,value);break;
       case 'yuki':finish(yuki()?.report()||'-');break;
+      case 'stay':{const Y=yuki();if(!Y){finish(t().unknown);break;}const on=arg?!/^(off|no|0|roam)$/i.test(arg):!Y.stay();finish(Y.stay(on));break;}
       case 'chat':yuki()?.openChat(arg);finish(t().chatTitle);break;
       case 'ask':if(!arg)usage();else askYuki(arg,value);break;
       case 'brain':finish(yuki()?.brainReport()||t().brainOff);break;

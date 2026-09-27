@@ -17,7 +17,7 @@
   const motion = () => app.motion();
   const coarse = matchMedia('(pointer: coarse)');
   const ICON = {
-    heart:'M12 20 3 11C-2 3 8-1 12 6c4-7 14-3 9 5z', fish:'M3 12q6-7 13-2l4-3v10l-4-3q-7 5-13-2zM13 11h.01',
+    heart:'M12 20 3 11C-2 3 8-1 12 6c4-7 14-3 9 5z', pin:'M12 21s-6-5.6-6-11a6 6 0 0 1 12 0c0 5.4-6 11-6 11zM12 10.5h.01', fish:'M3 12q6-7 13-2l4-3v10l-4-3q-7 5-13-2zM13 11h.01',
     yarn:'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM5 8q7 1 11 10M4 13q8-2 13-9M9 4q5 5 5 16',
     bed:'M3 17v-4q0-3 3-3h12q3 0 3 3v4M3 17h18M7 10V8q0-2 2-2h6q2 0 2 2v2', moon:'M20 14A8 8 0 0 1 10 4a8 8 0 1 0 10 10z',
     sun:'M12 4v2m0 12v2M4 12h2m12 0h2M7 7l1 1m8 8 1 1M7 17l1-1m8-8 1-1M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0',
@@ -78,6 +78,7 @@
   const accEl = $('.yuki-acc');
   let outfitToken = 0, cellRatio = 191 / 444, stride = 160;
   let anchors = [], outfitChoice = app.store.get('yuki-outfit', 'auto'), outfit = 'hoodie', accChoice = app.store.get('yuki-acc', 'auto'), wardrobeOpen = false;
+  let stay = app.store.get('yuki-stay', '0') === '1';   // stay put: no wandering while the visitor reads
   const festival = () => window.NIANSIA_FESTIVAL?.active() || null;
   const wardrobe = () => window.YukiWardrobe;
   function loadOutfit(choice) {
@@ -294,7 +295,13 @@
         const r = Math.random(), f = floorOf(floorKind), [a, b] = bounds(f);
         const near = pointer.t && now() - pointer.t < 8000 && pointer.y > f.y - H * 2.2;
         const lively = S.energy > 40, lonely = S.mood < 55;
-        if (S.energy < 35 && r < .25) { setPose('yawn', 3, 1300); puff('zzz', 1); }
+        if (stay) {
+          if (S.energy < 35 && r < .25) { setPose('yawn', 3, 1300); puff('zzz', 1); }
+          else if (r < .3) lookAround();
+          else if (r < .42) stretch();
+          else if (r < .5 && S.energy < 55) lieDown(14000);
+        }
+        else if (S.energy < 35 && r < .25) { setPose('yawn', 3, 1300); puff('zzz', 1); }
         else if (near && r < (lonely ? .35 : .18)) beCute();
         else if (near && lively && r < .3 && Math.abs(pointer.x - x) < 360 && Math.abs(pointer.y - f.y) < H * 1.4) pounce();
         else if (near && r < .38) { walk(clamp(pointer.x, a, b), () => { dir = pointer.x > x ? 1 : -1; setPose('happy', 2, 900); puff('heart', 1); }); }
@@ -680,6 +687,7 @@
     menu.innerHTML = `<div class="menu-head"><span class="menu-avatar" data-face="${asleep ? 2 : S.mood > 70 ? 1 : 0}"></span><div><strong>Yuki</strong><small>${t().moodWords[moodKey()]}</small></div><span class="menu-level">♡ ${t().stats.level} ${level()}</span></div><p class="menu-say" aria-live="polite">${esc(bubble.hidden ? line('pet_pat') : bubble.querySelector('p').textContent)}</p>
       <div class="menu-stats">${statBar('food', S.food, 'is-food')}${statBar('mood', S.mood, 'is-mood')}${statBar('energy', S.energy, 'is-energy')}</div>
       <div class="menu-actions">${acts.map(([key, ic, label]) => `<button type="button" role="menuitem" data-pet-act="${key}">${svg(ic)}<span>${label}</span>${key === 'chat' && unread ? `<em>${unread}</em>` : ''}</button>`).join('')}</div>
+      <button type="button" class="menu-wardrobe menu-stay" data-stay aria-pressed="${stay}">${svg('pin')}<span>${a.stay}</span><b class="stay-switch" aria-hidden="true"><i></i></b></button>
       <button type="button" class="menu-wardrobe" data-wardrobe aria-expanded="${wardrobeOpen}">${svg('star')}<span>${t().wardrobe}</span><b>${wardrobeOpen ? '−' : '+'}</b></button>
       ${wardrobeOpen ? renderWardrobe() : ''}`;
   }
@@ -713,6 +721,7 @@
   }
   function closeMenu(refocus) { if (menu.hidden) return; menu.hidden = true; hit.setAttribute('aria-expanded', 'false'); if (refocus) hit.focus({preventScroll: true}); }
   menu.addEventListener('click', event => {
+    if (event.target.closest('[data-stay]')) { const text = setStay(!stay); renderMenu(); placeMenu(); say(text); menu.querySelector('[data-stay]')?.focus({preventScroll: true}); return; }
     if (event.target.closest('[data-wardrobe]')) { wardrobeOpen = !wardrobeOpen; renderMenu(); placeMenu(); menu.querySelector('[data-wardrobe]')?.focus({preventScroll: true}); return; }
     const o = event.target.closest('[data-outfit]');
     if (o) { setOutfit(o.dataset.outfit); renderMenu(); say(t().outfitChanged); return; }
@@ -1169,7 +1178,15 @@
   }, true);
   document.addEventListener('pointerdown', event => { if (!menu.hidden && !menu.contains(event.target) && !pet.contains(event.target)) closeMenu(); }, true);
 
+  function setStay(on) {
+    stay = !!on; app.store.set('yuki-stay', stay ? '1' : '0'); pet.classList.toggle('is-staying', stay);
+    if (stay && walkTo !== null) { walkTo = null; onArrive = null; setGait('walk'); restPose(); }
+    return stay ? t().stayOn : t().stayOff;
+  }
+  pet.classList.toggle('is-staying', stay);
+
   window.YUKI = {
+    stay: on => on === undefined ? stay : setStay(on),
     walkTo: target => walk(clamp(target, ...bounds(floorOf(floorKind)))), stretch,
     move(name) {
       if (asleep) wake(true);

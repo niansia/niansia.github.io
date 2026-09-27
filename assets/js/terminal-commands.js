@@ -33,6 +33,7 @@ window.NIANSIA_TERMINAL = {
     ['sleep','sleep','sleep','Let Yuki take a nap','讓 Yuki 休息','让 Yuki 休息'],
     ['lie','lie','lie','Yuki lies down in her bed and asks for pats','讓 Yuki 趴進小窩討摸摸','让 Yuki 趴进小窝讨摸摸'],
     ['trick','trick','trick','Yuki shows a little trick','Yuki 表演小才藝','Yuki 表演小才艺'],
+    ['stay','stay [on|off]','stay on','Keep Yuki in one place, or let her roam','讓 Yuki 待在原地不亂走，或恢復自由走動','让 Yuki 待在原地不乱走，或恢复自由走动'],
     ['hide','hide','hide','Tuck Yuki away at the edge, or bring her back','讓 Yuki 躲到邊邊，或叫她回來','让 Yuki 躲到边边，或叫她回来'],
     ['yuki','yuki','yuki','Show Yuki’s fullness, mood, energy and affection','查看 Yuki 的飽足、心情、體力與好感','查看 Yuki 的饱足、心情、体力与好感'],
     ['wake','wake','wake','Wake Yuki up','叫醒 Yuki','叫醒 Yuki'],

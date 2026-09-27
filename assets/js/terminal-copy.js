@@ -36,7 +36,7 @@ window.NIANSIA_COPY = {
     happy: 'That sounds lovely! I’m smiling with you. Shall we celebrate with a little adventure through the project directory?',
     fallback: 'I’m a small companion with a few prepared conversations. You can tell me you’re tired, pat me, ask about a project by name, or say “show me projects”.',
     routeReplies: {home:'Home sweet terminal. Make yourself comfortable.',about:'Here’s the person behind this little world.',projects:'Ten projects, ten different questions. Pick one and let’s look inside.',research:'These are the questions that keep the lab curious.',contact:'A good conversation is a nice place to start.',hobbies:'The other half of me: cosplay, music and far too many fandoms.',help:'I’ve put all the shortcuts here for you.'},
-    motionOff: 'Animation paused.', motionOn: 'Animation resumed.', followOn: 'I’ll follow your pointer.', followOff: 'I’ll stay here beside the terminal.', loading: 'Opening terminal…'
+    motionOff: 'Animation paused.', motionOn: 'Animation resumed.', followOn: 'I’ll follow your pointer.', followOff: 'I’ll stay here beside the terminal.', stayOn: 'Okay, I’ll stay right here so you can read.', stayOff: 'Yay, I can wander around again!', loading: 'Opening terminal…'
   },
   'zh-TW': {
     desktop:'一個小終端，裝著好奇心。', nav:['開始','關於我','全部作品','研究','聯絡','興趣日常','操作說明'],
@@ -73,7 +73,7 @@ window.NIANSIA_COPY = {
     thanks:'不客氣！能陪到你就很好。接下來想一起看什麼？',happy:'聽起來真好！我也跟著開心了。要不要一起去作品資料夾探險，當作小小慶祝？',
     fallback:'我還是個有幾種預設對話的小夥伴。可以跟我說「我好累」、摸摸我、輸入作品名字，或說「帶我看作品」。',
     routeReplies:{home:'回到我們的小終端了。慢慢逛就好。',about:'這裡是打造這些工具的人。',projects:'十項作品，十種好奇心。選一個打開看看吧。',research:'這些是研究室一直想弄懂的問題。',contact:'一段有趣的對話，可以從這裡開始。',hobbies:'這裡是研究以外的我：cos、追星和一堆坑。',help:'我把快捷鍵都整理在這裡了。'},
-    motionOff:'已暫停動畫。',motionOn:'已繼續動畫。',followOn:'我會跟著你的滑鼠走喔。',followOff:'那我留在終端旁陪你。',loading:'正在開啟終端…'
+    motionOff:'已暫停動畫。',motionOn:'已繼續動畫。',followOn:'我會跟著你的滑鼠走喔。',followOff:'那我留在終端旁陪你。',stayOn:'好，我乖乖待在這裡，不打擾你看。',stayOff:'耶，我又可以到處走走了！',loading:'正在開啟終端…'
   },
   'zh-CN': {
     desktop:'一个小终端，装着好奇心。',nav:['开始','关于我','全部作品','研究','联系','兴趣日常','操作说明'],files:'文件管理器',selected:'选择',open:'打开',back:'返回',command:'输入指令',placeholder:'试试 help、projects 或 chat…（按 Tab 切换）',run:'执行',theme:'切换黑白主题',motion:'暂停／继续动画',companion:'陪伴角色',language:'语言',
@@ -81,7 +81,7 @@ window.NIANSIA_COPY = {
     aboutTitle:'喜欢把问题做成工具的研究者。',bio:'我毕业于元智大学资讯工程学系，目前就读国立阳明交通大学硕士班，正在休学一年。',bio2:'研究方向位于 AI 安全、计算机视觉与视觉语言模型的交汇处，特别关注可靠的多模态推理与评估。',bio3:'我希望研究过程清楚可见：观察到了什么、检查了什么，以及其他人可以复现什么。',education:'学习经历',undergrad:'元智大学 · 资讯工程学士',graduate:'国立阳明交通大学 · 硕士班',interests:'AI 安全 / 计算机视觉 / 多模态推理 / 可复现研究',
     researchTitle:'一直想弄懂的那些问题。',researchIntro:'两条互相连接的方向，都从证据出发。',researchA:'AI 与多模态安全',researchABody:'当输入具有对抗性、证据薄弱，或现实世界充满不确定性时，视觉与多模态 AI 系统如何维持安全、稳健，而且能被审计？',researchB:'视觉与多模态智能',researchBBody:'视觉语言系统如何保留视觉证据、跨模态与时间推理，并以有据可依的程度，而不只是表达流畅度来评估？',researchNote:'也关注量化机器学习、交互系统与研究软件。部分研究仍在开发或审查阶段，会在适当时机公开代码、结果与可复现的材料。',
     contactTitle:'从一段对话开始吧。',contactBody:'如果你也在研究 AI 安全、计算机视觉、可信多模态 AI、可复现性或研究工具，欢迎交流想法，一起探索合作的可能。',send:'写封信给我',copy:'复制邮箱',copied:'已复制电子邮件地址。',copyFail:'请选择上方的电子邮件地址并复制。',guideTitle:'几个按键，探索整个小世界。',guideIntro:'鼠标、触控、键盘都可以，不需要会用终端。',keys:[['↑ ↓','选择文件或作品'],['Enter / →','打开当前选择'],['Esc / ←','返回上一层'],['/','跳到指令输入框'],['Home / End','第一个／最后一个选项'],['Tab','依次移动到各个控件']],commands:'可用指令',commandHelp:'about · research · projects · contact · help · home · theme · pet · chat · clear',unknown:'找不到这个指令。输入 help 看看可以做什么。',simulation:'这是交互式作品集终端，指令只会操作这个网站。',
-    chatTitle:'和 Yuki 聊聊',chatSubtitle:'用预设对话陪伴你，也能带你认识这里的作品。',chatPlaceholder:'打个招呼、说说心情，或问问作品…',chatSend:'发送',close:'关闭',you:'你',hello:'欢迎！我是 Yuki。可以带你逛作品、聊聊研究，也可以陪你待一下。今天想先看看什么？',petName:'Yuki',petSub:'住在终端里的猫耳伙伴',petHint:'可以点我摸摸哦。',pet:'摸摸',feed:'喂食',play:'陪玩',sleep:'休息',wake:'叫醒',talk:'和 Yuki 聊聊',follow:'跟随鼠标',petReplies:['诶嘿……有点痒。可以再摸一下吗？','有点心！那我就陪你一起慢慢看作品吧。','来追我呀！我们去另一个文件里探险。','让我小睡一下……需要我的时候再叫我哦。','醒来了！接下来要去哪里呢？'],moods:['陪着你','跟上你了','开心','想睡了'],chatChips:['你好！','带我看作品','我好累','介绍一下你自己'],greet:'你好呀！这里有十项作品可以探索，键盘旁也帮你留了一个位置。慢慢来，我陪你。',tired:'辛苦了。先放松一下肩膀，喝口水，给自己一小段休息时间吧。作品不会跑走，回来我还在。',self:'我是 Yuki，住在这个小终端里的猫耳伙伴。喜欢暖暖的键盘、半夜冒出的灵感，还有陪好奇的人逛 Niansia 的作品。',thanks:'不客气！能陪到你就很好。接下来想一起看什么？',happy:'听起来真好！我也跟着开心了。要不要一起去作品文件夹探险，当作小小庆祝？',fallback:'我还是个有几种预设对话的小伙伴。可以跟我说「我好累」、摸摸我、输入作品名字，或说「带我看作品」。',routeReplies:{home:'回到我们的小终端了。慢慢逛就好。',about:'这里是打造这些工具的人。',projects:'十项作品，十种好奇心。选一个打开看看吧。',research:'这些是研究室一直想弄懂的问题。',contact:'一段有趣的对话，可以从这里开始。',hobbies:'这里是研究以外的我：cos、追星和一堆坑。',help:'我把快捷键都整理在这里了。'},motionOff:'已暂停动画。',motionOn:'已继续动画。',followOn:'我会跟着你的鼠标走哦。',followOff:'那我留在终端旁陪你。',loading:'正在打开终端…'
+    chatTitle:'和 Yuki 聊聊',chatSubtitle:'用预设对话陪伴你，也能带你认识这里的作品。',chatPlaceholder:'打个招呼、说说心情，或问问作品…',chatSend:'发送',close:'关闭',you:'你',hello:'欢迎！我是 Yuki。可以带你逛作品、聊聊研究，也可以陪你待一下。今天想先看看什么？',petName:'Yuki',petSub:'住在终端里的猫耳伙伴',petHint:'可以点我摸摸哦。',pet:'摸摸',feed:'喂食',play:'陪玩',sleep:'休息',wake:'叫醒',talk:'和 Yuki 聊聊',follow:'跟随鼠标',petReplies:['诶嘿……有点痒。可以再摸一下吗？','有点心！那我就陪你一起慢慢看作品吧。','来追我呀！我们去另一个文件里探险。','让我小睡一下……需要我的时候再叫我哦。','醒来了！接下来要去哪里呢？'],moods:['陪着你','跟上你了','开心','想睡了'],chatChips:['你好！','带我看作品','我好累','介绍一下你自己'],greet:'你好呀！这里有十项作品可以探索，键盘旁也帮你留了一个位置。慢慢来，我陪你。',tired:'辛苦了。先放松一下肩膀，喝口水，给自己一小段休息时间吧。作品不会跑走，回来我还在。',self:'我是 Yuki，住在这个小终端里的猫耳伙伴。喜欢暖暖的键盘、半夜冒出的灵感，还有陪好奇的人逛 Niansia 的作品。',thanks:'不客气！能陪到你就很好。接下来想一起看什么？',happy:'听起来真好！我也跟着开心了。要不要一起去作品文件夹探险，当作小小庆祝？',fallback:'我还是个有几种预设对话的小伙伴。可以跟我说「我好累」、摸摸我、输入作品名字，或说「带我看作品」。',routeReplies:{home:'回到我们的小终端了。慢慢逛就好。',about:'这里是打造这些工具的人。',projects:'十项作品，十种好奇心。选一个打开看看吧。',research:'这些是研究室一直想弄懂的问题。',contact:'一段有趣的对话，可以从这里开始。',hobbies:'这里是研究以外的我：cos、追星和一堆坑。',help:'我把快捷键都整理在这里了。'},motionOff:'已暂停动画。',motionOn:'已继续动画。',followOn:'我会跟着你的鼠标走哦。',followOff:'那我留在终端旁陪你。',stayOn:'好，我乖乖待在这里，不打扰你看。',stayOff:'耶，我又可以到处走走了！',loading:'正在打开终端…'
   }
 };
 Object.assign(window.NIANSIA_COPY.en, {
@@ -101,7 +101,7 @@ Object.assign(window.NIANSIA_COPY.en, {
   askChips:['What projects are there?','Recommend a project','Any project about vision?','Sakura style please'],
   quickTitle:'Try a command', latestCard:'Newest project',
   petLabel:'Yuki, desktop companion. Enter opens her menu; drag to move her.',
-  petActions:{pat:'Pat',feed:'Feed',play:'Play',lie:'Lie down',sleep:'Sleep',wake:'Wake',trick:'Trick',chat:'Chat',hide:'Hide',show:'Come back'},
+  petActions:{stay:'Stay in place',pat:'Pat',feed:'Feed',play:'Play',lie:'Lie down',sleep:'Sleep',wake:'Wake',trick:'Trick',chat:'Chat',hide:'Hide',show:'Come back'},
   stats:{food:'Fullness',mood:'Mood',energy:'Energy',level:'Lv'},
   moodWords:{happy:'Happy',ok:'Relaxed',hungry:'Hungry',sleepy:'Sleepy',lonely:'Lonely',asleep:'Asleep'},
   chatSubtitle:'Runs a small neural network locally — nothing you type leaves this page.', typing:'Yuki is typing…',
@@ -116,7 +116,7 @@ Object.assign(window.NIANSIA_COPY['zh-TW'], {
   askChips:['他有什麼作品？','推薦一個作品','有做電腦視覺的作品嗎？','換成櫻花風格'],
   quickTitle:'試試指令', latestCard:'最新作品',
   petLabel:'桌寵 Yuki。按 Enter 打開選單，也可以拖曳她。',
-  petActions:{pat:'摸摸',feed:'餵食',play:'玩耍',lie:'趴下',sleep:'睡覺',wake:'叫醒',trick:'表演',chat:'聊天',hide:'躲起來',show:'回來'},
+  petActions:{stay:'待在原地',pat:'摸摸',feed:'餵食',play:'玩耍',lie:'趴下',sleep:'睡覺',wake:'叫醒',trick:'表演',chat:'聊天',hide:'躲起來',show:'回來'},
   stats:{food:'飽足',mood:'心情',energy:'體力',level:'Lv'},
   moodWords:{happy:'開心',ok:'悠閒',hungry:'肚子餓',sleepy:'想睡',lonely:'有點寂寞',asleep:'睡著了'},
   chatSubtitle:'在本機運作的小型神經網路，你輸入的內容不會離開這個頁面。', typing:'Yuki 正在輸入…',
@@ -131,7 +131,7 @@ Object.assign(window.NIANSIA_COPY['zh-CN'], {
   askChips:['他有什么作品？','推荐一个作品','有做计算机视觉的作品吗？','换成樱花风格'],
   quickTitle:'试试指令', latestCard:'最新作品',
   petLabel:'桌宠 Yuki。按 Enter 打开菜单，也可以拖动她。',
-  petActions:{pat:'摸摸',feed:'喂食',play:'玩耍',lie:'趴下',sleep:'睡觉',wake:'叫醒',trick:'表演',chat:'聊天',hide:'躲起来',show:'回来'},
+  petActions:{stay:'待在原地',pat:'摸摸',feed:'喂食',play:'玩耍',lie:'趴下',sleep:'睡觉',wake:'叫醒',trick:'表演',chat:'聊天',hide:'躲起来',show:'回来'},
   stats:{food:'饱足',mood:'心情',energy:'体力',level:'Lv'},
   moodWords:{happy:'开心',ok:'悠闲',hungry:'肚子饿',sleepy:'想睡',lonely:'有点寂寞',asleep:'睡着了'},
   chatSubtitle:'在本地运行的小型神经网络，你输入的内容不会离开这个页面。', typing:'Yuki 正在输入…',
