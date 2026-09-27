@@ -17,6 +17,7 @@ window.NIANSIA_TERMINAL = {
     ['skills','skills','skills','List projects that include Agent Skills','列出包含 Agent Skill 的作品','列出包含 Agent Skill 的作品'],
     ['status','status','status','Show this terminal’s settings','查看目前終端設定','查看当前终端设置'],
     ['contact','contact','contact','Open contact information','開啟聯絡資訊','打开联系信息'],
+    ['hobbies','hobbies','hobbies','Off the clock: cosplay, music and fandoms','研究以外：cos、音樂與各種坑','研究以外：cos、音乐与各种坑'],
     ['email','email','email','Show the email address and link','顯示電子郵件與連結','显示电子邮件与链接'],
     ['github','github [project]','github taiwan-exam','Show GitHub source links','顯示 GitHub 原始碼連結','显示 GitHub 源代码链接'],
     ['date','date','date','Show your local date','顯示你的當地日期','显示你的当地日期'],

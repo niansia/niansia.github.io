@@ -5,8 +5,8 @@
   if (!root || !window.NIANSIA_COPY || !window.NIANSIA_PROJECTS || !window.NIANSIA_TERMINAL) return;
   const esc = value => String(value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
   const store = { get(key, fallback) { try { return localStorage.getItem(`niansia-${key}`) ?? fallback; } catch { return fallback; } }, set(key,value) { try { localStorage.setItem(`niansia-${key}`,value); } catch {} } };
-  const paths = ['home','about','projects','research','contact','help'];
-  const files = ['start.sh','about.md','projects/','research.md','contact.txt','help'];
+  const paths = ['home','about','projects','research','contact','hobbies','help'];
+  const files = ['start.sh','about.md','projects/','research.md','contact.txt','hobbies.md','help'];
   const themes = ['sakura','light','dark','matcha','retro'];
   const themeColors = {light:'#edf0f7',dark:'#101117',sakura:'#fbf0f4',matcha:'#eef2e8',retro:'#060a07'};
   const icons = {
@@ -97,11 +97,11 @@
         <div class="window-bar"><div class="fest-garland" aria-hidden="true"></div><div class="window-dots"><button type="button" data-action="win-close" aria-label="close"></button><button type="button" data-action="win-min" aria-label="${c.winMin}"></button><button type="button" data-action="win-max" aria-label="${c.winMax}"></button></div><span class="window-title" translate="no">niansia@home <span class="muted">: ~</span></span><span class="window-note"><span class="window-clock" translate="no"></span>${icon('terminal')} portfolio / v.03</span></div>
         <div class="window-body">
         <div class="workspace">
-          <div class="explorer"><div class="explorer-heading">${c.files}<span>~/</span></div><nav aria-label="${c.files}"><span class="nav-indicator" aria-hidden="true"></span>${paths.map((path,i)=>`<button class="file-item" data-view="${path}" data-nav-index="${i}" aria-label="${c.nav[i]} (${files[i]})"><span class="file-symbol">${icon(['terminal','file','folder','research','mail','help'][i])}</span><span><b translate="no">${files[i]}</b><small>${c.nav[i]}</small></span>${i===2?`<em>${String(projects().length).padStart(2,'0')}</em>`:''}</button>`).join('')}</nav><div class="explorer-bottom"><span class="branch-mark" aria-hidden="true">⑂</span><span translate="no">main</span><a href="https://github.com/niansia" target="_blank" rel="noopener noreferrer">GitHub ${icon('link')}</a></div></div>
+          <div class="explorer"><div class="explorer-heading">${c.files}<span>~/</span></div><nav aria-label="${c.files}"><span class="nav-indicator" aria-hidden="true"></span>${paths.map((path,i)=>`<button class="file-item" data-view="${path}" data-nav-index="${i}" aria-label="${c.nav[i]} (${files[i]})"><span class="file-symbol">${icon(['terminal','file','folder','research','mail','heart','help'][i])}</span><span><b translate="no">${files[i]}</b><small>${c.nav[i]}</small></span>${i===2?`<em>${String(projects().length).padStart(2,'0')}</em>`:''}</button>`).join('')}</nav><div class="explorer-bottom"><span class="branch-mark" aria-hidden="true">⑂</span><span translate="no">main</span><a href="https://github.com/niansia" target="_blank" rel="noopener noreferrer">GitHub ${icon('link')}</a></div></div>
           <div class="terminal-main"><div class="fest-watermark" aria-hidden="true"></div><div class="pane-bar"><span class="pane-path" translate="no"></span><span class="pane-shortcut"><kbd>Esc</kbd> ${c.back}</span></div><div class="terminal-output" id="terminal-content" tabindex="-1"></div></div>
         </div>
         <div class="command-area"><div class="command-message" role="status" aria-live="polite">${c.ready}</div><form class="command-form"><label for="terminal-command" class="prompt" translate="no"><span class="session-user">${esc(username)}</span><span>@home</span><b>:~$</b><span class="sr-only">${c.command}</span></label><input id="terminal-command" data-command-input maxlength="500" autocomplete="off" spellcheck="false" autocapitalize="none" placeholder="${c.placeholder}" aria-label="${c.command}"><button type="submit" aria-label="${c.run}">${icon('arrow')}<span>${c.run}</span></button></form></div>
-        <footer class="terminal-status"><span class="status-keys"><kbd>↑</kbd><kbd>↓</kbd> ${c.selected} <kbd>Enter</kbd> ${c.open} <kbd>Esc</kbd> ${c.back}</span><button class="status-yuki" data-action="chat" data-yuki-status>${icon('paw')}<span>yuki</span></button><button data-view="help" aria-label="${c.nav[5]}">${icon('help')}<span>${c.nav[5]}</span></button><span class="status-signature" translate="no">made with curiosity <span>✦</span></span></footer>
+        <footer class="terminal-status"><span class="status-keys"><kbd>↑</kbd><kbd>↓</kbd> ${c.selected} <kbd>Enter</kbd> ${c.open} <kbd>Esc</kbd> ${c.back}</span><button class="status-yuki" data-action="chat" data-yuki-status>${icon('paw')}<span>yuki</span></button><button data-view="help" aria-label="${c.nav[paths.indexOf('help')]}">${icon('help')}<span>${c.nav[paths.indexOf('help')]}</span></button><span class="status-signature" translate="no">made with curiosity <span>✦</span></span></footer>
         </div>
       </section><div class="desktop-footer"><span>© ${new Date().getFullYear()} Niansia</span><span>Quarto + a little cat magic</span></div>
     </div>
@@ -179,6 +179,20 @@
     if (sky) sky.dataset.fest = fest ? fest.primary.id : '';
     fx()?.ambient(fest ? fest.festivals.map(f => f.particle) : []);
   }
+  /* Off the clock: hobbies, cosplay and fandoms, kept apart from the research pages. */
+  function hobbiesScreen() {
+    const h=window.NIANSIA_HOBBIES, L=h?.[locale]||h?.en;
+    if (!L) return `${commandTitle('cat hobbies.md')}<p>${t().noMatches}</p>`;
+    const days=Math.max(0,Math.floor((Date.now()-Date.parse(`${h.cosSince}T00:00:00+08:00`))/864e5));
+    const chips=list=>`<span class="hobby-chips">${list.map(x=>`<span>${esc(x)}</span>`).join('')}</span>`;
+    const value=(v,fold)=>!Array.isArray(v)?esc(v).replace('{days}',`<b class="hobby-count">${days.toLocaleString(locale)}</b>`)
+      :fold?`<details class="hobby-more"><summary>${esc(v.slice(0,3).join('、'))}… <em>${esc(L.more)} (${v.length})</em></summary>${chips(v)}</details>`:chips(v);
+    const sections=L.sections.map((s,i)=>`<section class="research-entry hobby-section"><span>${String(i+1).padStart(2,'0')}</span><div><h2>${esc(s.title)}</h2><dl class="hobby-list">${s.rows.map(([k,v,fold])=>`<div><dt>${esc(k)}</dt><dd>${value(v,fold)}</dd></div>`).join('')}</dl></div></section>`).join('');
+    const links=h.links.map(l=>`<a class="hobby-link" href="${esc(l.url)}" target="_blank" rel="noopener noreferrer"><span class="hobby-link-head"><b>${esc(l.label)}</b>${l.handle?`<span translate="no">${esc(l.handle)}</span>`:''}${icon('link')}</span><small>${esc(L.linkNotes[l.id]||'')}</small></a>`).join('');
+    return `${commandTitle('cat hobbies.md')}<h1>${esc(L.title)}</h1><p class="screen-intro">${esc(L.intro)}</p>
+      <div class="hobby-card"><p>${esc(L.nick)}</p><div class="hobby-facts">${L.facts.map(f=>`<span>${esc(f)}</span>`).join('')}</div><div class="interest-tags">${L.circles.map(c=>`<span>${esc(c)}</span>`).join('')}</div><p class="hobby-langs"><b>${esc(L.langLabel)}</b>${L.langs.map(esc).join(' ❅ ')}<small>${esc(L.langNote)}</small></p></div>
+      ${sections}<h2 class="hobby-social-title">${esc(L.socialTitle)}</h2><div class="hobby-links">${links}</div><p class="comment-line">${esc(L.footnote)}</p>`;
+  }
   function screen(animate=true) {
     const c=t(), items=projects(), item=items.find(p=>p.id===projectId);
     let html='';
@@ -188,6 +202,7 @@
     if (view==='about') html=`${commandTitle('cat about.md')}<h1>${c.aboutTitle}</h1><div class="reading"><p>${c.bio}</p><p>${c.bio2}</p><p>${c.bio3}</p><h2>${c.education}</h2><ul class="education-list"><li><span class="edu-dot" aria-hidden="true"></span>${c.undergrad}</li><li><span class="edu-dot is-now" aria-hidden="true"></span>${c.graduate}<small>${c.leave}</small></li></ul><div class="interest-tags">${c.interests.split(' / ').map(tag=>`<span>${tag}</span>`).join('')}</div></div>${button('research',c.nav[3],true)}`;
     if (view==='research') html=`${commandTitle('cat research.md')}<h1>${c.researchTitle}</h1><p class="screen-intro">${c.researchIntro}</p><div class="research-entry"><span>01</span><div><h2>${c.researchA}</h2><p>${c.researchABody}</p><small>security / robustness / evaluation</small></div></div><div class="research-entry"><span>02</span><div><h2>${c.researchB}</h2><p>${c.researchBBody}</p><small>vision / reasoning / grounding</small></div></div><p class="comment-line">${c.researchNote}</p>`;
     if (view==='contact') html=`${commandTitle('cat contact.txt')}<h1>${c.contactTitle}</h1><div class="reading"><p>${c.contactBody}</p><div class="contact-address"><span translate="no">email:</span><a href="mailto:niansia930202@gmail.com" translate="no">niansia930202@gmail.com</a></div><div class="output-actions"><a class="action-button primary" href="mailto:niansia930202@gmail.com">${icon('mail')}<span>${c.send}</span></a><button class="action-button" data-action="copy">${icon('copy')}<span>${c.copy}</span></button></div><a class="github-link" href="https://github.com/niansia" target="_blank" rel="noopener noreferrer">github.com/niansia ${icon('link')}</a></div>`;
+    if (view==='hobbies') html=hobbiesScreen();
     if (view==='help') html=`${commandTitle('help')}<h1>${c.guideTitle}</h1><p>${c.guideIntro}</p><dl class="keyboard-guide">${c.keys.map(([key,description])=>`<div><dt><kbd>${key}</kbd></dt><dd>${description}</dd></div>`).join('')}</dl><h2>${c.commands}</h2>${commandCatalogue()}<p class="comment-line">${c.simulation}</p>`;
     if (view==='projects' && !item) html=`${commandTitle('ls ./projects/')}<div class="directory-heading"><h1>${c.all}</h1><span>${String(items.length).padStart(2,'0')} ${c.directory}</span></div><p class="screen-intro">${c.projectIntro}</p><div class="project-directory" aria-label="${c.all}">${items.map((p,i)=>`<button class="project-row ${i===selectedProject?'is-selected':''}" data-project="${p.id}" data-project-index="${i}" style="--i:${i}"><span class="row-index">${String(i+1).padStart(2,'0')}</span><span class="project-row-title"><strong translate="no">${p.name}</strong><small>${p.category}</small></span><span class="project-status">${p.status}</span><span class="row-arrow">↗</span></button>`).join('')}</div>`;
     if (view==='projects' && item) html=`${commandTitle('cat projects/'+esc(item.id)+'/README.md')}<button class="back-link" data-view="projects">← ${c.all}</button><div class="project-detail"><p class="detail-meta">${esc(item.category)}<span>${esc(item.status)}</span></p><h1 translate="no">${esc(item.name)}</h1><p class="project-description">${esc(item.description)}</p>${item.id==='taiwan-exam'?'<img class="project-art" src="/assets/work/taiwan-exam-social-preview.png" width="1280" height="640" alt="Taiwan Exam" loading="lazy">':''}<h2>${c.evidence}</h2><p>${esc(item.evidence)}</p><div class="output-actions"><a class="action-button primary" href="${esc(item.url)}" target="_blank" rel="noopener noreferrer"><span>${c.source}</span>${icon('link')}</a><a class="action-button" href="${esc(item.reference)}" target="_blank" rel="noopener noreferrer"><span>${esc(item.referenceLabel)}</span>${icon('link')}</a><button class="action-button" data-ask="${esc(item.name)}">${icon('chat')}<span>${c.askTitle}</span></button></div><div class="project-pagination"><button data-project-step="-1">← ${c.prev}</button><span>${items.indexOf(item)+1} / ${items.length}</span><button data-project-step="1">${c.next} →</button></div></div>`;
@@ -256,7 +271,7 @@
     const split=value.indexOf(' '),head=split<0?value:value.slice(0,split),tail=split<0?'':value.slice(split+1).toLowerCase();
     if(split<0)return catalogue.map(c=>c.name).filter(name=>name.startsWith(head.toLowerCase()));
     const values={festival:['list','auto','off',...(window.NIANSIA_FESTIVAL?.list||[]).map(f=>f.id)],accessory:['list','auto','none',...Object.keys(window.YukiWardrobe?.accessories||{})],outfit:['list','auto',...(window.YukiWardrobe?.outfits()||[]).map(o=>o.id)],theme:themes,style:themes,lang:['en','zh-tw','zh-cn'],motion:['on','off'],follow:['on','off'],trail:['hearts','paws','stars','petals','off'],cursor:['s','m','l'],help:catalogue.map(c=>c.name)};
-    const destinations=['home','about.md','research.md','contact.txt','projects/',...projects().map(p=>p.id),...projects().map(p=>'projects/'+p.id+'/README.md')];
+    const destinations=['home','about.md','research.md','contact.txt','hobbies.md','projects/',...projects().map(p=>p.id),...projects().map(p=>'projects/'+p.id+'/README.md')];
     return (values[head]||(['cd','cat','open','github'].includes(head)?destinations:[])).filter(item=>item.startsWith(tail)).map(item=>head+' '+item);
   }
   let tabCycle=null;
@@ -285,7 +300,7 @@
   }
   function resolveTarget(value) {
     const name=value.toLowerCase().replace(/^(~\/|\.\/|\/)/,'').replace(/\/readme\.md$/,'').replace(/\/$/,'');
-    const aliases={'':'home','~':'home','start.sh':'home','about.md':'about','profile':'about','research.md':'research','contact.txt':'contact','work':'projects','portfolio':'projects'};
+    const aliases={'':'home','~':'home','start.sh':'home','about.md':'about','profile':'about','research.md':'research','contact.txt':'contact','hobbies.md':'hobbies','hobby':'hobbies','cosplay':'hobbies','work':'projects','portfolio':'projects'};
     const path=aliases[name]||name;
     if(paths.includes(path))return {view:path};
     const item=projects().find(p=>p.id===name.replace(/^projects\//,'')||p.name.toLowerCase()===name);
@@ -307,7 +322,7 @@
     commandHistory.push(value);if(commandHistory.length>50)commandHistory.shift();historyIndex=commandHistory.length;
     const parsed=window.NIANSIA_TERMINAL.parse(value);
     if(parsed.error){record(value,t().quoteError);return;}
-    const aliases={'?':'help',work:'projects',portfolio:'projects',profile:'about','./start.sh':'home','start.sh':'home',meow:'pet',search:'find','作品':'projects','研究':'research','聯絡':'contact','联系':'contact','關於':'about','关于':'about'};
+    const aliases={'?':'help',work:'projects',portfolio:'projects',profile:'about','./start.sh':'home','start.sh':'home',meow:'pet',search:'find','作品':'projects','研究':'research','聯絡':'contact','联系':'contact',hobby:'hobbies',cosplay:'hobbies',cos:'hobbies',fun:'hobbies','興趣':'hobbies','兴趣':'hobbies','日常':'hobbies','關於':'about','关于':'about'};
     const name=aliases[parsed.name]||parsed.name,args=parsed.args,arg=args.join(' '),lower=arg.toLowerCase();
     const definition=catalogue.find(c=>c.name===name);
     const usage=()=>record(value,`${t().usage}: ${definition?.usage||'help'}\n${definition?.description[locale]||t().unknown}`);
@@ -338,7 +353,7 @@
         break;
       }
       case 'pwd':finish(view==='projects'?'~/projects/'+projectId:'~/');break;
-      case 'tree':finish('~/\n├── start.sh\n├── about.md\n├── research.md\n├── contact.txt\n└── projects/\n'+projects().map((p,i)=>`    ${i===projects().length-1?'└':'├'}── ${p.id}/`).join('\n'));break;
+      case 'tree':finish('~/\n├── start.sh\n├── about.md\n├── research.md\n├── contact.txt\n├── hobbies.md\n└── projects/\n'+projects().map((p,i)=>`    ${i===projects().length-1?'└':'├'}── ${p.id}/`).join('\n'));break;
       case 'find':case 'skills': {
         if(name==='find'&&!arg){usage();break;}
         const matches=projects().filter(p=>name==='skills'?/skill/i.test(p.description):`${p.name} ${p.id} ${p.description} ${p.category}`.toLowerCase().includes(lower));
