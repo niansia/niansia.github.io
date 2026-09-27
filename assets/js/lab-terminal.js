@@ -179,6 +179,68 @@
     if (sky) sky.dataset.fest = fest ? fest.primary.id : '';
     fx()?.ambient(fest ? fest.festivals.map(f => f.particle) : []);
   }
+  /* Undergraduate capstone (propaganda detection): pipeline, live detection demo and charts, animated on reveal. */
+  const cap=()=>window.NIANSIA_CAPSTONE;
+  const capCopy=()=>cap()?.copy[locale]||cap()?.copy.en;
+  const capName=o=>locale==='en'?o.en:locale==='zh-CN'?(o.zhcn||o.zh):o.zh;
+  const CAP_LANGS=[['en','EN'],['zh','中文'],['ar','العربية'],['ur','اردو'],['ps','پښتو']];
+  let capState={i:0,lang:'en',timer:0,observer:null};
+  function capstoneBlock() {
+    const C=capCopy(), D=cap(); if (!C) return '';
+    const n=v=>v.toLocaleString(locale);
+    const stats=C.stats.map(([k,label])=>`<div><b data-count="${D.stats[k]}">${motion()?0:n(D.stats[k])}</b><span>${esc(label)}</span></div>`).join('');
+    const pipe=C.pipe.map(([title,body],i)=>`<li style="--i:${i}"><span class="cap-step">${String(i+1).padStart(2,'0')}</span><div><b>${esc(title)}</b><p>${esc(body)}</p></div></li>`).join('');
+    const maxT=Math.max(...D.techniques.map(t=>t.n));
+    const dist=D.techniques.map((t,i)=>`<div class="cap-bar" style="--v:${(t.n/maxT).toFixed(3)};--i:${i}"><span>${esc(capName(t))}</span><i></i><em>${n(t.n)}</em></div>`).join('');
+    const media=D.outlets.map((o,i)=>{const top=Math.max(...o.mix);return `<div class="cap-outlet" style="--i:${i}"><span translate="no">${esc(o.name)}</span><i class="cap-strip">${o.mix.map((m,k)=>`<s style="--a:${(m/top).toFixed(2)};--k:${k}" title="${esc(capName(D.mix[k]))} · ${n(m)}"></s>`).join('')}</i><em>${n(o.total)}</em></div>`;}).join('');
+    const legend=`<span>${locale==='en'?'lower share':locale==='zh-CN'?'占比低':'佔比低'}</span><s class="cap-scale"></s><span>${locale==='en'?'higher share':locale==='zh-CN'?'占比高':'佔比高'}</span>`;
+    const langs=CAP_LANGS.map(([k,label])=>`<button type="button" data-cap-lang="${k}" aria-pressed="${k===capState.lang}">${label}</button>`).join('');
+    const dots=D.examples.map((_,i)=>`<button type="button" data-cap-ex="${i}" aria-label="${i+1}"></button>`).join('');
+    return `<section class="capstone" id="capstone" aria-labelledby="cap-title">
+      <p class="cap-kicker">${esc(C.kicker)}</p><h2 id="cap-title" class="cap-title">${esc(C.title)}</h2><p class="cap-lede">${esc(C.lede)}</p>
+      <div class="cap-meta">${C.tags.map(t=>`<em>${esc(t)}</em>`).join('')}</div>
+      <div class="cap-stats">${stats}</div>
+      <h3>${esc(C.pipeTitle)}</h3><ol class="cap-pipe">${pipe}</ol>
+      <h3>${esc(C.demoTitle)}</h3><div class="cap-demo"><div class="cap-demo-bar"><span class="cap-led" aria-hidden="true"></span><span class="cap-demo-langs" role="group">${langs}</span></div><p class="cap-sentence" aria-live="polite"></p><div class="cap-verdict"><span class="cap-chip"></span><span class="cap-dots">${dots}</span></div><small>${esc(C.demoNote)}</small></div>
+      <div class="cap-charts"><div><h3>${esc(C.distTitle)}</h3><div class="cap-dist">${dist}</div></div><div><h3>${esc(C.mediaTitle)}</h3><div class="cap-media">${media}</div><p class="cap-legend">${legend}</p><small class="cap-note">${esc(C.mediaNote)}</small></div></div>
+      <p class="comment-line">${esc(C.footnote)}</p></section>`;
+  }
+  function paintCapExample(scan=true) {
+    const D=cap(), el=$('.cap-sentence'); if (!D||!el) return;
+    const ex=D.examples[capState.i], tech=D.techniques.find(t=>t.key===ex.tech)||{en:ex.tech,zh:ex.tech};
+    const lang=capState.lang, text=lang==='en'?ex.text:ex[lang];
+    el.dir=['ar','ur','ps'].includes(lang)?'rtl':'ltr';
+    if (lang==='en') { const at=ex.text.indexOf(ex.span); el.innerHTML=`${esc(ex.text.slice(0,at))}<mark>${esc(ex.span)}</mark>${esc(ex.text.slice(at+ex.span.length))}`; }
+    else el.textContent=text;
+    const chip=$('.cap-chip'); chip.textContent=capName(tech);
+    const box=$('.cap-demo'); box.classList.remove('is-scanning','is-hit'); void box.offsetWidth;
+    if (scan&&motion()) { box.classList.add('is-scanning'); setTimeout(()=>{ if (box.isConnected) { box.classList.remove('is-scanning'); box.classList.add('is-hit'); } },1300); }
+    else box.classList.add('is-hit');
+    root.querySelectorAll('[data-cap-ex]').forEach((b,i)=>b.setAttribute('aria-current',String(i===capState.i)));
+    root.querySelectorAll('[data-cap-lang]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.capLang===lang)));
+  }
+  function capCount(section) {
+    section.querySelectorAll('[data-count]').forEach(el=>{
+      const target=Number(el.dataset.count), start=performance.now(), dur=1400;
+      const step=now=>{ const k=Math.min(1,(now-start)/dur), e=1-Math.pow(1-k,3); el.textContent=Math.round(target*e).toLocaleString(locale); if (k<1&&el.isConnected) requestAnimationFrame(step); };
+      requestAnimationFrame(step);
+    });
+  }
+  function initCapstone() {
+    const section=$('.capstone'); if (!section) return;
+    clearInterval(capState.timer); capState.observer?.disconnect();
+    paintCapExample(false);
+    const reveal=()=>{ section.classList.add('is-in'); if (motion()) capCount(section); };
+    if (!motion()||!('IntersectionObserver' in window)) section.classList.add('is-in');
+    else { capState.observer=new IntersectionObserver(entries=>{ if (entries.some(e=>e.isIntersecting)) { reveal(); capState.observer.disconnect(); } },{threshold:.12}); capState.observer.observe(section); }
+    capState.timer=setInterval(()=>{ if (!$('.capstone')) { clearInterval(capState.timer); return; } if (!motion()||document.hidden) return; capState.i=(capState.i+1)%cap().examples.length; paintCapExample(); },5200);
+  }
+  root.addEventListener('click',event=>{
+    const lang=event.target.closest('[data-cap-lang]'), ex=event.target.closest('[data-cap-ex]'), jump=event.target.closest('[data-cap-jump]');
+    if (lang) { capState.lang=lang.dataset.capLang; paintCapExample(false); }
+    if (ex) { capState.i=Number(ex.dataset.capEx); paintCapExample(); }
+    if (jump) $('#capstone')?.scrollIntoView({behavior:motion()?'smooth':'auto',block:'start'});
+  });
   /* Papers in preparation: live countdowns to each venue's deadline (Anywhere on Earth). */
   const subs=()=>window.NIANSIA_SUBMISSIONS;
   const subCopy=()=>subs()?.copy[locale]||subs()?.copy.en;
@@ -221,13 +283,14 @@
     document.title = `${item?.name || c.nav[paths.indexOf(view)]} | Niansia terminal`;
     if (view==='home') html=homeScreen(c);
     if (view==='about') html=`${commandTitle('cat about.md')}<h1>${c.aboutTitle}</h1><div class="reading"><p>${c.bio}</p><p>${c.bio2}</p><p>${c.bio3}</p><h2>${c.education}</h2><ul class="education-list"><li><span class="edu-dot" aria-hidden="true"></span>${c.undergrad}</li><li><span class="edu-dot is-now" aria-hidden="true"></span>${c.graduate}<small>${c.leave}</small></li></ul><div class="interest-tags">${c.interests.split(' / ').map(tag=>`<span>${tag}</span>`).join('')}</div></div>${button('research',c.nav[3],true)}`;
-    if (view==='research') html=`${commandTitle('cat research.md')}<h1>${c.researchTitle}</h1><p class="screen-intro">${c.researchIntro}</p><div class="research-entry"><span>01</span><div><h2>${c.researchA}</h2><p>${c.researchABody}</p><small>security / robustness / evaluation</small></div></div><div class="research-entry"><span>02</span><div><h2>${c.researchB}</h2><p>${c.researchBBody}</p><small>vision / reasoning / grounding</small></div></div>${submissionsBlock()}<p class="comment-line">${c.researchNote}</p>`;
+    if (view==='research') html=`${commandTitle('cat research.md')}<h1>${c.researchTitle}</h1><p class="screen-intro">${c.researchIntro}</p>${capCopy()?`<button type="button" class="cap-jump" data-cap-jump>✦ ${esc(capCopy().open)} ↓</button>`:''}<div class="research-entry"><span>01</span><div><h2>${c.researchA}</h2><p>${c.researchABody}</p><small>security / robustness / evaluation</small></div></div><div class="research-entry"><span>02</span><div><h2>${c.researchB}</h2><p>${c.researchBBody}</p><small>vision / reasoning / grounding</small></div></div>${capstoneBlock()}${submissionsBlock()}<p class="comment-line">${c.researchNote}</p>`;
     if (view==='contact') html=`${commandTitle('cat contact.txt')}<h1>${c.contactTitle}</h1><div class="reading"><p>${c.contactBody}</p><div class="contact-address"><span translate="no">email:</span><a href="mailto:niansia930202@gmail.com" translate="no">niansia930202@gmail.com</a></div><div class="output-actions"><a class="action-button primary" href="mailto:niansia930202@gmail.com">${icon('mail')}<span>${c.send}</span></a><button class="action-button" data-action="copy">${icon('copy')}<span>${c.copy}</span></button></div><a class="github-link" href="https://github.com/niansia" target="_blank" rel="noopener noreferrer">github.com/niansia ${icon('link')}</a></div>`;
     if (view==='hobbies') html=hobbiesScreen();
     if (view==='help') html=`${commandTitle('help')}<h1>${c.guideTitle}</h1><p>${c.guideIntro}</p><dl class="keyboard-guide">${c.keys.map(([key,description])=>`<div><dt><kbd>${key}</kbd></dt><dd>${description}</dd></div>`).join('')}</dl><h2>${c.commands}</h2>${commandCatalogue()}<p class="comment-line">${c.simulation}</p>`;
     if (view==='projects' && !item) html=`${commandTitle('ls ./projects/')}<div class="directory-heading"><h1>${c.all}</h1><span>${String(items.length).padStart(2,'0')} ${c.directory}</span></div><p class="screen-intro">${c.projectIntro}</p><div class="project-directory" aria-label="${c.all}">${items.map((p,i)=>`<button class="project-row ${i===selectedProject?'is-selected':''}" data-project="${p.id}" data-project-index="${i}" style="--i:${i}"><span class="row-index">${String(i+1).padStart(2,'0')}</span><span class="project-row-title"><strong translate="no">${p.name}</strong><small>${p.category}</small></span><span class="project-status">${p.status}</span><span class="row-arrow">↗</span></button>`).join('')}</div>`;
     if (view==='projects' && item) html=`${commandTitle('cat projects/'+esc(item.id)+'/README.md')}<button class="back-link" data-view="projects">← ${c.all}</button><div class="project-detail"><p class="detail-meta">${esc(item.category)}<span>${esc(item.status)}</span></p><h1 translate="no">${esc(item.name)}</h1><p class="project-description">${esc(item.description)}</p>${item.id==='taiwan-exam'?'<img class="project-art" src="/assets/work/taiwan-exam-social-preview.png" width="1280" height="640" alt="Taiwan Exam" loading="lazy">':''}<h2>${c.evidence}</h2><p>${esc(item.evidence)}</p><div class="output-actions"><a class="action-button primary" href="${esc(item.url)}" target="_blank" rel="noopener noreferrer"><span>${c.source}</span>${icon('link')}</a><a class="action-button" href="${esc(item.reference)}" target="_blank" rel="noopener noreferrer"><span>${esc(item.referenceLabel)}</span>${icon('link')}</a><button class="action-button" data-ask="${esc(item.name)}">${icon('chat')}<span>${c.askTitle}</span></button></div><div class="project-pagination"><button data-project-step="-1">← ${c.prev}</button><span>${items.indexOf(item)+1} / ${items.length}</span><button data-project-step="1">${c.next} →</button></div></div>`;
     const output=$('.terminal-output'); output.innerHTML=html; output.scrollTop=0; renderJournal();
+    if (view==='research') initCapstone();
     output.classList.remove('screen-enter'); if (animate && motion()) { void output.offsetWidth; output.classList.add('screen-enter'); }
     root.querySelectorAll('[data-nav-index]').forEach((el,i)=>{el.classList.toggle('is-current',i===paths.indexOf(view));el.classList.toggle('is-selected',i===selectedNav);el.setAttribute('aria-current',i===paths.indexOf(view)?'page':'false');});
     moveIndicator();
@@ -343,7 +406,7 @@
     commandHistory.push(value);if(commandHistory.length>50)commandHistory.shift();historyIndex=commandHistory.length;
     const parsed=window.NIANSIA_TERMINAL.parse(value);
     if(parsed.error){record(value,t().quoteError);return;}
-    const aliases={'?':'help',work:'projects',portfolio:'projects',profile:'about','./start.sh':'home','start.sh':'home',meow:'pet',search:'find','作品':'projects','研究':'research','聯絡':'contact','联系':'contact',ddl:'deadlines',countdown:'deadlines','投稿':'deadlines','截止':'deadlines',hobby:'hobbies',cosplay:'hobbies',cos:'hobbies',fun:'hobbies','興趣':'hobbies','兴趣':'hobbies','日常':'hobbies','關於':'about','关于':'about'};
+    const aliases={'?':'help',work:'projects',portfolio:'projects',profile:'about','./start.sh':'home','start.sh':'home',meow:'pet',search:'find','作品':'projects','研究':'research','聯絡':'contact','联系':'contact',ddl:'deadlines',countdown:'deadlines','專題':'capstone','专题':'capstone','投稿':'deadlines','截止':'deadlines',hobby:'hobbies',cosplay:'hobbies',cos:'hobbies',fun:'hobbies','興趣':'hobbies','兴趣':'hobbies','日常':'hobbies','關於':'about','关于':'about'};
     const name=aliases[parsed.name]||parsed.name,args=parsed.args,arg=args.join(' '),lower=arg.toLowerCase();
     const definition=catalogue.find(c=>c.name===name);
     const usage=()=>record(value,`${t().usage}: ${definition?.usage||'help'}\n${definition?.description[locale]||t().unknown}`);
@@ -358,6 +421,11 @@
         if(!arg){navigate('help','',{keyboard:true});finish(n(t().commandHelp));}
         else {const command=catalogue.find(c=>c.name===lower);if(command)finish(`${command.usage}\n${command.description[locale]}\n> ${command.example}`);else finish(t().unknown);}
         break;
+      }
+      case 'capstone': {
+        navigate('research','',{keyboard:true});
+        setTimeout(()=>$('#capstone')?.scrollIntoView({behavior:motion()?'smooth':'auto',block:'start'}),60);
+        finish(capCopy()?.title||t().unknown);break;
       }
       case 'deadlines': {
         const S=subCopy();
