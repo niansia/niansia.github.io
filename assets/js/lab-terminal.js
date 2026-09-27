@@ -259,6 +259,30 @@
     const destinations=['home','about.md','research.md','contact.txt','projects/',...projects().map(p=>p.id),...projects().map(p=>'projects/'+p.id+'/README.md')];
     return (values[head]||(['cd','cat','open','github'].includes(head)?destinations:[])).filter(item=>item.startsWith(tail)).map(item=>head+' '+item);
   }
+  let tabCycle=null;
+  function cycleTab(input,back) {
+    const value=input.value;
+    if(tabCycle&&tabCycle.input===input&&value===tabCycle.list[tabCycle.index]) {
+      tabCycle.index=(tabCycle.index+(back?-1:1)+tabCycle.list.length)%tabCycle.list.length;
+    } else {
+      if(!value.trim()&&back)return false; // keep Shift+Tab for leaving an empty field
+      let list=complete(value.trimStart());
+      if(list.length===1&&list[0]===value.trim()) {
+        const args=complete(list[0]+' ');
+        if(args.length)list=args;
+      }
+      if(!list.length){message(t().historyHint);return true;} // no match: stay in the field, like a shell
+      if(list.length===1){input.value=list[0]+(complete(list[0]+' ').length?' ':'');tabCycle=null;message(list[0]);return true;}
+      tabCycle={input,list,index:back?list.length-1:0};
+    }
+    const {list,index}=tabCycle;
+    input.value=list[index];
+    input.setSelectionRange(input.value.length,input.value.length);
+    // Show where we are: the whole list when short, otherwise two neighbours on each side.
+    const shown=list.length<=5?list.map((c,i)=>i===index?`[ ${c} ]`:c):[-2,-1,0,1,2].map(d=>{const c=list[(index+d+list.length)%list.length];return d?c:`[ ${c} ]`;});
+    message(`Tab ${index+1}/${list.length} · ${shown.join(' · ')}`);
+    return true;
+  }
   function resolveTarget(value) {
     const name=value.toLowerCase().replace(/^(~\/|\.\/|\/)/,'').replace(/\/readme\.md$/,'').replace(/\/$/,'');
     const aliases={'':'home','~':'home','start.sh':'home','about.md':'about','profile':'about','research.md':'research','contact.txt':'contact','work':'projects','portfolio':'projects'};
@@ -425,10 +449,7 @@
     if(event.key==='Escape'){event.preventDefault();if(!$('.style-popover').hidden){toggleStyles(false);$('[data-action="styles"]').focus();return;}goBack();return;}
     if(editable){
       if(target.matches('[data-command-input]')) {
-        if(event.key==='Tab'&&!event.shiftKey&&target.value.trim()) {
-          const candidates=complete(target.value);
-          if(candidates.length){event.preventDefault();if(candidates.length===1)target.value=candidates[0];else message(candidates.join(' · '));}
-        }
+        if(event.key==='Tab'&&cycleTab(target,event.shiftKey))event.preventDefault();
         if(['ArrowUp','ArrowDown'].includes(event.key)){
           event.preventDefault();
           if(historyIndex===commandHistory.length)historyDraft=target.value;
