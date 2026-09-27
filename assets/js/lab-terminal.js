@@ -277,7 +277,7 @@
   function initLumigrid() {
     const box=$('.lg-show'); if(!box)return;
     const go=()=>{ paintLumigrid(); if(motion()){ const cmp=box.querySelector('.lg-compare'), t0=performance.now(); const step=now=>{ const k=Math.min(1,(now-t0)/1800), x=100-85*(1-Math.pow(1-k,3)); if(!cmp.isConnected)return; if(!cmp.dataset.touched){cmp.style.setProperty('--x',`${Math.max(50,x)}%`); box.querySelector('.lg-range').value=Math.max(50,x);} if(k<1)requestAnimationFrame(step); }; requestAnimationFrame(step);} };
-    if(lgData)go(); else fetch('/assets/lumigrid/showcase.json?v=1').then(r=>r.json()).then(d=>{lgData=d;go();}).catch(()=>{});
+    if(lgData)go(); else fetch('/assets/lumigrid/showcase.json?v=2').then(r=>r.json()).then(d=>{lgData=d;go();}).catch(()=>{});
   }
   root.addEventListener('input',event=>{ if(event.target.matches('.lg-range')){ const cmp=event.target.closest('.lg-compare'); cmp.dataset.touched='1'; cmp.style.setProperty('--x',`${event.target.value}%`); } });
   root.addEventListener('click',event=>{ const t=event.target.closest('[data-lg-i]'), v=event.target.closest('[data-lg-vs]'); if(t){lgState.i=Number(t.dataset.lgI);paintLumigrid();} if(v){lgState.vs=v.dataset.lgVs;paintLumigrid();} });
