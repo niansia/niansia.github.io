@@ -129,7 +129,7 @@
     const quick = ['projects','theme sakura','neofetch','trick','trail paws','help'];
     return `${commandTitle('./start.sh')}${festivalBanner(c)}<div class="${boot}"><span><b>✓</b> profile loaded</span><span><b>✓</b> ${projects().length} projects mounted</span><span><b>✓</b> yuki.exe is awake</span><span><b>✓</b> brain.nn ready</span></div>
       <div class="welcome-copy"><p class="hello-world" translate="no">${c.welcome}<i class="text-cursor" aria-hidden="true"></i></p><h1>${name}</h1><p class="welcome-tagline">${c.tagline}</p><p>${c.intro}</p></div>
-      <div class="profile-facts"><span>${c.role}</span><span>${c.leave}</span></div>
+      <div class="profile-facts"><span>${c.role}</span><span>${c.leave}</span>${subCopy()?`<button type="button" class="sub-chip" data-view="research">✍ ${subCopy().chip}${nextDeadline()?` · <b data-deadline="${nextDeadline().deadline}">${countdown(nextDeadline().deadline)}</b>`:''}</button>`:''}</div>
       <div class="output-actions">${button('projects',c.start,true)}${button('about',c.more)}</div>
       <div class="home-cards">
         <button class="home-card latest-card" data-project="${latest.id}"><span class="card-label">${c.latestCard} <span>↗</span></span><img src="/assets/work/taiwan-exam-social-preview.png" alt="" loading="lazy" width="1280" height="640"><strong translate="no">${latest.name} <span class="file-extension">.skill</span></strong><span class="card-copy">${c.newest}</span></button>
@@ -179,6 +179,27 @@
     if (sky) sky.dataset.fest = fest ? fest.primary.id : '';
     fx()?.ambient(fest ? fest.festivals.map(f => f.particle) : []);
   }
+  /* Papers in preparation: live countdowns to each venue's deadline (Anywhere on Earth). */
+  const subs=()=>window.NIANSIA_SUBMISSIONS;
+  const subCopy=()=>subs()?.copy[locale]||subs()?.copy.en;
+  function countdown(at) {
+    const S=subCopy(), ms=Date.parse(at)-Date.now();
+    if (ms<=0) return S.closed;
+    return S.left(Math.floor(ms/864e5),Math.floor(ms%864e5/36e5));
+  }
+  const aoeDate=at=>`${at.slice(0,10).replace(/-/g,'/')} AoE`;
+  function nextDeadline() {
+    return (subs()?.venues||[]).filter(v=>v.deadline&&Date.parse(v.deadline)>Date.now()).sort((a,b)=>Date.parse(a.deadline)-Date.parse(b.deadline))[0];
+  }
+  function submissionsBlock() {
+    const S=subCopy(); if (!S) return '';
+    const cards=subs().venues.map(v=>`<article class="sub-card ${v.deadline?'':'is-tba'}"><header><a href="${esc(v.url)}" target="_blank" rel="noopener noreferrer" translate="no">${esc(v.venue)}${icon('link')}</a><span>${esc(v.topic[locale]||v.topic.en)}</span></header>
+      <p class="sub-count" ${v.deadline?`data-deadline="${v.deadline}"`:''}>${v.deadline?countdown(v.deadline):S.tba}</p>
+      <dl>${v.register?`<div><dt>${S.register}</dt><dd>${aoeDate(v.register)}</dd></div>`:''}<div><dt>${S.deadline}</dt><dd>${v.deadline?aoeDate(v.deadline):S.tba}</dd></div><div><dt>${S.meeting}</dt><dd>${v.meeting?esc(v.meeting[locale]||v.meeting.en):S.tba}</dd></div></dl></article>`).join('');
+    return `<section class="submissions" aria-labelledby="subs-title"><h2 id="subs-title">${S.title}</h2><p class="screen-intro">${S.intro}</p><div class="sub-grid">${cards}</div></section>`;
+  }
+  function paintCountdowns() { root.querySelectorAll('[data-deadline]').forEach(el=>{el.textContent=countdown(el.dataset.deadline);}); }
+  setInterval(paintCountdowns,30000);
   /* Off the clock: hobbies, cosplay and fandoms, kept apart from the research pages. */
   function hobbiesScreen() {
     const h=window.NIANSIA_HOBBIES, L=h?.[locale]||h?.en;
@@ -200,7 +221,7 @@
     document.title = `${item?.name || c.nav[paths.indexOf(view)]} | Niansia terminal`;
     if (view==='home') html=homeScreen(c);
     if (view==='about') html=`${commandTitle('cat about.md')}<h1>${c.aboutTitle}</h1><div class="reading"><p>${c.bio}</p><p>${c.bio2}</p><p>${c.bio3}</p><h2>${c.education}</h2><ul class="education-list"><li><span class="edu-dot" aria-hidden="true"></span>${c.undergrad}</li><li><span class="edu-dot is-now" aria-hidden="true"></span>${c.graduate}<small>${c.leave}</small></li></ul><div class="interest-tags">${c.interests.split(' / ').map(tag=>`<span>${tag}</span>`).join('')}</div></div>${button('research',c.nav[3],true)}`;
-    if (view==='research') html=`${commandTitle('cat research.md')}<h1>${c.researchTitle}</h1><p class="screen-intro">${c.researchIntro}</p><div class="research-entry"><span>01</span><div><h2>${c.researchA}</h2><p>${c.researchABody}</p><small>security / robustness / evaluation</small></div></div><div class="research-entry"><span>02</span><div><h2>${c.researchB}</h2><p>${c.researchBBody}</p><small>vision / reasoning / grounding</small></div></div><p class="comment-line">${c.researchNote}</p>`;
+    if (view==='research') html=`${commandTitle('cat research.md')}<h1>${c.researchTitle}</h1><p class="screen-intro">${c.researchIntro}</p><div class="research-entry"><span>01</span><div><h2>${c.researchA}</h2><p>${c.researchABody}</p><small>security / robustness / evaluation</small></div></div><div class="research-entry"><span>02</span><div><h2>${c.researchB}</h2><p>${c.researchBBody}</p><small>vision / reasoning / grounding</small></div></div>${submissionsBlock()}<p class="comment-line">${c.researchNote}</p>`;
     if (view==='contact') html=`${commandTitle('cat contact.txt')}<h1>${c.contactTitle}</h1><div class="reading"><p>${c.contactBody}</p><div class="contact-address"><span translate="no">email:</span><a href="mailto:niansia930202@gmail.com" translate="no">niansia930202@gmail.com</a></div><div class="output-actions"><a class="action-button primary" href="mailto:niansia930202@gmail.com">${icon('mail')}<span>${c.send}</span></a><button class="action-button" data-action="copy">${icon('copy')}<span>${c.copy}</span></button></div><a class="github-link" href="https://github.com/niansia" target="_blank" rel="noopener noreferrer">github.com/niansia ${icon('link')}</a></div>`;
     if (view==='hobbies') html=hobbiesScreen();
     if (view==='help') html=`${commandTitle('help')}<h1>${c.guideTitle}</h1><p>${c.guideIntro}</p><dl class="keyboard-guide">${c.keys.map(([key,description])=>`<div><dt><kbd>${key}</kbd></dt><dd>${description}</dd></div>`).join('')}</dl><h2>${c.commands}</h2>${commandCatalogue()}<p class="comment-line">${c.simulation}</p>`;
@@ -322,7 +343,7 @@
     commandHistory.push(value);if(commandHistory.length>50)commandHistory.shift();historyIndex=commandHistory.length;
     const parsed=window.NIANSIA_TERMINAL.parse(value);
     if(parsed.error){record(value,t().quoteError);return;}
-    const aliases={'?':'help',work:'projects',portfolio:'projects',profile:'about','./start.sh':'home','start.sh':'home',meow:'pet',search:'find','作品':'projects','研究':'research','聯絡':'contact','联系':'contact',hobby:'hobbies',cosplay:'hobbies',cos:'hobbies',fun:'hobbies','興趣':'hobbies','兴趣':'hobbies','日常':'hobbies','關於':'about','关于':'about'};
+    const aliases={'?':'help',work:'projects',portfolio:'projects',profile:'about','./start.sh':'home','start.sh':'home',meow:'pet',search:'find','作品':'projects','研究':'research','聯絡':'contact','联系':'contact',ddl:'deadlines',countdown:'deadlines','投稿':'deadlines','截止':'deadlines',hobby:'hobbies',cosplay:'hobbies',cos:'hobbies',fun:'hobbies','興趣':'hobbies','兴趣':'hobbies','日常':'hobbies','關於':'about','关于':'about'};
     const name=aliases[parsed.name]||parsed.name,args=parsed.args,arg=args.join(' '),lower=arg.toLowerCase();
     const definition=catalogue.find(c=>c.name===name);
     const usage=()=>record(value,`${t().usage}: ${definition?.usage||'help'}\n${definition?.description[locale]||t().unknown}`);
@@ -336,6 +357,12 @@
       case 'help': {
         if(!arg){navigate('help','',{keyboard:true});finish(n(t().commandHelp));}
         else {const command=catalogue.find(c=>c.name===lower);if(command)finish(`${command.usage}\n${command.description[locale]}\n> ${command.example}`);else finish(t().unknown);}
+        break;
+      }
+      case 'deadlines': {
+        const S=subCopy();
+        if(!S){finish(t().unknown);break;}
+        finish(`${S.title}\n`+subs().venues.map(v=>`${v.venue.padEnd(10)} ${(v.topic[locale]||v.topic.en)} · ${v.deadline?`${aoeDate(v.deadline)} · ${countdown(v.deadline)}`:S.tba}`).join('\n'));
         break;
       }
       case 'whoami':finish(`Niansia\n${t().role}\n${t().leave}\n${t().interests}`);break;

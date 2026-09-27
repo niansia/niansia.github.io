@@ -163,7 +163,8 @@ window.NIANSIA_HOBBIES = {
       "J-pop",
       [
        "YOASOBI",
-       "Ado"
+       "Ado",
+       "tuki."
       ]
      ]
     ]
@@ -332,7 +333,8 @@ window.NIANSIA_HOBBIES = {
       "J-pop",
       [
        "YOASOBI",
-       "Ado"
+       "Ado",
+       "tuki."
       ]
      ]
     ]
@@ -501,7 +503,8 @@ window.NIANSIA_HOBBIES = {
       "J-pop",
       [
        "YOASOBI",
-       "Ado"
+       "Ado",
+       "tuki."
       ]
      ]
     ]
