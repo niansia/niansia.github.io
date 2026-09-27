@@ -199,7 +199,7 @@
     return `<section class="capstone" id="capstone" aria-labelledby="cap-title">
       <p class="cap-kicker">${esc(C.kicker)}</p><h2 id="cap-title" class="cap-title">${esc(C.title)}</h2><p class="cap-lede">${esc(C.lede)}</p>
       <div class="cap-meta">${C.tags.map(t=>`<em>${esc(t)}</em>`).join('')}</div>
-      ${C.filmTitle?`<a class="cap-film" href="/assets/film/propaganda.html?lang=${locale}" target="_blank" rel="noopener"><video src="/assets/film/teaser.mp4" poster="/assets/film/teaser-poster.jpg" muted loop playsinline preload="metadata" ${motion()?'autoplay':''} aria-hidden="true"></video><span class="cap-film-play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z"/></svg></span><span class="cap-film-text"><b>${esc(C.filmTitle)}</b><small>${esc(C.filmSub)}</small></span></a>`:''}
+      ${C.filmTitle?`<a class="cap-film" href="/assets/film/propaganda.html?lang=${locale}" aria-haspopup="dialog"><video src="/assets/film/teaser.mp4" poster="/assets/film/teaser-poster.jpg" muted loop playsinline preload="metadata" ${motion()?'autoplay':''} aria-hidden="true"></video><span class="cap-film-play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z"/></svg></span><span class="cap-film-text"><b>${esc(C.filmTitle)}</b><small>${esc(C.filmSub)}</small></span></a>`:''}
       <div class="cap-stats">${stats}</div>
       <h3>${esc(C.pipeTitle)}</h3><ol class="cap-pipe">${pipe}</ol>
       <h3>${esc(C.demoTitle)}</h3><div class="cap-demo"><div class="cap-demo-bar"><span class="cap-led" aria-hidden="true"></span><span class="cap-demo-langs" role="group">${langs}</span></div><p class="cap-sentence" aria-live="polite"></p><div class="cap-verdict"><span class="cap-chip"></span><span class="cap-dots">${dots}</span></div><small>${esc(C.demoNote)}</small></div>
@@ -237,11 +237,42 @@
     capState.timer=setInterval(()=>{ if (!$('.capstone')) { clearInterval(capState.timer); return; } if (!motion()||document.hidden) return; capState.i=(capState.i+1)%cap().examples.length; paintCapExample(); },5200);
   }
   root.addEventListener('click',event=>{
+    const film=event.target.closest('.cap-film');
+    if (film && !event.metaKey && !event.ctrlKey && !event.shiftKey) { event.preventDefault(); openFilm(); return; }
     const lang=event.target.closest('[data-cap-lang]'), ex=event.target.closest('[data-cap-ex]'), jump=event.target.closest('[data-cap-jump]');
     if (lang) { capState.lang=lang.dataset.capLang; paintCapExample(false); }
     if (ex) { capState.i=Number(ex.dataset.capEx); paintCapExample(); }
     if (jump) $('#capstone')?.scrollIntoView({behavior:motion()?'smooth':'auto',block:'start'});
   });
+  /* Film dock: the capstone film plays in an in-page player that can shrink to a corner mini player
+     (like YouTube) and keeps playing while the terminal is used. It lives on <body>, outside the re-rendered views. */
+  let dock=null;
+  const dockCopy=()=>({en:{mini:'Mini player',full:'Expand',close:'Close',title:'Capstone film'},'zh-TW':{mini:'縮小播放',full:'放大',close:'關閉',title:'大學專題動畫'},'zh-CN':{mini:'缩小播放',full:'放大',close:'关闭',title:'大学专题动画'}}[locale]);
+  function dockMode(mode) {
+    if (!dock) return;
+    dock.dataset.mode=mode;
+    document.documentElement.classList.toggle('film-open',mode==='full');
+    dock.querySelector('iframe').contentWindow?.postMessage({source:'niansia-dock',type:'mode',mini:mode==='mini'},'*');
+    dock.querySelector(mode==='full'?'[data-film="mini"]':'[data-film="full"]')?.focus({preventScroll:true});
+  }
+  function openFilm() {
+    const d=dockCopy();
+    if (dock) { dockMode('full'); return; }
+    dock=document.createElement('div');
+    dock.className='film-dock'; dock.setAttribute('role','dialog'); dock.setAttribute('aria-label',d.title);
+    dock.innerHTML=`<div class="film-backdrop" data-film="mini"></div><div class="film-shell"><div class="film-frame"><iframe src="/assets/film/propaganda.html?lang=${locale}&embed=1" title="${esc(d.title)}" allow="autoplay; fullscreen" allowfullscreen></iframe><button type="button" class="film-hit" data-film="full" aria-label="${esc(d.full)}"></button></div>
+      <div class="film-bar"><span class="film-title"><i></i>${esc(d.title)}</span><button type="button" data-film="mini" title="${esc(d.mini)}" aria-label="${esc(d.mini)}"><svg viewBox="0 0 24 24"><path d="M4 5h16v14H4zM12 12h7v6h-7z"/></svg></button><button type="button" data-film="full" title="${esc(d.full)}" aria-label="${esc(d.full)}"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button><button type="button" data-film="close" title="${esc(d.close)}" aria-label="${esc(d.close)}"><svg viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div></div>`;
+    document.body.append(dock);
+    dock.addEventListener('click',e=>{const b=e.target.closest('[data-film]');if(!b)return;const a=b.dataset.film;if(a==='close')closeFilm();else dockMode(a);});
+    requestAnimationFrame(()=>dockMode('full'));
+  }
+  function closeFilm() {
+    if (!dock) return;
+    const el=dock; dock=null; document.documentElement.classList.remove('film-open');
+    el.dataset.mode='closing'; setTimeout(()=>el.remove(),320);
+  }
+  window.addEventListener('message',e=>{const m=e.data;if(!dock||!m||m.source!=='propaganda-film')return;if(m.type==='escape')dockMode('mini');});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&dock&&dock.dataset.mode==='full'){e.stopImmediatePropagation();dockMode('mini');}},true);
   /* Papers in preparation: live countdowns to each venue's deadline (Anywhere on Earth). */
   const subs=()=>window.NIANSIA_SUBMISSIONS;
   const subCopy=()=>subs()?.copy[locale]||subs()?.copy.en;

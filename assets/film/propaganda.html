@@ -3,68 +3,88 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Propaganda, decoded · Niansia</title>
-<meta name="description" content="An animated film about the undergraduate capstone: detecting propaganda techniques in news with generative AI.">
-<meta name="theme-color" content="#07060d">
+<title>propaganda.detect() · Niansia</title>
+<meta name="description" content="A WebGL film about the undergraduate capstone: detecting propaganda techniques in news with generative AI.">
+<meta name="theme-color" content="#04030a">
 <link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Huninn&family=Quicksand:wght@500;700&family=M+PLUS+1+Code:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Huninn&family=Quicksand:wght@500;700&family=JetBrains+Mono:wght@400;600;800&display=swap">
 <style>
-:root{--bg:#07060d;--ink:#f3eefc;--muted:#a79fbd;--pink:#ff4f9a;--violet:#8b7bff;--amber:#ffc46b;--cyan:#53e0ff;}
+:root{--bg:#04030a;--ink:#eef0ff;--muted:#8d8aa8;--pink:#ff3d8b;--violet:#8b7bff;--cyan:#4fe3ff;--amber:#ffc15e;--mono:'JetBrains Mono',ui-monospace,monospace;}
 *{box-sizing:border-box;}
 html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:Quicksand,Huninn,system-ui,sans-serif;overflow:hidden;}
-canvas{position:fixed;inset:0;width:100%;height:100%;display:block;}
+#gl{position:fixed;inset:0;width:100%;height:100%;display:block;}
 .ui{position:fixed;inset:0;pointer-events:none;}
-.ui>*{pointer-events:auto;}
-.top{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:16px 20px;font:12px 'M PLUS 1 Code',monospace;color:var(--muted);transition:opacity .5s;}
-.top a,.top button{color:var(--muted);text-decoration:none;background:none;border:1px solid #ffffff22;border-radius:99px;padding:6px 12px;font:inherit;cursor:pointer;}
-.top a:hover,.top button:hover{color:var(--ink);border-color:#ffffff55;}
-.top .right{display:flex;gap:8px;}
-.caption{position:absolute;left:50%;bottom:92px;transform:translateX(-50%);width:min(92vw,900px);text-align:center;pointer-events:none;}
-.caption h2{margin:0 0 6px;font:700 clamp(18px,2.6vw,30px)/1.3 Huninn,Quicksand,sans-serif;letter-spacing:.02em;text-shadow:0 2px 24px #000;opacity:0;transform:translateY(10px);transition:opacity .7s,transform .7s cubic-bezier(.2,.8,.2,1);}
-.caption p{margin:0;font:500 clamp(12px,1.4vw,16px)/1.6 Quicksand,Huninn,sans-serif;color:var(--muted);text-shadow:0 2px 16px #000;opacity:0;transform:translateY(8px);transition:opacity .7s .12s,transform .7s .12s cubic-bezier(.2,.8,.2,1);}
-.caption.on h2,.caption.on p{opacity:1;transform:none;}
-.bar{position:absolute;left:0;right:0;bottom:0;padding:14px 20px 18px;display:flex;align-items:center;gap:14px;background:linear-gradient(transparent,#07060dcc 60%);transition:opacity .5s;}
-.bar button{flex:none;width:38px;height:38px;border-radius:50%;border:1px solid #ffffff33;background:#ffffff10;color:var(--ink);cursor:pointer;display:grid;place-items:center;}
-.bar button:hover{background:#ffffff22;}
-.bar svg{width:16px;height:16px;fill:currentColor;}
-.track{position:relative;flex:1;height:26px;cursor:pointer;}
-.track .rail{position:absolute;left:0;right:0;top:12px;height:3px;border-radius:3px;background:#ffffff1f;}
-.track .fill{position:absolute;left:0;top:12px;height:3px;border-radius:3px;background:linear-gradient(90deg,var(--violet),var(--pink));box-shadow:0 0 12px var(--pink);}
-.track .tick{position:absolute;top:8px;width:2px;height:11px;border-radius:2px;background:#ffffff44;}
-.track .tick span{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);white-space:nowrap;font:10px 'M PLUS 1 Code',monospace;color:var(--muted);opacity:0;transition:opacity .2s;}
+.ui button,.ui a{pointer-events:auto;}
+.hud{position:absolute;font:11px/1.6 var(--mono);color:var(--muted);letter-spacing:.02em;}
+.hud b{color:var(--ink);font-weight:600;}
+.tl{top:16px;left:20px;}
+.tl .rec{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--pink);box-shadow:0 0 10px var(--pink);margin-right:8px;animation:blink 1.2s steps(1) infinite;}
+.tr{top:12px;right:16px;display:flex;gap:8px;align-items:center;}
+.tr .meta{margin-right:6px;text-align:right;}
+.btn{font:11px var(--mono);color:var(--muted);background:#ffffff08;border:1px solid #ffffff1f;border-radius:6px;padding:6px 10px;cursor:pointer;text-decoration:none;}
+.btn:hover{color:var(--ink);border-color:#ffffff55;}
+.code{top:74px;left:20px;width:min(430px,34vw);padding:12px 14px;border:1px solid #ffffff14;border-radius:10px;background:linear-gradient(160deg,#0d0b1dcc,#07060fcc);backdrop-filter:blur(6px);white-space:pre-wrap;word-break:break-word;min-height:40px;transition:opacity .5s;}
+.code .hdr{display:flex;gap:6px;margin-bottom:8px;color:#5f5b7c;}
+.code .hdr i{width:8px;height:8px;border-radius:50%;background:#ffffff22;display:inline-block;margin-top:5px;}
+.code .k{color:#c3a6ff;}.code .s{color:#ffd28a;}.code .c{color:#5f7a8c;}.code .o{color:var(--cyan);}.code .p{color:var(--pink);}
+.code .cur{display:inline-block;width:7px;height:13px;background:var(--cyan);vertical-align:-2px;animation:blink 1s steps(1) infinite;}
+.cap{position:absolute;left:50%;bottom:78px;transform:translateX(-50%);width:min(92vw,980px);text-align:center;}
+.cap .kick{font:600 11px var(--mono);color:var(--cyan);letter-spacing:.18em;text-transform:uppercase;opacity:0;transition:opacity .6s;}
+.cap h2{margin:6px 0 6px;font:700 clamp(20px,2.7vw,34px)/1.25 Huninn,Quicksand,sans-serif;text-shadow:0 0 28px #000,0 2px 2px #000;opacity:0;transform:translateY(10px);filter:blur(6px);transition:opacity .7s,transform .7s cubic-bezier(.2,.8,.2,1),filter .7s;}
+.cap p{margin:0;font:500 clamp(12px,1.35vw,15px)/1.65 Quicksand,Huninn,sans-serif;color:#b9b5d3;text-shadow:0 0 20px #000;opacity:0;transition:opacity .7s .15s;}
+.cap.on .kick,.cap.on p{opacity:1;}.cap.on h2{opacity:1;transform:none;filter:none;}
+.bar{position:absolute;left:0;right:0;bottom:0;padding:12px 18px 16px;display:flex;align-items:center;gap:14px;background:linear-gradient(transparent,#04030acc 55%);}
+.bar .play{width:34px;height:34px;border-radius:8px;border:1px solid #ffffff2a;background:#ffffff0a;color:var(--ink);cursor:pointer;display:grid;place-items:center;pointer-events:auto;}
+.bar svg{width:14px;height:14px;fill:currentColor;}
+.track{position:relative;flex:1;height:24px;cursor:pointer;pointer-events:auto;}
+.track .rail{position:absolute;left:0;right:0;top:11px;height:2px;background:#ffffff1a;}
+.track .fill{position:absolute;left:0;top:11px;height:2px;background:linear-gradient(90deg,var(--cyan),var(--violet),var(--pink));box-shadow:0 0 10px var(--pink);}
+.track .tick{position:absolute;top:6px;width:1px;height:12px;background:#ffffff40;}
+.track .tick span{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);white-space:nowrap;font:10px var(--mono);color:var(--muted);opacity:0;transition:opacity .2s;}
 .track:hover .tick span{opacity:1;}
-.time{flex:none;font:12px 'M PLUS 1 Code',monospace;color:var(--muted);min-width:84px;text-align:right;}
-.end{position:absolute;left:50%;bottom:170px;transform:translateX(-50%);display:flex;gap:10px;opacity:0;pointer-events:none;transition:opacity .6s;}
-.end.on{opacity:1;pointer-events:auto;}
-.end a,.end button{font:600 13px Quicksand,Huninn,sans-serif;padding:10px 18px;border-radius:99px;border:1px solid #ffffff44;background:#ffffff12;color:var(--ink);text-decoration:none;cursor:pointer;}
-.end a{background:linear-gradient(90deg,var(--violet),var(--pink));border-color:transparent;}
-.start{position:absolute;inset:0;display:grid;place-items:center;background:radial-gradient(circle at 50% 45%,#1a1030cc,#07060df2 70%);transition:opacity .6s;}
+.time{font:11px var(--mono);color:var(--muted);min-width:96px;text-align:right;}
+.end{position:absolute;left:50%;bottom:190px;transform:translateX(-50%);display:flex;gap:10px;opacity:0;transition:opacity .6s;}
+.end.on{opacity:1;}.end:not(.on) *{pointer-events:none;}
+.end a,.end button{font:600 12px var(--mono);padding:10px 16px;border-radius:8px;border:1px solid #ffffff33;background:#ffffff0d;color:var(--ink);text-decoration:none;cursor:pointer;}
+.end a{border-color:var(--pink);box-shadow:0 0 18px #ff3d8b55;}
+.start{position:absolute;inset:0;display:grid;place-items:center;background:radial-gradient(circle at 50% 45%,#120c26ee,#04030afa 70%);pointer-events:auto;transition:opacity .6s;}
 .start.off{opacity:0;pointer-events:none;}
-.start button{display:flex;flex-direction:column;align-items:center;gap:14px;background:none;border:0;color:var(--ink);cursor:pointer;font:600 14px Quicksand,Huninn,sans-serif;}
-.start .disc{width:88px;height:88px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,var(--violet),var(--pink));box-shadow:0 0 0 10px #ff4f9a1f,0 0 60px #ff4f9a88;animation:pulse 2.4s ease-in-out infinite;}
-.start .disc svg{width:30px;height:30px;fill:#fff;margin-left:4px;}
-.start small{color:var(--muted);font-weight:500;}
-.idle .top,.idle .bar{opacity:0;}
-@keyframes pulse{50%{box-shadow:0 0 0 18px #ff4f9a0a,0 0 80px #ff4f9aaa;}}
-@media(max-width:640px){.caption{bottom:84px;}.time{display:none;}.track .tick span{display:none;}}
+.start button{pointer-events:auto;background:none;border:0;color:var(--ink);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:14px;font:600 13px var(--mono);}
+.start .ring{width:92px;height:92px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--cyan);box-shadow:0 0 30px #4fe3ff55,inset 0 0 30px #4fe3ff33;animation:pulse 2.4s ease-in-out infinite;}
+.start .ring svg{width:28px;height:28px;fill:var(--cyan);margin-left:4px;}
+.start small{color:var(--muted);font-weight:400;}
+.idle .tr,.idle .bar{opacity:0;transition:opacity .6s;}
+.mini .code,.mini .tl,.mini .tr,.mini .cap,.mini .bar,.mini .end{display:none;}
+.mini .start{display:none;}
+.embed #back{display:none;}
+@keyframes blink{50%{opacity:0;}}
+@keyframes pulse{50%{box-shadow:0 0 60px #4fe3ff88,inset 0 0 40px #4fe3ff55;}}
+@media(max-width:820px){.code{display:none;}.tr .meta{display:none;}.cap{bottom:70px;}.time{display:none;}.track .tick span{display:none;}}
 </style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
 </head>
 <body>
-<canvas id="c"></canvas>
+<canvas id="gl"></canvas>
 <div class="ui" id="ui">
-  <div class="top"><a id="back" href="/zh-tw/#research">← niansia.terminal</a><div class="right"><button id="lang" type="button">EN</button><button id="snd" type="button" aria-pressed="false">♪ off</button><button id="fs" type="button">⛶</button></div></div>
-  <div class="caption" id="cap"><h2 id="cap-h"></h2><p id="cap-p"></p></div>
-  <div class="end" id="end"><button id="replay" type="button">↺</button><a id="home" href="/zh-tw/#research"></a></div>
-  <div class="bar"><button id="play" type="button" aria-label="play"></button><div class="track" id="track"><div class="rail"></div><div class="fill" id="fill"></div></div><span class="time" id="time">0:00 / 0:00</span></div>
-  <div class="start" id="start"><button type="button" id="go"><span class="disc"><svg viewBox="0 0 24 24"><path d="M6 4l14 8-14 8z"/></svg></span><span id="go-label"></span><small id="go-sub"></small></button></div>
+  <div class="hud tl"><span class="rec"></span><b>niansia/propaganda-detect</b> <span id="chap">ch.01/09</span></div>
+  <div class="hud tr"><span class="meta" id="meta">fps -- · t=00:00.0</span><a class="btn" id="back" href="/zh-tw/#research">← terminal</a><button class="btn" id="lang" type="button">EN</button><button class="btn" id="snd" type="button">♪ off</button><button class="btn" id="fs" type="button">⛶</button></div>
+  <div class="hud code" id="code"></div>
+  <div class="cap" id="cap"><div class="kick" id="cap-k"></div><h2 id="cap-h"></h2><p id="cap-p"></p></div>
+  <div class="end" id="end"><button id="replay" type="button">↺ replay</button><a id="home" href="/zh-tw/#research"></a></div>
+  <div class="bar"><button class="play" id="play" type="button" aria-label="play"></button><div class="track" id="track"><div class="rail"></div><div class="fill" id="fill"></div></div><span class="time" id="time"></span></div>
+  <div class="start" id="start"><button type="button" id="go"><span class="ring"><svg viewBox="0 0 24 24"><path d="M6 4l14 8-14 8z"/></svg></span><span id="go-label"></span><small id="go-sub"></small></button></div>
 </div>
-<script src="/assets/js/capstone-data.js?v=film-1"></script>
-<script>
-(() => {
-'use strict';
+<script src="/assets/js/capstone-data.js?v=film-2"></script>
+<script type="module">
+import * as THREE from 'three';
+import {EffectComposer} from 'three/addons/postprocessing/EffectComposer.js';
+import {RenderPass} from 'three/addons/postprocessing/RenderPass.js';
+import {UnrealBloomPass} from 'three/addons/postprocessing/UnrealBloomPass.js';
+import {ShaderPass} from 'three/addons/postprocessing/ShaderPass.js';
+import {OutputPass} from 'three/addons/postprocessing/OutputPass.js';
+
 const D = window.NIANSIA_CAPSTONE;
-const cv = document.getElementById('c'), ctx = cv.getContext('2d');
 const $ = id => document.getElementById(id);
 const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
 const seg = (t, a, b) => clamp((t - a) / (b - a));
@@ -72,408 +92,525 @@ const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 const easeOut = t => 1 - Math.pow(1 - t, 3);
 const lerp = (a, b, k) => a + (b - a) * k;
 function rng(seed) { return () => { seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
-const PINK = '#ff4f9a', VIOLET = '#8b7bff', AMBER = '#ffc46b', CYAN = '#53e0ff', INK = '#f3eefc', MUTED = '#a79fbd';
-const CJK = "Huninn, 'Noto Sans TC', 'Microsoft JhengHei', sans-serif", LAT = "Quicksand, Huninn, sans-serif", MONO = "'M PLUS 1 Code', monospace";
+const COL = {pink: 0xff3d8b, violet: 0x8b7bff, cyan: 0x4fe3ff, amber: 0xffc15e, ink: 0xeef0ff, dim: 0x6d6a8c};
+const MONO = "'JetBrains Mono', monospace", SANS = "Quicksand, Huninn, 'Microsoft JhengHei', sans-serif", ARAB = "'Segoe UI', 'Noto Naskh Arabic', Tahoma, sans-serif";
 
-/* ---------- language ---------- */
+/* ---------------- language & copy ---------------- */
 const q = new URLSearchParams(location.search);
+const EMBED = q.get('embed') === '1';
 let L = q.get('lang') || (/^zh-(cn|sg)/i.test(navigator.language) ? 'zh-CN' : /^zh/i.test(navigator.language) ? 'zh-TW' : 'en');
 if (!['en', 'zh-TW', 'zh-CN'].includes(L)) L = 'en';
-const name = o => L === 'en' ? o.en : L === 'zh-CN' ? (o.zhcn || o.zh) : o.zh;
-const n = v => v.toLocaleString(L === 'en' ? 'en' : L);
-const S = D.stats, ratio = (D.outlets[0].total / D.outlets.slice(1).reduce((a, o) => a + o.total, 0) * (D.outlets.length - 1)).toFixed(1);
-const T = {
-  'zh-TW': {
-    go: '播放專題動畫', goSub: '約 100 秒 · 可隨時暫停、跳章節', home: '回到網站', snd: ['♪ 關', '♪ 開'],
-    title: '以生成式 AI 偵測新聞中的宣傳手法', word: '宣傳',
-    chapters: ['開場', '新聞洪流', '逐段標註', '手法星圖', '生成式擴增', '五種語言', 'BERT 偵測', '媒體指紋', '結尾'],
+const S = D.stats, techName = t => L === 'en' ? t.en : L === 'zh-CN' ? (t.zhcn || t.zh) : t.zh;
+const fmt = v => v.toLocaleString('en');
+const others = D.outlets.slice(1), ratio = (D.outlets[0].total / (others.reduce((a, o) => a + o.total, 0) / others.length)).toFixed(1);
+const ptTop = D.mix[D.outlets[0].mix.indexOf(Math.max(...D.outlets[0].mix))];
+const COPY = {
+  'zh-TW': {go: '執行 propaganda.detect()', goSub: '約 100 秒 · 空白鍵暫停 · ←→ 跳轉', home: '回到網站', snd: ['♪ 關', '♪ 開'],
+    chapters: ['開機', '資料流', '逐段標註', '手法圖譜', '生成式擴增', '多語平行', 'BERT 偵測', '媒體指紋', '結語'],
     caps: [
       ['宣傳，藏在用字裡', '它不一定是假新聞：一個情緒化的形容詞、一句口號、一個非黑即白的二分法。'],
-      [`${n(S.sentences)} 句新聞，${n(S.spans)} 個宣傳片段`, '把新聞拆到「片段」層級，每一段都可能用了某種手法。'],
-      ['逐片段標註', '光束掃過句子，標出宣傳片段與它使用的手法。'],
+      [`${fmt(S.sentences)} 句新聞，${fmt(S.spans)} 個宣傳片段`, '語料被切成 token 與片段標註，每一筆都是一次「這裡用了哪種手法」的判斷。'],
+      ['逐片段標註', '掃描光束掃過句子，把宣傳片段連同字元位置與手法標記出來。'],
       ['18 種手法，再加 4 種', '在原有分類體系上加入美德詞彙、美好人物、抹黑與個人崇拜，擴充為 22 類。'],
-      ['生成式擴增', `口號只有 129 筆、非口號 6,002 筆。以 ${n(S.slogans)} 句標語微調 DistilGPT-2，用 top-k / top-p 取樣生成口號式文本。`],
-      ['五種語言，同一個句子', '英文、中文、阿拉伯語、烏爾都語、普什圖語的平行語料。'],
-      ['BERT 偵測', '句子經過多層注意力，最後判斷片段屬於哪一種宣傳手法。'],
-      ['每家媒體，都有自己的宣傳指紋', `${S.outlets} 家媒體、25,048 次手法出現；Pakistan Times 的總數約是其他前段媒體的 ${ratio} 倍。`],
+      ['生成式擴增', `口號只有 129 筆、非口號 6,002 筆。以 ${fmt(S.slogans)} 句標語微調 6 層的 DistilGPT-2，用 top-k / top-p 取樣補足稀少類別。`],
+      ['五種語言，同一個句子', `英文、中文、阿拉伯語、烏爾都語、普什圖語的平行語料，共 ${fmt(11506)} 筆。`],
+      ['BERT 偵測', '句子經過 12 層自注意力，[CLS] 的表示最後被分類成一種宣傳手法。'],
+      ['每家媒體，都有自己的宣傳指紋', `${S.outlets} 家媒體、25,048 次手法出現；Pakistan Times 的總數約是其他前段媒體平均的 ${ratio} 倍。`],
       ['以生成式 AI 偵測新聞中的宣傳手法', '大學專題 · niansia'],
-    ],
-    langs: {en: 'English', zh: '中文', ar: 'العربية', ur: 'اردو', ps: 'پښتو'},
-    slogan: '口號', nonSlogan: '非口號', augmented: '生成擴增', added: '+4 新增', cls: '[CLS] 判斷', layer: '注意力層',
-  },
-  en: {
-    go: 'Play the capstone film', goSub: 'About 100 seconds · pause or jump chapters anytime', home: 'Back to the site', snd: ['♪ off', '♪ on'],
-    title: 'Detecting propaganda techniques in news with generative AI', word: 'Propaganda',
-    chapters: ['Intro', 'News flood', 'Annotate', 'Technique map', 'Generate', 'Five languages', 'BERT', 'Fingerprints', 'End'],
+    ]},
+  en: {go: 'run propaganda.detect()', goSub: 'About 100 s · space to pause · ←→ to seek', home: 'Back to the site', snd: ['♪ off', '♪ on'],
+    chapters: ['Boot', 'Data stream', 'Annotate', 'Taxonomy', 'Generate', 'Multilingual', 'BERT', 'Fingerprints', 'End'],
     caps: [
       ['Propaganda hides in wording', 'It is not always fake news: a loaded adjective, a slogan, a black-and-white framing.'],
-      [`${n(S.sentences)} news sentences, ${n(S.spans)} propaganda spans`, 'News read at the span level, where every fragment may carry a technique.'],
-      ['Span-level annotation', 'A beam sweeps each sentence and marks the propaganda span and its technique.'],
+      [`${fmt(S.sentences)} news sentences, ${fmt(S.spans)} propaganda spans`, 'The corpus becomes tokens and span annotations, each one a judgement of which technique is used where.'],
+      ['Span-level annotation', 'A scan beam sweeps each sentence and marks the propaganda span with its character offsets and technique.'],
       ['18 techniques, plus 4', 'Virtue words, beautiful people, smears and cult of personality extend the taxonomy to 22.'],
-      ['Generative augmentation', `Only 129 slogans against 6,002 non-slogans. DistilGPT-2, fine-tuned on ${n(S.slogans)} taglines, samples slogan-style text with top-k / top-p.`],
-      ['Five languages, one sentence', 'A parallel corpus in English, Chinese, Arabic, Urdu and Pashto.'],
-      ['Detection with BERT', 'The sentence flows through layers of attention to the technique it uses.'],
-      ['Every outlet leaves a fingerprint', `${S.outlets} outlets, 25,048 technique occurrences; Pakistan Times shows about ${ratio}× the total of the other top outlets.`],
+      ['Generative augmentation', `Only 129 slogans against 6,002 non-slogans. A 6-layer DistilGPT-2, fine-tuned on ${fmt(S.slogans)} taglines, fills the rare class with top-k / top-p sampling.`],
+      ['Five languages, one sentence', `A parallel corpus in English, Chinese, Arabic, Urdu and Pashto: ${fmt(11506)} rows.`],
+      ['Detection with BERT', 'The sentence passes through 12 layers of self-attention; the [CLS] representation is classified into a technique.'],
+      ['Every outlet leaves a fingerprint', `${S.outlets} outlets, 25,048 technique occurrences; Pakistan Times totals about ${ratio}× the average of the other top outlets.`],
       ['Detecting propaganda techniques in news with generative AI', 'Undergraduate capstone · niansia'],
-    ],
-    langs: {en: 'English', zh: '中文', ar: 'العربية', ur: 'اردو', ps: 'پښتو'},
-    slogan: 'Slogans', nonSlogan: 'Non-slogans', augmented: 'generated', added: '+4 added', cls: '[CLS] verdict', layer: 'attention layers',
-  },
+    ]},
 };
-const TW2CN = '個个偵侦傳传動动圖图場场學学專专層层屬属彙汇後后掃扫擴扩數数斷断於于時时暫暂標标樣样測测為为烏乌爾尔現现畫画種种筆笔節节約约紋纹級级結结經经網网緒绪總总聞闻與与號号裡里註注詞词語语調调過过開开關关隨随題题類类體体'; // Traditional → Simplified pairs for every character used above (generated with OpenCC)
-const cnMap = {}; for (let i = 0; i < TW2CN.length; i += 2) cnMap[TW2CN[i]] = TW2CN[i + 1];
-T['zh-CN'] = JSON.parse(JSON.stringify(T['zh-TW']).replace(/[一-鿿]/g, ch => cnMap[ch] || ch));
-let C = T[L];
+const TW2CN = {'傳': '传', '裡': '里', '個': '个', '緒': '绪', '詞': '词', '號': '号', '聞': '闻', '語': '语', '標': '标', '註': '注', '筆': '笔', '斷': '断', '這': '这', '種': '种', '掃': '扫', '過': '过', '連': '连', '與': '与', '記': '记', '體': '体', '擴': '扩', '為': '为', '類': '类', '層': '层', '調': '调', '樣': '样', '補': '补', '爾': '尔', '烏': '乌', '圖': '图', '測': '测', '經': '经', '後': '后', '數': '数', '紋': '纹', '總': '总', '約': '约', '學': '学', '專': '专', '題': '题', '執': '执', '開': '开', '機': '机', '資': '资', '結': '结', '網': '网', '鍵': '键', '暫': '暂', '轉': '转', '關': '关', '譜': '谱', '現': '现', '邊': '边', '實': '实', '識': '识', '動': '动', '處': '处', '應': '应', '對': '对', '線': '线', '態': '态', '將': '将', '雙': '双', '萬': '万', '從': '从', '華': '华', '還': '还', '們': '们', '來': '来', '說': '说', '變': '变', '讓': '让', '給': '给', '進': '进', '會': '会', '頭': '头', '顯': '显', '視': '视', '點': '点', '時': '时', '間': '间', '長': '长', '問': '问', '讀': '读', '寫': '写', '輸': '输', '錄': '录', '據': '据', '範': '范', '圍': '围', '僅': '仅', '彙': '汇', '擊': '击'};
+COPY['zh-CN'] = JSON.parse(JSON.stringify(COPY['zh-TW']).replace(/[\u4e00-\u9fff]/g, ch => TW2CN[ch] || ch));
+let C = COPY[L];
 
-/* ---------- canvas & layout ---------- */
-let W = 0, H = 0, DPR = 1, TXT = {};
-function resize() {
-  DPR = Math.min(1.75, window.devicePixelRatio || 1);
-  W = innerWidth; H = innerHeight;
-  cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
-  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-  buildParticles();
-}
-const unit = () => Math.min(W / 720, H * 1.6 / 1000); // layout unit: ~1px on a 1000px-wide stage, larger on phones
+/* ---------------- code panel, one snippet per chapter ---------------- */
+const tops = D.techniques.slice(0, 3);
+const CODE = [
+  `<span class="p">$</span> python -m propaganda.detect --corpus news --techniques 22\n<span class="o">✓</span> corpus     ${fmt(S.spans)} spans · ${fmt(S.sentences)} sentences\n<span class="o">✓</span> outlets    ${S.outlets}\n<span class="o">✓</span> languages  en zh ar ur ps\n<span class="o">✓</span> generator  distilgpt2 (${fmt(S.slogans)} taglines)`,
+  `<span class="k">spans</span> = load_corpus(<span class="s">"news"</span>)\n<span class="k">spans</span>.groupby(<span class="s">"technique"</span>).size().nlargest(3)\n${tops.map(t => `<span class="c">${t.en.padEnd(26)}</span>${String(t.n).padStart(5)}`).join('\n')}`,
+  '', // filled live with the current span
+  `<span class="k">TECHNIQUES</span> = BASE_18 + [\n  <span class="s">"Virtue_Words"</span>, <span class="s">"Beautiful_People"</span>,\n  <span class="s">"Smears"</span>, <span class="s">"Cult_of_Personality"</span>]\n<span class="k">len</span>(TECHNIQUES)   <span class="c"># 22</span>`,
+  `tok = GPT2Tokenizer.from_pretrained(<span class="s">"distilgpt2"</span>)\ntok.add_special_tokens({<span class="s">"additional_special_tokens"</span>:\n    [<span class="s">"&lt;context&gt;"</span>, <span class="s">"&lt;slogan&gt;"</span>]})\nlm = GPT2LMHeadModel.from_pretrained(<span class="s">"distilgpt2"</span>)\n<span class="c"># fine-tune on ${fmt(S.slogans)} taglines, then sample:</span>\nlogits = top_k_top_p_filtering(logits, top_k=k, top_p=p)\nnext_id = torch.multinomial(softmax(logits), <span class="o">1</span>)`,
+  `<span class="k">for</span> lang <span class="k">in</span> [<span class="s">"zh"</span>, <span class="s">"ar"</span>, <span class="s">"ur"</span>, <span class="s">"ps"</span>]:\n    parallel[lang] = translate(corpus, lang)\n<span class="k">len</span>(parallel)   <span class="c"># ${fmt(11506)} rows × 5 languages</span>`,
+  `h = bert(tokens)                <span class="c"># 12 × self-attention</span>\n<span class="c"># Attention(Q,K,V) = softmax(QKᵀ/√d) V</span>\nlogits = classifier(h[<span class="s">"[CLS]"</span>])\nlabel  = TECHNIQUES[logits.argmax()]`,
+  `fp = counts.div(counts.sum(<span class="o">1</span>), axis=<span class="o">0</span>)   <span class="c"># ${S.outlets} × 22</span>\nfp.loc[<span class="s">"Pakistan Times"</span>].idxmax()\n<span class="c">'${ptTop.en}'</span>\ncounts.sum(<span class="o">1</span>).nlargest(<span class="o">1</span>)   <span class="c"># ${fmt(D.outlets[0].total)}</span>`,
+  `<span class="k">print</span>(<span class="s">"thanks for watching"</span>)\n<span class="c"># niansia · undergraduate capstone</span>`,
+];
 
-/* ---------- text → particle targets ---------- */
-const NP = 2600;
-function wrap(c, text, maxW) {
-  const cjk = /[　-鿿]/.test(text) && !/\s/.test(text.trim());
-  const parts = cjk ? [...text] : text.split(/(\s+)/);
-  const lines = []; let line = '';
-  for (const p of parts) { const tryLine = line + p; if (c.measureText(tryLine).width > maxW && line.trim()) { lines.push(line.trim()); line = p.trimStart(); } else line = tryLine; }
-  if (line.trim()) lines.push(line.trim());
-  return lines;
+/* ---------------- renderer, scene, post-processing ---------------- */
+const canvas = $('gl');
+const renderer = new THREE.WebGLRenderer({canvas, antialias: false, powerPreference: 'high-performance'});
+renderer.setClearColor(0x04030a, 1);
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(0x04030a, .012);
+const camera = new THREE.PerspectiveCamera(50, 1, .1, 800);
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), .55, .42, .32);
+composer.addPass(bloom);
+const lens = new ShaderPass({
+  uniforms: {tDiffuse: {value: null}, uTime: {value: 0}, uGrain: {value: .045}, uRes: {value: new THREE.Vector2(1, 1)}},
+  vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.); }',
+  fragmentShader: `uniform sampler2D tDiffuse; uniform float uTime, uGrain; uniform vec2 uRes; varying vec2 vUv;
+    float h(vec2 p){ return fract(sin(dot(p, vec2(12.9898,78.233))) * 43758.5453); }
+    void main(){ vec2 d = vUv - .5; float r = dot(d,d); float ca = .006 * r;
+      vec3 c = vec3(texture2D(tDiffuse, vUv + d*ca).r, texture2D(tDiffuse, vUv).g, texture2D(tDiffuse, vUv - d*ca).b);
+      c *= 1. - r * 1.25;
+      c += (h(vUv * uRes + fract(uTime) * 91.) - .5) * uGrain;
+      c *= .985 + .015 * sin(vUv.y * uRes.y * 1.4);
+      gl_FragColor = vec4(c, 1.); }`,
+});
+composer.addPass(lens);
+composer.addPass(new OutputPass());
+
+/* ---------------- helpers: text textures, lines ---------------- */
+function textCanvas(text, {size = 64, font = MONO, weight = 600, color = '#fff', pad = 12, bg = null, dir = 'ltr', maxW = 0} = {}) {
+  const c = document.createElement('canvas'), g = c.getContext('2d');
+  g.font = `${weight} ${size}px ${font}`; g.direction = dir;
+  const w = Math.ceil(Math.min(maxW || 1e9, g.measureText(text).width) + pad * 2), h = Math.ceil(size * 1.35 + pad * 2);
+  c.width = w; c.height = h; g.font = `${weight} ${size}px ${font}`; g.direction = dir; g.textBaseline = 'middle';
+  if (bg) { g.fillStyle = bg; g.beginPath(); g.roundRect(0, 0, w, h, h / 2); g.fill(); }
+  g.fillStyle = color; g.textAlign = dir === 'rtl' ? 'right' : 'left'; g.fillText(text, dir === 'rtl' ? w - pad : pad, h / 2 + 2);
+  return c;
 }
-function sample(text, size, font, rtl, maxLines = 3, cy = .42) {
-  const oc = document.createElement('canvas'); oc.width = Math.ceil(W); oc.height = Math.ceil(H);
-  const c = oc.getContext('2d'); c.fillStyle = '#fff'; c.textAlign = 'center'; c.textBaseline = 'middle';
-  if (rtl) c.direction = 'rtl';
-  let fs = size, lines;
-  for (;;) { c.font = `700 ${fs}px ${font}`; lines = wrap(c, text, W * .84); if (lines.length <= maxLines || fs < 14) break; fs *= .9; }
-  const lh = fs * 1.25, y0 = H * cy - (lines.length - 1) * lh / 2;
-  lines.forEach((ln, i) => c.fillText(ln, W / 2, y0 + i * lh));
-  const img = c.getImageData(0, 0, oc.width, oc.height).data, pts = [], step = Math.max(2, Math.round(fs / 16));
-  for (let y = 0; y < oc.height; y += step) for (let x = 0; x < oc.width; x += step) if (img[(y * oc.width + x) * 4 + 3] > 140) pts.push([x, y]);
-  const r = rng(7), out = [];
-  if (!pts.length) return Array.from({length: NP}, () => [W / 2, H / 2]);
-  for (let i = pts.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [pts[i], pts[j]] = [pts[j], pts[i]]; }
-  for (let i = 0; i < NP; i++) out.push(pts[i % pts.length]);
+function textMesh(text, height, opts = {}) {
+  const c = textCanvas(text, opts), tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 4;
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(height * c.width / c.height, height), new THREE.MeshBasicMaterial({map: tex, transparent: true, depthWrite: false, fog: opts.fog ?? true, blending: opts.additive ? THREE.AdditiveBlending : THREE.NormalBlending}));
+  m.userData.aspect = c.width / c.height; m.userData.text = true; return m;
+}
+const setOpacity = (obj, a) => obj.traverse(o => { if (o.material) { o.material.opacity = a * (o.userData.baseOpacity ?? 1); o.material.transparent = true; } o.visible = a > .002; });
+
+/* ---------------- GPU particles that morph between shapes ---------------- */
+const NP = 16000;
+function sampleShape(text, {font = MONO, weight = 800, size = 180, width = 44, dir = 'ltr', lines = 1, depth = 1.2} = {}) {
+  const c = document.createElement('canvas'), g = c.getContext('2d');
+  c.width = 1800; c.height = 420 * lines;
+  let fs = size, rows;
+  const wrap = str => { g.font = `${weight} ${fs}px ${font}`; const cjk = /[\u3000-\u9fff]/.test(str) && !/\s/.test(str.trim()); const parts = cjk ? [...str] : str.split(/(\s+)/); const out = []; let ln = ''; for (const p of parts) { if (g.measureText(ln + p).width > c.width * .96 && ln.trim()) { out.push(ln.trim()); ln = p.trimStart(); } else ln += p; } if (ln.trim()) out.push(ln.trim()); return out; };
+  for (;;) { rows = wrap(text); if (rows.length <= lines || fs < 30) break; fs *= .92; }
+  g.fillStyle = '#fff'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.direction = dir; g.font = `${weight} ${fs}px ${font}`;
+  const lh = fs * 1.2; rows.forEach((r, i) => g.fillText(r, c.width / 2, c.height / 2 + (i - (rows.length - 1) / 2) * lh));
+  const img = g.getImageData(0, 0, c.width, c.height).data, pts = [];
+  for (let y = 0; y < c.height; y += 3) for (let x = 0; x < c.width; x += 3) if (img[(y * c.width + x) * 4 + 3] > 128) pts.push(x, y);
+  const r = rng(9), out = new Float32Array(NP * 3), count = pts.length / 2, sc = width / c.width;
+  for (let i = 0; i < NP; i++) { const k = count ? Math.floor(r() * count) : 0; out[i * 3] = count ? (pts[k * 2] - c.width / 2) * sc + (r() - .5) * sc * 2 : 0; out[i * 3 + 1] = count ? -(pts[k * 2 + 1] - c.height / 2) * sc + (r() - .5) * sc * 2 : 0; out[i * 3 + 2] = (r() - .5) * depth; }
   return out;
 }
-let SEED = [];
-function buildParticles() {
-  const u = unit(), ex = D.examples[3], cjkFont = L === 'en' ? LAT : CJK;
-  const r = rng(3);
-  SEED = Array.from({length: NP}, () => ({x: r() * W, y: r() * H, a: r() * Math.PI * 2, s: .4 + r() * .9, hue: r()}));
-  TXT = {
-    word: sample(C.word, 150 * u, cjkFont, false, 1),
-    title: sample(C.title, 58 * u, cjkFont, false, 2, .4),
-    en: sample(ex.text, 46 * u, LAT, false), zh: sample(ex.zh, 50 * u, CJK, false),
-    ar: sample(ex.ar, 50 * u, "'Segoe UI', 'Noto Naskh Arabic', Tahoma, sans-serif", true), ur: sample(ex.ur, 50 * u, "'Segoe UI', 'Noto Nastaliq Urdu', Tahoma, sans-serif", true),
-    ps: sample(ex.ps, 50 * u, "'Segoe UI', 'Noto Naskh Arabic', Tahoma, sans-serif", true),
-  };
+function sphereShape(radius, seed = 1) { const r = rng(seed), out = new Float32Array(NP * 3); for (let i = 0; i < NP; i++) { const u = r() * 2 - 1, th = r() * Math.PI * 2, rr = radius * Math.cbrt(r()); const s = Math.sqrt(1 - u * u); out[i * 3] = rr * s * Math.cos(th); out[i * 3 + 1] = rr * u * .7; out[i * 3 + 2] = rr * s * Math.sin(th); } return out; }
+const morphMat = new THREE.ShaderMaterial({
+  uniforms: {uMix: {value: 0}, uTime: {value: 0}, uSize: {value: 2}, uScatter: {value: 6}, uOpacity: {value: 1}, uPR: {value: 1}},
+  vertexShader: `attribute vec3 pA; attribute vec3 pB; attribute float seed; attribute vec3 col;
+    uniform float uMix, uTime, uSize, uScatter, uPR; varying vec3 vCol; varying float vA;
+    void main(){ float k = clamp(uMix * 1.35 - fract(seed * 17.13) * .35, 0., 1.); k = k*k*(3.-2.*k);
+      vec3 p = mix(pA, pB, k); float s = sin(k * 3.14159);
+      vec3 n = vec3(sin(seed*91.3 + uTime*.8), cos(seed*47.1 + uTime*.7), sin(seed*13.7 + uTime*.9));
+      p += n * (uScatter * s + .05);
+      vec4 mv = modelViewMatrix * vec4(p, 1.);
+      gl_PointSize = uSize * uPR * (.55 + fract(seed*7.31) * .9) * (60. / -mv.z);
+      gl_Position = projectionMatrix * mv; vCol = col; vA = .45 + .55 * fract(seed*3.17); }`,
+  fragmentShader: `uniform float uOpacity; varying vec3 vCol; varying float vA;
+    void main(){ vec2 c = gl_PointCoord - .5; float d = length(c); if (d > .5) discard; float a = smoothstep(.5, .0, d);
+      gl_FragColor = vec4(vCol * (.62 + .7 * a), a * vA * uOpacity * .95); }`,
+  transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+});
+const pGeo = new THREE.BufferGeometry();
+{
+  const r = rng(5), seed = new Float32Array(NP), col = new Float32Array(NP * 3), pal = [COL.pink, COL.violet, COL.cyan, COL.violet, COL.pink, COL.amber].map(h => new THREE.Color(h));
+  for (let i = 0; i < NP; i++) { seed[i] = r(); const c = pal[Math.floor(r() * (r() < .9 ? 5 : 6))]; col.set([c.r, c.g, c.b], i * 3); }
+  pGeo.setAttribute('pA', new THREE.BufferAttribute(new Float32Array(NP * 3), 3)); pGeo.setAttribute('pB', new THREE.BufferAttribute(new Float32Array(NP * 3), 3));
+  pGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(NP * 3), 3)); pGeo.setAttribute('seed', new THREE.BufferAttribute(seed, 1)); pGeo.setAttribute('col', new THREE.BufferAttribute(col, 3));
+  pGeo.boundingSphere = new THREE.Sphere(new THREE.Vector3(), 500);
 }
-function swarm(from, to, k, t, color = i => i % 3 ? PINK : VIOLET, jitter = 1) {
-  const bend = Math.sin(k * Math.PI) * 90 * unit();
-  ctx.globalCompositeOperation = 'lighter';
-  for (let i = 0; i < NP; i++) {
-    const a = from[i], b = to[i], s = SEED[i];
-    const ax = Array.isArray(a) ? a[0] : a.x, ay = Array.isArray(a) ? a[1] : a.y;
-    const x = lerp(ax, b[0], k) + Math.cos(s.a + t * .7) * bend * s.s + Math.sin(t * 2 + i) * .6 * jitter;
-    const y = lerp(ay, b[1], k) + Math.sin(s.a + t * .7) * bend * s.s + Math.cos(t * 2.3 + i) * .6 * jitter;
-    ctx.fillStyle = color(i, s);
-    ctx.globalAlpha = .55 + .45 * s.s * (1 - Math.abs(k - .5));
-    ctx.fillRect(x, y, 1.6, 1.6);
+const swarm = new THREE.Points(pGeo, morphMat); swarm.frustumCulled = false; scene.add(swarm);
+let SH = {}, curPair = '';
+function morph(a, b, k) { const key = a + '>' + b; if (key !== curPair) { pGeo.attributes.pA.array.set(SH[a]); pGeo.attributes.pB.array.set(SH[b]); pGeo.attributes.pA.needsUpdate = pGeo.attributes.pB.needsUpdate = true; curPair = key; } morphMat.uniforms.uMix.value = k; }
+function buildShapes() {
+  const ex = D.examples[3];
+  SH = {cloud: sphereShape(34, 2), cloud2: sphereShape(60, 4), word: sampleShape('PROPAGANDA', {size: 200, width: 46}),
+    en: sampleShape(ex.text, {font: SANS, weight: 700, size: 120, width: 50, lines: 2}), zh: sampleShape(ex.zh, {font: SANS, weight: 700, size: 130, width: 50, lines: 2}),
+    ar: sampleShape(ex.ar, {font: ARAB, weight: 700, size: 130, width: 50, lines: 2, dir: 'rtl'}), ur: sampleShape(ex.ur, {font: ARAB, weight: 700, size: 130, width: 50, lines: 2, dir: 'rtl'}),
+    ps: sampleShape(ex.ps, {font: ARAB, weight: 700, size: 130, width: 50, lines: 2, dir: 'rtl'}),
+    title: sampleShape(L === 'en' ? 'propaganda.detect()' : L === 'zh-CN' ? '宣传侦测' : '宣傳偵測', {font: L === 'en' ? MONO : SANS, size: 190, width: 46})};
+  curPair = '';
+}
+
+/* ---------------- ambient world: stars + neon floor grid ---------------- */
+{
+  const r = rng(21), n = 2500, p = new Float32Array(n * 3);
+  for (let i = 0; i < n; i++) { p[i * 3] = (r() - .5) * 700; p[i * 3 + 1] = (r() - .5) * 400; p[i * 3 + 2] = -r() * 600 + 100; }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(p, 3));
+  scene.add(new THREE.Points(g, new THREE.PointsMaterial({color: 0x9d95d8, size: .9, sizeAttenuation: true, transparent: true, opacity: .55, depthWrite: false, fog: false})));
+}
+const floor = new THREE.GridHelper(900, 150, 0x3a2f7a, 0x1d1840); floor.position.y = -22; floor.material.transparent = true; floor.material.opacity = .5; scene.add(floor);
+
+/* ---------------- scene groups ---------------- */
+const G = [...Array(9)].map(() => { const g = new THREE.Group(); scene.add(g); return g; });
+const lineMat = (color, opacity = 1) => new THREE.LineBasicMaterial({color, transparent: true, opacity, blending: THREE.AdditiveBlending, depthWrite: false});
+
+// 2 · data stream: real, derived text records flying past
+const streamRows = [];
+{
+  const recs = [];
+  D.examples.forEach(e => {
+    const at = e.text.indexOf(e.span), t = D.techniques.find(x => x.key === e.tech);
+    recs.push([`{"span": [${at}, ${at + e.span.length}], "technique": "${t.en.replace(/ /g, '_')}"}`, true]);
+    recs.push([`tokens: [CLS] ${e.text.toLowerCase().replace(/[“”"’‘,.!?–-]/g, ' ').split(/\s+/).filter(Boolean).slice(0, 9).join(' ')} … [SEP]`, false]);
+    recs.push([`zh: ${e.zh.slice(0, 26)}…`, false]); recs.push([e.ar.slice(0, 34) + '…', false, 'rtl']);
+  });
+  D.techniques.forEach(t => recs.push([`${t.en.replace(/ /g, '_').padEnd(28)} ${'█'.repeat(Math.max(1, Math.round(t.n / 90)))} ${t.n}`, t.n > 300]));
+  D.outlets.forEach(o => recs.push([`outlet="${o.name}"  occurrences=${o.total}`, false]));
+  const r = rng(31);
+  for (let i = 0; i < 90; i++) {
+    const [txt, hot, dir] = recs[i % recs.length];
+    const m = textMesh(txt, 1.1 + r() * .6, {size: 44, font: dir === 'rtl' ? ARAB : MONO, weight: hot ? 700 : 500, color: hot ? '#ff5d9e' : r() < .5 ? '#9f96e0' : '#6fd9f0', dir: dir || 'ltr', additive: true});
+    const ang = r() * Math.PI * 2, rad = 7 + r() * 16;
+    m.position.set(Math.cos(ang) * rad * 1.5, Math.sin(ang) * rad * .8, -i * 5.2 - r() * 4);
+    m.userData.z0 = m.position.z; streamRows.push(m); G[1].add(m);
   }
-  ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
 }
 
-/* ---------- drawing helpers ---------- */
-function crisp(text, size, cy, a, color, maxLines = 1) { // the real text, faded in once the particles settle
-  if (a <= 0) return; const u = unit(), font = L === 'en' ? LAT : CJK; let fs = size * u, lines;
-  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  for (;;) { ctx.font = `700 ${fs}px ${font}`; lines = wrap(ctx, text, W * .84); if (lines.length <= maxLines || fs < 14) break; fs *= .9; }
-  const lh = fs * 1.25, y0 = H * cy - (lines.length - 1) * lh / 2;
-  ctx.globalAlpha = a * .9; glow(color, 28 * u); ctx.fillStyle = color === INK ? '#fff' : color;
-  lines.forEach((ln, i) => ctx.fillText(ln, W / 2, y0 + i * lh)); noGlow(); ctx.globalAlpha = 1;
+// 3 · scan: per-word planes, beam, bounding box, tag
+const scanSets = D.examples.slice(0, 3).map(e => {
+  const grp = new THREE.Group(); G[2].add(grp);
+  const at = e.text.indexOf(e.span), words = []; let pos = 0;
+  e.text.split(/(\s+)/).forEach(w => { if (w && w.trim()) words.push({w, a: pos, span: pos >= at && pos < at + e.span.length}); pos += w.length; });
+  const H = 1.5, gap = .38, maxW = 36; let x = 0, row = 0; const rows = [[]];
+  words.forEach(o => {
+    o.mesh = textMesh(o.w, H, {size: 96, font: SANS, weight: 700, color: '#d9d5f5', pad: 4});
+    o.hot = textMesh(o.w, H, {size: 96, font: SANS, weight: 800, color: '#ff5c9c', pad: 4});
+    o.width = H * o.mesh.userData.aspect;
+    if (x + o.width > maxW && x > 0) { rows.push([]); row++; x = 0; }
+    o.x = x; o.row = row; rows[row].push(o); x += o.width + gap;
+  });
+  rows.forEach((rw, ri) => { const wdt = rw.reduce((m, o) => Math.max(m, o.x + o.width), 0); rw.forEach(o => { o.px = o.x - wdt / 2 + o.width / 2; o.py = -ri * H * 1.25 + (rows.length - 1) * H * .62; o.mesh.position.set(o.px, o.py, 0); o.hot.position.set(o.px, o.py, 0); grp.add(o.mesh, o.hot); }); });
+  const sp = words.filter(o => o.span), x0 = Math.min(...sp.map(o => o.px - o.width / 2)), x1 = Math.max(...sp.map(o => o.px + o.width / 2)), y0 = Math.min(...sp.map(o => o.py)) - H * .65, y1 = Math.max(...sp.map(o => o.py)) + H * .65;
+  const box = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(x1 - x0 + .6, y1 - y0, 1.4)), lineMat(COL.pink)); box.position.set((x0 + x1) / 2, (y0 + y1) / 2, 1.2); grp.add(box);
+  const tech = D.techniques.find(x => x.key === e.tech);
+  const tag = textMesh(`${techName(tech)}  ·  span[${at}:${at + e.span.length}]`, 1.3, {size: 56, font: L === 'en' ? MONO : SANS, weight: 700, color: '#fff', bg: 'rgba(255,61,139,.92)', pad: 22});
+  tag.position.set((x0 + x1) / 2, y1 + 2.4, 1.6); grp.add(tag);
+  const lead = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3((x0 + x1) / 2, y1, 1.2), new THREE.Vector3((x0 + x1) / 2, y1 + 1.7, 1.6)]), lineMat(COL.pink)); grp.add(lead);
+  const minX = Math.min(...words.map(o => o.px - o.width / 2)), maxX = Math.max(...words.map(o => o.px + o.width / 2));
+  return {grp, words, box, tag, lead, minX, maxX, e, at, tech};
+});
+const beam = new THREE.Mesh(new THREE.PlaneGeometry(.12, 9), new THREE.MeshBasicMaterial({color: COL.cyan, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false}));
+const beamGlow = new THREE.Mesh(new THREE.PlaneGeometry(4, 9), new THREE.ShaderMaterial({transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, uniforms: {uA: {value: 1}},
+  vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.); }',
+  fragmentShader: 'uniform float uA; varying vec2 vUv; void main(){ float a = pow(vUv.x, 3.) * (1. - abs(vUv.y - .5) * 2.) * .35 * uA; gl_FragColor = vec4(.31,.89,1.,a); }'}));
+beamGlow.position.x = -2; const beamGrp = new THREE.Group(); beamGrp.add(beam, beamGlow); G[2].add(beamGrp);
+
+// 4 · taxonomy: nodes on a sphere, edges, labels, shockwave rings
+const TAX = [...D.techniques.map(t => ({...t, add: false})), {key: 'obf', en: 'Obfuscation', zh: '刻意模糊', zhcn: '刻意模糊', n: 10, add: false}, ...D.added.map(t => ({...t, n: 40, add: true}))];
+const taxNodes = [], taxRings = [], taxLines = [];
+let taxPlus;
+{
+  const N = TAX.length, R = 13;
+  TAX.forEach((t, i) => {
+    const y = 1 - (i + .5) / N * 2, rad = Math.sqrt(1 - y * y), th = i * 2.39996;
+    const p = new THREE.Vector3(Math.cos(th) * rad * R, y * R * .8, Math.sin(th) * rad * R);
+    const color = t.add ? COL.amber : i < 3 ? COL.pink : COL.violet;
+    const s = new THREE.Mesh(new THREE.IcosahedronGeometry(.3 + Math.sqrt(t.n) * .03, 2), new THREE.MeshBasicMaterial({color: new THREE.Color(color).multiplyScalar(.75), transparent: true}));
+    s.position.copy(p); G[3].add(s);
+    const lb = textMesh(techName(t), 1.05, {size: 52, font: SANS, weight: 700, color: t.add ? '#ffd08a' : '#cfc9f2'});
+    lb.position.copy(p).add(new THREE.Vector3(0, -1.1, 0)); G[3].add(lb);
+    taxNodes.push({t, s, lb, p});
+    if (t.add) { const ring = new THREE.Mesh(new THREE.RingGeometry(.9, 1, 48), new THREE.MeshBasicMaterial({color: COL.amber, transparent: true, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false})); ring.position.copy(p); G[3].add(ring); taxRings.push(ring); }
+  });
+  const pts = [];
+  taxNodes.forEach((a, i) => { const near = taxNodes.map((b, j) => [a.p.distanceTo(b.p), j]).filter(([, j]) => j !== i).sort((x, y) => x[0] - y[0]).slice(0, 3); near.forEach(([, j]) => { if (j > i) pts.push(a.p, taxNodes[j].p); }); });
+  const edges = new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(pts), lineMat(COL.violet, .35)); edges.userData.baseOpacity = .35; G[3].add(edges); taxLines.push(edges);
+  const shell = new THREE.Mesh(new THREE.IcosahedronGeometry(14.5, 3), new THREE.MeshBasicMaterial({color: 0x2c2466, wireframe: true, transparent: true, opacity: .18})); shell.userData.baseOpacity = .18; G[3].add(shell); taxLines.push(shell);
+  taxPlus = textMesh('+4  ·  18 → 22', 1.6, {size: 64, weight: 800, color: '#ffc15e', additive: true}); taxPlus.position.set(0, 14, 0); G[3].add(taxPlus);
 }
-function glow(color, blur) { ctx.shadowColor = color; ctx.shadowBlur = blur; }
-function noGlow() { ctx.shadowBlur = 0; }
-function rr(x, y, w, h, r) { ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x, y, w, h, r) : ctx.rect(x, y, w, h); }
-function label(text, x, y, {size = 13, color = MUTED, font = MONO, align = 'center', weight = 400} = {}) {
-  ctx.font = `${weight} ${size * unit()}px ${font}`; ctx.fillStyle = color; ctx.textAlign = align; ctx.textBaseline = 'middle'; ctx.fillText(text, x, y);
-}
-function chip(text, x, y, color, a = 1) {
-  const u = unit(); ctx.font = `700 ${14 * u}px ${L === 'en' ? LAT : CJK}`;
-  const w = ctx.measureText(text).width + 26 * u, h = 30 * u;
-  ctx.globalAlpha = a; glow(color, 24 * u); ctx.fillStyle = color; rr(x - w / 2, y - h / 2, w, h, h / 2); ctx.fill(); noGlow();
-  ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(text, x, y + 1); ctx.globalAlpha = 1;
-  return w;
-}
-function background(t) {
-  const g = ctx.createRadialGradient(W * .5, H * .42, 0, W * .5, H * .5, Math.max(W, H) * .8);
-  g.addColorStop(0, '#1a0f2e'); g.addColorStop(.55, '#0c0818'); g.addColorStop(1, '#050409');
-  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-  ctx.globalCompositeOperation = 'lighter';
-  for (let i = 0; i < 160; i++) {
-    const s = SEED[i]; const x = (s.x + t * 6 * s.s) % W, y = (s.y + Math.sin(t * .2 + s.a) * 12) % H;
-    ctx.fillStyle = s.hue > .7 ? PINK : s.hue > .4 ? VIOLET : '#ffffff';
-    ctx.globalAlpha = .08 + .18 * (Math.sin(t * 1.3 + s.a) * .5 + .5) * s.s;
-    ctx.fillRect(x, y, 1.4, 1.4);
+
+// 5 · generation: 6 transformer blocks, logits bars, class columns, token stream
+const gen = {blocks: [], bars: [], toks: [], labels: []};
+G[4].position.x = 4;
+{
+  for (let i = 0; i < 6; i++) {
+    const b = new THREE.Group(), slab = new THREE.Mesh(new THREE.BoxGeometry(9, .5, 5), new THREE.MeshBasicMaterial({color: 0x241c55, transparent: true, opacity: .35})); slab.userData.baseOpacity = .35;
+    const edge = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(9, .5, 5)), lineMat(COL.violet, .9));
+    b.add(slab, edge); b.position.set(-6, -7 + i * 1.7, 0); G[4].add(b); gen.blocks.push({b, edge});
   }
-  ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
+  const lbl = textMesh('DistilGPT-2 · 6 blocks', .9, {size: 44, weight: 700, color: '#cfc8ff'}); lbl.position.set(-6, -9.2, 2.6); G[4].add(lbl); gen.labels.push(lbl);
+  for (let i = 0; i < 14; i++) { const bar = new THREE.Mesh(new THREE.BoxGeometry(.42, 1, .42), new THREE.MeshBasicMaterial({color: COL.pink, transparent: true})); bar.position.set(-9.25 + i * .5, 4.5, 0); G[4].add(bar); gen.bars.push(bar); }
+  gen.cut = new THREE.Mesh(new THREE.PlaneGeometry(.06, 6), new THREE.MeshBasicMaterial({color: COL.cyan, transparent: true, blending: THREE.AdditiveBlending})); gen.cut.position.set(-6, 7, .4); G[4].add(gen.cut);
+  gen.kl = textMesh('top-k / top-p', .7, {size: 40, color: '#4fe3ff', weight: 600}); gen.kl.position.set(-6, 10.6, .4); G[4].add(gen.kl);
+  const nl = textMesh('next-token distribution', .6, {size: 36, color: '#8f88c7'}); nl.position.set(-6, 3.8, .6); G[4].add(nl); gen.labels.push(nl);
+  const mk = (color, x) => { const m = new THREE.Mesh(new THREE.BoxGeometry(2.4, 1, 2.4), new THREE.MeshBasicMaterial({color, transparent: true, opacity: .85})); m.position.set(x, -9, 0); G[4].add(m); return m; };
+  gen.non = mk(0x3d385c, 9); gen.slo = mk(0xc02a68, 13); gen.aug = mk(0x9a6a1e, 13);
+  const l1 = textMesh('non-slogan 6,002', .8, {size: 40, color: '#b8b3d8'}); l1.position.set(9, -10.4, 1.4); G[4].add(l1); gen.labels.push(l1);
+  const l2 = textMesh('slogan 129 + generated', .8, {size: 40, color: '#ff8fbd'}); l2.position.set(13.5, -11.4, 1.4); G[4].add(l2); gen.labels.push(l2);
+  for (let i = 0; i < 16; i++) { const t = textMesh(i % 5 === 0 ? '<slogan>' : '▮'.repeat(2 + i % 3), .7, {size: 40, color: '#ffc15e', weight: 700, bg: 'rgba(255,193,94,.16)', pad: 14, additive: true}); G[4].add(t); gen.toks.push(t); }
 }
 
-/* ---------- scenes ---------- */
-const TECH18 = [...D.techniques.map(t => ({...t})), {key: 'obf', en: 'Obfuscation', zh: '刻意模糊', zhcn: '刻意模糊', n: 8}];
-const SCENES = [
-  {dur: 8, draw(lt, p, t) { // intro: dust gathers into the word
-    const k = ease(seg(lt, .6, 4.2)), out = seg(lt, 6.4, 8);
-    swarm(SEED, TXT.word, k * (1 - out * .0), t, i => i % 4 ? PINK : AMBER);
-    crisp(C.word, 150, .42, seg(lt, 3.6, 4.6) * (1 - out), PINK);
-    if (lt > 4.2) { const u = unit(); ctx.globalAlpha = seg(lt, 4.2, 5.2) * (1 - out); glow(PINK, 30 * u); ctx.fillStyle = PINK; ctx.fillRect(W / 2 + 330 * u * (L === 'en' ? 1 : .5), H * .42 - 40 * u, 6 * u, 80 * u * (Math.sin(t * 6) > 0 ? 1 : 0)); noGlow(); ctx.globalAlpha = 1; }
-  }},
-  {dur: 11, draw(lt, p, t) { // news flood tunnel
-    const u = unit(), r = rng(11), cx = W / 2, cy = H * .45;
-    for (let i = 0; i < 260; i++) {
-      const x0 = (r() * 2 - 1), y0 = (r() * 2 - 1) * .7, len = .15 + r() * .5, hot = r() < .16, hotAt = r() * .7, z0 = r();
-      const z = ((z0 - lt * .09) % 1 + 1) % 1, sc = 1 / (z * 3.2 + .18);
-      const x = cx + x0 * W * .42 * sc, y = cy + y0 * H * .5 * sc, w = len * 260 * u * sc, h = Math.max(1, 5 * u * sc);
-      if (x + w < 0 || x - w > W || y < -20 || y > H + 20) continue;
-      const a = clamp(1.2 - z) * seg(lt, 0, 1.5) * (1 - seg(lt, 9.8, 11));
-      ctx.globalAlpha = a * .5; ctx.fillStyle = '#c9c1e6'; rr(x - w / 2, y, w, h, h / 2); ctx.fill();
-      if (hot && z < .55) { ctx.globalAlpha = a; glow(PINK, 14 * u); ctx.fillStyle = PINK; rr(x - w / 2 + w * hotAt, y, w * .28, h, h / 2); ctx.fill(); noGlow(); }
+// 7 · BERT: 12 layer planes along depth, token cubes, attention beams
+const bert = {planes: [], cubes: [], beams: [], labels: []};
+{
+  const toks = D.examples[1].span.replace(/[’‘]/g, "'").split(/\s+/), NL = 12, W = 16;
+  for (let l = 0; l <= NL; l++) {
+    const z = -l * 6;
+    const plane = new THREE.Mesh(new THREE.PlaneGeometry(W + 4, 5), new THREE.MeshBasicMaterial({color: 0x1b1450, transparent: true, opacity: .28, side: THREE.DoubleSide, depthWrite: false})); plane.userData.baseOpacity = .28;
+    const frame = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.PlaneGeometry(W + 4, 5)), lineMat(COL.violet, .55)); frame.userData.baseOpacity = .55;
+    plane.position.set(0, 0, z); frame.position.set(0, 0, z); G[6].add(plane, frame);
+    const row = toks.map((w, i) => { const c = new THREE.Mesh(new THREE.BoxGeometry(.5, .5, .5), new THREE.MeshBasicMaterial({color: l === NL ? 0xd8306f : 0x2aa9c4, transparent: true})); c.position.set(-W / 2 + i * W / (toks.length - 1), 0, z); G[6].add(c); return c; });
+    bert.planes.push({plane, frame, z}); bert.cubes.push(row);
+    if (l === 0) toks.forEach((w, i) => { const t = textMesh(w, .9, {size: 44, font: SANS, weight: 700, color: '#ffffff'}); t.position.set(row[i].position.x, -1.4, z + .1); G[6].add(t); bert.labels.push(t); });
+    const lt = textMesh(l === NL ? 'layer 12 · [CLS]' : `layer ${l}`, .6, {size: 36, color: '#8f88c7'}); lt.position.set(-W / 2 - 3.2, 1.8, z); G[6].add(lt); bert.labels.push(lt);
+  }
+  for (let l = 0; l < NL; l++) {
+    const r = rng(60 + l);
+    for (let i = 0; i < toks.length; i++) for (let j = 0; j < toks.length; j++) {
+      const w = r(); if (w < .8) continue;
+      const a = bert.cubes[l][i].position, b = bert.cubes[l + 1][j].position, mid = a.clone().lerp(b, .5); mid.y += 1.2 + w * 2;
+      const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(new THREE.QuadraticBezierCurve3(a, mid, b).getPoints(20)), lineMat((i + j) % 3 ? COL.violet : COL.pink, .9));
+      line.userData = {l, w}; G[6].add(line); bert.beams.push(line);
     }
-    ctx.globalAlpha = 1;
-  }},
-  {dur: 14, draw(lt, p, t) { // scan three example sentences
-    const u = unit(), idx = Math.min(2, Math.floor(lt / 4.66)), l = lt - idx * 4.66, ex = D.examples[idx];
-    const fs = 34 * u; ctx.font = `600 ${fs}px ${LAT}`; ctx.textBaseline = 'middle';
-    const words = []; const at = ex.text.indexOf(ex.span); let pos = 0;
-    ex.text.split(/(\s+)/).forEach(w => { if (!w) return; words.push({w, a: pos, b: pos + w.length, span: pos >= at && pos < at + ex.span.length && w.trim()}); pos += w.length; });
-    const maxW = W * .78, lh = fs * 1.5; const rows = [[]]; let x = 0;
-    words.forEach(o => { const ww = ctx.measureText(o.w).width; if (x + ww > maxW && o.w.trim()) { rows.push([]); x = 0; } if (!(x === 0 && !o.w.trim())) { o.x = x; o.ww = ww; rows[rows.length - 1].push(o); x += ww; } });
-    const y0 = H * .4 - (rows.length - 1) * lh / 2, fade = seg(l, 0, .4) * (1 - seg(l, 4.3, 4.66));
-    const typed = seg(l, 0, 1.1) * ex.text.length, scanX = lerp(-.1, 1.1, seg(l, 1.2, 2.6));
-    let spanBox = null;
-    rows.forEach((row, ri) => {
-      const rw = row.reduce((m, o) => Math.max(m, o.x + o.ww), 0), left = W / 2 - rw / 2, y = y0 + ri * lh;
-      row.forEach(o => {
-        if (o.a > typed) return;
-        const gx = left + o.x, rel = (gx - (W / 2 - maxW / 2)) / maxW, hit = o.span && scanX > rel;
-        if (hit) { ctx.globalAlpha = fade * .85; glow(PINK, 22 * u); ctx.fillStyle = 'rgba(255,79,154,.28)'; rr(gx - 3 * u, y - fs * .62, o.ww + 6 * u, fs * 1.24, 6 * u); ctx.fill(); noGlow();
-          spanBox = spanBox ? {x0: Math.min(spanBox.x0, gx), x1: Math.max(spanBox.x1, gx + o.ww), y: Math.min(spanBox.y, y)} : {x0: gx, x1: gx + o.ww, y}; }
-        ctx.globalAlpha = fade; ctx.fillStyle = hit ? '#fff' : '#d8d0f0'; ctx.textAlign = 'left'; ctx.fillText(o.w, gx, y);
-      });
-    });
-    if (scanX > -.05 && scanX < 1.05) { const sx = W / 2 - maxW / 2 + scanX * maxW; const g = ctx.createLinearGradient(sx - 60 * u, 0, sx, 0); g.addColorStop(0, 'rgba(83,224,255,0)'); g.addColorStop(1, 'rgba(83,224,255,.35)');
-      ctx.globalAlpha = fade; ctx.fillStyle = g; ctx.fillRect(sx - 60 * u, y0 - lh, 60 * u, rows.length * lh + lh); glow(CYAN, 20 * u); ctx.fillStyle = CYAN; ctx.fillRect(sx, y0 - lh, 2 * u, rows.length * lh + lh); noGlow(); }
-    if (spanBox && l > 2.4) {
-      const tech = D.techniques.find(x => x.key === ex.tech), k = easeOut(seg(l, 2.4, 3)), cx = (spanBox.x0 + spanBox.x1) / 2, top = spanBox.y - fs * .7, cy = top - 70 * u * k;
-      ctx.globalAlpha = fade; ctx.strokeStyle = PINK; ctx.lineWidth = 1.5 * u; ctx.beginPath(); ctx.moveTo(cx, top); ctx.lineTo(cx, cy + 15 * u); ctx.stroke();
-      chip(name(tech), cx, cy, PINK, fade * k);
-    }
-    ctx.globalAlpha = 1;
-    label(`${idx + 1} / 3`, W / 2, H * .4 + 150 * u, {size: 12, color: MUTED});
-  }},
-  {dur: 11, draw(lt, p, t) { // technique constellation
-    const u = unit(), cx = W / 2, cy = H * .38, all = [...TECH18.map(x => ({...x, add: false})), ...D.added.map(x => ({...x, n: 30, add: true}))];
-    const pos = all.map((x, i) => { const a = i * 2.39996 + t * .05, rad = (30 + Math.sqrt(i + 1) * 50) * u; const sx = Math.min(1.45, W * .44 / ((30 + Math.sqrt(22) * 50) * u)); return {x: cx + Math.cos(a) * rad * sx, y: cy + Math.sin(a) * rad * .74, r: (4 + Math.sqrt(x.n) * .5) * u}; });
-    const fade = seg(lt, 0, .8) * (1 - seg(lt, 10.2, 11));
-    ctx.globalAlpha = fade * .25; ctx.strokeStyle = VIOLET; ctx.lineWidth = u;
-    for (let i = 0; i < all.length; i++) for (let j = i + 1; j < all.length; j++) { const d = Math.hypot(pos[i].x - pos[j].x, pos[i].y - pos[j].y); if (d < 150 * u && (!all[i].add && !all[j].add || lt > 6)) { ctx.beginPath(); ctx.moveTo(pos[i].x, pos[i].y); ctx.lineTo(pos[j].x, pos[j].y); ctx.stroke(); } }
-    all.forEach((x, i) => {
-      const appear = x.add ? easeOut(seg(lt, 5.4 + (i - 18) * .25, 6.2 + (i - 18) * .25)) : easeOut(seg(lt, .3 + i * .18, 1 + i * .18));
-      if (appear <= 0) return;
-      const c = x.add ? AMBER : i < 3 ? PINK : VIOLET;
-      ctx.globalAlpha = fade * appear; glow(c, 22 * u); ctx.fillStyle = c; ctx.beginPath(); ctx.arc(pos[i].x, pos[i].y, pos[i].r * appear, 0, Math.PI * 2); ctx.fill(); noGlow();
-      label(name(x), pos[i].x, pos[i].y + pos[i].r + 12 * u, {size: 11, color: x.add ? AMBER : '#d8d0f0', font: L === 'en' ? LAT : CJK});
-      if (x.add && lt > 5.4) { const w = seg(lt, 5.4 + (i - 18) * .25, 7 + (i - 18) * .25); ctx.globalAlpha = fade * (1 - w) * .8; ctx.strokeStyle = AMBER; ctx.lineWidth = 2 * u; ctx.beginPath(); ctx.arc(pos[i].x, pos[i].y, pos[i].r + w * 60 * u, 0, Math.PI * 2); ctx.stroke(); }
-    });
-    ctx.globalAlpha = fade * seg(lt, 6.4, 7.2);
-    label(C.added, cx, cy - 215 * u, {size: 22, color: AMBER, font: L === 'en' ? LAT : CJK, weight: 700});
-    label(`18 → 22`, cx, cy - 190 * u, {size: 13, color: MUTED});
-    ctx.globalAlpha = 1;
-  }},
-  {dur: 13, draw(lt, p, t) { // generative augmentation
-    const u = unit(), fade = seg(lt, 0, .8) * (1 - seg(lt, 12.2, 13)), ox = W * .64, oy = H * .3;
-    // class imbalance bars
-    const bx = W * .12, bw = W * .3, g1 = easeOut(seg(lt, .4, 2)), aug = easeOut(seg(lt, 4, 11));
-    ctx.globalAlpha = fade;
-    label(C.nonSlogan + ' 6,002', bx, oy - 60 * u, {size: 13, color: '#d8d0f0', align: 'left', font: L === 'en' ? LAT : CJK});
-    ctx.fillStyle = '#ffffff26'; rr(bx, oy - 46 * u, bw * g1, 14 * u, 7 * u); ctx.fill();
-    label(C.slogan + ' 129', bx, oy + 10 * u, {size: 13, color: PINK, align: 'left', font: L === 'en' ? LAT : CJK});
-    const sw = bw * 129 / 6002 * g1; glow(PINK, 14 * u); ctx.fillStyle = PINK; rr(bx, oy + 24 * u, Math.max(3 * u, sw), 14 * u, 7 * u); ctx.fill(); noGlow();
-    if (aug > 0) { ctx.fillStyle = 'rgba(255,196,107,.85)'; rr(bx + sw, oy + 24 * u, bw * .45 * aug, 14 * u, 7 * u); ctx.fill(); label(`${C.augmented} ↗`, bx + sw + bw * .45 * aug + 8 * u, oy + 31 * u, {size: 11, color: AMBER, align: 'left', font: L === 'en' ? LAT : CJK}); }
-    // model core
-    const R = 64 * u; glow(VIOLET, 50 * u); const gr = ctx.createRadialGradient(ox, oy, 0, ox, oy, R); gr.addColorStop(0, '#fff'); gr.addColorStop(.25, '#c3b8ff'); gr.addColorStop(1, 'rgba(139,123,255,0)');
-    ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(ox, oy, R * (1 + Math.sin(t * 3) * .04), 0, Math.PI * 2); ctx.fill(); noGlow();
-    for (let k = 0; k < 3; k++) { ctx.strokeStyle = k === 1 ? PINK : VIOLET; ctx.lineWidth = 1.5 * u; ctx.globalAlpha = fade * .7; ctx.beginPath(); ctx.ellipse(ox, oy, R * (1.5 + k * .35), R * (.55 + k * .15), t * (.4 + k * .2) * (k % 2 ? -1 : 1), 0, Math.PI * 1.6); ctx.stroke(); }
-    ctx.globalAlpha = fade; label('DistilGPT-2', ox, oy + R * 1.55, {size: 15, color: INK, font: LAT, weight: 700}); label(`fine-tuned · ${n(S.slogans)} taglines`, ox, oy + R * 1.55 + 20 * u, {size: 11});
-    // next-token distribution with top-k / top-p
-    const step = Math.floor(lt / .55), r = rng(100 + step), logits = Array.from({length: 14}, () => r() * 3);
-    logits.sort((a, b) => b - a); const ex = logits.map(Math.exp), Z = ex.reduce((a, b) => a + b); const pr = ex.map(v => v / Z);
-    const hx = ox - 150 * u, hy = oy + R * 2.25 + 80 * u, hw = 300 * u, hh = 62 * u, bwid = hw / pr.length; let cum = 0, cut = pr.length;
-    pr.forEach((v, i) => { cum += v; if (cum > .9 && cut === pr.length) cut = i + 1; });
-    const K = Math.min(6, cut), pick = Math.floor(r() * K);
-    pr.forEach((v, i) => { const h = v / pr[0] * hh; ctx.fillStyle = i === pick ? AMBER : i < K ? PINK : '#ffffff22'; ctx.globalAlpha = fade * (i < K ? 1 : .6); rr(hx + i * bwid + 2 * u, hy - h, bwid - 4 * u, h, 2 * u); ctx.fill(); });
-    ctx.globalAlpha = fade; ctx.strokeStyle = CYAN; ctx.setLineDash([4 * u, 4 * u]); ctx.beginPath(); ctx.moveTo(hx + K * bwid, hy - hh - 8 * u); ctx.lineTo(hx + K * bwid, hy + 4 * u); ctx.stroke(); ctx.setLineDash([]);
-    label('top-k / top-p', hx + K * bwid + 6 * u, hy - hh - 4 * u, {size: 11, color: CYAN, align: 'left'}); label('next-token distribution', hx, hy + 16 * u, {size: 10, align: 'left'});
-    // generated tokens stream into the slogan bar
-    for (let i = 0; i < 18; i++) {
-      const born = 2 + i * .45, life = seg(lt, born, born + 1.6); if (life <= 0 || life >= 1) continue;
-      const k = ease(life), sx = ox - R, sy = oy, tx = bx + sw + bw * .45 * aug, ty = oy + 31 * u;
-      const x = lerp(sx, tx, k), y = lerp(sy, ty, k) - Math.sin(k * Math.PI) * 90 * u;
-      const tok = i % 6 === 0 ? '<slogan>' : '▮'.repeat(2 + i % 4);
-      ctx.globalAlpha = fade * (1 - Math.abs(k - .5) * .6); ctx.font = `600 ${11 * u}px ${MONO}`; const tw = ctx.measureText(tok).width + 12 * u;
-      glow(AMBER, 12 * u); ctx.fillStyle = 'rgba(255,196,107,.18)'; ctx.strokeStyle = AMBER; ctx.lineWidth = u; rr(x - tw / 2, y - 10 * u, tw, 20 * u, 6 * u); ctx.fill(); ctx.stroke(); noGlow();
-      ctx.fillStyle = AMBER; ctx.textAlign = 'center'; ctx.fillText(tok, x, y + 1);
-    }
-    ctx.globalAlpha = 1;
-  }},
-  {dur: 11, draw(lt, p, t) { // five languages: particle morph
-    const u = unit(), order = ['en', 'zh', 'ar', 'ur', 'ps'], per = 2.1, i = Math.min(4, Math.floor(lt / per)), l = lt - i * per;
-    const from = i === 0 ? TXT.en : TXT[order[i - 1]], k = i === 0 ? 1 : ease(seg(l, 0, .9));
-    const fade = seg(lt, 0, .6) * (1 - seg(lt, 10.3, 11));
-    ctx.globalAlpha = fade; swarm(from, TXT[order[i]], k, t, (j) => [PINK, VIOLET, CYAN, AMBER, PINK][(i + (j % 7 === 0 ? 1 : 0)) % 5]); ctx.globalAlpha = fade;
-    order.forEach((lg, j) => { const x = W / 2 + (j - 2) * 110 * u, on = j === i; ctx.globalAlpha = fade * (on ? 1 : .35); label(C.langs[lg], x, H * .72, {size: on ? 15 : 12, color: on ? INK : MUTED, font: "Quicksand, 'Segoe UI', sans-serif", weight: on ? 700 : 400}); if (on) { glow(PINK, 12 * u); ctx.fillStyle = PINK; ctx.fillRect(x - 16 * u, H * .72 + 14 * u, 32 * u, 2 * u); noGlow(); } });
-    ctx.globalAlpha = fade; label(`${n(11506)} parallel rows`, W / 2, H * .72 + 36 * u, {size: 11});
-    ctx.globalAlpha = 1;
-  }},
-  {dur: 11, draw(lt, p, t) { // BERT: attention layers
-    const u = unit(), ex = D.examples[1], toks = ex.span.replace(/[’‘]/g, "'").split(/\s+/), Lyr = 6, fade = seg(lt, 0, .8) * (1 - seg(lt, 10.2, 11));
-    const x0 = W * .18, x1 = W * .82, yb = H * .66, yt = H * .2, cols = toks.length;
-    const P = (l, i) => ({x: lerp(x0, x1, cols === 1 ? .5 : i / (cols - 1)), y: lerp(yb, yt, l / Lyr)});
-    const wave = lt / 7 * Lyr;
-    for (let l = 0; l < Lyr; l++) { const r = rng(40 + l), act = clamp(wave - l);
-      for (let i = 0; i < cols; i++) for (let j = 0; j < cols; j++) { const w = r(); if (w < .72) continue; const a = P(l, i), b = P(l + 1, j);
-        ctx.globalAlpha = Math.min(1, fade * act * (w - .7) * 3.6 * (.65 + .35 * Math.sin(t * 3 + i + j))); ctx.strokeStyle = (i + j) % 3 ? VIOLET : PINK; ctx.lineWidth = (w - .7) * 7 * u;
-        ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.bezierCurveTo(a.x, lerp(a.y, b.y, .5), b.x, lerp(a.y, b.y, .5), b.x, b.y); ctx.stroke(); } }
-    for (let l = 0; l <= Lyr; l++) for (let i = 0; i < cols; i++) { const q = P(l, i), act = clamp(wave - l + 1); ctx.globalAlpha = fade * (.25 + .75 * act); glow(l === Lyr ? PINK : CYAN, 14 * u * act); ctx.fillStyle = l === 0 ? INK : l === Lyr ? PINK : CYAN; ctx.beginPath(); ctx.arc(q.x, q.y, (l === 0 ? 4 : 3) * u, 0, Math.PI * 2); ctx.fill(); noGlow(); }
-    toks.forEach((w, i) => { const q = P(0, i); ctx.globalAlpha = fade; label(w, q.x, q.y + 22 * u, {size: 14, color: INK, font: LAT, weight: 600}); });
-    ctx.globalAlpha = fade * .8; label(`${C.layer} ×12`, x0 - 20 * u, lerp(yb, yt, .5), {size: 11, align: 'right'}); label('[CLS]', P(Lyr, 0).x - 26 * u, P(Lyr, 0).y, {size: 11, align: 'right', color: PINK});
-    const k = easeOut(seg(lt, 7.2, 8.2));
-    if (k > 0) { const tech = D.techniques.find(x => x.key === ex.tech); ctx.globalAlpha = fade; chip(name(tech), W / 2, yt - 44 * u + (1 - k) * 20 * u, PINK, fade * k); label(C.cls, W / 2, yt - 72 * u, {size: 11, color: MUTED}); }
-    ctx.globalAlpha = 1;
-  }},
-  {dur: 12, draw(lt, p, t) { // media fingerprints
-    const u = unit(), rows = D.outlets, cw = Math.min(26 * u, W * .6 / 22), ch = cw * .9, gx = W / 2 - cw * 11 + 40 * u, gy = H * .16, fade = seg(lt, 0, .8) * (1 - seg(lt, 11.3, 12));
-    const r = rng(77);
-    rows.forEach((o, ri) => {
-      const top = Math.max(...o.mix), y = gy + ri * (ch + 8 * u);
-      ctx.globalAlpha = fade * seg(lt, .3 + ri * .12, .9 + ri * .12); label(o.name, gx - 14 * u, y + ch / 2, {size: 12, color: ri === 0 ? PINK : '#d8d0f0', align: 'right', font: LAT});
-      o.mix.forEach((m, k) => {
-        const sx = r() * W, sy = r() * H, e = ease(seg(lt, .6 + ri * .16 + k * .02, 2.2 + ri * .16 + k * .02)), a = m / top;
-        const x = lerp(sx, gx + k * cw, e), y2 = lerp(sy, y, e);
-        ctx.globalAlpha = fade * (.15 + .85 * e); ctx.fillStyle = `rgba(255,${Math.round(79 + (1 - a) * 120)},${Math.round(154 + (1 - a) * 60)},${.12 + a * .88})`;
-        if (a > .8 && e > .9) glow(PINK, 10 * u);
-        rr(x + 1, y2 + 1, cw - 2, ch - 2, 3 * u); ctx.fill(); noGlow();
-      });
-      ctx.globalAlpha = fade * seg(lt, 2.4 + ri * .16, 3 + ri * .16); label(n(Math.round(o.total * easeOut(seg(lt, 2.4 + ri * .16, 4 + ri * .16)))), gx + 22 * cw + 12 * u, y + ch / 2, {size: 12, color: ri === 0 ? PINK : MUTED, align: 'left'});
-    });
-    const hk = seg(lt, 6, 6.8);
-    if (hk > 0) { ctx.globalAlpha = fade * hk; glow(PINK, 30 * u); ctx.strokeStyle = PINK; ctx.lineWidth = 2 * u; rr(gx - 150 * u, gy - 6 * u, 22 * cw + 230 * u, ch + 12 * u, 10 * u); ctx.stroke(); noGlow();
-      label(`≈ ${ratio}×`, gx + 22 * cw, gy - 22 * u, {size: 18, color: PINK, weight: 700, font: LAT, align: 'right'}); }
-    ctx.globalAlpha = fade * seg(lt, 3, 4); label(D.mix.slice(0, 22).length + ' techniques →', gx, gy + rows.length * (ch + 8 * u) + 14 * u, {size: 11, align: 'left'});
-    ctx.globalAlpha = 1;
-  }},
-  {dur: 10, draw(lt, p, t) { // outro: the title condenses, stats underneath
-    const u = unit(), k = ease(seg(lt, .2, 3.4));
-    swarm(SEED, TXT.title, k, t, i => i % 5 === 0 ? AMBER : i % 2 ? PINK : VIOLET, .6);
-    crisp(C.title, 58, .4, seg(lt, 2.8, 4), INK, 2);
-    const stats = [[S.spans, L === 'en' ? 'spans' : '片段'], [22, L === 'en' ? 'techniques' : '手法'], [5, L === 'en' ? 'languages' : '語言'], [S.outlets, L === 'en' ? 'outlets' : '媒體'], [S.slogans, 'GPT-2']];
-    stats.forEach(([v, lab], i) => { const x = W / 2 + (i - 2) * 150 * u, a = seg(lt, 3.4 + i * .2, 4.2 + i * .2); ctx.globalAlpha = a; label(n(Math.round(v * easeOut(a))), x, H * .62, {size: 26, color: INK, font: MONO, weight: 600}); label(lab, x, H * .62 + 24 * u, {size: 11, font: L === 'en' ? LAT : CJK}); });
-    ctx.globalAlpha = 1;
-  }},
-];
-let acc = 0; SCENES.forEach(s => { s.start = acc; acc += s.dur; });
-const TOTAL = acc;
+  }
+  bert.label = textMesh(techName(D.techniques.find(x => x.key === D.examples[1].tech)), 1.6, {size: 64, font: SANS, weight: 800, color: '#fff', bg: 'rgba(255,61,139,.92)', pad: 26}); bert.label.position.set(0, 5.5, -NL * 6 - 2); G[6].add(bert.label);
+  bert.beamUp = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(-W / 2, .4, -NL * 6), new THREE.Vector3(0, 4.4, -NL * 6 - 2)]), lineMat(COL.pink)); G[6].add(bert.beamUp);
+}
 
-/* ---------- playback ---------- */
-let time = Math.min(TOTAL, Math.max(0, Number(q.get('t')) || 0)), playing = false, last = 0, scene = -1, idleTimer;
-const fmt = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
-function paintUI() {
+// 8 · fingerprints: bar skyline 10 × 22
+const fp = {bars: [], labels: []};
+{
+  const cw = 1.05;
+  D.outlets.forEach((o, ri) => {
+    const top = Math.max(...o.mix);
+    o.mix.forEach((m, k) => {
+      const a = m / top, h = .15 + a * 5;
+      const c = new THREE.Color(0x3a2f86).lerp(new THREE.Color(0xd8306f), a).multiplyScalar(.35 + a * .5);
+      const bar = new THREE.Mesh(new THREE.BoxGeometry(.8, 1, .8), new THREE.MeshBasicMaterial({color: c, transparent: true}));
+      bar.userData = {h, ri, k, a}; bar.position.set(-11.5 + k * cw, 0, -ri * 1.6); G[7].add(bar); fp.bars.push(bar);
+    });
+    const nm = textMesh(o.name, .95, {size: 52, font: SANS, weight: 700, color: ri === 0 ? '#ff6aa6' : '#bdb7e3'}); nm.position.set(-15.2, .5, -ri * 1.6); G[7].add(nm);
+    const tt = textMesh(fmt(o.total), .95, {size: 52, weight: 600, color: ri === 0 ? '#ff6aa6' : '#8f88c7'}); tt.position.set(13.2, .5, -ri * 1.6); G[7].add(tt); fp.labels.push(nm, tt);
+  });
+  fp.hl = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(27.5, 6, 1.3)), lineMat(COL.pink)); fp.hl.position.set(-.5, 2.6, 0); G[7].add(fp.hl);
+  fp.x = textMesh(`≈ ${ratio}×  ·  ${L === 'en' ? ptTop.en : L === 'zh-CN' ? (ptTop.zhcn || ptTop.zh) : ptTop.zh}`, 1.1, {size: 56, font: SANS, weight: 800, color: '#ff4f95', additive: true}); fp.x.position.set(4, 7, 0); G[7].add(fp.x);
+}
+
+/* ---------------- timeline ---------------- */
+const DUR = [9, 11, 15, 11, 13, 11, 12, 11, 9];
+const START = DUR.reduce((a, d, i) => (a.push(i ? a[i - 1] + DUR[i - 1] : 0), a), []);
+const TOTAL = START[8] + DUR[8];
+const cam = (x, y, z, tx = 0, ty = 0, tz = 0) => { camera.position.set(x, y, z); camera.rotation.z = 0; camera.lookAt(tx, ty, tz); };
+const fadeOf = (lt, d) => seg(lt, 0, .9) * (1 - seg(lt, d - .9, d));
+
+function update(time) {
+  let sc = START.findIndex((s, k) => time < s + DUR[k]); if (sc < 0) sc = 8;
+  const lt = Math.min(DUR[sc], time - START[sc]), d = DUR[sc], f = fadeOf(lt, d) || (time >= TOTAL ? 1 : 0);
+  G.forEach((g, k) => { g.visible = k === sc; });
+  swarm.visible = [0, 5, 8].includes(sc); floor.visible = sc !== 6;
+  morphMat.uniforms.uTime.value = time; morphMat.uniforms.uOpacity.value = sc === 8 ? seg(lt, 0, .9) : f;
+  floor.material.opacity = .45 * (sc === 8 ? 1 : f);
+  if (sc === 0) {
+    morph('cloud', 'word', ease(seg(lt, 1.6, 5.2))); morphMat.uniforms.uScatter.value = 10;
+    cam(Math.sin(lt * .05) * 8, 2 + Math.sin(lt * .3), 58 - easeOut(seg(lt, 0, 7)) * 16);
+  }
+  if (sc === 1) {
+    cam(Math.sin(lt * .4) * 2, Math.cos(lt * .3) * 1.5, 34, 0, 0, -60); camera.rotation.z += Math.sin(lt * .25) * .08;
+    streamRows.forEach(m => { const z = m.userData.z0 + lt * 38; m.position.z = ((z % 470) + 470) % 470 - 440; const near = clamp((m.position.z + 440) / 200) * clamp((30 - m.position.z) / 10); m.lookAt(camera.position); setOpacity(m, f * near); });
+  }
+  if (sc === 2) {
+    const per = 5, k = Math.min(2, Math.floor(lt / per)), l = lt - k * per, set = scanSets[k];
+    scanSets.forEach((s, j) => { s.grp.visible = j === k; });
+    const fl = seg(l, 0, .5) * (1 - seg(l, per - .45, per)) * f;
+    const bx = lerp(set.minX - 3, set.maxX + 3, ease(seg(l, .6, 2.6)));
+    set.words.forEach(o => { const rel = (o.px - set.minX) / (set.maxX - set.minX); const lift = o.span ? easeOut(seg(l, .6 + rel * 2, 1.2 + rel * 2)) : 0;
+      o.mesh.position.z = o.hot.position.z = lift * 1.2; setOpacity(o.mesh, fl * (1 - lift * .92)); setOpacity(o.hot, fl * lift); });
+    const post = easeOut(seg(l, 2.7, 3.4)); setOpacity(set.box, fl * post); setOpacity(set.tag, fl * post); setOpacity(set.lead, fl * post);
+    set.box.scale.set(1, 1, .3 + post * .7); set.tag.position.z = 1.6 + (1 - post) * 3;
+    const ba = fl * seg(l, .5, .8) * (1 - seg(l, 2.5, 2.9)); beamGrp.position.set(bx, 0, 1); setOpacity(beam, ba); beamGlow.visible = ba > 0; beamGlow.material.uniforms.uA.value = ba;
+    cam(Math.sin(l * .35) * 3, 2.5 - l * .2, 34 - l * .7, 0, .5, 0);
+    CODE[2] = `mark(context, span, technique)\n<span class="c">context</span> = <span class="s">"${set.e.text.slice(0, 44).replace(/"/g, '\\"')}…"</span>\n<span class="c">span   </span> = [<span class="o">${set.at}</span>, <span class="o">${set.at + set.e.span.length}</span>]   <span class="c"># "${set.e.span.slice(0, 26)}"</span>\n<span class="c">label  </span> = <span class="p">${set.tech.en.replace(/ /g, '_')}</span>`;
+    if (codeFor !== 20 + k) { codeFor = 20 + k; typeCode(CODE[2]); }
+  }
+  if (sc === 3) {
+    const a = lt * .2 + .6; cam(Math.sin(a) * 44, 7 + Math.sin(lt * .2) * 3, Math.cos(a) * 44, 0, -1, 0);
+    taxNodes.forEach((n, k) => { const ap = n.t.add ? easeOut(seg(lt, 5 + (k - 18) * .35, 5.8 + (k - 18) * .35)) : easeOut(seg(lt, .3 + k * .12, 1 + k * .12)); n.s.scale.setScalar(Math.max(.001, ap)); setOpacity(n.s, f * ap); setOpacity(n.lb, f * ap * .95); n.lb.lookAt(camera.position); });
+    taxRings.forEach((r, k) => { const w = seg(lt, 5 + k * .35, 7 + k * .35); r.scale.setScalar(1 + w * 3.5); setOpacity(r, f * (w > 0 && w < 1 ? 1 - w : 0)); r.lookAt(camera.position); });
+    setOpacity(taxPlus, f * seg(lt, 6.4, 7.2)); taxPlus.lookAt(camera.position);
+    taxLines.forEach(o => setOpacity(o, f));
+  }
+  if (sc === 4) {
+    cam(Math.sin(lt * .2) * 5 - 2, 1.5, 38 - lt * .5, 0, -.5, 0);
+    gen.blocks.forEach(({b, edge}, k) => { setOpacity(b, f); edge.material.opacity = f * (.35 + .65 * Math.max(0, Math.sin(lt * 3 - k * .8))); });
+    const step = Math.floor(lt / .6), r = rng(300 + step), lg = [...Array(14)].map(() => r() * 3).sort((a, b) => b - a), ex = lg.map(Math.exp), Z = ex.reduce((a, b) => a + b), pr = ex.map(v => v / Z);
+    let cum = 0, K = 14; pr.forEach((v, j) => { cum += v; if (cum > .9 && K === 14) K = j + 1; }); K = Math.min(K, 6); const pick = Math.floor(r() * K);
+    gen.bars.forEach((b, j) => { const h = pr[j] / pr[0] * 5 * easeOut(seg(lt, .5, 1.5)); b.scale.y = Math.max(.02, h); b.position.y = 4.5 + h / 2; b.material.color.setHex(j === pick ? COL.amber : j < K ? COL.pink : 0x3b3566); setOpacity(b, f); });
+    gen.cut.position.x = -9.25 + K * .5 - .25; setOpacity(gen.cut, f); setOpacity(gen.kl, f); gen.kl.position.x = gen.cut.position.x;
+    const g1 = easeOut(seg(lt, .4, 2)), aug = easeOut(seg(lt, 3.5, 11.5)), maxH = 16;
+    const hn = maxH * g1, hs = Math.max(.06, maxH * 129 / 6002 * g1), ha = maxH * .42 * aug;
+    gen.non.scale.y = Math.max(.001, hn); gen.non.position.y = -9 + hn / 2; gen.slo.scale.y = hs; gen.slo.position.y = -9 + hs / 2; gen.aug.scale.y = Math.max(.001, ha); gen.aug.position.y = -9 + hs + ha / 2;
+    setOpacity(gen.non, f); setOpacity(gen.slo, f); setOpacity(gen.aug, aug > 0 ? f : 0);
+    gen.labels.forEach(m => setOpacity(m, f));
+    gen.toks.forEach((t, k) => { const born = 2 + k * .6, life = seg(lt, born, born + 1.8), kk = ease(life);
+      const p = new THREE.Vector3(-6, 9.5, 0).lerp(new THREE.Vector3(13, -9 + hs + ha, 1.5), kk); p.y += Math.sin(kk * Math.PI) * 5;
+      t.position.copy(p); t.lookAt(camera.position); setOpacity(t, f * (life > 0 && life < 1 ? 1 - Math.abs(kk - .5) * .8 : 0)); });
+  }
+  if (sc === 5) {
+    const order = ['en', 'zh', 'ar', 'ur', 'ps'], per = 2.15, k = Math.min(4, Math.floor(lt / per)), l = lt - k * per;
+    if (k === 0) morph('cloud2', 'en', ease(seg(lt, 0, 1.4))); else morph(order[k - 1], order[k], ease(seg(l, 0, 1.1)));
+    morphMat.uniforms.uScatter.value = 7;
+    cam(Math.sin(lt * .25) * 10, Math.cos(lt * .2) * 3, 44);
+    langHud(order[k]);
+  } else langHud(null);
+  if (sc === 6) {
+    const z = lerp(24, -44, ease(seg(lt, 0, 10.5)));
+    cam(11 + 3 * Math.sin(lt * .3), 5.5, z, 0, 1, z - 30);
+    const NL = 12, wave = lt / 8.5 * NL;
+    bert.planes.forEach((p, l) => { const act = clamp(wave - l + 1); setOpacity(p.plane, f * (.35 + .65 * act)); setOpacity(p.frame, f * (.3 + .7 * act)); });
+    bert.cubes.forEach((row, l) => row.forEach(c => { const act = clamp(wave - l + 1); setOpacity(c, f * (.25 + .75 * act)); c.scale.setScalar(.7 + .5 * act); c.rotation.set(lt * .8, lt * .6, 0); }));
+    bert.beams.forEach(b => { const act = clamp(wave - b.userData.l); setOpacity(b, f * act * (b.userData.w - .75) * 3.2 * (.7 + .3 * Math.sin(time * 4 + b.userData.l))); });
+    bert.labels.forEach(m => setOpacity(m, f));
+    const out = easeOut(seg(lt, 8.6, 9.6)); setOpacity(bert.label, f * out); setOpacity(bert.beamUp, f * out); bert.label.lookAt(camera.position);
+  }
+  if (sc === 7) {
+    const a = lerp(-.55, .35, ease(seg(lt, 0, 11)));
+    cam(Math.sin(a) * 22, 12.5 - lt * .25, Math.cos(a) * 17 + 5, -.5, 1.2, -7.5);
+    fp.bars.forEach(b => { const {h, ri, k} = b.userData, g = easeOut(seg(lt, .4 + ri * .18 + k * .025, 1.6 + ri * .18 + k * .025)); b.scale.y = Math.max(.001, h * g); b.position.y = h * g / 2; setOpacity(b, f * (g > 0 ? 1 : 0)); });
+    fp.labels.forEach(m => { setOpacity(m, f * seg(lt, 1.5, 2.5)); m.lookAt(camera.position); });
+    const hl = seg(lt, 6.2, 7); setOpacity(fp.hl, f * hl * (.7 + .3 * Math.sin(time * 5))); setOpacity(fp.x, f * hl); fp.x.lookAt(camera.position);
+  }
+  if (sc === 8) {
+    morph('cloud', 'title', ease(seg(lt, .3, 4))); morphMat.uniforms.uScatter.value = 9;
+    cam(Math.sin(lt * .15) * 4, 1, 50 - easeOut(seg(lt, 0, 6)) * 6);
+  }
+  if (sc !== 2 && codeFor !== sc) { codeFor = sc; typeCode(CODE[sc]); }
+  setScene(sc);
+}
+
+/* ---------------- HUD: captions, code typing, language tag ---------------- */
+let shown = -1, codeFor = -1, typeTimer;
+function setScene(i) {
+  if (i === shown) return; shown = i;
+  const cap = $('cap'); cap.classList.remove('on');
+  setTimeout(() => { if (shown !== i) return; $('cap-k').textContent = `// ${String(i + 1).padStart(2, '0')} · ${C.chapters[i]}`; $('cap-h').textContent = C.caps[i][0]; $('cap-p').textContent = C.caps[i][1]; cap.classList.add('on'); }, 280);
+  $('chap').textContent = `ch.${String(i + 1).padStart(2, '0')}/09 · ${C.chapters[i]}`;
+  chime(i);
+}
+function typeCode(html) {
+  clearInterval(typeTimer);
+  const el = $('code'), hdr = '<div class="hdr"><i></i><i></i><i></i><span>~/propaganda-detect</span></div>';
+  const total = (() => { const t = document.createElement('div'); t.innerHTML = html; return t.textContent.length; })();
+  const render = k => { let left = k; const walk = node => { if (node.nodeType === 3) { if (left <= 0) { node.textContent = ''; return; } if (node.textContent.length > left) node.textContent = node.textContent.slice(0, left); left -= node.textContent.length; } else [...node.childNodes].forEach(walk); };
+    const c = document.createElement('div'); c.innerHTML = html; walk(c); el.innerHTML = hdr + c.innerHTML + '<span class="cur"></span>'; };
+  if (!playing) { render(total); return; }
+  let n = 0; typeTimer = setInterval(() => { n += 3; render(n); if (n >= total) clearInterval(typeTimer); }, 16);
+}
+let langShown, langEl;
+function langHud(lg) {
+  if (lg === langShown) return; langShown = lg;
+  if (!langEl) { langEl = document.createElement('div'); langEl.className = 'hud'; langEl.style.cssText = 'left:50%;top:17%;transform:translateX(-50%);font-size:12px;letter-spacing:.2em;color:#4fe3ff;text-align:center'; $('ui').append(langEl); }
+  const names = {en: 'EN · English', zh: 'ZH · 中文', ar: 'AR · العربية', ur: 'UR · اردو', ps: 'PS · پښتو'};
+  langEl.textContent = lg ? `lang = ${names[lg]}` : '';
+}
+
+/* ---------------- playback ---------------- */
+let time = clamp(Number(q.get('t')) || 0, 0, TOTAL), playing = false, last = 0, fpsAcc = 0, fpsN = 0, fps = 0, idleT;
+const tstr = s => `${String(Math.floor(s / 60)).padStart(2, '0')}:${(s % 60).toFixed(1).padStart(4, '0')}`;
+function paintBar() {
   $('fill').style.width = `${time / TOTAL * 100}%`;
-  $('time').textContent = `${fmt(time)} / ${fmt(TOTAL)}`;
+  $('time').textContent = `${tstr(time).slice(0, 5)} / ${tstr(TOTAL).slice(0, 5)}`;
   $('play').innerHTML = playing ? '<svg viewBox="0 0 24 24"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>' : '<svg viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z"/></svg>';
   $('end').classList.toggle('on', time >= TOTAL - .05);
 }
-function setScene(i) {
-  if (i === scene) return; scene = i;
-  const cap = $('cap'); cap.classList.remove('on');
-  setTimeout(() => { $('cap-h').textContent = C.caps[i][0]; $('cap-p').textContent = C.caps[i][1]; if (scene === i) cap.classList.add('on'); }, 260);
-  chime(i);
-}
-function frame(ts) {
+function loop(ts) {
   const dt = last ? Math.min(.05, (ts - last) / 1000) : 0; last = ts;
-  if (playing) { time += dt; if (time >= TOTAL) { time = TOTAL; playing = false; } }
-  const i = Math.max(0, SCENES.findIndex(s => time < s.start + s.dur)) , s = SCENES[i === -1 ? SCENES.length - 1 : i];
-  setScene(SCENES.indexOf(s));
-  ctx.clearRect(0, 0, W, H); background(time);
-  s.draw(Math.min(s.dur, time - s.start), (time - s.start) / s.dur, time);
-  paintUI();
-  requestAnimationFrame(frame);
+  if (playing) { time += dt; if (time >= TOTAL) { time = TOTAL; playing = false; post('ended'); } }
+  if (dt) { fpsAcc += dt; fpsN++; if (fpsAcc > .5) { fps = Math.round(fpsN / fpsAcc); fpsAcc = fpsN = 0; } }
+  update(time);
+  lens.uniforms.uTime.value = ts / 1000;
+  composer.render();
+  $('meta').textContent = `fps ${fps || '--'} · t=${tstr(time)} · webgl`;
+  paintBar();
+  requestAnimationFrame(loop);
 }
-function play(on = !playing) { if (on && time >= TOTAL) time = 0; playing = on; last = 0; $('start').classList.add('off'); if (on) audio(true); paintUI(); }
-function seek(t) { time = clamp(t, 0, TOTAL); paintUI(); }
+function play(on = !playing) { if (on && time >= TOTAL) time = 0; playing = on; last = 0; $('start').classList.add('off'); if (on) startAudio(); codeFor = -1; paintBar(); post(on ? 'play' : 'pause'); }
+function seek(t) { time = clamp(t, 0, TOTAL); codeFor = -1; paintBar(); }
+const post = type => { if (EMBED) parent.postMessage({source: 'propaganda-film', type}, '*'); };
 
-/* ---------- optional ambient sound (Web Audio, generated, off by default) ---------- */
+function resize() {
+  const w = innerWidth, h = innerHeight, pr = Math.min(document.body.classList.contains('mini') ? 1 : 1.5, devicePixelRatio || 1);
+  renderer.setPixelRatio(pr); renderer.setSize(w, h, false); composer.setPixelRatio(pr); composer.setSize(w, h);
+  bloom.setSize(w * pr / 2, h * pr / 2); lens.uniforms.uRes.value.set(w * pr, h * pr);
+  camera.aspect = w / h; camera.fov = w / h < 1 ? 74 : 50; camera.updateProjectionMatrix();
+  morphMat.uniforms.uPR.value = pr * Math.min(1.6, h / 700);
+}
+
+/* ---------------- optional generated ambient sound ---------------- */
 let AC = null, master = null, soundOn = false;
-function audio(start) {
-  if (!soundOn || !start || AC) return;
+function startAudio() {
+  if (!soundOn || AC) return;
   AC = new (window.AudioContext || window.webkitAudioContext)(); master = AC.createGain(); master.gain.value = 0; master.connect(AC.destination);
-  const lp = AC.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 900; lp.connect(master);
-  [110, 164.8, 220.5, 329.6].forEach((f, i) => { const o = AC.createOscillator(), g = AC.createGain(); o.type = i % 2 ? 'sine' : 'triangle'; o.frequency.value = f; o.detune.value = (i - 1.5) * 6; g.gain.value = .05; o.connect(g); g.connect(lp); o.start(); });
-  const lfo = AC.createOscillator(), lg = AC.createGain(); lfo.frequency.value = .08; lg.gain.value = 400; lfo.connect(lg); lg.connect(lp.frequency); lfo.start();
-  master.gain.linearRampToValueAtTime(.35, AC.currentTime + 2);
+  const lp = AC.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 700; lp.Q.value = 4; lp.connect(master);
+  [55, 82.4, 110, 164.8, 220].forEach((fr, i) => { const o = AC.createOscillator(), g = AC.createGain(); o.type = i < 2 ? 'sawtooth' : 'sine'; o.frequency.value = fr; o.detune.value = (i - 2) * 7; g.gain.value = i < 2 ? .025 : .05; o.connect(g); g.connect(lp); o.start(); });
+  const lfo = AC.createOscillator(), lg = AC.createGain(); lfo.frequency.value = .06; lg.gain.value = 450; lfo.connect(lg); lg.connect(lp.frequency); lfo.start();
+  master.gain.linearRampToValueAtTime(.4, AC.currentTime + 2.5);
 }
 function chime(i) {
   if (!AC || !soundOn) return;
-  const o = AC.createOscillator(), g = AC.createGain(); o.type = 'sine'; o.frequency.value = [523, 587, 659, 784, 880, 988, 1047, 1175, 1319][i % 9];
-  g.gain.setValueAtTime(0, AC.currentTime); g.gain.linearRampToValueAtTime(.12, AC.currentTime + .02); g.gain.exponentialRampToValueAtTime(.0001, AC.currentTime + 1.6);
-  o.connect(g); g.connect(master); o.start(); o.stop(AC.currentTime + 1.7);
+  const t0 = AC.currentTime;
+  [0, .09].forEach((d, k) => { const o = AC.createOscillator(), g = AC.createGain(); o.type = 'triangle'; o.frequency.value = [659, 784, 880, 988, 1047, 1175, 1319, 1480, 1568][i] * (k ? 1.5 : 1);
+    g.gain.setValueAtTime(0, t0 + d); g.gain.linearRampToValueAtTime(.08, t0 + d + .01); g.gain.exponentialRampToValueAtTime(.0001, t0 + d + 1.2); o.connect(g); g.connect(master); o.start(t0 + d); o.stop(t0 + d + 1.3); });
 }
 function toggleSound() {
-  soundOn = !soundOn; $('snd').textContent = C.snd[soundOn ? 1 : 0]; $('snd').setAttribute('aria-pressed', String(soundOn));
-  if (soundOn) { if (!AC) audio(true); else { AC.resume(); master.gain.linearRampToValueAtTime(.35, AC.currentTime + .5); } }
+  soundOn = !soundOn; $('snd').textContent = C.snd[soundOn ? 1 : 0];
+  if (soundOn) { if (!AC) startAudio(); else { AC.resume(); master.gain.linearRampToValueAtTime(.4, AC.currentTime + .5); } }
   else if (AC) master.gain.linearRampToValueAtTime(0, AC.currentTime + .4);
 }
 
-/* ---------- UI wiring ---------- */
+/* ---------------- UI ---------------- */
 function applyLang() {
-  C = T[L]; document.documentElement.lang = L === 'en' ? 'en' : L === 'zh-CN' ? 'zh-Hans' : 'zh-Hant';
+  C = COPY[L]; document.documentElement.lang = L === 'en' ? 'en' : L === 'zh-CN' ? 'zh-Hans' : 'zh-Hant';
   const base = L === 'en' ? '/' : L === 'zh-CN' ? '/zh-cn/' : '/zh-tw/';
   $('back').href = $('home').href = `${base}#research`; $('home').textContent = C.home;
   $('go-label').textContent = C.go; $('go-sub').textContent = C.goSub; $('snd').textContent = C.snd[soundOn ? 1 : 0];
   $('lang').textContent = {en: 'EN', 'zh-TW': '繁', 'zh-CN': '简'}[L];
   $('track').querySelectorAll('.tick').forEach(e => e.remove());
-  SCENES.forEach((s, i) => { if (!i) return; const tk = document.createElement('div'); tk.className = 'tick'; tk.style.left = `${s.start / TOTAL * 100}%`; tk.innerHTML = `<span>${C.chapters[i]}</span>`; tk.addEventListener('click', e => { e.stopPropagation(); seek(s.start + .01); }); $('track').append(tk); });
-  scene = -1; buildParticles();
+  START.forEach((s, i) => { if (!i) return; const tk = document.createElement('div'); tk.className = 'tick'; tk.style.left = `${s / TOTAL * 100}%`; tk.innerHTML = `<span>${C.chapters[i]}</span>`; tk.addEventListener('click', e => { e.stopPropagation(); seek(s + .01); }); $('track').append(tk); });
+  shown = -1; codeFor = -1;
 }
 $('go').addEventListener('click', () => play(true));
 $('play').addEventListener('click', () => play());
 $('replay').addEventListener('click', () => { seek(0); play(true); });
 $('track').addEventListener('click', e => { const r = e.currentTarget.getBoundingClientRect(); seek((e.clientX - r.left) / r.width * TOTAL); });
-$('lang').addEventListener('click', () => { L = {en: 'zh-TW', 'zh-TW': 'zh-CN', 'zh-CN': 'en'}[L]; applyLang(); });
+$('lang').addEventListener('click', () => { const next = {en: 'zh-TW', 'zh-TW': 'zh-CN', 'zh-CN': 'en'}[L]; const p = new URLSearchParams(q); p.set('lang', next); p.set('t', time.toFixed(1)); p.set('autoplay', playing ? '1' : '0'); location.replace(`?${p}`); });
 $('snd').addEventListener('click', toggleSound);
 $('fs').addEventListener('click', () => document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen?.());
+canvas.addEventListener('click', () => { if (document.body.classList.contains('mini')) play(); });
 addEventListener('keydown', e => {
   if (e.key === ' ') { e.preventDefault(); play(); }
   else if (e.key === 'ArrowRight') seek(time + 5); else if (e.key === 'ArrowLeft') seek(time - 5);
   else if (e.key.toLowerCase() === 'f') $('fs').click(); else if (e.key.toLowerCase() === 'r') { seek(0); play(true); }
+  else if (e.key === 'Escape' && EMBED) parent.postMessage({source: 'propaganda-film', type: 'escape'}, '*');
 });
-addEventListener('pointermove', () => { document.body.classList.remove('idle'); clearTimeout(idleTimer); idleTimer = setTimeout(() => playing && document.body.classList.add('idle'), 2600); });
-addEventListener('resize', () => { clearTimeout(resize.t); resize.t = setTimeout(resize, 150); });
+addEventListener('pointermove', () => { document.body.classList.remove('idle'); clearTimeout(idleT); idleT = setTimeout(() => playing && document.body.classList.add('idle'), 2600); });
+addEventListener('resize', () => { clearTimeout(resize.t); resize.t = setTimeout(resize, 120); });
+addEventListener('message', e => { const m = e.data; if (!m || m.source !== 'niansia-dock') return; if (m.type === 'mode') { document.body.classList.toggle('mini', !!m.mini); resize(); } if (m.type === 'play') play(true); if (m.type === 'pause') play(false); });
 window.__film = {seek, play, get time() { return time; }, TOTAL};
 
-resize(); applyLang();
-(document.fonts?.ready || Promise.resolve()).then(() => buildParticles());
-if (q.get('clean') === '1') $('ui').style.display = 'none'; // for recording the teaser
-if (q.has('t')) { $('start').classList.add('off'); if (q.get('autoplay') === '1') play(true); }
-requestAnimationFrame(frame);
-})();
+if (EMBED) document.body.classList.add('embed');
+if (q.get('clean') === '1') { $('ui').style.display = 'none'; lens.uniforms.uGrain.value = 0; } // recording mode
+resize(); applyLang(); buildShapes();
+(document.fonts?.ready || Promise.resolve()).then(() => buildShapes());
+if (q.has('t') || EMBED) { $('start').classList.add('off'); if (q.get('autoplay') === '1' || (EMBED && q.get('autoplay') !== '0')) play(true); }
+requestAnimationFrame(loop);
 </script>
 </body>
 </html>
