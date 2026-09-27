@@ -30,6 +30,14 @@
     ['en',['english','英文','英語','英语','英文版']], ['zh-TW',['中文','chinese','華語','国语','國語']]
   ];
   const THEME_ALIASES = [
+    ['glass-night',['glass-night','夜玻璃','深色玻璃','dark glass','night glass']],
+    ['glass',['glass','玻璃','毛玻璃','液態玻璃','液态玻璃','ios','apple','蘋果','苹果','glassmorphism','透明']],
+    ['yozakura',['yozakura','夜櫻','夜樱','夜桜','night sakura']],
+    ['fuji',['fuji','wisteria','藤','紫藤','藤色','紫色','purple']],
+    ['aizome',['aizome','indigo','藍染','蓝染','藍色','蓝色','靛藍','靛蓝','blue']],
+    ['momiji',['momiji','maple','紅葉','红叶','楓','枫','秋天','autumn','orange']],
+    ['washi',['washi','和紙','和纸','紙','纸','paper','墨','sumi']],
+    ['asagi',['asagi','淺蔥','浅葱','teal','水色','青綠','青绿']],
     ['sakura',['sakura','櫻花','樱花','粉紅','粉红','粉色','pink','cherry blossom','cherry']],
     ['matcha',['matcha','抹茶','綠色','绿色','薄荷','mint','green']],
     ['retro',['retro','復古','复古','crt','駭客','黑客','hacker','matrix','終端綠','terminal green']],

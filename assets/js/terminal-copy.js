@@ -95,7 +95,7 @@ Object.assign(window.NIANSIA_COPY['zh-CN'], {
 });
 /* Desktop pet, styles, window chrome and the chat panel. */
 Object.assign(window.NIANSIA_COPY.en, {
-  theme:'Toggle light / dark', style:'Page style', themeNames:{light:'Porcelain',dark:'Ink',sakura:'Sakura',matcha:'Matcha',retro:'Retro CRT'},
+  theme:'Toggle light / dark', style:'Page style', themeNames:{light:'Porcelain',dark:'Ink',sakura:'Sakura',matcha:'Matcha',retro:'Retro CRT',fuji:'Wisteria',aizome:'Indigo',momiji:'Momiji',yozakura:'Night sakura',washi:'Washi',asagi:'Asagi',glass:'Glass','glass-night':'Night glass'},themeGroups:{classic:'Classic',wa:'Japanese',glass:'Glass'},
   winClose:'Nice try — this terminal can’t be closed. Yuki lives here!', winMin:'Minimized. Click the title bar to restore.', winMax:'Focus mode', winRestore:'Restore window',
   askTitle:'Ask Yuki', askIntro:'A tiny neural network running in your browser answers questions about this portfolio — it can also switch languages and styles for you.',
   askChips:['What projects are there?','Recommend a project','Any project about vision?','Sakura style please'],
@@ -110,7 +110,7 @@ Object.assign(window.NIANSIA_COPY.en, {
   sudo:'Permission denied: only cats have root here. (=^･ω･^=)', unread:'new message'
 });
 Object.assign(window.NIANSIA_COPY['zh-TW'], {
-  theme:'切換淺色／深色', style:'網頁風格', themeNames:{light:'瓷白',dark:'墨夜',sakura:'櫻花',matcha:'抹茶',retro:'復古 CRT'},
+  theme:'切換淺色／深色', style:'網頁風格', themeNames:{light:'瓷白',dark:'墨夜',sakura:'櫻花',matcha:'抹茶',retro:'復古 CRT',fuji:'藤',aizome:'藍染',momiji:'紅葉',yozakura:'夜櫻',washi:'和紙',asagi:'淺蔥',glass:'玻璃','glass-night':'夜玻璃'},themeGroups:{classic:'經典',wa:'和風',glass:'玻璃'},
   winClose:'想關掉？沒辦法喔，Yuki 住在這裡！', winMin:'視窗縮小了，點標題列就能還原。', winMax:'專注模式', winRestore:'還原視窗',
   askTitle:'問問 Yuki', askIntro:'在你的瀏覽器裡運作的小型神經網路，可以回答這個作品集的問題，也能幫你切換語言與網頁風格。',
   askChips:['他有什麼作品？','推薦一個作品','有做電腦視覺的作品嗎？','換成櫻花風格'],
@@ -125,7 +125,7 @@ Object.assign(window.NIANSIA_COPY['zh-TW'], {
   sudo:'權限不足：這裡只有貓咪有 root。(=^･ω･^=)', unread:'則新訊息'
 });
 Object.assign(window.NIANSIA_COPY['zh-CN'], {
-  theme:'切换浅色／深色', style:'网页风格', themeNames:{light:'瓷白',dark:'墨夜',sakura:'樱花',matcha:'抹茶',retro:'复古 CRT'},
+  theme:'切换浅色／深色', style:'网页风格', themeNames:{light:'瓷白',dark:'墨夜',sakura:'樱花',matcha:'抹茶',retro:'复古 CRT',fuji:'藤',aizome:'蓝染',momiji:'红叶',yozakura:'夜樱',washi:'和纸',asagi:'浅葱',glass:'玻璃','glass-night':'夜玻璃'},themeGroups:{classic:'经典',wa:'和风',glass:'玻璃'},
   winClose:'想关掉？没办法哦，Yuki 住在这里！', winMin:'窗口缩小了，点标题栏就能还原。', winMax:'专注模式', winRestore:'还原窗口',
   askTitle:'问问 Yuki', askIntro:'在你的浏览器里运行的小型神经网络，可以回答这个作品集的问题，也能帮你切换语言与网页风格。',
   askChips:['他有什么作品？','推荐一个作品','有做计算机视觉的作品吗？','换成樱花风格'],

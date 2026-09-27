@@ -40,8 +40,65 @@ $link-color: #5854b8;
   --shadow:0 0 0 1px #1aff6a14,0 24px 80px #000a; --shadow-lg:0 0 0 1px #1aff6a22,0 24px 70px #000c;
   --sans:var(--mono); color-scheme:dark;
 }
+/* ============ Japanese palettes (traditional colour names) ============ */
+:root[data-theme='fuji'] { /* 藤 wisteria · 金茶 */
+  --desk:#f1edf8; --surface:#fdfcff; --rail:#f6f3fb; --ink:#2d2640; --muted:#6c6485;
+  --accent:#6f55b5; --accent-2:#b98a45; --on-accent:#fff; --wash:#ebe4f7; --line:#e0d8ee; --green:#4f8a6e;
+  --fx-1:#b9a3ff; --fx-2:#e6c8ff; --fx-3:#ffe3a3; --blob-1:#cdbdf566; --blob-2:#f3e2c466; --dot:#ddd3ec;
+  --shadow:0 24px 70px #4a3a8a14,0 2px 8px #4a3a8a08; --shadow-lg:0 22px 60px #4a3a8a24,0 3px 10px #4a3a8a10;
+}
+:root[data-theme='aizome'] { /* 藍 indigo · 朱 vermilion */
+  --desk:#e8edf3; --surface:#fbfcfd; --rail:#f1f4f8; --ink:#1c2a3d; --muted:#5a6a7d;
+  --accent:#2c4f7c; --accent-2:#c24a36; --on-accent:#fff; --wash:#dfe7f1; --line:#d3dce7; --green:#3f7a62;
+  --fx-1:#7fa6d6; --fx-2:#f0a58f; --fx-3:#f5d58a; --blob-1:#b9cce466; --blob-2:#f2cbbd55; --dot:#cdd6e2;
+  --shadow:0 24px 70px #1c2a3d14,0 2px 8px #1c2a3d08; --shadow-lg:0 22px 60px #1c2a3d24,0 3px 10px #1c2a3d10;
+}
+:root[data-theme='momiji'] { /* 紅葉 autumn maple · 山吹 */
+  --desk:#f8eee6; --surface:#fffcf9; --rail:#fbf4ee; --ink:#3b2519; --muted:#7c6152;
+  --accent:#b8452a; --accent-2:#c8912e; --on-accent:#fff; --wash:#f7e3d6; --line:#efdccd; --green:#5c7f45;
+  --fx-1:#ff9a6b; --fx-2:#ffc56b; --fx-3:#ffe4a8; --blob-1:#ffc9a866; --blob-2:#f7dd9f55; --dot:#ecd7c8;
+  --shadow:0 24px 70px #7a3a1f14,0 2px 8px #7a3a1f08; --shadow-lg:0 22px 60px #7a3a1f24,0 3px 10px #7a3a1f10;
+}
+:root[data-theme='yozakura'] { /* 夜桜 night sakura */
+  --desk:#14121f; --surface:#1c1a2b; --rail:#181626; --ink:#f1e9f2; --muted:#aa9fb6;
+  --accent:#ff9fc4; --accent-2:#b9a6ff; --on-accent:#1a1224; --wash:#2c2340; --line:#322c45; --green:#8fd3b3;
+  --fx-1:#ffb3cf; --fx-2:#cbb8ff; --fx-3:#ffe0a3; --blob-1:#ff9fc422; --blob-2:#7d6bff22; --dot:#2a2638;
+  --shadow:0 24px 80px #0006,0 2px 8px #0003; --shadow-lg:0 24px 70px #0008,0 3px 10px #0004;
+  color-scheme:dark;
+}
+:root[data-theme='washi'] { /* 和紙 paper · 墨 sumi · 朱 */
+  --desk:#f3efe6; --surface:#fdfbf6; --rail:#f7f3ea; --ink:#22201c; --muted:#6b655b;
+  --accent:#b73a2e; --accent-2:#3f5a4b; --on-accent:#fff; --wash:#efe6d6; --line:#e3dccd; --green:#3f5a4b;
+  --fx-1:#e8826f; --fx-2:#c9b98f; --fx-3:#f2d98c; --blob-1:#ead9bd66; --blob-2:#f0cfc255; --dot:#e0d8c6;
+  --shadow:0 24px 70px #3a332414,0 2px 8px #3a332408; --shadow-lg:0 22px 60px #3a332424,0 3px 10px #3a332410;
+}
+:root[data-theme='asagi'] { /* 浅葱 teal · 珊瑚 coral */
+  --desk:#e8f3f2; --surface:#fbfefd; --rail:#f1f8f7; --ink:#16302e; --muted:#58716e;
+  --accent:#1b8a8a; --accent-2:#d9745a; --on-accent:#fff; --wash:#d9eeec; --line:#cfe3e1; --green:#2f8f6a;
+  --fx-1:#7fd6d0; --fx-2:#ffb49c; --fx-3:#fde6a0; --blob-1:#b3e3de66; --blob-2:#ffd3c455; --dot:#cde2df;
+  --shadow:0 24px 70px #16302e14,0 2px 8px #16302e08; --shadow-lg:0 22px 60px #16302e24,0 3px 10px #16302e10;
+}
+/* ============ Glass: translucent, blurred layers over a living wallpaper (iOS-style) ============ */
+:root[data-theme='glass'] {
+  --desk:#dfe6f5; --surface:rgba(255,255,255,.52); --rail:rgba(255,255,255,.26); --ink:#1d1d1f; --muted:#5e5e6a;
+  --accent:#007aff; --accent-2:#ff2d55; --on-accent:#fff; --wash:rgba(0,122,255,.10); --line:rgba(255,255,255,.62); --green:#1f9d57;
+  --fx-1:#5ac8fa; --fx-2:#bf5af2; --fx-3:#ffd60a; --blob-1:#5ac8fa44; --blob-2:#ff2d5533; --dot:transparent;
+  --shadow:0 30px 80px #1b2a5a26,0 2px 10px #1b2a5a12; --shadow-lg:0 30px 70px #1b2a5a33,0 3px 12px #1b2a5a18;
+  --glass-edge:inset 0 1px 0 #ffffffd9,inset 0 -1px 0 #ffffff40,inset 1px 0 0 #ffffff55,inset -1px 0 0 #ffffff33;
+  --glass-blur:blur(26px) saturate(185%);
+}
+:root[data-theme='glass-night'] {
+  --desk:#0b0d1a; --surface:rgba(34,36,58,.52); --rail:rgba(22,24,40,.34); --ink:#f5f5f7; --muted:#a1a1b5;
+  --accent:#0a84ff; --accent-2:#ff375f; --on-accent:#fff; --wash:rgba(10,132,255,.16); --line:rgba(255,255,255,.14); --green:#30d158;
+  --fx-1:#64d2ff; --fx-2:#bf5af2; --fx-3:#ffd60a; --blob-1:#0a84ff33; --blob-2:#bf5af233; --dot:transparent;
+  --shadow:0 30px 90px #0009,0 2px 10px #0005; --shadow-lg:0 30px 80px #000a,0 3px 12px #0006;
+  --glass-edge:inset 0 1px 0 #ffffff38,inset 0 -1px 0 #ffffff10,inset 1px 0 0 #ffffff18,inset -1px 0 0 #ffffff10;
+  --glass-blur:blur(28px) saturate(170%);
+  color-scheme:dark;
+}
 /* ============ Base ============ */
 html,body{height:100%;margin:0;background:var(--desk);color:var(--ink);font-size:15px;}
+body{background:transparent;} /* html carries the desk colour, so each style's body:before decoration shows through */
 /* Rounded, Japanese-flavoured type: Quicksand for Latin, jf open huninn for Traditional Chinese.
    Huninn has no Simplified glyphs, so zh-CN pairs Quicksand with the system font to avoid mixed glyphs. */
 :root:lang(zh-CN){--sans:'Quicksand','PingFang SC','Microsoft YaHei','Noto Sans SC',system-ui,sans-serif;--mono:'M PLUS 1 Code','PingFang SC','Microsoft YaHei',monospace;}
@@ -97,6 +154,17 @@ kbd{background:var(--surface);border:1px solid var(--line);box-shadow:0 1px 0 va
 .swatch-sakura i:nth-child(1){background:#fbe4ee}.swatch-sakura i:nth-child(2){background:#b8406f}.swatch-sakura i:nth-child(3){background:#ffb8d4}
 .swatch-matcha i:nth-child(1){background:#e3edd8}.swatch-matcha i:nth-child(2){background:#4a7336}.swatch-matcha i:nth-child(3){background:#e8c26a}
 .swatch-retro i:nth-child(1){background:#050906}.swatch-retro i:nth-child(2){background:#4dff88}.swatch-retro i:nth-child(3){background:#ffcc4d}
+.swatch-fuji i:nth-child(1){background:#ebe4f7}.swatch-fuji i:nth-child(2){background:#6f55b5}.swatch-fuji i:nth-child(3){background:#b98a45}
+.swatch-aizome i:nth-child(1){background:#dfe7f1}.swatch-aizome i:nth-child(2){background:#2c4f7c}.swatch-aizome i:nth-child(3){background:#c24a36}
+.swatch-momiji i:nth-child(1){background:#f7e3d6}.swatch-momiji i:nth-child(2){background:#b8452a}.swatch-momiji i:nth-child(3){background:#c8912e}
+.swatch-yozakura i:nth-child(1){background:#1c1a2b}.swatch-yozakura i:nth-child(2){background:#ff9fc4}.swatch-yozakura i:nth-child(3){background:#b9a6ff}
+.swatch-washi i:nth-child(1){background:#efe6d6}.swatch-washi i:nth-child(2){background:#22201c}.swatch-washi i:nth-child(3){background:#b73a2e}
+.swatch-asagi i:nth-child(1){background:#d9eeec}.swatch-asagi i:nth-child(2){background:#1b8a8a}.swatch-asagi i:nth-child(3){background:#d9745a}
+.swatch-glass i:nth-child(1){background:linear-gradient(135deg,#7cc4ff,#ff8ab8)}.swatch-glass i:nth-child(2){background:#ffffffcc;box-shadow:0 0 0 1.5px var(--surface),inset 0 0 0 1px #0002}.swatch-glass i:nth-child(3){background:#007aff}
+.swatch-glass-night i:nth-child(1){background:linear-gradient(135deg,#1d4ed8,#be185d)}.swatch-glass-night i:nth-child(2){background:#22243a}.swatch-glass-night i:nth-child(3){background:#0a84ff}
+.style-popover{width:318px;}.style-grid{display:grid;grid-template-columns:1fr 1fr;gap:2px;}
+.style-group{grid-column:1/-1;margin:8px 8px 4px;font:10px var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.08em;}.style-group:first-child{margin-top:2px;}
+.style-popover .fest-toggle{margin-top:6px;border-top:1px dashed var(--line);border-radius:0 0 9px 9px;}
 /* ============ Terminal window ============ */
 .terminal-window{flex:1;min-height:0;display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);overflow:hidden;transition:border-radius .35s var(--ease),background-color .4s;}
 .terminal-window.is-shaking{animation:win-shake .5s ease;}
@@ -685,6 +753,25 @@ button.brain-badge:hover{transform:translateY(-1px);border-color:var(--accent);}
 :root[data-theme='sakura'] .terminal-window{background:linear-gradient(180deg,#fffdfe,#fff8fb);}
 :root[data-theme='sakura'] .window-bar,:root[data-theme='sakura'] .terminal-status{background:linear-gradient(90deg,#fdf2f7,#f9f1fb);}
 :root[data-theme='sakura'] .explorer{background:linear-gradient(180deg,#fdf5f8,#faf1f8);}
+/* Japanese palettes: each desk gets its own quiet motif. */
+:root[data-theme='fuji'] body:before{background:radial-gradient(260px 520px at 12% -8%,#c9b4f5aa,transparent 70%),radial-gradient(220px 460px at 32% -10%,#dccbffaa,transparent 70%),radial-gradient(240px 500px at 78% -12%,#c2a9f0aa,transparent 70%),radial-gradient(700px 420px at 90% 110%,#f4e4c677,transparent 70%),radial-gradient(circle,#dcd0f0 1px,transparent 1.5px) 0 0/24px 24px,linear-gradient(180deg,#efe8fb,#f6f2fb 55%,#f7f1ea);}
+:root[data-theme='aizome'] body:before{background:radial-gradient(circle at 50% 100%,transparent 16px,#2c4f7c14 17px,#2c4f7c14 19px,transparent 20px,transparent 26px,#2c4f7c10 27px,#2c4f7c10 29px,transparent 30px) 0 0/60px 30px,radial-gradient(900px 500px at 100% 0%,#c9d8ec99,transparent 70%),linear-gradient(170deg,#eef2f7,#e3e9f1);}
+:root[data-theme='momiji'] body:before{background:radial-gradient(circle at 14% 22%,#e8764f33 0 5px,transparent 6px),radial-gradient(circle at 72% 12%,#d9a03f33 0 4px,transparent 5px),radial-gradient(circle at 86% 64%,#c84b2f2e 0 6px,transparent 7px),radial-gradient(circle at 34% 78%,#e59a4a2e 0 4px,transparent 5px),radial-gradient(800px 460px at 0% 0%,#ffd9c288,transparent 70%),radial-gradient(800px 460px at 100% 100%,#f7e0b088,transparent 70%),linear-gradient(160deg,#fbefe6,#f6ebe0);}
+:root[data-theme='yozakura'] body:before{background:radial-gradient(circle,#ffc4dccc 1.3px,transparent 2px) 11px 7px/83px 71px,radial-gradient(circle,#ffd6e6aa 1px,transparent 1.6px) 47px 41px/61px 53px,radial-gradient(circle,#ffffff66 .8px,transparent 1.3px) 0 0/37px 43px,radial-gradient(900px 520px at 85% -10%,#ff9fc433,transparent 70%),radial-gradient(900px 520px at 0% 110%,#6b5cff2a,transparent 70%),linear-gradient(180deg,#110f1c,#1b1730 60%,#231a36);}
+:root[data-theme='washi'] body:before{background:repeating-linear-gradient(87deg,#0000 0 7px,#8b7a5a0a 7px 8px,#0000 8px 19px),repeating-linear-gradient(3deg,#0000 0 11px,#8b7a5a08 11px 12px,#0000 12px 23px),radial-gradient(700px 400px at 100% 0%,#f0cfc244,transparent 70%),linear-gradient(180deg,#f5f1e8,#efe9dc);}
+:root[data-theme='asagi'] body:before{background:radial-gradient(ellipse 120px 36px at 50% 100%,#1b8a8a14,transparent 70%) 0 0/120px 48px,radial-gradient(900px 500px at 0% 0%,#bfe8e499,transparent 70%),radial-gradient(800px 460px at 100% 100%,#ffd9cc77,transparent 70%),linear-gradient(165deg,#ecf7f6,#e2f1ef);}
+/* Glass: a slowly drifting colour wallpaper behind frosted, specular panels. */
+:root[data-theme='glass'] body:before{background:radial-gradient(42vw 42vw at 22% 28%,#5aa9ff,transparent 64%),radial-gradient(40vw 40vw at 78% 22%,#ff6fa5,transparent 62%),radial-gradient(46vw 46vw at 66% 82%,#9d7bff,transparent 64%),radial-gradient(38vw 38vw at 24% 86%,#4fe0bf,transparent 62%),radial-gradient(30vw 30vw at 50% 50%,#ffd27a88,transparent 70%),linear-gradient(135deg,#cfdcff,#f0dcff);background-size:130% 130%;animation:glass-drift 28s ease-in-out infinite alternate;}
+:root[data-theme='glass-night'] body:before{background:radial-gradient(42vw 42vw at 22% 28%,#2563eb,transparent 64%),radial-gradient(40vw 40vw at 78% 22%,#db2777,transparent 62%),radial-gradient(46vw 46vw at 66% 82%,#7c3aed,transparent 64%),radial-gradient(38vw 38vw at 24% 86%,#0d9488,transparent 62%),linear-gradient(135deg,#0a0d1f,#1a0e2e);background-size:130% 130%;animation:glass-drift 28s ease-in-out infinite alternate;}
+@keyframes glass-drift{0%{background-position:0% 0%;}50%{background-position:100% 30%;}100%{background-position:30% 100%;}}
+:root[data-theme='glass']{--pane:rgba(255,255,255,.2);--pane-2:rgba(255,255,255,.14);}:root[data-theme='glass-night']{--pane:rgba(16,18,36,.26);--pane-2:rgba(16,18,36,.16);}
+:is([data-theme='glass'],[data-theme='glass-night']) .terminal-window{background:var(--pane);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);border:1px solid var(--line);box-shadow:var(--glass-edge),var(--shadow);border-radius:22px;position:relative;}
+:is([data-theme='glass'],[data-theme='glass-night']) .terminal-window:before{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:0;background:linear-gradient(135deg,#ffffff5c 0%,#ffffff12 22%,transparent 45%,transparent 70%,#ffffff14 100%);mix-blend-mode:soft-light;}
+:is([data-theme='glass'],[data-theme='glass-night']) :is(.window-bar,.explorer,.terminal-status,.command-area){background:var(--pane-2);}
+:is([data-theme='glass'],[data-theme='glass-night']) :is(.style-popover,.yuki-menu,.yuki-chat,.yuki-bubble,.toast,.film-shell){background:var(--surface);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);box-shadow:var(--glass-edge),var(--shadow-lg);}
+:is([data-theme='glass'],[data-theme='glass-night']) :is(.icon-button,.language-switch,.action-button:not(.primary),.cap-demo,.hobby-card,.sub-card,.cap-stats div,.cap-pipe li){-webkit-backdrop-filter:blur(12px) saturate(160%);backdrop-filter:blur(12px) saturate(160%);box-shadow:var(--glass-edge);}
+:is([data-theme='glass'],[data-theme='glass-night']) .desktop-bar{color:var(--ink);}
+:root[data-theme='glass'] .brand strong,:root[data-theme='glass'] .desktop-motto{text-shadow:0 1px 0 #ffffff80;}
 button.brain-badge:disabled{cursor:default;transform:none;border-color:var(--line);}
 
 /* ============ Wardrobe: head-anchored accessories ============ */

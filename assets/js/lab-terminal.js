@@ -7,8 +7,11 @@
   const store = { get(key, fallback) { try { return localStorage.getItem(`niansia-${key}`) ?? fallback; } catch { return fallback; } }, set(key,value) { try { localStorage.setItem(`niansia-${key}`,value); } catch {} } };
   const paths = ['home','about','projects','research','contact','hobbies','help'];
   const files = ['start.sh','about.md','projects/','research.md','contact.txt','hobbies.md','help'];
-  const themes = ['sakura','light','dark','matcha','retro'];
-  const themeColors = {light:'#edf0f7',dark:'#101117',sakura:'#fbf0f4',matcha:'#eef2e8',retro:'#060a07'};
+  const themeGroups = [['classic',['sakura','light','dark','matcha','retro']],['wa',['fuji','aizome','momiji','yozakura','washi','asagi']],['glass',['glass','glass-night']]];
+  const themes = themeGroups.flatMap(([, list]) => list);
+  const darkThemes = ['dark','retro','yozakura','glass-night'];
+  const themePairs = {sakura:'yozakura',yozakura:'sakura',glass:'glass-night','glass-night':'glass'}; // the moon/sun button flips to the matching light/dark twin
+  const themeColors = {light:'#edf0f7',dark:'#101117',sakura:'#fbf0f4',matcha:'#eef2e8',retro:'#060a07',fuji:'#efe8fb',aizome:'#e8edf3',momiji:'#fbefe6',yozakura:'#110f1c',washi:'#f5f1e8',asagi:'#ecf7f6',glass:'#dfe8ff','glass-night':'#070914'};
   const icons = {
     terminal:'m4 5 6 7-6 7m9 0h7', file:'M14 2H6a2 2 0 0 0-2 2v16h16V8zM14 2v6h6M8 13h8M8 17h5',
     folder:'M3 7V4h6l2 3h10v13H3z', research:'M9 3h6m-5 0v7l-5 9q-1 2 2 2h10q3 0 2-2l-5-9V3M8 15h8',
@@ -63,10 +66,10 @@
   }
   function paintThemeControls() {
     const button = $('[data-action="theme"]');
-    if (button) { button.innerHTML = icon(['dark','retro'].includes(theme) ? 'sun' : 'moon'); button.setAttribute('aria-pressed', String(['dark','retro'].includes(theme))); }
+    if (button) { button.innerHTML = icon(darkThemes.includes(theme) ? 'sun' : 'moon'); button.setAttribute('aria-pressed', String(darkThemes.includes(theme))); }
     root.querySelectorAll('[data-theme-pick]').forEach(el => el.setAttribute('aria-pressed', String(el.dataset.themePick === theme)));
   }
-  function toggleTheme(origin) { setTheme(['dark','retro'].includes(theme) ? 'sakura' : 'dark', origin); }
+  function toggleTheme(origin) { setTheme(themePairs[theme] || (darkThemes.includes(theme) ? 'sakura' : 'dark'), origin); }
   function applyMotion() {
     document.documentElement.dataset.motion = motion() ? 'on' : 'off';
     const button = $('[data-action="motion"]');
@@ -86,7 +89,7 @@
   function shell() {
     const c = t();
     document.documentElement.lang = locale;
-    const swatches = themes.map(name => `<button type="button" class="style-option" data-theme-pick="${name}" aria-pressed="${name===theme}"><span class="swatch swatch-${name}" aria-hidden="true"><i></i><i></i><i></i></span>${c.themeNames[name]}</button>`).join('');
+    const swatches = `<div class="style-grid">${themeGroups.map(([group, list]) => `<span class="style-group">${c.themeGroups[group]}</span>` + list.map(name => `<button type="button" class="style-option" data-theme-pick="${name}" aria-pressed="${name===theme}"><span class="swatch swatch-${name}" aria-hidden="true"><i></i><i></i><i></i></span>${c.themeNames[name]}</button>`).join('')).join('')}</div>`;
     root.innerHTML = `<div class="desktop">
       <header class="desktop-bar"><a class="brand" href="${langBase()}" data-view="home" translate="no">${icon('terminal')}<strong>niansia<span>.terminal</span></strong><i class="brand-caret" aria-hidden="true"></i></a><span class="desktop-motto">${c.desktop}</span>
         <div class="desktop-controls"><div class="language-switch" role="group" aria-label="${c.language}"><span class="lang-pill" aria-hidden="true"></span>${[['en','EN'],['zh-TW','繁'],['zh-CN','简']].map(([key,label])=>`<button type="button" data-lang="${key}" aria-pressed="${key===locale}" translate="no">${label}</button>`).join('')}</div><span class="control-divider"></span>
@@ -154,9 +157,10 @@
     qixi: ['star', 'magpie'], national: ['balloon', 'star'], retrocession: ['leaf', 'leaf'], halloween: ['bat', 'pumpkin'], christmas: ['snowflake', 'gift'], newyear: ['star', 'balloon']};
   const WATERMARK = {midautumn: 'moon', teachers: 'book', lunarnewyear: 'fu', lantern: 'lantern', valentine: 'heart', peace: 'dove', children: 'kite', labor: 'coffee',
     dragonboat: 'boat', qixi: 'magpie', national: 'fireworks', retrocession: 'leaf', halloween: 'pumpkin', christmas: 'tree', newyear: 'fireworks'};
+  const festSkinOn = fest => !['off', `off:${fest.primary.id}`].includes(store.get('fest-skin', 'on'));
   function paintFestivalChrome(fest) {
     const F = window.NIANSIA_FESTIVAL, garland = $('.fest-garland'), mark = $('.fest-watermark'), toggle = $('[data-fest-skin]');
-    const skin = fest && store.get('fest-skin', 'on') !== 'off';
+    const skin = fest && festSkinOn(fest);
     if (toggle) {
       toggle.hidden = !fest;
       toggle.setAttribute('aria-pressed', String(!!skin));
@@ -168,7 +172,7 @@
   }
   function applyFestival() {
     const fest = window.NIANSIA_FESTIVAL?.active();
-    const skin = fest && store.get('fest-skin', 'on') !== 'off';
+    const skin = fest && festSkinOn(fest);
     document.documentElement.dataset.festival = fest ? fest.primary.id : '';
     document.documentElement.dataset.fskin = skin ? fest.primary.id : '';
     const tone = skin && getComputedStyle(document.documentElement).getPropertyValue('--desk').trim();
@@ -565,8 +569,8 @@
     if(target.dataset.project){navigate('projects',target.dataset.project,{keyboard:event.detail===0});}
     if(target.dataset.projectStep){const i=projects().findIndex(p=>p.id===projectId),count=projects().length;navigate('projects',projects()[(i+Number(target.dataset.projectStep)+count)%count].id);}
     if(target.dataset.lang&&target.dataset.lang!==locale){changeLanguage(target.dataset.lang,target);}
-    if(target.dataset.themePick){setTheme(target.dataset.themePick,target);}
-    if(target.hasAttribute('data-fest-skin')){const on=store.get('fest-skin','on')==='off';store.set('fest-skin',on?'on':'off');transition(applyFestival,target);}
+    if(target.dataset.themePick){const f=window.NIANSIA_FESTIVAL?.active();if(f&&festSkinOn(f)){store.set('fest-skin',`off:${f.primary.id}`);applyFestival();}setTheme(target.dataset.themePick,target);}
+    if(target.hasAttribute('data-fest-skin')){const f=window.NIANSIA_FESTIVAL?.active();if(f){store.set('fest-skin',festSkinOn(f)?`off:${f.primary.id}`:'on');transition(applyFestival,target);}}
     if(target.dataset.command)runCommand(target.dataset.command);
     if(target.hasAttribute('data-fest-celebrate')){const box=target.getBoundingClientRect();for(let i=0;i<3;i++)setTimeout(()=>fx()?.burst(box.left+box.width*(.2+.3*i),box.top+box.height/2,'hearts'),i*140);fx()?.celebrate();yuki()?.act('trick');const l=yuki()?.festivalLine();if(l)yuki()?.say(l);}
     if(target.dataset.ask){yuki()?.openChat(target.dataset.ask);}
