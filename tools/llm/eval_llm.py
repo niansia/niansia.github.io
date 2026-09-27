@@ -18,7 +18,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from yuki_prompt import load_site, system_prompt  # noqa: E402
 
-WORK = Path(r'C:\Users\User\yuki-llm')
+WORK = Path(r'D:\yuki-llm')
 PROJECTS, COPY = load_site()
 
 # (page locale, page, question, expected commands, must mention (any-of groups), must not mention, reply language)

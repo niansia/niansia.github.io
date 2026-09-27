@@ -100,5 +100,5 @@ def verify(base: Path, official: Path, out: Path) -> None:
 
 
 if __name__ == '__main__':
-    verify(Path(r'C:\Users\User\yuki-llm\base-qwen2.5-1.5b'), Path(r'C:\Users\User\yuki-llm\official'),
-           Path(r'C:\Users\User\yuki-llm\mlc\base-qwen2.5-1.5b-q4f16_1-MLC'))
+    verify(Path(r'D:\yuki-llm\base-qwen2.5-1.5b'), Path(r'D:\yuki-llm\official'),
+           Path(r'D:\yuki-llm\mlc\base-qwen2.5-1.5b-q4f16_1-MLC'))

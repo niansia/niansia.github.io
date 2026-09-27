@@ -4,7 +4,7 @@ Every example carries the real system prompt (profile, all projects, current pag
 so the model learns to *read* the portfolio instead of memorising it. Answers are grounded
 in the JSON fields; unknown questions teach refusal; commands teach the @-line format.
 
-Run: python tools/llm/make_dataset.py   ->  C:/Users/User/yuki-llm/data/{train,valid}.jsonl
+Run: python tools/llm/make_dataset.py   ->  D:/yuki-llm/data/{train,valid}.jsonl
 """
 from __future__ import annotations
 
@@ -20,7 +20,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from yuki_prompt import load_site, system_prompt, export_template  # noqa: E402
 from yuki_brain_data import REPLIES  # noqa: E402
 
-OUT = Path(r'C:\Users\User\yuki-llm\data')
+OUT = Path(r'D:\yuki-llm\data')
 TW2S = opencc.OpenCC('tw2sp')
 rng = random.Random(11)
 PROJECTS, COPY = load_site()

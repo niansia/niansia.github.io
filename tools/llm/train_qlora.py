@@ -16,7 +16,7 @@ from peft import LoraConfig, PeftModel
 from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 from trl import SFTConfig, SFTTrainer
 
-WORK = Path(r'C:\Users\User\yuki-llm')
+WORK = Path(r'D:\yuki-llm')
 BASE = WORK / 'base-qwen2.5-1.5b'
 ADAPTER = WORK / 'adapter'
 MERGED = WORK / 'merged'

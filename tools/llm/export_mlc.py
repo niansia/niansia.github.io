@@ -1,7 +1,7 @@
 """Package the merged fine-tune for WebLLM (WebGPU, 4-bit q4f16_1).
 
 Run: python tools/llm/export_mlc.py [merged|base]
-Output: C:/Users/User/yuki-llm/mlc/<name>/  -> upload this folder to a Hugging Face model repo.
+Output: D:/yuki-llm/mlc/<name>/  -> upload this folder to a Hugging Face model repo.
 
 The fine-tune keeps Qwen2.5-1.5B's architecture, tokenizer and chat template, so the official
 mlc-chat-config.json, shard layout and WebLLM's prebuilt WebGPU library are reused unchanged;
@@ -18,7 +18,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from q4f16 import convert  # noqa: E402
 
-WORK = Path(r'C:\Users\User\yuki-llm')
+WORK = Path(r'D:\yuki-llm')
 OFFICIAL = 'https://huggingface.co/mlc-ai/Qwen2.5-1.5B-Instruct-q4f16_1-MLC/resolve/main/'
 CARD = """---
 license: apache-2.0
