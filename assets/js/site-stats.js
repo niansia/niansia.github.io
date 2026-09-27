@@ -2,9 +2,8 @@
    Counts only — no cookies, no personal data. Elements opt in with [data-stat="total|today|online"]; containers with
    [data-stats] stay hidden until the first numbers arrive. `?stats=demo` shows fake numbers for layout checks. */
 (() => {
-  // Public web identifiers (not secrets); what may be read or written is enforced by the Realtime Database rules.
-  const CONFIG = {apiKey: 'AIzaSyAsAJl4RX9NjA1OWx_53V8QDjA0YzuXX6k', authDomain: 'niansia-site.firebaseapp.com',
-    databaseURL: 'https://niansia-site-default-rtdb.asia-southeast1.firebasedatabase.app', projectId: 'niansia-site', appId: '1:764017812912:web:882b9a7a88f4da9640a275'};
+  // Only the Realtime Database is used, which needs no API key; what may be read or written is enforced by the database rules.
+  const CONFIG = {databaseURL: 'https://niansia-site-default-rtdb.asia-southeast1.firebasedatabase.app', projectId: 'niansia-site'};
   const SDK = 'https://www.gstatic.com/firebasejs/10.14.1/';
   const S = window.NIANSIA_STATS = {ready: false, total: null, today: null, online: null};
   const fmt = v => Number(v).toLocaleString(document.documentElement.lang || undefined);
