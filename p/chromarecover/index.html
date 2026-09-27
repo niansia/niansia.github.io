@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ChromaRecover · Niansia</title>
+<meta name="description" content="A local-first computer-vision toolkit for recovering spatial structure carried by subtle color differences. It tests competing hypotheses, preserves auditable artifacts, and abstains when evidence is weak.">
+<link rel="canonical" href="https://niansia.github.io/p/chromarecover/">
+<link rel="alternate" hreflang="en" href="https://niansia.github.io/p/chromarecover/"><link rel="alternate" hreflang="zh-Hant-TW" href="https://niansia.github.io/p/chromarecover/zh-tw/"><link rel="alternate" hreflang="zh-Hans-CN" href="https://niansia.github.io/p/chromarecover/zh-cn/"><link rel="alternate" hreflang="x-default" href="https://niansia.github.io/p/chromarecover/">
+<meta property="og:type" content="website"><meta property="og:site_name" content="Niansia">
+<meta property="og:title" content="ChromaRecover · Niansia"><meta property="og:description" content="A local-first computer-vision toolkit for recovering spatial structure carried by subtle color differences. It tests competing hypotheses, preserves auditable artifacts, and abstains when evidence is weak.">
+<meta property="og:url" content="https://niansia.github.io/p/chromarecover/"><meta property="og:image" content="https://niansia.github.io/assets/og/p-chromarecover.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta property="og:locale" content="en">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://niansia.github.io/assets/og/p-chromarecover.jpg">
+
+<meta name="theme-color" content="#fbf6ee" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#15142a" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap">
+<style>
+:root{--bg:#fbf6ee;--paper:#fffdf9;--ink:#2a2230;--muted:#766b73;--line:#2a22301a;--accent:#c0673a;--accent2:#8f6bb3;--code:#f3ece2;}
+@media(prefers-color-scheme:dark){:root{--bg:#15142a;--paper:#1c1a36;--ink:#f1ebe2;--muted:#aaa3bd;--line:#ffffff1a;--accent:#f0a878;--accent2:#b69ae6;--code:#26234a;}}
+*{box-sizing:border-box;}html{-webkit-text-size-adjust:100%;}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.85 Inter,'Noto Sans TC','Noto Sans SC',system-ui,sans-serif;}
+a{color:var(--accent);text-underline-offset:3px;}
+.top{max-width:1080px;margin:0 auto;padding:18px 20px;display:flex;align-items:center;gap:10px;font:500 13px 'JetBrains Mono',monospace;color:var(--muted);}
+.top a{color:var(--muted);text-decoration:none;}.top a:hover{color:var(--accent);}
+.top b{color:var(--ink);font-weight:500;}.top .sp{flex:1;}
+.langs a{padding:4px 9px;border-radius:99px;border:1px solid var(--line);margin-left:4px;}.langs a[aria-current]{color:var(--ink);border-color:var(--accent);}
+main{max-width:760px;margin:0 auto;padding:10px 20px 70px;}
+.kicker{font:500 12px 'JetBrains Mono',monospace;color:var(--accent);letter-spacing:.06em;text-transform:uppercase;margin:24px 0 8px;}
+h1{font-size:clamp(28px,4.4vw,42px);line-height:1.2;letter-spacing:-.02em;margin:0 0 14px;}
+.lede{font-size:18px;color:var(--muted);margin:0 0 16px;line-height:1.7;}
+.meta{display:flex;flex-wrap:wrap;gap:8px 14px;font:500 12.5px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;color:var(--muted);padding-bottom:22px;border-bottom:1px solid var(--line);margin-bottom:10px;}
+.meta span.tag{padding:2px 9px;border-radius:99px;background:var(--code);}
+article h2{font-size:23px;margin:40px 0 10px;letter-spacing:-.01em;}
+article h3{font-size:18px;margin:28px 0 8px;}
+article p,article li{color:var(--ink);}
+article code{font:14px 'JetBrains Mono',monospace;background:var(--code);padding:1px 6px;border-radius:6px;}
+article table{width:100%;border-collapse:collapse;margin:18px 0;font-size:14.5px;display:block;overflow-x:auto;}
+article th,article td{padding:8px 12px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap;}
+article th{font-weight:600;color:var(--muted);font-size:13px;}
+article td:not(:first-child),article th:not(:first-child){text-align:right;}
+article strong{color:var(--ink);}
+article blockquote{margin:18px 0;padding:4px 18px;border-left:3px solid var(--accent);color:var(--muted);}
+.card{display:block;padding:18px 20px;margin:12px 0;border-radius:16px;background:var(--paper);border:1px solid var(--line);text-decoration:none;color:var(--ink);transition:transform .25s,border-color .25s;}
+.card:hover{transform:translateY(-2px);border-color:var(--accent);}
+.card b{display:block;font-size:18px;line-height:1.4;margin-bottom:4px;}.card small{display:block;color:var(--muted);font-size:14px;line-height:1.6;}
+.card i{display:block;font:normal 500 12px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;color:var(--accent);margin-top:8px;}
+.hero{width:100%;border-radius:16px;border:1px solid var(--line);display:block;margin:6px 0 18px;}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px;}.chips span{font:500 12px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;padding:4px 11px;border-radius:99px;background:var(--code);}
+.btns{display:flex;flex-wrap:wrap;gap:10px;margin:22px 0;}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:12px;border:1px solid var(--line);background:var(--paper);color:var(--ink);text-decoration:none;font-weight:600;font-size:14px;}
+.btn.primary{background:var(--accent);border-color:transparent;color:#fff;}
+.btn:hover{border-color:var(--accent);}
+.note{font-size:13.5px;color:var(--muted);}
+.live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#34c38f;box-shadow:0 0 0 3px #34c38f33;vertical-align:1px;}footer b{color:var(--ink);font-weight:600;}
+footer{max-width:760px;margin:0 auto;padding:26px 20px 50px;border-top:1px solid var(--line);font-size:14px;color:var(--muted);}
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "SoftwareSourceCode", "name": "ChromaRecover", "description": "A local-first computer-vision toolkit for recovering spatial structure carried by subtle color differences. It tests competing hypotheses, preserves auditable artifacts, and abstains when evidence is weak.", "codeRepository": "https://github.com/niansia/ChromaRecover", "author": {"@type": "Person", "name": "Niansia", "url": "https://niansia.github.io/", "email": "mailto:niansia930202@gmail.com", "sameAs": ["https://github.com/niansia"]}, "inLanguage": "en", "url": "https://niansia.github.io/p/chromarecover/"}</script>
+<script defer src="/assets/js/site-stats.js"></script>
+</head>
+<body>
+<header class="top"><a href="/"><b>~/niansia</b></a> / <a href="/#projects">projects</a><span class="sp"></span><span class="langs"><a href="/p/chromarecover/" aria-current="page" hreflang="en">EN</a><a href="/p/chromarecover/zh-tw/" hreflang="zh-Hant">繁</a><a href="/p/chromarecover/zh-cn/" hreflang="zh-Hans">简</a></span></header>
+<main><p class="kicker">projects/chromarecover</p><h1>ChromaRecover</h1><div class="chips"><span>Computer vision</span><span>Public alpha</span></div><img class="hero" src="/assets/work/cards/chromarecover.jpg" alt="ChromaRecover" loading="lazy"><p class="lede">A local-first computer-vision toolkit for recovering spatial structure carried by subtle color differences. It tests competing hypotheses, preserves auditable artifacts, and abstains when evidence is weak.</p><h2>Evidence</h2><p>Masks, overlays, quality signals, provenance, uncertainty states, and algorithm notes.</p><div class="btns"><a class="btn primary" href="/#projects/chromarecover">Open the interactive portfolio →</a><a class="btn" href="https://github.com/niansia/ChromaRecover">Source ↗</a><a class="btn" href="https://github.com/niansia/ChromaRecover/blob/main/docs/algorithm.md">Algorithm notes ↗</a></div><p class="note">This is a lightweight page for sharing. The full, interactive version lives in the terminal portfolio.</p></main>
+<footer>Questions or ideas? Email <a href="mailto:niansia930202@gmail.com">niansia930202@gmail.com</a> · <a href="/">niansia.github.io</a> · <a href="https://github.com/niansia">github.com/niansia</a><span class="stats" data-stats hidden> · <i class="live-dot"></i> <b data-stat="online">–</b> online · <b data-stat="total">–</b> visits</span></footer>
+</body>
+</html>

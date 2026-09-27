@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Taiwan Exam 设计笔记：让模型出题，让程序只负责检查 · Niansia</title>
+<meta name="description" content="一个让 AI 出原创学测仿真考的 Agent Skill，为什么刻意不让程序替题目品质背书，以及那些检查、锁定与套版是怎么设计的。">
+<link rel="canonical" href="https://niansia.github.io/notes/zh-cn/taiwan-exam-design/">
+<link rel="alternate" hreflang="en" href="https://niansia.github.io/notes/en/taiwan-exam-design/"><link rel="alternate" hreflang="zh-Hant-TW" href="https://niansia.github.io/notes/zh-tw/taiwan-exam-design/"><link rel="alternate" hreflang="zh-Hans-CN" href="https://niansia.github.io/notes/zh-cn/taiwan-exam-design/"><link rel="alternate" hreflang="x-default" href="https://niansia.github.io/notes/en/taiwan-exam-design/">
+<meta property="og:type" content="article"><meta property="og:site_name" content="Niansia">
+<meta property="og:title" content="Taiwan Exam 设计笔记：让模型出题，让程序只负责检查 · Niansia"><meta property="og:description" content="一个让 AI 出原创学测仿真考的 Agent Skill，为什么刻意不让程序替题目品质背书，以及那些检查、锁定与套版是怎么设计的。">
+<meta property="og:url" content="https://niansia.github.io/notes/zh-cn/taiwan-exam-design/"><meta property="og:image" content="https://niansia.github.io/assets/og/note-taiwan-exam-design-zh-cn.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta property="og:locale" content="zh_CN">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://niansia.github.io/assets/og/note-taiwan-exam-design-zh-cn.jpg">
+
+<meta name="theme-color" content="#fbf6ee" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#15142a" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap">
+<style>
+:root{--bg:#fbf6ee;--paper:#fffdf9;--ink:#2a2230;--muted:#766b73;--line:#2a22301a;--accent:#c0673a;--accent2:#8f6bb3;--code:#f3ece2;}
+@media(prefers-color-scheme:dark){:root{--bg:#15142a;--paper:#1c1a36;--ink:#f1ebe2;--muted:#aaa3bd;--line:#ffffff1a;--accent:#f0a878;--accent2:#b69ae6;--code:#26234a;}}
+*{box-sizing:border-box;}html{-webkit-text-size-adjust:100%;}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.85 Inter,'Noto Sans TC','Noto Sans SC',system-ui,sans-serif;}
+a{color:var(--accent);text-underline-offset:3px;}
+.top{max-width:1080px;margin:0 auto;padding:18px 20px;display:flex;align-items:center;gap:10px;font:500 13px 'JetBrains Mono',monospace;color:var(--muted);}
+.top a{color:var(--muted);text-decoration:none;}.top a:hover{color:var(--accent);}
+.top b{color:var(--ink);font-weight:500;}.top .sp{flex:1;}
+.langs a{padding:4px 9px;border-radius:99px;border:1px solid var(--line);margin-left:4px;}.langs a[aria-current]{color:var(--ink);border-color:var(--accent);}
+main{max-width:760px;margin:0 auto;padding:10px 20px 70px;}
+.kicker{font:500 12px 'JetBrains Mono',monospace;color:var(--accent);letter-spacing:.06em;text-transform:uppercase;margin:24px 0 8px;}
+h1{font-size:clamp(28px,4.4vw,42px);line-height:1.2;letter-spacing:-.02em;margin:0 0 14px;}
+.lede{font-size:18px;color:var(--muted);margin:0 0 16px;line-height:1.7;}
+.meta{display:flex;flex-wrap:wrap;gap:8px 14px;font:500 12.5px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;color:var(--muted);padding-bottom:22px;border-bottom:1px solid var(--line);margin-bottom:10px;}
+.meta span.tag{padding:2px 9px;border-radius:99px;background:var(--code);}
+article h2{font-size:23px;margin:40px 0 10px;letter-spacing:-.01em;}
+article h3{font-size:18px;margin:28px 0 8px;}
+article p,article li{color:var(--ink);}
+article code{font:14px 'JetBrains Mono',monospace;background:var(--code);padding:1px 6px;border-radius:6px;}
+article table{width:100%;border-collapse:collapse;margin:18px 0;font-size:14.5px;display:block;overflow-x:auto;}
+article th,article td{padding:8px 12px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap;}
+article th{font-weight:600;color:var(--muted);font-size:13px;}
+article td:not(:first-child),article th:not(:first-child){text-align:right;}
+article strong{color:var(--ink);}
+article blockquote{margin:18px 0;padding:4px 18px;border-left:3px solid var(--accent);color:var(--muted);}
+.card{display:block;padding:18px 20px;margin:12px 0;border-radius:16px;background:var(--paper);border:1px solid var(--line);text-decoration:none;color:var(--ink);transition:transform .25s,border-color .25s;}
+.card:hover{transform:translateY(-2px);border-color:var(--accent);}
+.card b{display:block;font-size:18px;line-height:1.4;margin-bottom:4px;}.card small{display:block;color:var(--muted);font-size:14px;line-height:1.6;}
+.card i{display:block;font:normal 500 12px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;color:var(--accent);margin-top:8px;}
+.hero{width:100%;border-radius:16px;border:1px solid var(--line);display:block;margin:6px 0 18px;}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px;}.chips span{font:500 12px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;padding:4px 11px;border-radius:99px;background:var(--code);}
+.btns{display:flex;flex-wrap:wrap;gap:10px;margin:22px 0;}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:12px;border:1px solid var(--line);background:var(--paper);color:var(--ink);text-decoration:none;font-weight:600;font-size:14px;}
+.btn.primary{background:var(--accent);border-color:transparent;color:#fff;}
+.btn:hover{border-color:var(--accent);}
+.note{font-size:13.5px;color:var(--muted);}
+.live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#34c38f;box-shadow:0 0 0 3px #34c38f33;vertical-align:1px;}footer b{color:var(--ink);font-weight:600;}
+footer{max-width:760px;margin:0 auto;padding:26px 20px 50px;border-top:1px solid var(--line);font-size:14px;color:var(--muted);}
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BlogPosting", "headline": "Taiwan Exam 设计笔记：让模型出题，让程序只负责检查", "description": "一个让 AI 出原创学测仿真考的 Agent Skill，为什么刻意不让程序替题目品质背书，以及那些检查、锁定与套版是怎么设计的。", "datePublished": "2026-09-28", "dateModified": "2026-09-28", "inLanguage": "zh-Hans", "author": {"@type": "Person", "name": "Niansia", "url": "https://niansia.github.io/", "email": "mailto:niansia930202@gmail.com", "sameAs": ["https://github.com/niansia"]}, "mainEntityOfPage": "https://niansia.github.io/notes/zh-cn/taiwan-exam-design/", "image": "https://niansia.github.io/assets/og/note-taiwan-exam-design-zh-cn.jpg", "keywords": "Agent Skill, LLM, 系统设计"}</script>
+<script defer src="/assets/js/site-stats.js"></script>
+</head>
+<body>
+<header class="top"><a href="/zh-cn/"><b>~/niansia</b></a> / <a href="/notes/zh-cn/">notes</a><span class="sp"></span><span class="langs"><a href="/notes/en/taiwan-exam-design/" hreflang="en">EN</a><a href="/notes/zh-tw/taiwan-exam-design/" hreflang="zh-Hant">繁</a><a href="/notes/zh-cn/taiwan-exam-design/" aria-current="page" hreflang="zh-Hans">简</a></span></header>
+<main><p class="kicker">研究笔记</p><h1>Taiwan Exam 设计笔记：让模型出题，让程序只负责检查</h1><p class="lede">一个让 AI 出原创学测仿真考的 Agent Skill，为什么刻意不让程序替题目品质背书，以及那些检查、锁定与套版是怎么设计的。</p><div class="meta"><time datetime="2026-09-28">2026-09-28</time><span>2 分钟阅读</span><span class="tag">Agent Skill</span><span class="tag">LLM</span><span class="tag">系统设计</span></div><article><p><a href="https://github.com/niansia/taiwan-exam">Taiwan Exam</a> 让 AI 出一份原创的学测仿真考，最后交付题本和详解两份 PDF。它的内核分工只有一句话：<strong>模型负责出题，程序只负责排版、检查和套版，而且程序永远不替题目品质背书。</strong></p>
+<h2>为什么要这样分工</h2>
+<p>LLM 很会写题目，但它也很会「说自己写得很好」。如果让同一个模型出题、自评、再宣布完成，品质问题就会被一句「已检查」盖过去。所以这套工具的设计原则是：</p>
+<ul>
+<li>能用机器判断的（格式、版面、字体、页面留白、答案分布、图片分辨率），交给脚本判断；</li>
+<li>需要判断力的（题目好不好、难度对不对），要留下<strong>可检查的证据</strong>，而且不能由脚本自动标成通过。</li>
+</ul>
+<p>主要的流程脚本在说明里写得很直接：它「从不出题，也从不核准审查」。</p>
+<h2>流程</h2>
+<ol>
+<li><strong>读取知识、预检。</strong> 只读这一科需要的数据，每段不超过 12,000 字；检查 PyMuPDF 版本、30 份原始模板的哈希值、答对率校准快照、字体，以及图片能不能下载。</li>
+<li><strong>命题蓝图。</strong> 先排出整份考卷：题号、配分、四个难度带、答案分布、需要几张图、总作答时间。难度用大考中心 111–115 年的官方答对率校准，例如数学是「中偏难＋难 ≥ 70 分、难 ≥ 30 分、手算 80–92 分钟」。</li>
+<li><strong>分批命题。</strong> 每次只写 2～4 题并存盘。格式不对会直接拒收：LaTeX、<code>$</code> 符号、不成对的标签、哈希对不上的图、分辨率太低的图片。</li>
+<li><strong>盲审解题。</strong> 产生一份<strong>不含答案</strong>的题目包，从印出来的题目重新解一次，再估计答对率、归入难度带。</li>
+<li><strong>内容锁定。</strong> 题目与答案写进锁定档之后，才能开始正式组版；要改题就得重新锁定并写下理由。</li>
+<li><strong>套用原始模板。</strong> 题目本体是透明的一页，用 PyMuPDF 叠印到大考中心的原始模板上，只有年份、页码和封面标题是动态字段。<strong>页眉页脚的像素在叠印前后必须完全相同</strong>，否则直接中止。</li>
+<li><strong>逐页检查，然后交付。</strong> 每一页和每一题的截屏都要写下观察、标记通过或不通过；最终检查通过才输出两份 PDF。</li>
+</ol>
+<h2>检查长什么样子</h2>
+<ul>
+<li><strong>PDF 检查器有 9 种硬性失败</strong>：不是 A4 或被旋转、缺字或替代字符、文本超出页面、作答栏碰撞、作答栏格式错误、数学题印出来源备注、数学题印出制作说明、栏宽过窄、国写字体用错。</li>
+<li><strong>页面留白</strong>：一般内页最多 32% 空白（英文 42%），最后一页 60%。组版计划、检查器和最终检查用的是同一条规则，不会前后不一。</li>
+<li><strong>最终检查</strong>：每题 4 道关（答案、难度、原创性、图片），整份 5 道关（题型结构、难度平衡、来源依据、模板组成、答案分离），再加上各科自己的检查。</li>
+<li><strong>预算</strong>：组版计划最多 3 次、正式组版最多 2 次，避免模型无限重试、把时间耗光。</li>
+</ul>
+<h2>让它能在一般人的 AI 里跑</h2>
+<p>老师和学生多半不会用终端机，所以同一套规则有三种交付方式：可以直接上传到 Claude 或 ChatGPT 的 Skill ZIP（Claude 的上传上限是 200 个文件，所以要打包成资源包）、给 Gemini 和项目用的知识档，以及给 Codex、Claude Code 的本机版。完整考卷常常要两三轮对话才做完，所以每一步都会存盘，用户回一句「继续」就能接着做。</p>
+<h2>诚实的限制</h2>
+<ul>
+<li><strong>机器检查不等于好题目。</strong> 所有自动检查都只能挡掉「明显错」的东西；题目是否有教学价值，仍然需要人看。</li>
+<li><strong>模型差异很大。</strong> 目前 4 种模型 × 7 科、共 28 份的实测只完成 14 份，其余仍在测。</li>
+<li>整个项目有 112 支脚本、679 项测试，但测试验证的是工具本身，不是模型出的每一题。</li>
+</ul>
+<p>原代码与安装方式：<a href="https://github.com/niansia/taiwan-exam">github.com/niansia/taiwan-exam</a>。也可以看 80 秒的<a href="/assets/film/taiwan-exam.html?lang=zh-CN">前导片</a>。</p></article><h2 style="margin-top:48px">其他笔记</h2><a class="card" href="/notes/zh-cn/lumigrid-notes/"><b>LumiGrid 研究笔记：一个亮度曲线网格，实际上学到了什么</b><small>从 16.48 dB 的课堂作法到 24.57 dB：LumiGrid 的设计、消融实验、两个失败案例，以及一个对自己方法不太有利的发现。</small></a><a class="card" href="/notes/zh-cn/lumigrid-in-the-browser/"><b>把 LumiGrid 搬进浏览器：一个只在 WebGPU 出错的 6 信道卷积</b><small>两个神经网络加上一段自己写的 WebGL 着色器，逐像素对照 PyTorch 验证；以及一个让 WebGPU 版本只剩 28.75 dB 的错，是怎么一步步二分找出来的。</small></a><div class="btns"><a class="btn" href="/notes/zh-cn/">研究笔记</a><a class="btn primary" href="/zh-cn/#research">回到作品集</a></div></main>
+<footer>有问题或想法？写信到 <a href="mailto:niansia930202@gmail.com">niansia930202@gmail.com</a> · <a href="/zh-cn/">niansia.github.io</a> · <a href="https://github.com/niansia">github.com/niansia</a><span class="stats" data-stats hidden> · <i class="live-dot"></i> <b data-stat="online">–</b> 人在线 · <b data-stat="total">–</b> 次造访</span></footer>
+</body>
+</html>

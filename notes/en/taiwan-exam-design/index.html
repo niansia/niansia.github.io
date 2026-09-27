@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Taiwan Exam design notes: the model writes, the scripts only check · Niansia</title>
+<meta name="description" content="An Agent Skill that has an AI write original GSAT practice exams — why its scripts deliberately never vouch for question quality, and how the checks, locks and template stamping are designed.">
+<link rel="canonical" href="https://niansia.github.io/notes/en/taiwan-exam-design/">
+<link rel="alternate" hreflang="en" href="https://niansia.github.io/notes/en/taiwan-exam-design/"><link rel="alternate" hreflang="zh-Hant-TW" href="https://niansia.github.io/notes/zh-tw/taiwan-exam-design/"><link rel="alternate" hreflang="zh-Hans-CN" href="https://niansia.github.io/notes/zh-cn/taiwan-exam-design/"><link rel="alternate" hreflang="x-default" href="https://niansia.github.io/notes/en/taiwan-exam-design/">
+<meta property="og:type" content="article"><meta property="og:site_name" content="Niansia">
+<meta property="og:title" content="Taiwan Exam design notes: the model writes, the scripts only check · Niansia"><meta property="og:description" content="An Agent Skill that has an AI write original GSAT practice exams — why its scripts deliberately never vouch for question quality, and how the checks, locks and template stamping are designed.">
+<meta property="og:url" content="https://niansia.github.io/notes/en/taiwan-exam-design/"><meta property="og:image" content="https://niansia.github.io/assets/og/note-taiwan-exam-design-en.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta property="og:locale" content="en">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://niansia.github.io/assets/og/note-taiwan-exam-design-en.jpg">
+
+<meta name="theme-color" content="#fbf6ee" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#15142a" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap">
+<style>
+:root{--bg:#fbf6ee;--paper:#fffdf9;--ink:#2a2230;--muted:#766b73;--line:#2a22301a;--accent:#c0673a;--accent2:#8f6bb3;--code:#f3ece2;}
+@media(prefers-color-scheme:dark){:root{--bg:#15142a;--paper:#1c1a36;--ink:#f1ebe2;--muted:#aaa3bd;--line:#ffffff1a;--accent:#f0a878;--accent2:#b69ae6;--code:#26234a;}}
+*{box-sizing:border-box;}html{-webkit-text-size-adjust:100%;}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.85 Inter,'Noto Sans TC','Noto Sans SC',system-ui,sans-serif;}
+a{color:var(--accent);text-underline-offset:3px;}
+.top{max-width:1080px;margin:0 auto;padding:18px 20px;display:flex;align-items:center;gap:10px;font:500 13px 'JetBrains Mono',monospace;color:var(--muted);}
+.top a{color:var(--muted);text-decoration:none;}.top a:hover{color:var(--accent);}
+.top b{color:var(--ink);font-weight:500;}.top .sp{flex:1;}
+.langs a{padding:4px 9px;border-radius:99px;border:1px solid var(--line);margin-left:4px;}.langs a[aria-current]{color:var(--ink);border-color:var(--accent);}
+main{max-width:760px;margin:0 auto;padding:10px 20px 70px;}
+.kicker{font:500 12px 'JetBrains Mono',monospace;color:var(--accent);letter-spacing:.06em;text-transform:uppercase;margin:24px 0 8px;}
+h1{font-size:clamp(28px,4.4vw,42px);line-height:1.2;letter-spacing:-.02em;margin:0 0 14px;}
+.lede{font-size:18px;color:var(--muted);margin:0 0 16px;line-height:1.7;}
+.meta{display:flex;flex-wrap:wrap;gap:8px 14px;font:500 12.5px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;color:var(--muted);padding-bottom:22px;border-bottom:1px solid var(--line);margin-bottom:10px;}
+.meta span.tag{padding:2px 9px;border-radius:99px;background:var(--code);}
+article h2{font-size:23px;margin:40px 0 10px;letter-spacing:-.01em;}
+article h3{font-size:18px;margin:28px 0 8px;}
+article p,article li{color:var(--ink);}
+article code{font:14px 'JetBrains Mono',monospace;background:var(--code);padding:1px 6px;border-radius:6px;}
+article table{width:100%;border-collapse:collapse;margin:18px 0;font-size:14.5px;display:block;overflow-x:auto;}
+article th,article td{padding:8px 12px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap;}
+article th{font-weight:600;color:var(--muted);font-size:13px;}
+article td:not(:first-child),article th:not(:first-child){text-align:right;}
+article strong{color:var(--ink);}
+article blockquote{margin:18px 0;padding:4px 18px;border-left:3px solid var(--accent);color:var(--muted);}
+.card{display:block;padding:18px 20px;margin:12px 0;border-radius:16px;background:var(--paper);border:1px solid var(--line);text-decoration:none;color:var(--ink);transition:transform .25s,border-color .25s;}
+.card:hover{transform:translateY(-2px);border-color:var(--accent);}
+.card b{display:block;font-size:18px;line-height:1.4;margin-bottom:4px;}.card small{display:block;color:var(--muted);font-size:14px;line-height:1.6;}
+.card i{display:block;font:normal 500 12px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;color:var(--accent);margin-top:8px;}
+.hero{width:100%;border-radius:16px;border:1px solid var(--line);display:block;margin:6px 0 18px;}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px;}.chips span{font:500 12px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;padding:4px 11px;border-radius:99px;background:var(--code);}
+.btns{display:flex;flex-wrap:wrap;gap:10px;margin:22px 0;}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:12px;border:1px solid var(--line);background:var(--paper);color:var(--ink);text-decoration:none;font-weight:600;font-size:14px;}
+.btn.primary{background:var(--accent);border-color:transparent;color:#fff;}
+.btn:hover{border-color:var(--accent);}
+.note{font-size:13.5px;color:var(--muted);}
+.live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#34c38f;box-shadow:0 0 0 3px #34c38f33;vertical-align:1px;}footer b{color:var(--ink);font-weight:600;}
+footer{max-width:760px;margin:0 auto;padding:26px 20px 50px;border-top:1px solid var(--line);font-size:14px;color:var(--muted);}
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BlogPosting", "headline": "Taiwan Exam design notes: the model writes, the scripts only check", "description": "An Agent Skill that has an AI write original GSAT practice exams — why its scripts deliberately never vouch for question quality, and how the checks, locks and template stamping are designed.", "datePublished": "2026-09-28", "dateModified": "2026-09-28", "inLanguage": "en", "author": {"@type": "Person", "name": "Niansia", "url": "https://niansia.github.io/", "email": "mailto:niansia930202@gmail.com", "sameAs": ["https://github.com/niansia"]}, "mainEntityOfPage": "https://niansia.github.io/notes/en/taiwan-exam-design/", "image": "https://niansia.github.io/assets/og/note-taiwan-exam-design-en.jpg", "keywords": "Agent Skill, LLM, system design"}</script>
+<script defer src="/assets/js/site-stats.js"></script>
+</head>
+<body>
+<header class="top"><a href="/"><b>~/niansia</b></a> / <a href="/notes/en/">notes</a><span class="sp"></span><span class="langs"><a href="/notes/en/taiwan-exam-design/" aria-current="page" hreflang="en">EN</a><a href="/notes/zh-tw/taiwan-exam-design/" hreflang="zh-Hant">繁</a><a href="/notes/zh-cn/taiwan-exam-design/" hreflang="zh-Hans">简</a></span></header>
+<main><p class="kicker">Research notes</p><h1>Taiwan Exam design notes: the model writes, the scripts only check</h1><p class="lede">An Agent Skill that has an AI write original GSAT practice exams — why its scripts deliberately never vouch for question quality, and how the checks, locks and template stamping are designed.</p><div class="meta"><time datetime="2026-09-28">2026-09-28</time><span>3 min read</span><span class="tag">Agent Skill</span><span class="tag">LLM</span><span class="tag">system design</span></div><article><p><a href="https://github.com/niansia/taiwan-exam">Taiwan Exam</a> has an AI write an original practice exam for Taiwan's GSAT and delivers two PDFs: the questions and the worked solutions. Its core division of labour fits in one sentence: <strong>the model writes the questions; the scripts only lay out, check and stamp pages — and never vouch for question quality.</strong></p>
+<h2>Why split it this way</h2>
+<p>LLMs are good at writing questions, and just as good at saying they wrote them well. If one model writes, self-reviews and declares itself done, quality problems disappear behind the word "checked". So the design rule is:</p>
+<ul>
+<li>whatever a machine can judge (format, layout, fonts, page density, answer-key distribution, image resolution) is judged by scripts;</li>
+<li>whatever needs judgement (is this a good question, is the difficulty right) must leave <strong>checkable evidence</strong>, and no script may mark it as passed on its own.</li>
+</ul>
+<p>The main workflow script says so plainly: it "never authors questions or approves reviews".</p>
+<h2>The pipeline</h2>
+<ol>
+<li><strong>Load knowledge, preflight.</strong> Read only what this subject needs, in chunks of at most 12,000 characters; check the PyMuPDF version, the hashes of the 30 original template PDFs, the answer-rate calibration snapshot, fonts, and whether images can be downloaded.</li>
+<li><strong>Paper plan.</strong> Lay out the whole paper first: item numbers, points, four difficulty bands, answer-key distribution, how many figures, total time. Difficulty is calibrated to the official answer rates from the 2022–2026 exams; for maths that means "medium-hard + hard ≥ 70 points, hard ≥ 30 points, 80–92 minutes by hand".</li>
+<li><strong>Write in batches.</strong> Two to four items at a time, each batch checkpointed. Bad formats are refused outright: LaTeX, <code>$</code> signs, unbalanced tags, figures whose hash does not match, low-resolution images.</li>
+<li><strong>Blind re-solving.</strong> An <strong>answer-free</strong> packet is built, each item is solved again from the printed page, and its answer rate is estimated and placed in a difficulty band.</li>
+<li><strong>Content lock.</strong> Questions and answers are written into a lock file before any real layout starts; changing a question means re-locking with a written reason.</li>
+<li><strong>Stamp onto the original templates.</strong> The question body is a transparent page, placed onto the original CEEC template with PyMuPDF; only the year, page numbers and cover title are dynamic. <strong>Header and footer pixels must be identical before and after stamping</strong>, or the job aborts.</li>
+<li><strong>Check every page, then deliver.</strong> Every page and every item crop needs written observations and a pass/fail mark; only after the final check passes are the two PDFs written.</li>
+</ol>
+<h2>What the checks look like</h2>
+<ul>
+<li><strong>The PDF inspector has 9 hard failures</strong>: not A4 or rotated, missing or substituted glyphs, text outside the page, answer-rail collisions, answer-rail format, printed source notes on maths items, printed production captions on maths items, columns too narrow, and the wrong font in the writing paper.</li>
+<li><strong>Page density</strong>: body pages may be at most 32% blank (42% for English), the last page 60%. The layout planner, the inspector and the final check share the same rule, so they never disagree.</li>
+<li><strong>Final check</strong>: four gates per item (answers, difficulty, originality, visuals), five per paper (structure, difficulty balance, source grounding, template composition, answer separation), plus subject-specific checks.</li>
+<li><strong>Budgets</strong>: at most 3 layout plans and 2 real builds, so a model cannot retry forever and burn the session.</li>
+</ul>
+<h2>Making it run in everyday AI apps</h2>
+<p>Teachers and students rarely use a terminal, so the same rules ship three ways: a Skill ZIP to upload to Claude or ChatGPT (Claude's uploader accepts at most 200 files, so resources are bundled), a knowledge file for Gemini and project-based setups, and a local install for Codex and Claude Code. A full paper often takes two or three rounds, so every step checkpoints, and replying "continue" picks up where it stopped.</p>
+<h2>Honest limits</h2>
+<ul>
+<li><strong>Passing machine checks is not the same as being a good question.</strong> Automated checks only stop things that are obviously wrong; whether a question teaches anything still needs a human.</li>
+<li><strong>Models differ a lot.</strong> Of the planned 28 test papers (4 models × 7 subjects), 14 are done; the rest are still being tested.</li>
+<li>The project has 112 scripts and 679 tests, but the tests verify the tooling, not every question a model writes.</li>
+</ul>
+<p>Source and installation: <a href="https://github.com/niansia/taiwan-exam">github.com/niansia/taiwan-exam</a>. There is also an 80-second <a href="/assets/film/taiwan-exam.html?lang=en">trailer</a>.</p></article><h2 style="margin-top:48px">More notes</h2><a class="card" href="/notes/en/lumigrid-notes/"><b>LumiGrid notes: what a luminance-guided curve grid actually learned</b><small>From a 16.48 dB course pipeline to 24.57 dB — the design, the ablation, two failure cases, and one finding that does not flatter the method.</small></a><a class="card" href="/notes/en/lumigrid-in-the-browser/"><b>Porting LumiGrid to the browser: a 6-channel convolution that only broke on WebGPU</b><small>Two neural networks and a hand-written WebGL shader, verified pixel by pixel against PyTorch — and how a bug that left the WebGPU version at 28.75 dB was found by bisection.</small></a><div class="btns"><a class="btn" href="/notes/en/">Research notes</a><a class="btn primary" href="/#research">Back to the portfolio</a></div></main>
+<footer>Questions or ideas? Email <a href="mailto:niansia930202@gmail.com">niansia930202@gmail.com</a> · <a href="/">niansia.github.io</a> · <a href="https://github.com/niansia">github.com/niansia</a><span class="stats" data-stats hidden> · <i class="live-dot"></i> <b data-stat="online">–</b> online · <b data-stat="total">–</b> visits</span></footer>
+</body>
+</html>

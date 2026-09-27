@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LumiGrid notes: what a luminance-guided curve grid actually learned · Niansia</title>
+<meta name="description" content="From a 16.48 dB course pipeline to 24.57 dB — the design, the ablation, two failure cases, and one finding that does not flatter the method.">
+<link rel="canonical" href="https://niansia.github.io/notes/en/lumigrid-notes/">
+<link rel="alternate" hreflang="en" href="https://niansia.github.io/notes/en/lumigrid-notes/"><link rel="alternate" hreflang="zh-Hant-TW" href="https://niansia.github.io/notes/zh-tw/lumigrid-notes/"><link rel="alternate" hreflang="zh-Hans-CN" href="https://niansia.github.io/notes/zh-cn/lumigrid-notes/"><link rel="alternate" hreflang="x-default" href="https://niansia.github.io/notes/en/lumigrid-notes/">
+<meta property="og:type" content="article"><meta property="og:site_name" content="Niansia">
+<meta property="og:title" content="LumiGrid notes: what a luminance-guided curve grid actually learned · Niansia"><meta property="og:description" content="From a 16.48 dB course pipeline to 24.57 dB — the design, the ablation, two failure cases, and one finding that does not flatter the method.">
+<meta property="og:url" content="https://niansia.github.io/notes/en/lumigrid-notes/"><meta property="og:image" content="https://niansia.github.io/assets/og/note-lumigrid-notes-en.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta property="og:locale" content="en">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://niansia.github.io/assets/og/note-lumigrid-notes-en.jpg">
+
+<meta name="theme-color" content="#fbf6ee" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#15142a" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap">
+<style>
+:root{--bg:#fbf6ee;--paper:#fffdf9;--ink:#2a2230;--muted:#766b73;--line:#2a22301a;--accent:#c0673a;--accent2:#8f6bb3;--code:#f3ece2;}
+@media(prefers-color-scheme:dark){:root{--bg:#15142a;--paper:#1c1a36;--ink:#f1ebe2;--muted:#aaa3bd;--line:#ffffff1a;--accent:#f0a878;--accent2:#b69ae6;--code:#26234a;}}
+*{box-sizing:border-box;}html{-webkit-text-size-adjust:100%;}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.85 Inter,'Noto Sans TC','Noto Sans SC',system-ui,sans-serif;}
+a{color:var(--accent);text-underline-offset:3px;}
+.top{max-width:1080px;margin:0 auto;padding:18px 20px;display:flex;align-items:center;gap:10px;font:500 13px 'JetBrains Mono',monospace;color:var(--muted);}
+.top a{color:var(--muted);text-decoration:none;}.top a:hover{color:var(--accent);}
+.top b{color:var(--ink);font-weight:500;}.top .sp{flex:1;}
+.langs a{padding:4px 9px;border-radius:99px;border:1px solid var(--line);margin-left:4px;}.langs a[aria-current]{color:var(--ink);border-color:var(--accent);}
+main{max-width:760px;margin:0 auto;padding:10px 20px 70px;}
+.kicker{font:500 12px 'JetBrains Mono',monospace;color:var(--accent);letter-spacing:.06em;text-transform:uppercase;margin:24px 0 8px;}
+h1{font-size:clamp(28px,4.4vw,42px);line-height:1.2;letter-spacing:-.02em;margin:0 0 14px;}
+.lede{font-size:18px;color:var(--muted);margin:0 0 16px;line-height:1.7;}
+.meta{display:flex;flex-wrap:wrap;gap:8px 14px;font:500 12.5px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;color:var(--muted);padding-bottom:22px;border-bottom:1px solid var(--line);margin-bottom:10px;}
+.meta span.tag{padding:2px 9px;border-radius:99px;background:var(--code);}
+article h2{font-size:23px;margin:40px 0 10px;letter-spacing:-.01em;}
+article h3{font-size:18px;margin:28px 0 8px;}
+article p,article li{color:var(--ink);}
+article code{font:14px 'JetBrains Mono',monospace;background:var(--code);padding:1px 6px;border-radius:6px;}
+article table{width:100%;border-collapse:collapse;margin:18px 0;font-size:14.5px;display:block;overflow-x:auto;}
+article th,article td{padding:8px 12px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap;}
+article th{font-weight:600;color:var(--muted);font-size:13px;}
+article td:not(:first-child),article th:not(:first-child){text-align:right;}
+article strong{color:var(--ink);}
+article blockquote{margin:18px 0;padding:4px 18px;border-left:3px solid var(--accent);color:var(--muted);}
+.card{display:block;padding:18px 20px;margin:12px 0;border-radius:16px;background:var(--paper);border:1px solid var(--line);text-decoration:none;color:var(--ink);transition:transform .25s,border-color .25s;}
+.card:hover{transform:translateY(-2px);border-color:var(--accent);}
+.card b{display:block;font-size:18px;line-height:1.4;margin-bottom:4px;}.card small{display:block;color:var(--muted);font-size:14px;line-height:1.6;}
+.card i{display:block;font:normal 500 12px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;color:var(--accent);margin-top:8px;}
+.hero{width:100%;border-radius:16px;border:1px solid var(--line);display:block;margin:6px 0 18px;}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px;}.chips span{font:500 12px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;padding:4px 11px;border-radius:99px;background:var(--code);}
+.btns{display:flex;flex-wrap:wrap;gap:10px;margin:22px 0;}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:12px;border:1px solid var(--line);background:var(--paper);color:var(--ink);text-decoration:none;font-weight:600;font-size:14px;}
+.btn.primary{background:var(--accent);border-color:transparent;color:#fff;}
+.btn:hover{border-color:var(--accent);}
+.note{font-size:13.5px;color:var(--muted);}
+.live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#34c38f;box-shadow:0 0 0 3px #34c38f33;vertical-align:1px;}footer b{color:var(--ink);font-weight:600;}
+footer{max-width:760px;margin:0 auto;padding:26px 20px 50px;border-top:1px solid var(--line);font-size:14px;color:var(--muted);}
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BlogPosting", "headline": "LumiGrid notes: what a luminance-guided curve grid actually learned", "description": "From a 16.48 dB course pipeline to 24.57 dB — the design, the ablation, two failure cases, and one finding that does not flatter the method.", "datePublished": "2026-09-28", "dateModified": "2026-09-28", "inLanguage": "en", "author": {"@type": "Person", "name": "Niansia", "url": "https://niansia.github.io/", "email": "mailto:niansia930202@gmail.com", "sameAs": ["https://github.com/niansia"]}, "mainEntityOfPage": "https://niansia.github.io/notes/en/lumigrid-notes/", "image": "https://niansia.github.io/assets/og/note-lumigrid-notes-en.jpg", "keywords": "computer vision, low-light enhancement, NTIRE 2025"}</script>
+<script defer src="/assets/js/site-stats.js"></script>
+</head>
+<body>
+<header class="top"><a href="/"><b>~/niansia</b></a> / <a href="/notes/en/">notes</a><span class="sp"></span><span class="langs"><a href="/notes/en/lumigrid-notes/" aria-current="page" hreflang="en">EN</a><a href="/notes/zh-tw/lumigrid-notes/" hreflang="zh-Hant">繁</a><a href="/notes/zh-cn/lumigrid-notes/" hreflang="zh-Hans">简</a></span></header>
+<main><p class="kicker">Research notes</p><h1>LumiGrid notes: what a luminance-guided curve grid actually learned</h1><p class="lede">From a 16.48 dB course pipeline to 24.57 dB — the design, the ablation, two failure cases, and one finding that does not flatter the method.</p><div class="meta"><time datetime="2026-09-28">2026-09-28</time><span>4 min read</span><span class="tag">computer vision</span><span class="tag">low-light enhancement</span><span class="tag">NTIRE 2025</span></div><article><p>These notes walk through <a href="https://github.com/niansia/LumiGrid">LumiGrid</a>: what it does, how well it does it, and one finding that is <strong>not</strong> in its favour — the model barely uses the "luminance" axis it is named after.</p>
+<h2>Starting point: a course pipeline that was not good enough</h2>
+<p>Low-light image enhancement (LLIE) turns very dark photos into normally exposed ones. I first reproduced my original course pipeline on the NTIRE 2025 challenge data: Zero-DCE, then a bilateral filter, gamma and contrast. On my 20 held-out test pairs it scored <strong>16.48 dB / 0.742 SSIM</strong> — worse than simply running the pretrained Zero-DCE weights (19.00 dB).</p>
+<p>The reasons were clear: Zero-DCE applies the same kind of curve everywhere without seeing the whole scene, and the post-processing amplified the noise along with the signal.</p>
+<h2>Design: decide how the whole image should brighten, then fix the details</h2>
+<p>LumiGrid has two stages:</p>
+<ol>
+<li><strong>A global curve grid.</strong> A small CNN reads only a 256 × 256 thumbnail of the whole image and outputs a grid of 16 × 16 spatial cells × 8 luminance bins. Each cell stores eight rounds of Zero-DCE curves (<code>LE(x) = x + a·x·(1 − x)</code>, per RGB channel) and a 3 × 4 colour matrix.</li>
+<li><strong>Slicing.</strong> Every pixel looks up its coefficients by trilinear interpolation, using its position plus a <em>learned</em> luminance coordinate, and applies them. The grid is computed once from the thumbnail, so the global stage costs almost nothing extra on large images.</li>
+<li><strong>A NAFNet refiner.</strong> A width-24, three-level NAFNet U-Net sees both the input and the stage-1 result and predicts a residual that removes noise and restores detail. It runs on 1024 × 1024 tiles with a 64-pixel linear blend, so 24-megapixel photos fit in 8 GB.</li>
+</ol>
+<p>The loss is Charbonnier + 0.25·(1 − SSIM) + 0.05·FFT magnitude, plus an auxiliary loss on the global stage; training ran for 20k iterations (batch 8, 320-pixel crops) on a single laptop RTX 4060.</p>
+<h2>Results</h2>
+<p>All numbers are on 20 NTIRE 2025 pairs that were <strong>never used for training or model selection</strong>, at full resolution, with the official scoring code:</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th style="text-align: right;">PSNR ↑</th>
+<th style="text-align: right;">SSIM ↑</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Input (no enhancement)</td>
+<td style="text-align: right;">10.65</td>
+<td style="text-align: right;">0.381</td>
+</tr>
+<tr>
+<td>Zero-DCE, pretrained weights</td>
+<td style="text-align: right;">19.00</td>
+<td style="text-align: right;">0.682</td>
+</tr>
+<tr>
+<td>Course pipeline (Zero-DCE + filter + gamma + contrast)</td>
+<td style="text-align: right;">16.48</td>
+<td style="text-align: right;">0.742</td>
+</tr>
+<tr>
+<td>Zero-DCE, trained on the same data</td>
+<td style="text-align: right;">20.91</td>
+<td style="text-align: right;">0.717</td>
+</tr>
+<tr>
+<td><strong>LumiGrid</strong></td>
+<td style="text-align: right;"><strong>24.57</strong></td>
+<td style="text-align: right;"><strong>0.840</strong></td>
+</tr>
+<tr>
+<td>LumiGrid + TTA (average of four flips)</td>
+<td style="text-align: right;">24.63</td>
+<td style="text-align: right;">0.841</td>
+</tr>
+</tbody>
+</table>
+<p>This is not a leaderboard result: the challenge's test ground truth is not public, and this is my own held-out split.</p>
+<h2>Ablation: each stage covers the other's blind spot</h2>
+<table>
+<thead>
+<tr>
+<th>Variant</th>
+<th style="text-align: right;">PSNR</th>
+<th style="text-align: right;">SSIM</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Zero-DCE network (full-resolution convolutions, no scene context)</td>
+<td style="text-align: right;">20.91</td>
+<td style="text-align: right;">0.717</td>
+</tr>
+<tr>
+<td>Curve grid only</td>
+<td style="text-align: right;">22.85</td>
+<td style="text-align: right;">0.768</td>
+</tr>
+<tr>
+<td>NAFNet refiner only</td>
+<td style="text-align: right;">22.85</td>
+<td style="text-align: right;">0.833</td>
+</tr>
+<tr>
+<td>Full LumiGrid</td>
+<td style="text-align: right;">24.57</td>
+<td style="text-align: right;">0.840</td>
+</tr>
+</tbody>
+</table>
+<p>The middle two rows are the interesting ones: <strong>identical PSNR, very different SSIM.</strong> On its own the refiner is much better at structure and texture, but it does not win on PSNR, which suggests its remaining error is mostly large-scale brightness and colour. That is an inference from the numbers, not something I measured directly. The curve grid is good at exactly that, and combining the two adds another 1.7 dB.</p>
+<h2>A finding that does not flatter the method</h2>
+<p>LumiGrid's selling point is luminance-aware curves: a bright lamp and the shadow next to it can follow different curves. But when I looked at the learned luminance coordinate, across every pixel of the 20 test images it only spans <strong>0.46 to 0.55</strong>: 86% of pixels land in the 4th of the eight luminance bins, the other 14% in the 5th, and the remaining six bins are never used.</p>
+<p>In other words, almost all of the gain comes from <strong>spatial</strong> variation (different regions, different curves), not from luminance layering. The README says so too. Making the design live up to its name would mean:</p>
+<ul>
+<li>adding a regulariser that spreads the luminance coordinate out, and checking whether that helps; or</li>
+<li>running the control: fix the luminance coordinate to a constant. If the score barely moves, that confirms the layering is not being used.</li>
+</ul>
+<h2>Two failure cases</h2>
+<ul>
+<li><strong>#305, a night sky (13.5 dB).</strong> The reference keeps the sky dark; LumiGrid brightens it. Whether it <em>should</em> be bright is genuinely ambiguous.</li>
+<li><strong>#143, a misaligned reference (11.9 dB).</strong> The output looks right, but the reference is framed differently from the input, so any pixel-wise metric looks terrible.</li>
+</ul>
+<p>These two pull the mean down noticeably. With only 20 test images, I would not read much into differences below about 0.2 dB.</p>
+<h2>More</h2>
+<ul>
+<li>Code, weights and the full tables: <a href="https://github.com/niansia/LumiGrid">github.com/niansia/LumiGrid</a></li>
+<li>Try it on your own dark photo: <a href="/lab/lumigrid/?lang=en">LumiGrid in the browser</a></li>
+<li>How the browser version was built — and the WebGPU bug I hit on the way: <a href="/notes/en/lumigrid-in-the-browser/">next note</a></li>
+</ul></article><h2 style="margin-top:48px">More notes</h2><a class="card" href="/notes/en/lumigrid-in-the-browser/"><b>Porting LumiGrid to the browser: a 6-channel convolution that only broke on WebGPU</b><small>Two neural networks and a hand-written WebGL shader, verified pixel by pixel against PyTorch — and how a bug that left the WebGPU version at 28.75 dB was found by bisection.</small></a><a class="card" href="/notes/en/taiwan-exam-design/"><b>Taiwan Exam design notes: the model writes, the scripts only check</b><small>An Agent Skill that has an AI write original GSAT practice exams — why its scripts deliberately never vouch for question quality, and how the checks, locks and template stamping are designed.</small></a><div class="btns"><a class="btn" href="/notes/en/">Research notes</a><a class="btn primary" href="/#research">Back to the portfolio</a></div></main>
+<footer>Questions or ideas? Email <a href="mailto:niansia930202@gmail.com">niansia930202@gmail.com</a> · <a href="/">niansia.github.io</a> · <a href="https://github.com/niansia">github.com/niansia</a><span class="stats" data-stats hidden> · <i class="live-dot"></i> <b data-stat="online">–</b> online · <b data-stat="total">–</b> visits</span></footer>
+</body>
+</html>

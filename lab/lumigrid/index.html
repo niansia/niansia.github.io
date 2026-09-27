@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>LumiGrid · try it in your browser</title>
+<meta name="description" content="Brighten a dark photo with LumiGrid, a low-light enhancement model, running entirely in your browser with WebGPU / WebAssembly. Your photo never leaves your device.">
+<link rel="canonical" href="https://niansia.github.io/lab/lumigrid/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="LumiGrid · try it in your browser">
+<meta property="og:description" content="Low-light image enhancement running on your own device: a learned curve grid plus a NAFNet refiner. Photos never leave the browser.">
+<meta property="og:url" content="https://niansia.github.io/lab/lumigrid/">
+<meta property="og:image" content="https://niansia.github.io/assets/og/lumigrid-demo.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#07080b">
+<link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&display=swap">
+<style>
+:root{--bg:#07080b;--panel:#0e1117;--panel2:#141821;--line:#ffffff17;--ink:#eef1f5;--dim:#8b93a1;--blue:#7cc4ff;--amber:#ffb454;--ok:#6fdc98;--bad:#ff7a8a;}
+*{box-sizing:border-box;}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,'Noto Sans TC',system-ui,sans-serif;}
+body{min-height:100vh;background:radial-gradient(1200px 600px at 80% -10%,#16223a55,transparent 60%),var(--bg);}
+a{color:var(--blue);text-decoration:none;}a:hover{text-decoration:underline;}
+.wrap{max-width:1240px;margin:0 auto;padding:18px 20px 60px;}
+.top{display:flex;align-items:center;gap:12px;font:500 12px 'JetBrains Mono',monospace;color:var(--dim);}
+.top b{color:var(--ink);font-weight:500;}
+.top .sp{flex:1;}
+.btn{font:500 12px 'JetBrains Mono','Noto Sans TC',monospace;color:var(--ink);background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px 12px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;text-decoration:none;}
+.btn:hover{border-color:#ffffff40;text-decoration:none;}
+.btn.primary{background:linear-gradient(135deg,#2b6cb0,#7cc4ff);border-color:transparent;color:#041018;font-weight:600;}
+.btn:disabled{opacity:.45;cursor:default;}
+h1{margin:34px 0 8px;font:800 clamp(28px,4.2vw,50px)/1.08 Inter,'Noto Sans TC',sans-serif;letter-spacing:-.025em;}
+h1 em{font-style:normal;background:linear-gradient(90deg,var(--blue),var(--amber));-webkit-background-clip:text;background-clip:text;color:transparent;}
+.lede{max-width:760px;color:var(--dim);font-size:15px;line-height:1.75;margin:0 0 22px;}
+.lede b{color:var(--ink);font-weight:600;}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:18px;align-items:start;}
+@media(max-width:980px){.grid{grid-template-columns:1fr;}}
+.viewer{position:relative;border-radius:16px;overflow:hidden;background:#000;border:1px solid var(--line);aspect-ratio:3/2;touch-action:none;user-select:none;}
+.viewer canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:block;}
+#cv-before{clip-path:inset(0 50% 0 0);}
+.handle{position:absolute;top:0;bottom:0;left:50%;width:2px;margin-left:-1px;background:#fff;box-shadow:0 0 14px #7cc4ffaa;pointer-events:none;}
+.handle i{position:absolute;top:50%;left:50%;width:38px;height:38px;margin:-19px 0 0 -19px;border-radius:50%;background:#0b0e14e6;border:1.5px solid #fff;display:grid;place-items:center;font:600 13px 'JetBrains Mono',monospace;color:#fff;}
+.tagL,.tagR{position:absolute;top:12px;font:500 11px 'JetBrains Mono','Noto Sans TC',monospace;padding:5px 9px;border-radius:99px;background:#0b0e14cc;border:1px solid var(--line);pointer-events:none;}
+.tagL{left:12px;}.tagR{right:12px;color:var(--blue);}
+.drop{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:24px;background:repeating-linear-gradient(135deg,#0b0e14 0 14px,#0d1118 14px 28px);color:var(--dim);font-size:14px;line-height:1.7;cursor:pointer;}
+.drop b{display:block;color:var(--ink);font-size:18px;margin-bottom:6px;}
+.drop.over{outline:2px dashed var(--blue);outline-offset:-10px;}
+.busy{position:absolute;inset:0;display:none;place-items:center;background:#07080bb3;backdrop-filter:blur(2px);font:500 13px 'JetBrains Mono','Noto Sans TC',monospace;color:var(--ink);}
+.busy.on{display:grid;}
+.busy .bar{width:220px;height:4px;border-radius:9px;background:#ffffff1a;margin-top:12px;overflow:hidden;}
+.busy .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--blue),var(--amber));transition:width .2s;}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:12px;}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;}
+.seg button{font:500 12px 'JetBrains Mono','Noto Sans TC',monospace;color:var(--dim);background:var(--panel);border:0;padding:8px 12px;cursor:pointer;}
+.seg button[aria-pressed="true"]{color:#041018;background:var(--blue);}
+.samples{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-top:14px;}
+.samples button{flex:none;width:96px;padding:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#000;cursor:pointer;position:relative;}
+.samples button img{display:block;width:100%;aspect-ratio:3/2;object-fit:cover;filter:brightness(2.4);}
+.samples button span{position:absolute;left:6px;bottom:4px;font:500 10px 'JetBrains Mono',monospace;color:#fff;text-shadow:0 1px 3px #000;}
+.samples button[aria-pressed="true"]{border-color:var(--blue);box-shadow:0 0 0 1px var(--blue);}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;}
+.panel h2{margin:0 0 10px;font:600 13px 'JetBrains Mono','Noto Sans TC',monospace;color:var(--dim);letter-spacing:.02em;}
+.log{list-style:none;margin:0;padding:0;font:400 12.5px/1.45 'JetBrains Mono','Noto Sans TC',monospace;}
+.log li{display:grid;grid-template-columns:16px 1fr auto;gap:8px;padding:7px 0;border-top:1px dashed #ffffff12;align-items:start;}
+.log li:first-child{border-top:0;}
+.log li i{width:8px;height:8px;border-radius:50%;margin-top:5px;background:#ffffff26;}
+.log li.run i{background:var(--amber);box-shadow:0 0 8px var(--amber);}
+.log li.done i{background:var(--ok);}
+.log li.err i{background:var(--bad);}
+.log li small{display:block;color:var(--dim);font-size:11px;}
+.log li em{font-style:normal;color:var(--blue);}
+.total{margin-top:10px;padding-top:10px;border-top:1px solid var(--line);display:flex;justify-content:space-between;font:600 13px 'JetBrains Mono',monospace;}
+.heat{display:grid;grid-template-columns:120px 1fr;gap:12px;align-items:center;margin-top:14px;}
+.heat canvas{width:120px;height:80px;border-radius:8px;border:1px solid var(--line);image-rendering:pixelated;background:#000;}
+.heat p{margin:0;color:var(--dim);font-size:12px;line-height:1.6;}
+.notes{margin-top:26px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;}
+@media(max-width:860px){.notes{grid-template-columns:1fr;}}
+.notes div{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px;font-size:13px;line-height:1.7;color:var(--dim);}
+.notes b{display:block;color:var(--ink);font-size:14px;margin-bottom:4px;}
+.foot{margin-top:28px;font:400 12px 'JetBrains Mono','Noto Sans TC',monospace;color:var(--dim);display:flex;flex-wrap:wrap;gap:14px;}
+.err{color:var(--bad);font-size:13px;margin-top:10px;display:none;}.err.on{display:block;}
+</style>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"LumiGrid in the browser","url":"https://niansia.github.io/lab/lumigrid/","applicationCategory":"MultimediaApplication","operatingSystem":"Any (modern browser)","description":"Low-light image enhancement (learned bilateral curve grid + NAFNet refiner) running locally with WebGPU or WebAssembly.","author":{"@type":"Person","name":"Niansia","url":"https://niansia.github.io/"},"isBasedOn":"https://github.com/niansia/LumiGrid"}</script>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><b>LumiGrid</b><span>· lab</span><span class="sp"></span><a class="btn" id="back" href="/#projects/lumigrid">←</a><button class="btn" id="lang" type="button">EN</button><a class="btn" href="https://github.com/niansia/LumiGrid" target="_blank" rel="noopener">GitHub ↗</a></div>
+  <h1 id="h1"></h1>
+  <p class="lede" id="lede"></p>
+  <div class="grid">
+    <section>
+      <div class="viewer" id="viewer">
+        <canvas id="cv-after"></canvas><canvas id="cv-before"></canvas>
+        <div class="handle" id="handle"><i>⇆</i></div>
+        <span class="tagL" id="tagL"></span><span class="tagR" id="tagR"></span>
+        <div class="drop" id="drop"><div><b id="drop-b"></b><span id="drop-s"></span></div></div>
+        <div class="busy" id="busy"><div><span id="busy-t"></span><div class="bar"><i id="busy-bar"></i></div></div></div>
+      </div>
+      <div class="row">
+        <button class="btn primary" id="pick" type="button"></button>
+        <input type="file" id="file" accept="image/*" hidden>
+        <div class="seg" role="group"><button type="button" data-mode="full" aria-pressed="true"></button><button type="button" data-mode="global" aria-pressed="false"></button></div>
+        <button class="btn" id="save" type="button" disabled></button>
+      </div>
+      <div class="err" id="err"></div>
+      <div class="samples" id="samples"></div>
+    </section>
+    <aside class="panel">
+      <h2 id="log-h"></h2>
+      <ul class="log" id="log"></ul>
+      <div class="total"><span id="total-l"></span><span id="total">–</span></div>
+      <div class="heat"><canvas id="heat" width="16" height="16"></canvas><p id="heat-p"></p></div>
+    </aside>
+  </div>
+  <div class="notes" id="notes"></div>
+  <div class="foot"><span>LumiGrid · 24.57 dB / 0.840 SSIM on 20 held-out NTIRE 2025 pairs (full resolution)</span><a href="https://github.com/niansia/LumiGrid">github.com/niansia/LumiGrid</a><span id="rt"></span><span data-stats hidden><b data-stat="online">–</b> online · <b data-stat="total">–</b> visits</span></div>
+<script defer src="/assets/js/site-stats.js"></script>
+</div>
+<script type="module">
+const ORT_V = new URLSearchParams(location.search).get('ortv') || '1.30.0', ORT = `https://cdn.jsdelivr.net/npm/onnxruntime-web@${ORT_V}/dist/`;
+const M = '/assets/lumigrid/models/', SAMPLES = [202, 275, 38, 43, 58, 190];
+const $ = id => document.getElementById(id);
+const q = new URLSearchParams(location.search);
+let L = q.get('lang') || (/^zh-(cn|sg)/i.test(navigator.language) ? 'zh-CN' : /^zh/i.test(navigator.language) ? 'zh-TW' : 'en');
+if (!['en', 'zh-TW', 'zh-CN'].includes(L)) L = 'en';
+const COPY = {
+  en: {h1: 'Brighten a night photo, <em>right in your browser</em>', lede: 'This runs <b>LumiGrid</b> — a learned grid of light-enhancement curves plus a NAFNet refiner — on your own device with WebGPU or WebAssembly. <b>Your photo is never uploaded.</b> Pick a sample from the held-out test set or drop in your own dark photo.',
+    dropB: 'Drop a dark photo here', dropS: 'or click to choose one · JPG / PNG / HEIC (if your browser can open it)', pick: 'Choose a photo', full: 'Full LumiGrid', global: 'Curve grid only', save: 'Download PNG',
+    before: 'input', after: {full: 'LumiGrid', global: 'curve grid only'}, logH: 'What just ran on your device', total: 'total',
+    steps: ['Decode and resize', '256 × 256 thumbnail (area)', 'Grid CNN → 16×16×8 grid', 'Guide + trilinear slicing + 8 curves', 'NAFNet refiner (residual)'],
+    loading: 'Downloading the model', running: 'Enhancing', heat: 'The grid this image got: 16 × 16 cells, colour = average brightening strength predicted for that region.',
+    sample: 'held-out', tooBig: 'Resized to ≤ 1024 px on the long side for the browser.', fail: 'Something went wrong: ',
+    notes: [['Runs locally', 'Both networks run in this tab (WebGPU when available, otherwise WebAssembly). Nothing is sent to a server; the photo stays in memory until you close the page.'],
+      ['What you are seeing', 'The grid CNN reads a 256² thumbnail of the whole image and predicts per-region curves; a WebGL shader applies them to every pixel; the NAFNet refiner then removes the amplified noise.'],
+      ['Limits', 'The browser version works at ≤ 1024 px (the paper numbers are at full 3–24 MP resolution). Trained on 189 NTIRE 2025 images, so very different scenes can over- or under-brighten.']]},
+  'zh-TW': {h1: '把夜拍照片變亮，<em>就在你的瀏覽器裡</em>', lede: '這裡在你的裝置上執行 <b>LumiGrid</b>：一個學出來的亮度曲線網格，加上 NAFNet 細修，用 WebGPU 或 WebAssembly 運算。<b>照片不會上傳到任何地方。</b>可以選一張保留測試集的範例，或丟一張你自己的暗照片進來。',
+    dropB: '把暗照片拖到這裡', dropS: '或點一下選擇檔案 · JPG / PNG / HEIC（瀏覽器能開就能用）', pick: '選擇照片', full: '完整 LumiGrid', global: '只用曲線網格', save: '下載 PNG',
+    before: '輸入', after: {full: 'LumiGrid', global: '只用曲線網格'}, logH: '剛剛在你的裝置上執行了', total: '總計',
+    steps: ['解碼與縮放', '256 × 256 縮圖（面積平均）', '網格 CNN → 16×16×8 曲線網格', '亮度導引 + 三線性切片 + 8 條曲線', 'NAFNet 細修（殘差）'],
+    loading: '正在下載模型', running: '正在增強', heat: '這張圖得到的網格：16 × 16 格，顏色代表模型對該區域預測的平均提亮強度。',
+    sample: '保留測試圖', tooBig: '為了在瀏覽器執行，長邊已縮到 1024 px 以內。', fail: '出了點問題：',
+    notes: [['全部在本機', '兩個神經網路都在這個分頁裡執行（有 WebGPU 就用 WebGPU，否則用 WebAssembly）。不會傳到任何伺服器，關掉頁面照片就消失。'],
+      ['你看到的是什麼', '網格 CNN 讀整張圖的 256² 縮圖，預測每個區域的曲線；WebGL 著色器把曲線套到每個像素；最後 NAFNet 去掉被放大的雜訊。'],
+      ['限制', '瀏覽器版以 1024 px 以內運算（論文數字是 300 萬到 2400 萬像素的全解析度）。只用 189 張 NTIRE 2025 影像訓練，差很多的場景可能過亮或不夠亮。']]},
+  'zh-CN': {h1: '把夜拍照片变亮，<em>就在你的浏览器里</em>', lede: '这里在你的设备上运行 <b>LumiGrid</b>：一个学出来的亮度曲线网格，加上 NAFNet 细修，用 WebGPU 或 WebAssembly 计算。<b>照片不会上传到任何地方。</b>可以选一张保留测试集的示例，或拖一张你自己的暗照片进来。',
+    dropB: '把暗照片拖到这里', dropS: '或点一下选择文件 · JPG / PNG / HEIC（浏览器能打开就能用）', pick: '选择照片', full: '完整 LumiGrid', global: '只用曲线网格', save: '下载 PNG',
+    before: '输入', after: {full: 'LumiGrid', global: '只用曲线网格'}, logH: '刚刚在你的设备上运行了', total: '总计',
+    steps: ['解码与缩放', '256 × 256 缩略图（面积平均）', '网格 CNN → 16×16×8 曲线网格', '亮度引导 + 三线性切片 + 8 条曲线', 'NAFNet 细修（残差）'],
+    loading: '正在下载模型', running: '正在增强', heat: '这张图得到的网格：16 × 16 格，颜色代表模型对该区域预测的平均提亮强度。',
+    sample: '保留测试图', tooBig: '为了在浏览器运行，长边已缩到 1024 px 以内。', fail: '出了点问题：',
+    notes: [['全部在本地', '两个神经网络都在这个标签页里运行（有 WebGPU 就用 WebGPU，否则用 WebAssembly）。不会传到任何服务器，关掉页面照片就消失。'],
+      ['你看到的是什么', '网格 CNN 读取整张图的 256² 缩略图，预测每个区域的曲线；WebGL 着色器把曲线应用到每个像素；最后 NAFNet 去掉被放大的噪声。'],
+      ['限制', '浏览器版在 1024 px 以内运算（论文数字是 300 万到 2400 万像素的全分辨率）。只用 189 张 NTIRE 2025 图像训练，差异很大的场景可能过亮或不够亮。']]},
+};
+const C = COPY[L];
+document.documentElement.lang = L === 'en' ? 'en' : L === 'zh-CN' ? 'zh-Hans' : 'zh-Hant';
+$('h1').innerHTML = C.h1; $('lede').innerHTML = C.lede; $('drop-b').textContent = C.dropB; $('drop-s').textContent = C.dropS; $('pick').textContent = C.pick; $('save').textContent = C.save;
+document.querySelector('[data-mode=full]').textContent = C.full; document.querySelector('[data-mode=global]').textContent = C.global;
+$('log-h').textContent = C.logH; $('total-l').textContent = C.total; $('heat-p').textContent = C.heat; $('tagL').textContent = C.before;
+$('lang').textContent = {en: 'EN', 'zh-TW': '繁', 'zh-CN': '简'}[L];
+$('back').href = `${L === 'en' ? '/' : L === 'zh-CN' ? '/zh-cn/' : '/zh-tw/'}#projects/lumigrid`;
+$('lang').onclick = () => { const p = new URLSearchParams(q); p.set('lang', {en: 'zh-TW', 'zh-TW': 'zh-CN', 'zh-CN': 'en'}[L]); location.search = p; };
+$('notes').innerHTML = C.notes.map(([a, b]) => `<div><b>${a}</b>${b}</div>`).join('');
+$('samples').innerHTML = SAMPLES.map(i => `<button type="button" data-sample="${i}" aria-pressed="false"><img src="/assets/lumigrid/demo/thumb-${i}.jpg" alt="NTIRE 2025 #${i}" loading="lazy"><span>#${i}</span></button>`).join('');
+const log = $('log');
+log.innerHTML = C.steps.map(s => `<li><i></i><span>${s}<small></small></span><em></em></li>`).join('');
+const stepEl = [...log.children];
+const mark = (i, state, ms, sub) => { const li = stepEl[i]; li.className = state; if (ms != null) li.querySelector('em').textContent = `${ms.toFixed(0)} ms`; if (sub != null) li.querySelector('small').textContent = sub; };
+const resetLog = () => stepEl.forEach(li => { li.className = ''; li.querySelector('em').textContent = ''; li.querySelector('small').textContent = ''; });
+const showErr = e => { console.error(e); $('err').textContent = C.fail + (e?.message || e); $('err').classList.add('on'); busy(false); };
+
+/* ---------------- runtime: ONNX Runtime Web (WebGPU → WASM) ---------------- */
+let ort, sessGrid, sessRef, backend = '', guideW;
+async function fetchBytes(url, onProgress) {
+  const r = await fetch(url); if (!r.ok) throw new Error(`${url}: HTTP ${r.status}`);
+  const total = +r.headers.get('content-length') || 0, reader = r.body.getReader(), parts = []; let got = 0;
+  for (;;) { const {done, value} = await reader.read(); if (done) break; parts.push(value); got += value.length; onProgress?.(got, total); }
+  const out = new Uint8Array(got); let o = 0; for (const p of parts) { out.set(p, o); o += p.length; } return out;
+}
+async function initRuntime() {
+  if (sessRef) return;
+  ort = await import(`${ORT}ort.webgpu.min.mjs`);
+  ort.env.wasm.wasmPaths = ORT; ort.env.wasm.numThreads = self.crossOriginIsolated ? Math.min(4, navigator.hardwareConcurrency || 1) : 1;
+  busy(true, C.loading, 0);
+  const sizes = [4395260, 3981257]; let done = [0, 0];
+  const prog = i => (g, t) => { done[i] = g; busy(true, `${C.loading} · ${((done[0] + done[1]) / 1e6).toFixed(1)} / ${((sizes[0] + sizes[1]) / 1e6).toFixed(1)} MB`, (done[0] + done[1]) / (sizes[0] + sizes[1])); };
+  const [gb, rb, gw] = await Promise.all([fetchBytes(M + 'lumigrid_grid.onnx', prog(0)), fetchBytes(M + 'lumigrid_refine.onnx', prog(1)), fetch(M + 'lumigrid_guide.json').then(r => r.json())]);
+  guideW = gw;
+  sessGrid = await ort.InferenceSession.create(gb, {executionProviders: ['wasm']});
+  const want = q.get('ep') || (navigator.gpu ? 'webgpu' : 'wasm');
+  try { sessRef = await ort.InferenceSession.create(rb, {executionProviders: [want]}); backend = want; }
+  catch (e) { console.warn('webgpu unavailable, using wasm', e); sessRef = await ort.InferenceSession.create(rb, {executionProviders: ['wasm']}); backend = 'wasm'; }
+  $('rt').textContent = `runtime: onnxruntime-web ${ORT_V} · ${backend === 'webgpu' ? 'WebGPU' : `WebAssembly${ort.env.wasm.numThreads > 1 ? ` × ${ort.env.wasm.numThreads}` : ''}`}`;
+}
+
+/* ---------------- area resize (same as OpenCV INTER_AREA) for the 256² thumbnail ---------------- */
+function areaTaps(src, dst) {
+  const s = src / dst, taps = [];
+  for (let o = 0; o < dst; o++) { const a = o * s, b = a + s, t = []; for (let i = Math.floor(a); i < Math.ceil(b - 1e-9); i++) { const w = Math.min(b, i + 1) - Math.max(a, i); if (w > 1e-9) t.push(i, w / s); } taps.push(t); }
+  return taps;
+}
+function thumbnail(rgba, W, H, n = 256) {
+  const tx = areaTaps(W, n), ty = areaTaps(H, n), tmp = new Float32Array(H * n * 3), out = new Float32Array(3 * n * n);
+  for (let y = 0; y < H; y++) for (let o = 0; o < n; o++) { const t = tx[o]; let r = 0, g = 0, b = 0; for (let k = 0; k < t.length; k += 2) { const p = (y * W + t[k]) * 4, w = t[k + 1]; r += rgba[p] * w; g += rgba[p + 1] * w; b += rgba[p + 2] * w; } const q2 = (y * n + o) * 3; tmp[q2] = r; tmp[q2 + 1] = g; tmp[q2 + 2] = b; }
+  for (let o = 0; o < n; o++) { const t = ty[o]; for (let x = 0; x < n; x++) { let r = 0, g = 0, b = 0; for (let k = 0; k < t.length; k += 2) { const p = (t[k] * n + x) * 3, w = t[k + 1]; r += tmp[p] * w; g += tmp[p + 1] * w; b += tmp[p + 2] * w; } const i = o * n + x; out[i] = r / 255; out[n * n + i] = g / 255; out[2 * n * n + i] = b / 255; } }
+  return out;
+}
+
+/* ---------------- WebGL2: guide network + trilinear slicing + curves + colour matrix, exact fp32 ---------------- */
+function sliceGL(rgba, W, H, grid) {
+  const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+  const gl = cv.getContext('webgl2', {antialias: false, premultipliedAlpha: false});
+  if (!gl) throw new Error('WebGL2 is not available');
+  const floatOut = !!gl.getExtension('EXT_color_buffer_float');
+  const fetch9 = [...Array(9)].map((_, k) => `c[${k}] = trilerp(g${k}, x0, x1, tx);`).join('\n');
+  const vs = `#version 300 es\nvoid main(){ vec2 p = vec2((gl_VertexID << 1) & 2, gl_VertexID & 2); gl_Position = vec4(p * 2. - 1., 0., 1.); }`;
+  const fs = `#version 300 es
+precision highp float; precision highp int; precision highp sampler3D;
+uniform highp usampler2D img; uniform vec2 size;
+${[...Array(9)].map((_, k) => `uniform sampler3D g${k};`).join('')}
+uniform vec3 W1[16]; uniform float B1[16]; uniform float W2[16]; uniform float B2;
+out vec4 o;
+float erf_(float x){ float s = sign(x); x = abs(x); float t = 1. / (1. + .3275911 * x);
+  float y = 1. - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - .284496736) * t + .254829592) * t * exp(-x * x); return s * y; }
+vec4 trilerp(sampler3D g, ivec3 a, ivec3 b, vec3 t){
+  vec4 c000 = texelFetch(g, ivec3(a.x, a.y, a.z), 0), c100 = texelFetch(g, ivec3(b.x, a.y, a.z), 0), c010 = texelFetch(g, ivec3(a.x, b.y, a.z), 0), c110 = texelFetch(g, ivec3(b.x, b.y, a.z), 0);
+  vec4 c001 = texelFetch(g, ivec3(a.x, a.y, b.z), 0), c101 = texelFetch(g, ivec3(b.x, a.y, b.z), 0), c011 = texelFetch(g, ivec3(a.x, b.y, b.z), 0), c111 = texelFetch(g, ivec3(b.x, b.y, b.z), 0);
+  return mix(mix(mix(c000, c100, t.x), mix(c010, c110, t.x), t.y), mix(mix(c001, c101, t.x), mix(c011, c111, t.x), t.y), t.z); }
+void main(){
+  ivec2 p = ivec2(gl_FragCoord.xy);
+  vec3 x = vec3(texelFetch(img, p, 0).rgb) / 255.;
+  float z = B2; for (int i = 0; i < 16; i++){ float h = dot(W1[i], x) + B1[i]; h = .5 * h * (1. + erf_(h * .70710678)); z += W2[i] * h; }
+  z = 1. / (1. + exp(-z));
+  vec3 f = clamp(vec3((vec2(p) + .5) / size * vec2(16.), z * 8.) - .5, vec3(0.), vec3(15., 15., 7.));
+  ivec3 x0 = ivec3(floor(f)); ivec3 x1 = min(x0 + 1, ivec3(15, 15, 7)); vec3 tx = f - vec3(x0);
+  vec4 c[9];
+  ${fetch9}
+  float v[36]; for (int k = 0; k < 9; k++){ v[4*k] = c[k].x; v[4*k+1] = c[k].y; v[4*k+2] = c[k].z; v[4*k+3] = c[k].w; }
+  vec3 y = x;
+  for (int k = 0; k < 8; k++){ vec3 a = tanh(vec3(v[3*k], v[3*k+1], v[3*k+2])); y = y + a * (y - y * y); }
+  vec3 r;
+  r.x = (v[24] + 1.) * y.x + v[25] * y.y + v[26] * y.z + v[27];
+  r.y = v[28] * y.x + (v[29] + 1.) * y.y + v[30] * y.z + v[31];
+  r.z = v[32] * y.x + v[33] * y.y + (v[34] + 1.) * y.z + v[35];
+  o = vec4(${floatOut ? 'r' : 'clamp(r, 0., 1.)'}, 1.);
+}`;
+  const sh = (type, src) => { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; };
+  const pr = gl.createProgram(); gl.attachShader(pr, sh(gl.VERTEX_SHADER, vs)); gl.attachShader(pr, sh(gl.FRAGMENT_SHADER, fs)); gl.linkProgram(pr);
+  if (!gl.getProgramParameter(pr, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(pr));
+  gl.useProgram(pr);
+  const tex = (unit, target) => { const t = gl.createTexture(); gl.activeTexture(gl.TEXTURE0 + unit); gl.bindTexture(target, t); for (const pn of [gl.TEXTURE_MIN_FILTER, gl.TEXTURE_MAG_FILTER]) gl.texParameteri(target, pn, gl.NEAREST); return t; };
+  gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
+  tex(0, gl.TEXTURE_2D); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8UI, W, H, 0, gl.RGBA_INTEGER, gl.UNSIGNED_BYTE, rgba);
+  gl.uniform1i(gl.getUniformLocation(pr, 'img'), 0); gl.uniform2f(gl.getUniformLocation(pr, 'size'), W, H);
+  const cell = 16 * 16 * 8;
+  for (let k = 0; k < 9; k++) {
+    const d = new Float32Array(cell * 4);
+    for (let c = 0; c < 4; c++) { const ch = grid.subarray((4 * k + c) * cell, (4 * k + c + 1) * cell); for (let i = 0; i < cell; i++) d[i * 4 + c] = ch[i]; }
+    tex(1 + k, gl.TEXTURE_3D); gl.texImage3D(gl.TEXTURE_3D, 0, gl.RGBA32F, 16, 16, 8, 0, gl.RGBA, gl.FLOAT, d);
+    gl.uniform1i(gl.getUniformLocation(pr, `g${k}`), 1 + k);
+  }
+  gl.uniform3fv(gl.getUniformLocation(pr, 'W1'), guideW.w1.flat()); gl.uniform1fv(gl.getUniformLocation(pr, 'B1'), guideW.b1);
+  gl.uniform1fv(gl.getUniformLocation(pr, 'W2'), guideW.w2); gl.uniform1f(gl.getUniformLocation(pr, 'B2'), guideW.b2);
+  const target = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, target);
+  gl.texImage2D(gl.TEXTURE_2D, 0, floatOut ? gl.RGBA32F : gl.RGBA8, W, H, 0, gl.RGBA, floatOut ? gl.FLOAT : gl.UNSIGNED_BYTE, null);
+  const fb = gl.createFramebuffer(); gl.bindFramebuffer(gl.FRAMEBUFFER, fb); gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, target, 0);
+  gl.viewport(0, 0, W, H); gl.drawArrays(gl.TRIANGLES, 0, 3);
+  let out;
+  if (floatOut) { out = new Float32Array(W * H * 4); gl.readPixels(0, 0, W, H, gl.RGBA, gl.FLOAT, out); }
+  else { const u = new Uint8Array(W * H * 4); gl.readPixels(0, 0, W, H, gl.RGBA, gl.UNSIGNED_BYTE, u); out = Float32Array.from(u, v => v / 255); }
+  gl.getExtension('WEBGL_lose_context')?.loseContext();
+  return out;   // RGBA, row 0 = top row of the image
+}
+
+/* ---------------- pipeline ---------------- */
+let busyOn = false;
+function busy(on, text = '', frac) { busyOn = on; $('busy').classList.toggle('on', on); if (text) $('busy-t').textContent = text; if (frac != null) $('busy-bar').style.width = `${Math.round(frac * 100)}%`; }
+const clamp8 = v => v <= 0 ? 0 : v >= 1 ? 255 : Math.round(v * 255);
+let last = null, mode = 'full';
+async function loadPixels(src) {
+  const t0 = performance.now();
+  const bmp = await createImageBitmap(src, {imageOrientation: 'from-image'});
+  const s = Math.min(1, 1024 / Math.max(bmp.width, bmp.height));
+  const w0 = Math.max(8, Math.round(bmp.width * s)), h0 = Math.max(8, Math.round(bmp.height * s)), W = Math.floor(w0 / 8) * 8, H = Math.floor(h0 / 8) * 8;
+  const img = s < 1 ? await createImageBitmap(bmp, {resizeWidth: w0, resizeHeight: h0, resizeQuality: 'high'}) : bmp;
+  const c = new OffscreenCanvas(W, H), g = c.getContext('2d', {willReadFrequently: true}); g.drawImage(img, 0, 0);
+  const data = g.getImageData(0, 0, W, H).data;
+  return {data, W, H, ms: performance.now() - t0, resized: s < 1};
+}
+async function enhance(src, label) {
+  $('err').classList.remove('on'); resetLog();
+  try {
+    await initRuntime();
+    busy(true, C.running, .05);
+    mark(0, 'run'); const px = await loadPixels(src); const {data, W, H} = px;
+    mark(0, 'done', px.ms, `${W} × ${H}${px.resized ? ` · ${C.tooBig}` : ''}`);
+    mark(1, 'run'); let t = performance.now(); const th = thumbnail(data, W, H); mark(1, 'done', performance.now() - t);
+    busy(true, C.running, .2);
+    mark(2, 'run'); t = performance.now();
+    const grid = (await sessGrid.run({thumb: new ort.Tensor('float32', th, [1, 3, 256, 256])})).grid.data;
+    mark(2, 'done', performance.now() - t, 'ONNX · WebAssembly');
+    drawHeat(grid);
+    mark(3, 'run'); t = performance.now(); const base = sliceGL(data, W, H, grid); mark(3, 'done', performance.now() - t, 'WebGL2 fragment shader · fp32');
+    busy(true, C.running, .45);
+    // refiner input: 8 channels [x, clamp(base), 0, 0] (ORT-Web's WebGPU Conv is wrong for 6 input channels; the padding has zero weights)
+    const n = W * H, xb = new Float32Array(8 * n), gOut = new Uint8ClampedArray(n * 4);
+    for (let i = 0; i < n; i++) for (let c = 0; c < 3; c++) { xb[c * n + i] = data[i * 4 + c] / 255; const b = Math.min(1, Math.max(0, base[i * 4 + c])); xb[(3 + c) * n + i] = b; gOut[i * 4 + c] = clamp8(b); }
+    for (let i = 0; i < n; i++) gOut[i * 4 + 3] = 255;
+    await new Promise(r => setTimeout(r, 30));
+    mark(4, 'run'); t = performance.now();
+    const out = (await sessRef.run({xb: new ort.Tensor('float32', xb, [1, 8, H, W])})).out;
+    const od = out.getData ? await out.getData() : out.data;
+    mark(4, 'done', performance.now() - t, `ONNX · ${backend === 'webgpu' ? 'WebGPU' : 'WebAssembly'}`);
+    const fOut = new Uint8ClampedArray(n * 4);
+    for (let i = 0; i < n; i++) { for (let c = 0; c < 3; c++) fOut[i * 4 + c] = clamp8(od[c * n + i]); fOut[i * 4 + 3] = 255; }
+    const total = stepEl.reduce((s, li) => s + (parseFloat(li.querySelector('em').textContent) || 0), 0);
+    $('total').textContent = `${total.toFixed(0)} ms`;
+    last = {W, H, input: new ImageData(new Uint8ClampedArray(data), W, H), global: new ImageData(gOut, W, H), full: new ImageData(fOut, W, H), label};
+    paint(); busy(false); $('save').disabled = false; $('drop').style.display = 'none';
+    return last;
+  } catch (e) { showErr(e); throw e; }
+}
+function paint() {
+  if (!last) return;
+  for (const [id, im] of [['cv-before', last.input], ['cv-after', last[mode]]]) { const c = $(id); c.width = last.W; c.height = last.H; c.getContext('2d').putImageData(im, 0, 0); }
+  $('viewer').style.aspectRatio = `${last.W} / ${last.H}`;
+  $('tagR').textContent = C.after[mode];
+}
+function drawHeat(grid) {
+  const c = $('heat'), g = c.getContext('2d'), im = g.createImageData(16, 16), cell = 2048;
+  const vals = new Float32Array(256);
+  for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) { let s = 0; for (let ch = 0; ch < 24; ch++) for (let z = 0; z < 8; z++) s += Math.tanh(grid[ch * cell + z * 256 + y * 16 + x]); vals[y * 16 + x] = s / 192; }
+  const lo = Math.min(...vals), hi = Math.max(...vals);
+  vals.forEach((v, i) => { const k = (v - lo) / (hi - lo + 1e-6); im.data[i * 4] = 20 + 235 * Math.min(1, k * 1.6); im.data[i * 4 + 1] = 40 + 150 * k; im.data[i * 4 + 2] = 90 + 160 * (1 - k); im.data[i * 4 + 3] = 255; });
+  g.putImageData(im, 0, 0);
+}
+
+/* ---------------- UI ---------------- */
+function setSplit(f) { f = Math.min(1, Math.max(0, f)); $('cv-before').style.clipPath = `inset(0 ${100 - f * 100}% 0 0)`; $('handle').style.left = `${f * 100}%`; }
+let dragging = false;
+$('viewer').addEventListener('pointerdown', e => { if (!last) return; dragging = true; $('viewer').setPointerCapture(e.pointerId); move(e); });
+$('viewer').addEventListener('pointermove', e => dragging && move(e));
+$('viewer').addEventListener('pointerup', () => { dragging = false; });
+function move(e) { const r = $('viewer').getBoundingClientRect(); setSplit((e.clientX - r.left) / r.width); }
+setSplit(.5);
+document.querySelectorAll('[data-mode]').forEach(b => b.onclick = () => { mode = b.dataset.mode; document.querySelectorAll('[data-mode]').forEach(x => x.setAttribute('aria-pressed', String(x === b))); paint(); });
+$('pick').onclick = () => $('file').click();
+$('drop').onclick = () => $('file').click();
+$('file').onchange = () => { const f = $('file').files[0]; if (f) { pressSample(null); enhance(f, f.name).catch(() => {}); } };
+['dragenter', 'dragover'].forEach(ev => $('viewer').addEventListener(ev, e => { e.preventDefault(); $('drop').classList.add('over'); }));
+['dragleave', 'drop'].forEach(ev => $('viewer').addEventListener(ev, e => { e.preventDefault(); $('drop').classList.remove('over'); }));
+$('viewer').addEventListener('drop', e => { const f = e.dataTransfer.files[0]; if (f) { pressSample(null); enhance(f, f.name).catch(() => {}); } });
+const pressSample = id => document.querySelectorAll('[data-sample]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.sample == id)));
+async function runSample(id) { pressSample(id); const blob = await (await fetch(`/assets/lumigrid/demo/sample-${id}.jpg`)).blob(); return enhance(blob, `NTIRE 2025 #${id} · ${C.sample}`); }
+$('samples').addEventListener('click', e => { const b = e.target.closest('[data-sample]'); if (b && !busyOn) runSample(b.dataset.sample).catch(() => {}); });
+$('save').onclick = () => { if (!last) return; const c = document.createElement('canvas'); c.width = last.W; c.height = last.H; c.getContext('2d').putImageData(last[mode], 0, 0); c.toBlob(b => { const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `lumigrid-${mode}.png`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); }, 'image/png'); };
+window.__lg = {runSample, get last() { return last; }, get backend() { return backend; }};
+if (q.get('sample')) runSample(q.get('sample')).catch(() => {});
+</script>
+</body>
+</html>

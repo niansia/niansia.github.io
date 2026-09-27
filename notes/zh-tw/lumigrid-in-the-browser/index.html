@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>把 LumiGrid 搬進瀏覽器：一個只在 WebGPU 出錯的 6 通道卷積 · Niansia</title>
+<meta name="description" content="兩個神經網路加上一段自己寫的 WebGL 著色器，逐像素對照 PyTorch 驗證；以及一個讓 WebGPU 版本只剩 28.75 dB 的錯，是怎麼一步步二分找出來的。">
+<link rel="canonical" href="https://niansia.github.io/notes/zh-tw/lumigrid-in-the-browser/">
+<link rel="alternate" hreflang="en" href="https://niansia.github.io/notes/en/lumigrid-in-the-browser/"><link rel="alternate" hreflang="zh-Hant-TW" href="https://niansia.github.io/notes/zh-tw/lumigrid-in-the-browser/"><link rel="alternate" hreflang="zh-Hans-CN" href="https://niansia.github.io/notes/zh-cn/lumigrid-in-the-browser/"><link rel="alternate" hreflang="x-default" href="https://niansia.github.io/notes/en/lumigrid-in-the-browser/">
+<meta property="og:type" content="article"><meta property="og:site_name" content="Niansia">
+<meta property="og:title" content="把 LumiGrid 搬進瀏覽器：一個只在 WebGPU 出錯的 6 通道卷積 · Niansia"><meta property="og:description" content="兩個神經網路加上一段自己寫的 WebGL 著色器，逐像素對照 PyTorch 驗證；以及一個讓 WebGPU 版本只剩 28.75 dB 的錯，是怎麼一步步二分找出來的。">
+<meta property="og:url" content="https://niansia.github.io/notes/zh-tw/lumigrid-in-the-browser/"><meta property="og:image" content="https://niansia.github.io/assets/og/note-lumigrid-in-the-browser-zh-tw.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta property="og:locale" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://niansia.github.io/assets/og/note-lumigrid-in-the-browser-zh-tw.jpg">
+
+<meta name="theme-color" content="#fbf6ee" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#15142a" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap">
+<style>
+:root{--bg:#fbf6ee;--paper:#fffdf9;--ink:#2a2230;--muted:#766b73;--line:#2a22301a;--accent:#c0673a;--accent2:#8f6bb3;--code:#f3ece2;}
+@media(prefers-color-scheme:dark){:root{--bg:#15142a;--paper:#1c1a36;--ink:#f1ebe2;--muted:#aaa3bd;--line:#ffffff1a;--accent:#f0a878;--accent2:#b69ae6;--code:#26234a;}}
+*{box-sizing:border-box;}html{-webkit-text-size-adjust:100%;}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.85 Inter,'Noto Sans TC','Noto Sans SC',system-ui,sans-serif;}
+a{color:var(--accent);text-underline-offset:3px;}
+.top{max-width:1080px;margin:0 auto;padding:18px 20px;display:flex;align-items:center;gap:10px;font:500 13px 'JetBrains Mono',monospace;color:var(--muted);}
+.top a{color:var(--muted);text-decoration:none;}.top a:hover{color:var(--accent);}
+.top b{color:var(--ink);font-weight:500;}.top .sp{flex:1;}
+.langs a{padding:4px 9px;border-radius:99px;border:1px solid var(--line);margin-left:4px;}.langs a[aria-current]{color:var(--ink);border-color:var(--accent);}
+main{max-width:760px;margin:0 auto;padding:10px 20px 70px;}
+.kicker{font:500 12px 'JetBrains Mono',monospace;color:var(--accent);letter-spacing:.06em;text-transform:uppercase;margin:24px 0 8px;}
+h1{font-size:clamp(28px,4.4vw,42px);line-height:1.2;letter-spacing:-.02em;margin:0 0 14px;}
+.lede{font-size:18px;color:var(--muted);margin:0 0 16px;line-height:1.7;}
+.meta{display:flex;flex-wrap:wrap;gap:8px 14px;font:500 12.5px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;color:var(--muted);padding-bottom:22px;border-bottom:1px solid var(--line);margin-bottom:10px;}
+.meta span.tag{padding:2px 9px;border-radius:99px;background:var(--code);}
+article h2{font-size:23px;margin:40px 0 10px;letter-spacing:-.01em;}
+article h3{font-size:18px;margin:28px 0 8px;}
+article p,article li{color:var(--ink);}
+article code{font:14px 'JetBrains Mono',monospace;background:var(--code);padding:1px 6px;border-radius:6px;}
+article table{width:100%;border-collapse:collapse;margin:18px 0;font-size:14.5px;display:block;overflow-x:auto;}
+article th,article td{padding:8px 12px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap;}
+article th{font-weight:600;color:var(--muted);font-size:13px;}
+article td:not(:first-child),article th:not(:first-child){text-align:right;}
+article strong{color:var(--ink);}
+article blockquote{margin:18px 0;padding:4px 18px;border-left:3px solid var(--accent);color:var(--muted);}
+.card{display:block;padding:18px 20px;margin:12px 0;border-radius:16px;background:var(--paper);border:1px solid var(--line);text-decoration:none;color:var(--ink);transition:transform .25s,border-color .25s;}
+.card:hover{transform:translateY(-2px);border-color:var(--accent);}
+.card b{display:block;font-size:18px;line-height:1.4;margin-bottom:4px;}.card small{display:block;color:var(--muted);font-size:14px;line-height:1.6;}
+.card i{display:block;font:normal 500 12px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;color:var(--accent);margin-top:8px;}
+.hero{width:100%;border-radius:16px;border:1px solid var(--line);display:block;margin:6px 0 18px;}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px;}.chips span{font:500 12px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;padding:4px 11px;border-radius:99px;background:var(--code);}
+.btns{display:flex;flex-wrap:wrap;gap:10px;margin:22px 0;}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:12px;border:1px solid var(--line);background:var(--paper);color:var(--ink);text-decoration:none;font-weight:600;font-size:14px;}
+.btn.primary{background:var(--accent);border-color:transparent;color:#fff;}
+.btn:hover{border-color:var(--accent);}
+.note{font-size:13.5px;color:var(--muted);}
+.live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#34c38f;box-shadow:0 0 0 3px #34c38f33;vertical-align:1px;}footer b{color:var(--ink);font-weight:600;}
+footer{max-width:760px;margin:0 auto;padding:26px 20px 50px;border-top:1px solid var(--line);font-size:14px;color:var(--muted);}
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BlogPosting", "headline": "把 LumiGrid 搬進瀏覽器：一個只在 WebGPU 出錯的 6 通道卷積", "description": "兩個神經網路加上一段自己寫的 WebGL 著色器，逐像素對照 PyTorch 驗證；以及一個讓 WebGPU 版本只剩 28.75 dB 的錯，是怎麼一步步二分找出來的。", "datePublished": "2026-09-28", "dateModified": "2026-09-28", "inLanguage": "zh-Hant", "author": {"@type": "Person", "name": "Niansia", "url": "https://niansia.github.io/", "email": "mailto:niansia930202@gmail.com", "sameAs": ["https://github.com/niansia"]}, "mainEntityOfPage": "https://niansia.github.io/notes/zh-tw/lumigrid-in-the-browser/", "image": "https://niansia.github.io/assets/og/note-lumigrid-in-the-browser-zh-tw.jpg", "keywords": "WebGPU, ONNX Runtime Web, 除錯"}</script>
+<script defer src="/assets/js/site-stats.js"></script>
+</head>
+<body>
+<header class="top"><a href="/zh-tw/"><b>~/niansia</b></a> / <a href="/notes/zh-tw/">notes</a><span class="sp"></span><span class="langs"><a href="/notes/en/lumigrid-in-the-browser/" hreflang="en">EN</a><a href="/notes/zh-tw/lumigrid-in-the-browser/" aria-current="page" hreflang="zh-Hant">繁</a><a href="/notes/zh-cn/lumigrid-in-the-browser/" hreflang="zh-Hans">简</a></span></header>
+<main><p class="kicker">研究筆記</p><h1>把 LumiGrid 搬進瀏覽器：一個只在 WebGPU 出錯的 6 通道卷積</h1><p class="lede">兩個神經網路加上一段自己寫的 WebGL 著色器，逐像素對照 PyTorch 驗證；以及一個讓 WebGPU 版本只剩 28.75 dB 的錯，是怎麼一步步二分找出來的。</p><div class="meta"><time datetime="2026-09-28">2026-09-28</time><span>2 分鐘閱讀</span><span class="tag">WebGPU</span><span class="tag">ONNX Runtime Web</span><span class="tag">除錯</span></div><article><p>我想讓看網站的人直接用自己的照片試 <a href="/notes/zh-tw/lumigrid-notes/">LumiGrid</a>，而且<strong>照片不能離開他們的裝置</strong>。所以整個模型要在瀏覽器裡跑。這篇記錄怎麼拆、怎麼驗證，以及一個花了我最多時間的錯。</p>
+<h2>怎麼拆</h2>
+<p>LumiGrid 有三個部分，我分別用最適合的方式實作：</p>
+<table>
+<thead>
+<tr>
+<th>部分</th>
+<th>瀏覽器裡怎麼跑</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>網格 CNN（讀 256² 縮圖，輸出 16×16×8 網格）</td>
+<td>ONNX，WebAssembly</td>
+</tr>
+<tr>
+<td>亮度導引 + 三線性切片 + 8 輪曲線 + 色彩矩陣</td>
+<td><strong>自己寫的 WebGL2 著色器</strong>，fp32</td>
+</tr>
+<tr>
+<td>NAFNet 細修</td>
+<td>ONNX，WebGPU（沒有就退回 WebAssembly）</td>
+</tr>
+</tbody>
+</table>
+<p>中間那段本來是 PyTorch 的 <code>grid_sample</code>，五維的三線性內插在 ONNX 裡支援度不一，而且它本來就是「每個像素做一樣的事」，最適合寫成著色器。每個像素在著色器裡：跑一個 3→16→1 的小網路算亮度座標（GELU 用 erf 近似，誤差約 1e-7），到網格裡取 8 個鄰居內插出 36 個係數，套 8 輪曲線，再乘上 3×4 色彩矩陣。縮圖的面積平均也用 JavaScript 照 OpenCV 的 <code>INTER_AREA</code> 重寫一遍。</p>
+<h2>怎麼驗證</h2>
+<p>我先用 PyTorch 在 6 張保留測試圖上產生參考輸出，再用無頭 Chrome 跑網頁版，逐像素比較。</p>
+<p>WebAssembly 版：<strong>63.87 dB，最大誤差只有 1 個灰階</strong>，等於完全一致。每一段中間結果也對過：切片結果和 PyTorch 差距小於 1e-6。</p>
+<p>WebGPU 版：<strong>28.75 dB</strong>。圖看起來大致正常，數字卻明顯不對。</p>
+<h2>猜錯了三次</h2>
+<p>我一開始的三個猜測都錯了：</p>
+<ol>
+<li><strong>PixelShuffle 匯出成 DepthToSpace（CRD 模式）。</strong> 改成明確的 reshape + transpose 重新匯出：還是 28.75 dB。</li>
+<li><strong>LayerNorm 裡的 <code>pow(x, 2)</code>。</strong> WebGPU 的 WGSL 裡，<code>pow</code> 對負數底數沒有定義，而算變異數時差值本來就會是負的。改成 <code>d * d</code>：還是 28.75 dB。</li>
+<li><strong>ONNX Runtime Web 的版本。</strong> 從 1.23.2 換到 1.30.0：還是 28.75 dB。</li>
+</ol>
+<p>三次都<strong>一模一樣</strong>，代表這不是浮點誤差，而是某個運算在 WebGPU 上的行為根本不同。</p>
+<h2>二分</h2>
+<p>接著改成有系統地找：</p>
+<ul>
+<li><strong>單獨測每一種運算</strong>（LayerNorm、通道注意力、閘控、depthwise 卷積、下採樣、上採樣、一般卷積）：WebGPU 和 WebAssembly 全部一致。</li>
+<li><strong>把真正的模型每一層都拉出來當輸出</strong>，逐層比較：差異<strong>從第一層就出現了</strong>。</li>
+<li>第一層是「把輸入和上一步結果串接成 6 個通道，再做 3×3 卷積」。把這兩件事拆開各測一次：</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>測試</th>
+<th style="text-align: right;">WebGPU 與 WebAssembly 最大差距</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>只做串接</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr>
+<td>6 個輸入通道的 3×3 卷積</td>
+<td style="text-align: right;"><strong>0.69</strong></td>
+</tr>
+<tr>
+<td>同一個卷積，補零到 8 個通道</td>
+<td style="text-align: right;">6 × 10⁻⁷</td>
+</tr>
+</tbody>
+</table>
+<p>問題就在這裡：在這台 Windows 筆電的 Chrome 上，ONNX Runtime Web 的 WebGPU 後端遇到 <strong>6 個輸入通道的卷積會算錯</strong>，補成 8 個就正常。</p>
+<h2>修正</h2>
+<p>把細修網路的輸入改成 8 個通道：<code>[輸入, 上一步結果, 0, 0]</code>，第一層卷積多出來的兩個通道權重設為 0。數學上完全等價（PyTorch 裡比對差距是 0），但避開了那條出錯的路徑。</p>
+<p>修完之後兩個後端都是 <strong>63.87 dB、最大誤差 1 個灰階</strong>。在 1016 × 680 的圖上，我的筆電大約是：網格 CNN 50–250 ms、著色器 35–250 ms、細修 WebGPU 約 1.8–2.1 秒、WebAssembly 約 2.4 秒。</p>
+<h2>學到的事</h2>
+<ul>
+<li><strong>一定要有數值上的參考答案。</strong> 「看起來差不多」會讓這種錯活很久；28.75 dB 的圖乍看完全正常。</li>
+<li><strong>把中間層拉出來比，比猜測快很多。</strong> 我猜了三次，二分只做兩輪就找到。</li>
+<li>我還沒有把它縮成最小重現回報給 ONNX Runtime，這是下一件要做的事。</li>
+</ul>
+<p>自己試試看：<a href="/lab/lumigrid/?lang=zh-TW">在瀏覽器執行的 LumiGrid</a>。</p></article><h2 style="margin-top:48px">其他筆記</h2><a class="card" href="/notes/zh-tw/lumigrid-notes/"><b>LumiGrid 研究筆記：一個亮度曲線網格，實際上學到了什麼</b><small>從 16.48 dB 的課堂作法到 24.57 dB：LumiGrid 的設計、消融實驗、兩個失敗案例，以及一個對自己方法不太有利的發現。</small></a><a class="card" href="/notes/zh-tw/taiwan-exam-design/"><b>Taiwan Exam 設計筆記：讓模型出題，讓程式只負責檢查</b><small>一個讓 AI 出原創學測模擬考的 Agent Skill，為什麼刻意不讓程式替題目品質背書，以及那些檢查、鎖定與套版是怎麼設計的。</small></a><div class="btns"><a class="btn" href="/notes/zh-tw/">研究筆記</a><a class="btn primary" href="/zh-tw/#research">回到作品集</a></div></main>
+<footer>有問題或想法？寫信到 <a href="mailto:niansia930202@gmail.com">niansia930202@gmail.com</a> · <a href="/zh-tw/">niansia.github.io</a> · <a href="https://github.com/niansia">github.com/niansia</a><span class="stats" data-stats hidden> · <i class="live-dot"></i> <b data-stat="online">–</b> 人在線 · <b data-stat="total">–</b> 次造訪</span></footer>
+</body>
+</html>

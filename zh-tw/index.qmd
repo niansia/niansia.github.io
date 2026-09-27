@@ -2,6 +2,7 @@
 title: "Niansia | Terminal portfolio"
 pagetitle: "Niansia | Terminal portfolio"
 description: "Niansia 的互動式終端作品集：AI 安全、電腦視覺、可重現研究，以及一位貓耳夥伴。"
+image: "/assets/og/site-zh-tw.jpg"
 lang: zh-TW
 page-layout: full
 title-block-style: none

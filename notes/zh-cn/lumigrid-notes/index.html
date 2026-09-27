@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LumiGrid 研究笔记：一个亮度曲线网格，实际上学到了什么 · Niansia</title>
+<meta name="description" content="从 16.48 dB 的课堂作法到 24.57 dB：LumiGrid 的设计、消融实验、两个失败案例，以及一个对自己方法不太有利的发现。">
+<link rel="canonical" href="https://niansia.github.io/notes/zh-cn/lumigrid-notes/">
+<link rel="alternate" hreflang="en" href="https://niansia.github.io/notes/en/lumigrid-notes/"><link rel="alternate" hreflang="zh-Hant-TW" href="https://niansia.github.io/notes/zh-tw/lumigrid-notes/"><link rel="alternate" hreflang="zh-Hans-CN" href="https://niansia.github.io/notes/zh-cn/lumigrid-notes/"><link rel="alternate" hreflang="x-default" href="https://niansia.github.io/notes/en/lumigrid-notes/">
+<meta property="og:type" content="article"><meta property="og:site_name" content="Niansia">
+<meta property="og:title" content="LumiGrid 研究笔记：一个亮度曲线网格，实际上学到了什么 · Niansia"><meta property="og:description" content="从 16.48 dB 的课堂作法到 24.57 dB：LumiGrid 的设计、消融实验、两个失败案例，以及一个对自己方法不太有利的发现。">
+<meta property="og:url" content="https://niansia.github.io/notes/zh-cn/lumigrid-notes/"><meta property="og:image" content="https://niansia.github.io/assets/og/note-lumigrid-notes-zh-cn.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta property="og:locale" content="zh_CN">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://niansia.github.io/assets/og/note-lumigrid-notes-zh-cn.jpg">
+
+<meta name="theme-color" content="#fbf6ee" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#15142a" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap">
+<style>
+:root{--bg:#fbf6ee;--paper:#fffdf9;--ink:#2a2230;--muted:#766b73;--line:#2a22301a;--accent:#c0673a;--accent2:#8f6bb3;--code:#f3ece2;}
+@media(prefers-color-scheme:dark){:root{--bg:#15142a;--paper:#1c1a36;--ink:#f1ebe2;--muted:#aaa3bd;--line:#ffffff1a;--accent:#f0a878;--accent2:#b69ae6;--code:#26234a;}}
+*{box-sizing:border-box;}html{-webkit-text-size-adjust:100%;}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.85 Inter,'Noto Sans TC','Noto Sans SC',system-ui,sans-serif;}
+a{color:var(--accent);text-underline-offset:3px;}
+.top{max-width:1080px;margin:0 auto;padding:18px 20px;display:flex;align-items:center;gap:10px;font:500 13px 'JetBrains Mono',monospace;color:var(--muted);}
+.top a{color:var(--muted);text-decoration:none;}.top a:hover{color:var(--accent);}
+.top b{color:var(--ink);font-weight:500;}.top .sp{flex:1;}
+.langs a{padding:4px 9px;border-radius:99px;border:1px solid var(--line);margin-left:4px;}.langs a[aria-current]{color:var(--ink);border-color:var(--accent);}
+main{max-width:760px;margin:0 auto;padding:10px 20px 70px;}
+.kicker{font:500 12px 'JetBrains Mono',monospace;color:var(--accent);letter-spacing:.06em;text-transform:uppercase;margin:24px 0 8px;}
+h1{font-size:clamp(28px,4.4vw,42px);line-height:1.2;letter-spacing:-.02em;margin:0 0 14px;}
+.lede{font-size:18px;color:var(--muted);margin:0 0 16px;line-height:1.7;}
+.meta{display:flex;flex-wrap:wrap;gap:8px 14px;font:500 12.5px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;color:var(--muted);padding-bottom:22px;border-bottom:1px solid var(--line);margin-bottom:10px;}
+.meta span.tag{padding:2px 9px;border-radius:99px;background:var(--code);}
+article h2{font-size:23px;margin:40px 0 10px;letter-spacing:-.01em;}
+article h3{font-size:18px;margin:28px 0 8px;}
+article p,article li{color:var(--ink);}
+article code{font:14px 'JetBrains Mono',monospace;background:var(--code);padding:1px 6px;border-radius:6px;}
+article table{width:100%;border-collapse:collapse;margin:18px 0;font-size:14.5px;display:block;overflow-x:auto;}
+article th,article td{padding:8px 12px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap;}
+article th{font-weight:600;color:var(--muted);font-size:13px;}
+article td:not(:first-child),article th:not(:first-child){text-align:right;}
+article strong{color:var(--ink);}
+article blockquote{margin:18px 0;padding:4px 18px;border-left:3px solid var(--accent);color:var(--muted);}
+.card{display:block;padding:18px 20px;margin:12px 0;border-radius:16px;background:var(--paper);border:1px solid var(--line);text-decoration:none;color:var(--ink);transition:transform .25s,border-color .25s;}
+.card:hover{transform:translateY(-2px);border-color:var(--accent);}
+.card b{display:block;font-size:18px;line-height:1.4;margin-bottom:4px;}.card small{display:block;color:var(--muted);font-size:14px;line-height:1.6;}
+.card i{display:block;font:normal 500 12px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;color:var(--accent);margin-top:8px;}
+.hero{width:100%;border-radius:16px;border:1px solid var(--line);display:block;margin:6px 0 18px;}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px;}.chips span{font:500 12px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;padding:4px 11px;border-radius:99px;background:var(--code);}
+.btns{display:flex;flex-wrap:wrap;gap:10px;margin:22px 0;}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:12px;border:1px solid var(--line);background:var(--paper);color:var(--ink);text-decoration:none;font-weight:600;font-size:14px;}
+.btn.primary{background:var(--accent);border-color:transparent;color:#fff;}
+.btn:hover{border-color:var(--accent);}
+.note{font-size:13.5px;color:var(--muted);}
+.live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#34c38f;box-shadow:0 0 0 3px #34c38f33;vertical-align:1px;}footer b{color:var(--ink);font-weight:600;}
+footer{max-width:760px;margin:0 auto;padding:26px 20px 50px;border-top:1px solid var(--line);font-size:14px;color:var(--muted);}
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BlogPosting", "headline": "LumiGrid 研究笔记：一个亮度曲线网格，实际上学到了什么", "description": "从 16.48 dB 的课堂作法到 24.57 dB：LumiGrid 的设计、消融实验、两个失败案例，以及一个对自己方法不太有利的发现。", "datePublished": "2026-09-28", "dateModified": "2026-09-28", "inLanguage": "zh-Hans", "author": {"@type": "Person", "name": "Niansia", "url": "https://niansia.github.io/", "email": "mailto:niansia930202@gmail.com", "sameAs": ["https://github.com/niansia"]}, "mainEntityOfPage": "https://niansia.github.io/notes/zh-cn/lumigrid-notes/", "image": "https://niansia.github.io/assets/og/note-lumigrid-notes-zh-cn.jpg", "keywords": "电脑视觉, 低光增强, NTIRE 2025"}</script>
+<script defer src="/assets/js/site-stats.js"></script>
+</head>
+<body>
+<header class="top"><a href="/zh-cn/"><b>~/niansia</b></a> / <a href="/notes/zh-cn/">notes</a><span class="sp"></span><span class="langs"><a href="/notes/en/lumigrid-notes/" hreflang="en">EN</a><a href="/notes/zh-tw/lumigrid-notes/" hreflang="zh-Hant">繁</a><a href="/notes/zh-cn/lumigrid-notes/" aria-current="page" hreflang="zh-Hans">简</a></span></header>
+<main><p class="kicker">研究笔记</p><h1>LumiGrid 研究笔记：一个亮度曲线网格，实际上学到了什么</h1><p class="lede">从 16.48 dB 的课堂作法到 24.57 dB：LumiGrid 的设计、消融实验、两个失败案例，以及一个对自己方法不太有利的发现。</p><div class="meta"><time datetime="2026-09-28">2026-09-28</time><span>3 分钟阅读</span><span class="tag">电脑视觉</span><span class="tag">低光增强</span><span class="tag">NTIRE 2025</span></div><article><p>这篇整理 <a href="https://github.com/niansia/LumiGrid">LumiGrid</a> 的来龙去脉。除了结果，也会写一个对我自己的方法<strong>不太有利</strong>的发现：模型其实几乎没有用到它名字里的「亮度」那一轴。</p>
+<h2>起点：一份不够好的课堂作业</h2>
+<p>低光图像增强（LLIE）要把很暗的照片还原成正常曝光。我先在 NTIRE 2025 挑战赛的数据上，把原本的课堂作法重做了一遍：Zero-DCE 加上双边滤波、gamma 和对比调整。在我切出来的 20 张保留测试图上，它只有 <strong>16.48 dB / SSIM 0.742</strong>，甚至比直接用 Zero-DCE 预训练权重的 19.00 dB 还低。</p>
+<p>问题很清楚：Zero-DCE 对每个像素套用同一种曲线，看不到整张图的脉络；后处理再把杂讯一起放大。</p>
+<h2>设计：先决定整张图怎么亮，再修细节</h2>
+<p>LumiGrid 分成两段：</p>
+<ol>
+<li><strong>全域曲线网格。</strong> 一个小 CNN 只看整张图缩成 256 × 256 的缩略图，输出一个 16 × 16（空间）× 8（亮度）的网格。每一格存 8 轮 Zero-DCE 曲线（<code>LE(x) = x + a·x·(1 − x)</code>，每个 RGB 信道各一组）和一个 3 × 4 色彩矩阵。</li>
+<li><strong>切片。</strong> 每个像素用自己的位置，加上一个学出来的「亮度座标」，在网格里做三线性内插，拿到自己的曲线再套用。因为网格只从缩略图算一次，全域分支的成本几乎不随图像大小增加。</li>
+<li><strong>NAFNet 细修。</strong> 一个宽度 24 的三层 NAFNet U-Net 同时看原图和上一步的结果，预测一个残差，负责去杂讯、补细节。它在 1024 × 1024 的图块上跑、以 64 像素线性融合，所以 2400 万像素的照片也能放进 8 GB 显卡。</li>
+</ol>
+<p>损失函数是 Charbonnier + 0.25·(1 − SSIM) + 0.05·FFT 振幅，再加上全域分支的辅助损失；在一张笔记本电脑 RTX 4060 上训练 20k 次迭代（batch 8、裁切 320）。</p>
+<h2>结果</h2>
+<p>全部在 20 组<strong>没有用来训练或挑模型</strong>的 NTIRE 2025 图像上、以全分辨率、用官方评分程序计算：</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th style="text-align: right;">PSNR ↑</th>
+<th style="text-align: right;">SSIM ↑</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>输入（不处理）</td>
+<td style="text-align: right;">10.65</td>
+<td style="text-align: right;">0.381</td>
+</tr>
+<tr>
+<td>Zero-DCE 预训练权重</td>
+<td style="text-align: right;">19.00</td>
+<td style="text-align: right;">0.682</td>
+</tr>
+<tr>
+<td>课堂作法（Zero-DCE + 滤波 + gamma + 对比）</td>
+<td style="text-align: right;">16.48</td>
+<td style="text-align: right;">0.742</td>
+</tr>
+<tr>
+<td>Zero-DCE，用同样数据监督训练</td>
+<td style="text-align: right;">20.91</td>
+<td style="text-align: right;">0.717</td>
+</tr>
+<tr>
+<td><strong>LumiGrid</strong></td>
+<td style="text-align: right;"><strong>24.57</strong></td>
+<td style="text-align: right;"><strong>0.840</strong></td>
+</tr>
+<tr>
+<td>LumiGrid + TTA（四种翻转平均）</td>
+<td style="text-align: right;">24.63</td>
+<td style="text-align: right;">0.841</td>
+</tr>
+</tbody>
+</table>
+<p>这不是排行榜成绩：挑战赛测试集的正解没有公开，这只是我自己的保留切分。</p>
+<h2>消融：两个分支各补对方的洞</h2>
+<table>
+<thead>
+<tr>
+<th>变体</th>
+<th style="text-align: right;">PSNR</th>
+<th style="text-align: right;">SSIM</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Zero-DCE 网络（全分辨率卷积、没有全域脉络）</td>
+<td style="text-align: right;">20.91</td>
+<td style="text-align: right;">0.717</td>
+</tr>
+<tr>
+<td>只有曲线网格</td>
+<td style="text-align: right;">22.85</td>
+<td style="text-align: right;">0.768</td>
+</tr>
+<tr>
+<td>只有 NAFNet 细修</td>
+<td style="text-align: right;">22.85</td>
+<td style="text-align: right;">0.833</td>
+</tr>
+<tr>
+<td>完整 LumiGrid</td>
+<td style="text-align: right;">24.57</td>
+<td style="text-align: right;">0.840</td>
+</tr>
+</tbody>
+</table>
+<p>最有意思的是中间两列：<strong>两者 PSNR 一模一样，SSIM 却差很多。</strong> 细修网络单独使用时，结构和纹理（SSIM）好得多；但 PSNR 没有赢，代表它剩下的误差多半是大范围的亮度和色调偏差。这是从数字推论的，我没有另外直接量测。曲线网格正好擅长这件事，所以两者合起来再多 1.7 dB。</p>
+<h2>一个对自己不太有利的发现</h2>
+<p>LumiGrid 的卖点是「依亮度分层」：同一个区域里，亮的灯和旁边的暗影可以走不同的曲线。但我把学到的亮度座标拿出来看，发现它在 20 张测试图的所有像素上只落在 <strong>0.46 到 0.55</strong> 之间：86% 的像素落在 8 个亮度层的第 4 层，其余 14% 在第 5 层，另外 6 层完全没被用到。</p>
+<p>换句话说，这个模型的提升几乎都来自<strong>空间上</strong>的变化（不同区域不同曲线），而不是亮度分层。README 里我也照实写了这一点。如果要让这个设计名副其实，下一步应该是：</p>
+<ul>
+<li>加一个让亮度座标分布变宽的正则项，看看效果会不会更好；</li>
+<li>或者做一个对照组：把亮度座标固定成常数。如果成绩几乎不变，就更确定分层没有被用到。</li>
+</ul>
+<h2>两个失败案例</h2>
+<ul>
+<li><strong>#305，夜空（13.5 dB）。</strong> 参考图像把天空保留成暗的，LumiGrid 却把它提亮了。「该不该亮」本身是有歧义的。</li>
+<li><strong>#143，参考图像对不齐（11.9 dB）。</strong> 输出看起来是对的，但参考图像和输入的取景不同，逐像素的指针就会很难看。</li>
+</ul>
+<p>这两张把平均往下拉了不少。20 张的切分很小，所以 0.2 dB 以内的差异我都不会过度解读。</p>
+<h2>延伸</h2>
+<ul>
+<li>代码、权重与完整表格：<a href="https://github.com/niansia/LumiGrid">github.com/niansia/LumiGrid</a></li>
+<li>用你自己的暗照片试试看：<a href="/lab/lumigrid/?lang=zh-CN">在浏览器运行的 LumiGrid</a></li>
+<li>浏览器版是怎么做出来的（以及我在 WebGPU 上踩到的坑）：<a href="/notes/zh-cn/lumigrid-in-the-browser/">下一篇笔记</a></li>
+</ul></article><h2 style="margin-top:48px">其他笔记</h2><a class="card" href="/notes/zh-cn/lumigrid-in-the-browser/"><b>把 LumiGrid 搬进浏览器：一个只在 WebGPU 出错的 6 信道卷积</b><small>两个神经网络加上一段自己写的 WebGL 着色器，逐像素对照 PyTorch 验证；以及一个让 WebGPU 版本只剩 28.75 dB 的错，是怎么一步步二分找出来的。</small></a><a class="card" href="/notes/zh-cn/taiwan-exam-design/"><b>Taiwan Exam 设计笔记：让模型出题，让程序只负责检查</b><small>一个让 AI 出原创学测仿真考的 Agent Skill，为什么刻意不让程序替题目品质背书，以及那些检查、锁定与套版是怎么设计的。</small></a><div class="btns"><a class="btn" href="/notes/zh-cn/">研究笔记</a><a class="btn primary" href="/zh-cn/#research">回到作品集</a></div></main>
+<footer>有问题或想法？写信到 <a href="mailto:niansia930202@gmail.com">niansia930202@gmail.com</a> · <a href="/zh-cn/">niansia.github.io</a> · <a href="https://github.com/niansia">github.com/niansia</a><span class="stats" data-stats hidden> · <i class="live-dot"></i> <b data-stat="online">–</b> 人在线 · <b data-stat="total">–</b> 次造访</span></footer>
+</body>
+</html>
