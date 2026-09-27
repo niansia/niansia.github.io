@@ -386,6 +386,19 @@ html.film-open .yuki,html.film-open .yuki-chat{visibility:hidden;}
 @media(max-width:720px){.film-dock[data-mode='mini'] .film-shell{top:calc(100vh - (min(360px,calc(100vw - 32px)) * 9 / 16 + 34px) - 84px);left:16px;}}
 /* projects/lumigrid: film card, before/after comparison, test table */
 .lg-show{margin:22px 0 8px;}
+.te-show{position:relative;border-top:1px solid var(--line);margin-top:4px;padding:30px 0 10px;scroll-margin-top:12px;}
+.te-show h3{font-size:15px;margin:26px 0 12px;}
+.te-film{background:#fffcf8;box-shadow:0 18px 50px -22px #392f46;}
+.te-film:after{background:linear-gradient(180deg,transparent 50%,#392f46e6);}
+.te-film .cap-film-play{background:linear-gradient(135deg,#392f46,#cc7893);}
+.te-film .cap-film-text small{color:#f3e6ee;}
+.project-detail .te-film{margin-top:18px;}
+.te-flow{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px 22px;counter-reset:te;}
+.te-flow li{position:relative;display:flex;flex-direction:column;gap:2px;padding:9px 13px;border:1px solid var(--line);border-radius:12px;background:var(--surface);counter-increment:te;}
+.te-flow li:not(:last-child):after{content:'→';position:absolute;right:-17px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:12px;}
+.te-flow b{font-size:13px;}
+.te-flow b:before{content:counter(te,decimal-leading-zero) ' ';font:10px var(--mono);color:var(--accent);}
+.te-flow code{font:10.5px var(--mono);color:var(--muted);}
 .lg-compare{--x:50%;position:relative;max-width:860px;border-radius:16px;overflow:hidden;background:#07060d;border:1px solid var(--line);user-select:none;touch-action:pan-y;}
 .lg-compare img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;}
 .lg-before{clip-path:inset(0 calc(100% - var(--x)) 0 0);}

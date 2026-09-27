@@ -1,0 +1,459 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Taiwan Exam · 前導片</title>
+<meta name="description" content="Taiwan Exam trailer: how an Agent Skill turns one paragraph into an original GSAT practice exam, from knowledge loading and planning to blind re-solving, template stamping and page checks.">
+<meta name="theme-color" content="#FFFCF8">
+<link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@600;900&family=Noto+Sans+TC:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root{--paper:#FFFCF8;--plum:#392F46;--mauve:#706278;--wine:#97566D;--rose:#CC7893;--blush:#E6D5DF;--seal:#C2415F;--ok:#4E8F74;}
+*{box-sizing:border-box;}
+html,body{margin:0;height:100%;background:var(--paper);color:var(--plum);font-family:'Noto Sans TC',system-ui,sans-serif;overflow:hidden;}
+#bg,#fx{position:fixed;inset:0;width:100%;height:100%;display:block;pointer-events:none;}
+.stage{position:fixed;left:50%;top:50%;width:1600px;height:900px;transform-origin:50% 50%;perspective:1700px;}
+.world{position:absolute;inset:0;transform-style:preserve-3d;}
+.el{position:absolute;left:50%;top:50%;will-change:transform,opacity;transform-style:preserve-3d;visibility:hidden;}
+.mono{font-family:'JetBrains Mono',monospace;}
+.vt{writing-mode:vertical-rl;font:900 76px/1.15 'Noto Serif TC',serif;letter-spacing:.08em;color:var(--plum);}
+.vt span{display:inline-block;}
+.bubble{width:760px;padding:26px 30px 28px;border-radius:22px;background:#fff;box-shadow:0 30px 60px -30px #392f4655,0 0 0 1px #392f4612;font:500 26px/1.65 'Noto Sans TC',sans-serif;}
+.bubble .who{display:flex;align-items:center;gap:10px;margin-bottom:10px;font:500 14px 'JetBrains Mono',monospace;color:var(--mauve);}
+.bubble .who i{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--rose),var(--wine));}
+.bubble .cur{display:inline-block;width:3px;height:1em;background:var(--rose);vertical-align:-3px;margin-left:2px;}
+.card{width:350px;padding:20px 22px;border-radius:18px;background:#fff;box-shadow:0 24px 50px -28px #392f4666,0 0 0 1px #392f4610;}
+.card b{display:block;white-space:nowrap;font:900 38px/1.1 'Noto Sans TC',sans-serif;color:var(--plum);letter-spacing:-.01em;}
+.card span{display:block;margin-top:6px;font:700 18px 'Noto Sans TC',sans-serif;color:var(--wine);}
+.card small{display:block;margin-top:10px;font:400 12px 'JetBrains Mono',monospace;color:var(--mauve);}
+.chunks{display:flex;gap:10px;font:400 12px 'JetBrains Mono',monospace;color:var(--mauve);}
+.chunks div{width:128px;}
+.chunks em{display:block;height:6px;margin-top:6px;border-radius:9px;background:var(--blush);overflow:hidden;}
+.chunks em i{display:block;height:100%;width:0;background:var(--rose);}
+.check{width:560px;padding:26px 30px;border-radius:20px;background:#fff;box-shadow:0 30px 60px -30px #392f4666,0 0 0 1px #392f4612;}
+.check h3{margin:0 0 14px;font:700 16px 'JetBrains Mono',monospace;color:var(--mauve);}
+.check div{display:flex;align-items:center;gap:14px;padding:9px 0;border-top:1px dashed #392f4622;font:500 22px 'Noto Sans TC',sans-serif;}
+.check small{margin-left:auto;font:400 13px 'JetBrains Mono',monospace;color:var(--mauve);}
+.tick{width:30px;height:30px;flex:none;border-radius:50%;background:#f4ecf0;display:grid;place-items:center;}
+.tick svg{width:20px;height:20px;fill:none;stroke:var(--ok);stroke-width:3;stroke-linecap:round;stroke-linejoin:round;}
+.tick path{stroke-dasharray:26;stroke-dashoffset:26;}
+.seal{width:170px;height:210px;border:7px solid var(--seal);border-radius:16px;color:var(--seal);display:grid;place-items:center;writing-mode:vertical-rl;font:900 64px/1 'Noto Serif TC',serif;letter-spacing:.12em;mix-blend-mode:multiply;box-shadow:inset 0 0 0 4px #fff,inset 0 0 0 7px var(--seal);}
+.seal-sub{font:500 15px 'JetBrains Mono',monospace;color:var(--seal);}
+.tag{font:500 15px 'JetBrains Mono',monospace;color:var(--mauve);padding:6px 12px;border-radius:99px;background:#fff;box-shadow:0 0 0 1px #392f4618;white-space:nowrap;}
+.tile{width:92px;height:108px;border-radius:12px;background:#fff;box-shadow:0 10px 24px -16px #392f4666,0 0 0 1px #392f4614;padding:10px 11px;overflow:hidden;}
+.tile b{font:700 15px 'JetBrains Mono',monospace;color:var(--plum);}
+.tile .band{position:absolute;left:0;right:0;bottom:0;height:8px;}
+.tile .ink{position:absolute;left:11px;right:11px;top:36px;display:flex;flex-direction:column;gap:7px;}
+.tile .ink i{display:block;height:5px;border-radius:4px;background:#392f462e;transform-origin:left;}
+.legend{display:flex;gap:18px;font:500 17px 'Noto Sans TC',sans-serif;color:var(--plum);}
+.legend span{display:flex;align-items:center;gap:8px;}.legend i{width:22px;height:10px;border-radius:4px;}
+.legend small{font:400 12px 'JetBrains Mono',monospace;color:var(--mauve);}
+.meter{width:470px;font:700 20px 'Noto Sans TC',sans-serif;}
+.meter .row{display:flex;justify-content:space-between;align-items:baseline;}
+.meter .row small{font:400 13px 'JetBrains Mono',monospace;color:var(--mauve);}
+.meter .row b{font:700 22px 'JetBrains Mono',monospace;color:var(--wine);}
+.meter .rail{position:relative;height:12px;margin-top:8px;border-radius:9px;background:var(--blush);}
+.meter .rail i{position:absolute;left:0;top:0;bottom:0;border-radius:9px;background:linear-gradient(90deg,var(--rose),var(--wine));}
+.meter .rail em{position:absolute;top:-6px;bottom:-6px;width:2px;background:var(--plum);}
+.meter .rail u{position:absolute;top:-6px;bottom:-6px;background:#392f4614;border-left:2px dashed #392f4655;border-right:2px dashed #392f4655;}
+.item{width:520px;padding:24px 28px;border-radius:18px;background:#fff;box-shadow:0 30px 60px -30px #392f4666,0 0 0 1px #392f4612;overflow:hidden;}
+.item h4{margin:0 0 14px;font:700 15px 'JetBrains Mono',monospace;color:var(--mauve);display:flex;justify-content:space-between;}
+.item .ln{height:10px;border-radius:6px;background:#392f4626;margin:10px 0;transform-origin:left;}
+.item .fig{height:120px;margin:14px 0;border-radius:10px;border:1.5px dashed #392f4644;display:grid;place-items:center;font:400 13px 'JetBrains Mono',monospace;color:var(--mauve);}
+.item .opts{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:12px;font:500 17px 'JetBrains Mono',monospace;}
+.item .opts span{padding:7px 0;text-align:center;border-radius:9px;background:#f6eff3;}
+.item .ans{margin:16px -28px -24px;padding:14px 28px;background:#f3ecf5;font:700 18px 'Noto Sans TC',sans-serif;position:relative;}
+.item .mask{position:absolute;inset:0;display:flex;align-items:center;padding:0 28px;background:repeating-linear-gradient(135deg,#fff 0 10px,#f7eef3 10px 20px);color:var(--wine);font:700 17px 'Noto Sans TC',sans-serif;transform-origin:left;}
+.nope{font:700 18px 'JetBrains Mono',monospace;color:var(--seal);padding:8px 14px;border-radius:10px;background:#fff;box-shadow:0 0 0 2px var(--seal);white-space:nowrap;}
+.nope s{text-decoration-thickness:3px;}
+.nope small{margin-left:10px;font:700 14px 'Noto Sans TC',sans-serif;}
+.save{font:500 15px 'JetBrains Mono',monospace;color:var(--ok);padding:8px 14px;border-radius:99px;background:#fff;box-shadow:0 0 0 1.5px #4e8f7455;white-space:nowrap;}
+.gauge text{font:500 13px 'JetBrains Mono',monospace;fill:var(--mauve);}
+.big{font:900 30px 'Noto Sans TC',sans-serif;color:var(--plum);white-space:nowrap;}
+.big em{font-style:normal;color:var(--wine);}
+.page{width:300px;border-radius:4px;background:#fff;box-shadow:0 30px 60px -30px #392f4677,0 0 0 1px #392f4618;overflow:hidden;}
+.page img{display:block;width:100%;}
+.layer{width:420px;height:594px;}
+.layer img{display:block;width:100%;height:100%;}
+.layer.paper{background:#fff;box-shadow:0 40px 70px -35px #392f4680,0 0 0 1px #392f4618;}
+.fields{position:absolute;inset:0;font:700 12px 'Noto Serif TC',serif;color:var(--seal);}
+.fields span{position:absolute;padding:1px 4px;border-radius:3px;background:#c2415f14;box-shadow:0 0 0 1.5px var(--seal);}
+.lbl{font:700 18px 'Noto Sans TC',sans-serif;color:var(--plum);white-space:nowrap;display:flex;align-items:center;gap:10px;}
+.lbl:before{content:'';width:46px;height:2px;background:var(--rose);}
+.lbl small{font:400 12px 'JetBrains Mono',monospace;color:var(--mauve);}
+.beam{width:300px;height:60px;background:linear-gradient(180deg,transparent,#cc789355 70%,#cc7893 100%);mix-blend-mode:multiply;}
+.okstamp{width:64px;height:64px;border-radius:50%;border:4px solid var(--ok);color:var(--ok);display:grid;place-items:center;font:900 30px sans-serif;mix-blend-mode:multiply;}
+.chip{font:500 17px 'Noto Sans TC',sans-serif;color:var(--plum);padding:8px 14px;border-radius:99px;background:#fff;box-shadow:0 0 0 1px #392f4618;white-space:nowrap;}
+.chip b{color:var(--ok);margin-right:6px;}
+.file{width:360px;display:flex;gap:18px;align-items:center;padding:18px;border-radius:18px;background:#fff;box-shadow:0 30px 60px -30px #392f4677,0 0 0 1px #392f4614;}
+.file img{width:92px;border-radius:3px;box-shadow:0 0 0 1px #392f4620;}
+.file b{display:block;font:900 26px 'Noto Sans TC',sans-serif;}
+.file small{display:block;margin-top:6px;font:400 12px/1.5 'JetBrains Mono',monospace;color:var(--mauve);word-break:break-all;}
+.cover{width:210px;}
+.cover img{display:block;width:100%;border-radius:3px;box-shadow:0 30px 50px -28px #392f4688,0 0 0 1px #392f4618;}
+.cover span{display:block;margin-top:12px;text-align:center;font:900 22px 'Noto Serif TC',serif;}
+.stats{font:500 20px 'Noto Sans TC',sans-serif;color:var(--mauve);white-space:nowrap;letter-spacing:.02em;}
+.stats b{color:var(--plum);font-family:'JetBrains Mono',monospace;}
+.wordmark{width:760px;}
+.wordmark img{display:block;width:100%;}
+.tagline{font:700 30px 'Noto Sans TC',sans-serif;white-space:nowrap;}
+.platforms{font:500 18px 'JetBrains Mono',monospace;color:var(--mauve);white-space:nowrap;}
+.release{font:900 24px 'Noto Serif TC',serif;color:#fff;background:var(--plum);padding:10px 22px;border-radius:99px;white-space:nowrap;}
+.band{width:3200px;height:560px;background:linear-gradient(180deg,var(--rose),var(--wine));}
+.band2{width:3200px;height:160px;background:var(--plum);}
+.sub{position:fixed;left:50%;bottom:78px;transform:translateX(-50%);font:700 clamp(15px,2vw,24px)/1.4 'Noto Sans TC',sans-serif;color:var(--plum);text-shadow:0 0 6px var(--paper),0 0 14px var(--paper),0 0 2px #fff;white-space:nowrap;opacity:0;transition:opacity .35s;pointer-events:none;}
+.sub.on{opacity:1;}
+.ui{position:fixed;inset:0;pointer-events:none;}
+.brand{position:absolute;top:18px;left:22px;font:500 12px 'JetBrains Mono','Noto Sans TC',monospace;color:var(--mauve);transition:opacity .5s;}
+.brand b{color:var(--plum);}
+.top{position:absolute;top:14px;right:16px;display:flex;gap:8px;transition:opacity .5s;}
+.btn{pointer-events:auto;font:500 11px 'JetBrains Mono',monospace;color:var(--mauve);background:#ffffffcc;border:1px solid #392f4626;border-radius:999px;padding:6px 11px;cursor:pointer;text-decoration:none;}
+.btn:hover{color:var(--plum);border-color:#392f4666;}
+.bar{position:absolute;left:0;right:0;bottom:0;padding:0 22px 18px;display:flex;align-items:center;gap:14px;transition:opacity .5s;}
+.bar .play{pointer-events:auto;width:30px;height:30px;border-radius:50%;border:1px solid #392f4630;background:#fff;color:var(--plum);display:grid;place-items:center;cursor:pointer;flex:none;}
+.bar svg{width:12px;height:12px;fill:currentColor;}
+.track{position:relative;flex:1;height:18px;cursor:pointer;pointer-events:auto;}
+.track:before{content:'';position:absolute;left:0;right:0;top:8px;height:2px;background:#392f461f;}
+.fill{position:absolute;left:0;top:8px;height:2px;background:var(--rose);}
+.time{font:400 11px 'JetBrains Mono',monospace;color:var(--mauve);min-width:84px;text-align:right;}
+.start{position:absolute;inset:0;display:grid;place-items:center;background:#fffcf8ee;pointer-events:auto;transition:opacity .6s;}
+.start.off{opacity:0;pointer-events:none;}
+.start button{background:none;border:0;color:var(--plum);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:14px;font:700 15px 'Noto Sans TC',sans-serif;}
+.start .ring{width:78px;height:78px;border-radius:50%;background:var(--plum);display:grid;place-items:center;box-shadow:0 14px 30px -12px #392f4688;}
+.start .ring svg{width:22px;height:22px;fill:#fff;margin-left:3px;}
+.start small{color:var(--mauve);font:400 12px 'JetBrains Mono','Noto Sans TC',monospace;}
+.idle .bar,.idle .top,.idle .brand{opacity:0;}
+.mini .brand,.mini .top,.mini .bar,.mini .start,.mini .sub{display:none;}
+.embed #back{display:none;}
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+<div class="stage" id="stage"><div class="world" id="world"></div></div>
+<canvas id="fx"></canvas>
+<div class="sub" id="sub"></div>
+<div class="ui" id="ui">
+  <div class="brand"><b>Taiwan Exam</b> · <span id="brand-sub"></span></div>
+  <div class="top"><a class="btn" id="back" href="/#research">←</a><button class="btn" id="lang" type="button">繁</button><button class="btn" id="fs" type="button">⛶</button></div>
+  <div class="bar"><button class="play" id="play" type="button" aria-label="play / pause"></button><div class="track" id="track"><div class="fill" id="fill"></div></div><span class="time" id="time"></span></div>
+  <div class="start" id="start"><button type="button" id="go"><span class="ring"><svg viewBox="0 0 24 24"><path d="M6 4l14 8-14 8z"/></svg></span><span id="go-label"></span><small id="go-sub"></small></button></div>
+</div>
+<script>
+(() => {
+const $ = id => document.getElementById(id);
+const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
+const seg = (t, a, b) => clamp((t - a) / (b - a));
+const lerp = (a, b, k) => a + (b - a) * k;
+const EASE = {lin: x => x, io: x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2, o: x => 1 - Math.pow(1 - x, 4), i: x => x * x * x,
+  back: x => { const c = 1.7; return 1 + (c + 1) * Math.pow(x - 1, 3) + c * Math.pow(x - 1, 2); }};
+const ss = (t, a, b) => EASE.io(seg(t, a, b));
+const q = new URLSearchParams(location.search), EMBED = q.get('embed') === '1', CLEAN = q.get('clean') === '1';
+let L = q.get('lang') || (/^zh-(cn|sg)/i.test(navigator.language) ? 'zh-CN' : /^zh/i.test(navigator.language) ? 'zh-TW' : 'en');
+if (!['en', 'zh-TW', 'zh-CN'].includes(L)) L = 'zh-TW';
+const RELEASED = Date.now() >= Date.parse('2026-09-28T21:28:00+08:00');
+const ASSET = '/assets/taiwan-exam/film/';
+
+/* ---------------- copy ---------------- */
+const COPY = {
+  'zh-TW': {brand: '前導片', go: '播放前導片', goSub: '約 80 秒 · 一段話如何變成一份學測模擬考', v1: '一段話，', v2: '一份考卷。',
+    you: '你', prompt: '請依 Taiwan Exam Skill 出一份 116 學測數 A 完整模擬考。',
+    assets: [['9 包 · 1,124 份', '歷屆來源語料'], ['111–115', '官方答對率校準'], ['30 份', '大考中心原始模板'], ['7 · 13 · 4', '題型 · 圖像 · 難度帶']],
+    checks: [['PyMuPDF 1.26.0', '釘選版本'], ['模板雜湊驗證', '30 份'], ['答對率校準快照', '111–115'], ['字型', 'TW-Sung / TW-Kai'], ['圖片下載測試', '社會 · 自然 · 英文']],
+    seal: '可命題', bands: ['簡單', '中', '中偏難', '難'], meters: [['中偏難＋難', '≥ 70 分', '72 分'], ['難題', '≥ 30 分', '31 分'], ['手算時間', '80–92 分鐘', '86 分鐘']],
+    nope: '拒收', lowres: '低解析度圖片', save: '存檔點', masked: '答案已移除', resolve: '獨立重解', key: '答案', match: '一致', est: '預估答對率', band: '中偏難',
+    lock: '內容鎖定', layers: [['原始模板', '頁首頁尾像素鎖定'], ['題目本體', 'show_pdf_page'], ['動態欄位', '年份 · 頁碼']], pixel: '像素比對一致',
+    pages: ['文字出界 0', '缺字 0', '作答欄碰撞 0', '表格壓線 0', '頁面留白 ≤ 32%'], q: '題本', s: '詳解',
+    subjects: ['國綜', '國寫', '英文', '數 A', '數 B', '自然', '社會'],
+    stats: '<b>112</b> 支腳本 · <b>43,800</b> 行 Python · <b>679</b> 項測試 · Ubuntu / Windows CI',
+    tagline: '讓 AI 幫你出一份原創的學測模擬考', release: RELEASED ? '現已公開 · github.com/niansia/taiwan-exam' : '9.28 21:28 正式公開',
+    subs: [[6.4, 12.4, '先讀完需要的資料：歷屆來源、官方答對率、原始模板。'], [13.4, 18.6, '開工前先檢查環境：版本、模板、字型、圖片。'], [19.6, 26.6, '先排出整份考卷的藍圖，難度照官方答對率分配。'],
+      [27.4, 35.6, '每寫 2～4 題就存檔一次，格式不對直接拒收。'], [36.4, 43.6, '不看答案，從印出來的題目重新解一次，再估難度。'], [44.4, 47.6, '內容鎖定，之後只排版、不再改題。'],
+      [48.6, 55.6, '題目疊印在大考中心的原始模板上，頁首頁尾一個像素都不動。'], [56.4, 61.6, '每一頁都要檢查，機器不替人判斷教學品質。'], [62.4, 65.8, '最後交給你兩份 PDF：題本和詳解。'], [66.6, 71.6, '學測七科，都能出。']]},
+  en: {brand: 'trailer', go: 'Play trailer', goSub: '≈ 80 s · how one paragraph becomes a GSAT practice exam', v1: '一段話，', v2: '一份考卷。',
+    you: 'you', prompt: 'Please use the Taiwan Exam Skill to write a complete GSAT Math A practice exam for 2027.',
+    assets: [['9 packs · 1,124', 'past-exam source corpus'], ['2022–2026', 'official answer-rate calibration'], ['30', 'original CEEC template PDFs'], ['7 · 13 · 4', 'item types · visuals · difficulty bands']],
+    checks: [['PyMuPDF 1.26.0', 'pinned'], ['template hashes', '30 PDFs'], ['calibration snapshot', '2022–2026'], ['fonts', 'TW-Sung / TW-Kai'], ['image download test', 'social · science · English']],
+    seal: '可命題', bands: ['easy', 'medium', 'med-hard', 'hard'], meters: [['medium-hard + hard', '≥ 70 pts', '72 pts'], ['hard', '≥ 30 pts', '31 pts'], ['hand-solving time', '80–92 min', '86 min']],
+    nope: 'refused', lowres: 'low-res image', save: 'checkpoint', masked: 'answer removed', resolve: 'independent re-solve', key: 'key', match: 'match', est: 'estimated answer rate', band: 'medium-hard',
+    lock: 'content lock', layers: [['original template', 'header/footer pixels locked'], ['question body', 'show_pdf_page'], ['dynamic fields', 'year · page numbers']], pixel: 'pixel check passed',
+    pages: ['text outside page 0', 'missing glyphs 0', 'answer-rail collisions 0', 'table text on lines 0', 'blank space ≤ 32%'], q: 'Questions', s: 'Solutions',
+    subjects: ['Chinese', 'Writing', 'English', 'Math A', 'Math B', 'Science', 'Social'],
+    stats: '<b>112</b> scripts · <b>43,800</b> lines of Python · <b>679</b> tests · Ubuntu / Windows CI',
+    tagline: 'Original GSAT practice exams, written by your AI', release: RELEASED ? 'Now public · github.com/niansia/taiwan-exam' : 'Public release · Sep 28, 21:28 (UTC+8)',
+    subs: [[6.4, 12.4, 'First it reads what it needs: past sources, official answer rates, original templates.'], [13.4, 18.6, 'Then it checks the environment: versions, templates, fonts, images.'], [19.6, 26.6, 'It plans the whole paper, with difficulty set by official answer rates.'],
+      [27.4, 35.6, 'Items are written 2–4 at a time and checkpointed; bad formats are refused.'], [36.4, 43.6, 'Each item is re-solved from the printed page without the answer, then difficulty is estimated.'], [44.4, 47.6, 'The content is locked; from here on only layout changes.'],
+      [48.6, 55.6, 'The body is stamped onto the original CEEC template; not one header pixel moves.'], [56.4, 61.6, 'Every page is checked; the machine never signs off on teaching quality.'], [62.4, 65.8, 'You get two PDFs: the questions and the worked solutions.'], [66.6, 71.6, 'All seven GSAT subjects.']]},
+};
+COPY['zh-CN'] = Object.assign({}, COPY['zh-TW'], {brand: '先导片', go: '播放先导片', goSub: '约 80 秒 · 一段话如何变成一份学测模拟考', v1: '一段话，', v2: '一份考卷。',
+  prompt: '请依 Taiwan Exam Skill 出一份 116 学测数 A 完整模拟考。',
+  assets: [['9 包 · 1,124 份', '历届来源语料'], ['111–115', '官方答对率校准'], ['30 份', '大考中心原始模板'], ['7 · 13 · 4', '题型 · 图像 · 难度带']],
+  checks: [['PyMuPDF 1.26.0', '锁定版本'], ['模板哈希验证', '30 份'], ['答对率校准快照', '111–115'], ['字体', 'TW-Sung / TW-Kai'], ['图片下载测试', '社会 · 自然 · 英文']],
+  bands: ['简单', '中', '中偏难', '难'], meters: [['中偏难＋难', '≥ 70 分', '72 分'], ['难题', '≥ 30 分', '31 分'], ['手算时间', '80–92 分钟', '86 分钟']],
+  nope: '拒收', lowres: '低分辨率图片', save: '存档点', masked: '答案已移除', resolve: '独立重解', key: '答案', match: '一致', est: '预估答对率', band: '中偏难',
+  lock: '内容锁定', layers: [['原始模板', '页眉页脚像素锁定'], ['题目本体', 'show_pdf_page'], ['动态字段', '年份 · 页码']], pixel: '像素比对一致',
+  pages: ['文字出界 0', '缺字 0', '作答栏碰撞 0', '表格压线 0', '页面留白 ≤ 32%'], q: '题本', s: '详解',
+  subjects: ['国综', '国写', '英文', '数 A', '数 B', '自然', '社会'],
+  stats: '<b>112</b> 个脚本 · <b>43,800</b> 行 Python · <b>679</b> 项测试 · Ubuntu / Windows CI',
+  tagline: '让 AI 帮你出一份原创的学测模拟考', release: RELEASED ? '现已公开 · github.com/niansia/taiwan-exam' : '9.28 21:28 正式公开',
+  subs: [[6.4, 12.4, '先读完需要的资料：历届来源、官方答对率、原始模板。'], [13.4, 18.6, '开工前先检查环境：版本、模板、字体、图片。'], [19.6, 26.6, '先排出整份考卷的蓝图，难度按官方答对率分配。'],
+    [27.4, 35.6, '每写 2～4 题就存档一次，格式不对直接拒收。'], [36.4, 43.6, '不看答案，从印出来的题目重新解一次，再估难度。'], [44.4, 47.6, '内容锁定，之后只排版、不再改题。'],
+    [48.6, 55.6, '题目叠印在大考中心的原始模板上，页眉页脚一个像素都不动。'], [56.4, 61.6, '每一页都要检查，机器不替人判断教学质量。'], [62.4, 65.8, '最后交给你两份 PDF：题本和详解。'], [66.6, 71.6, '学测七科，都能出。']]});
+const C = COPY[L];
+
+/* ---------------- tiny keyframe engine: every element is a pure function of time ---------------- */
+const world = $('world'), ANIM = [], HOOKS = [];
+const DEF = {x: 0, y: 0, z: 0, rx: 0, ry: 0, rz: 0, s: 1, o: 1};
+function mk(cls, html = '', parent = world) { const e = document.createElement('div'); e.className = `el ${cls}`; e.innerHTML = html; parent.append(e); return e; }
+function A(node, frames) { let prev = {...DEF, o: 0}; frames = frames.map(([t, v, e]) => { prev = {...prev, ...v}; return [t, prev, e]; }); ANIM.push({node, frames}); return node; }
+function applyAnim({node, frames}, t) {
+  let v;
+  if (t <= frames[0][0]) v = frames[0][1];
+  else if (t >= frames[frames.length - 1][0]) v = frames[frames.length - 1][1];
+  else { let i = 0; while (frames[i + 1][0] < t) i++; const [t0, v0] = frames[i], [t1, v1, e] = frames[i + 1], k = EASE[e || 'io'](clamp((t - t0) / (t1 - t0))); v = {}; for (const p in v1) v[p] = lerp(v0[p], v1[p], k); }
+  if (v.o <= .002) { node.style.visibility = 'hidden'; return; }
+  node.style.visibility = 'visible'; node.style.opacity = Math.min(1, v.o);
+  node.style.transform = `translate(-50%,-50%) translate3d(${v.x}px,${v.y}px,${v.z}px) rotateX(${v.rx}deg) rotateY(${v.ry}deg) rotateZ(${v.rz}deg) scale(${v.s})`;
+}
+const hook = f => HOOKS.push(f);
+const tickSVG = '<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+const drawTick = (el, a, t) => { const p = el.querySelector('path'); if (p) p.style.strokeDashoffset = 26 * (1 - ss(t, a, a + .35)); };
+const splitChars = (el, str) => { el.innerHTML = [...str].map(c => `<span>${c}</span>`).join(''); return [...el.children]; };
+const fmtN = n => Math.round(n).toLocaleString('en-US');
+
+/* ---------------- scene: one paragraph ---------------- */
+const v1 = mk('vt'), v2 = mk('vt');
+const c1 = splitChars(v1, C.v1), c2 = splitChars(v2, C.v2);
+A(v1, [[.5, {x: 520, y: -40, o: 1}], [5.6, {x: 520, y: -40, o: 1}], [6.4, {x: 700, o: 0}]]);
+A(v2, [[1.5, {x: -520, y: 40, o: 1}], [5.6, {x: -520, y: 40, o: 1}], [6.4, {x: -700, o: 0}]]);
+hook(t => { c1.forEach((s, i) => { const k = ss(t, .5 + i * .18, .9 + i * .18); s.style.opacity = k; s.style.transform = `translateY(${(1 - k) * 18}px)`; });
+  c2.forEach((s, i) => { const k = ss(t, 1.5 + i * .18, 1.9 + i * .18); s.style.opacity = k; s.style.transform = `translateY(${(1 - k) * 18}px)`; }); });
+const bubble = mk('bubble', `<div class="who"><i></i>${C.you}</div><span class="typed"></span><i class="cur"></i>`);
+A(bubble, [[2.1, {y: 60, o: 0, s: .96}], [2.6, {y: 40, o: 1, s: 1}, 'o'], [6, {y: 40, x: 0, s: 1}], [7, {x: -470, y: -40, s: .6}, 'io'], [11.8, {x: -470, y: -40, s: .6, o: 1}], [12.6, {x: -900, o: 0}]]);
+hook(t => { const n = Math.floor([...C.prompt].length * seg(t, 2.7, 5.3)); bubble.querySelector('.typed').textContent = [...C.prompt].slice(0, n).join(''); bubble.querySelector('.cur').style.opacity = t < 6 && Math.floor(t * 2.4) % 2 ? 1 : .15; });
+
+/* ---------------- scene: knowledge ---------------- */
+const route = mk('', `<svg width="1200" height="40" viewBox="0 0 1200 40"><path d="M0 20 H1200" stroke="#CC7893" stroke-width="3" stroke-dasharray="10 10" fill="none" id="route"/></svg>`);
+A(route, [[6.8, {x: 60, y: 360, o: 1}], [12, {o: 1}], [12.6, {o: 0}]]);
+hook(t => { $('route').style.clipPath = `inset(0 ${100 - 100 * ss(t, 6.8, 8.2)}% 0 0)`; });
+const assetPos = [[-10, -175], [360, -175], [-10, 95], [360, 95]];
+C.assets.forEach(([big, label], i) => {
+  const sub = ['source-pack-manifest.json', 'hosted_calibration.py', 'templates/115/*.pdf', 'core/taxonomy.json'][i];
+  const e = mk('card', `<b>${big}</b><span>${label}</span><small>${sub}</small>`);
+  const t0 = 7.4 + i * .35, [x, y] = assetPos[i];
+  A(e, [[t0, {x: x + 60, y: y + 30, o: 0, rz: 4, s: .9}], [t0 + .5, {x, y, o: 1, rz: 0, s: 1}, 'back'], [11.9 + i * .05, {x, y, o: 1}], [12.6, {x: x - 200, o: 0}]]);
+  if (i === 0) hook(t => { const k = ss(t, t0, t0 + 1.2); e.querySelector('b').textContent = L === 'en' ? `9 packs · ${fmtN(1124 * k)}` : `9 ${L === 'zh-CN' ? '包' : '包'} · ${fmtN(1124 * k)} 份`; });
+});
+const chunks = mk('chunks', ['preflight', 'authoring', 'review', 'layout'].map(n => `<div>${n}.md<em><i></i></em></div>`).join(''));
+A(chunks, [[8, {x: -470, y: 150, o: 0}], [8.5, {o: 1}], [11.8, {o: 1}], [12.4, {o: 0}]]);
+const chunkTag = mk('tag', 'read_web_knowledge.py · ≤ 12,000 chars / chunk');
+A(chunkTag, [[8.3, {x: -470, y: 210, o: 0}], [8.8, {o: 1}], [11.8, {o: 1}], [12.4, {o: 0}]]);
+hook(t => chunks.querySelectorAll('i').forEach((e, i) => { e.style.width = `${100 * ss(t, 8.5 + i * .5, 9.5 + i * .5)}%`; }));
+
+/* wipe bands (PV-style transitions) */
+function wipe(t0, rz = -14) {
+  const b = mk('band'), b2 = mk('band2');
+  A(b, [[t0, {x: 2600, y: 0, z: 300, rz, o: 1}], [t0 + .9, {x: -2600, y: 0, z: 300, rz, o: 1}, 'lin'], [t0 + .91, {o: 0}]]);
+  A(b2, [[t0 + .08, {x: 2600, y: 330, z: 300, rz, o: 1}], [t0 + .98, {x: -2600, y: 330, z: 300, rz, o: 1}, 'lin'], [t0 + 1, {o: 0}]]);
+  b.style.zIndex = b2.style.zIndex = 50;
+}
+
+wipe(12.2);
+
+/* ---------------- scene: preflight ---------------- */
+const check = mk('check', `<h3>prepare_hosted_run.py</h3>${C.checks.map(([a, b]) => `<div><span class="tick">${tickSVG}</span>${a}<small>${b}</small></div>`).join('')}`);
+A(check, [[13, {x: -190, y: 30, o: 0, ry: -18}], [13.6, {x: -190, y: 0, o: 1, ry: 0}, 'o'], [18.4, {x: -190, y: 0}], [19.2, {y: -700, o: 0}, 'i']]);
+const ticks = [...check.querySelectorAll('.tick')];
+hook(t => ticks.forEach((e, i) => drawTick(e, 14 + i * .55, t)));
+const seal = mk('seal', C.seal), sealSub = mk('seal-sub', 'ready-for-authoring');
+A(seal, [[16.9, {x: 330, y: -20, s: 2.6, o: 0, rz: -18}], [17.25, {s: 1, o: .95, rz: -8}, 'i'], [18.4, {s: 1, o: .95}], [19.2, {y: -700, o: 0}, 'i']]);
+A(sealSub, [[17.4, {x: 330, y: 125, o: 0}], [17.7, {o: 1}], [18.4, {o: 1}], [19.2, {y: -560, o: 0}, 'i']]);
+
+/* ---------------- scene: paper plan → batches → blind review → lock (the 20 tiles persist) ---------------- */
+const BAND = ['#E9DDE5', '#D9A8BA', '#B26A85', '#5B4568'];
+const bandOf = [1, 0, 1, 2, 1, 2, 3, 1, 2, 2, 3, 1, 2, 3, 2, 3, 2, 3, 3, 2];
+const tiles = bandOf.map((b, i) => {
+  const e = mk('tile', `<b>${String(i + 1).padStart(2, '0')}</b><div class="ink"><i></i><i></i><i></i><i></i></div><div class="band" style="background:${BAND[b]}"></div>`);
+  const col = i % 5, row = Math.floor(i / 5);
+  const gx = -640 + col * 108, gy = -170 + row * 124;          // plan grid
+  const cx = -700 + col * 84, cy = -150 + row * 98;            // compact grid while writing
+  const st = 19.6 + i * .06;
+  A(e, [[st, {x: gx, y: gy + 40, o: 0, rx: 40}], [st + .5, {x: gx, y: gy, o: 1, rx: 0}, 'back'], [27, {x: gx, y: gy, s: 1}], [27.8, {x: cx, y: cy, s: .78}],
+    [35.8, {x: cx, y: cy, s: .78, o: 1}], [36.4, {x: cx - 30, y: cy, s: .7, o: .3}], [43.6, {x: cx - 30, y: cy, s: .7, o: .3}],
+    [44.6 + i * .02, {x: 0 + (i % 3) * 2, y: -20 - i * 2, z: 0, s: .95, rz: (i % 5 - 2) * 2, o: 1}], [47.2, {x: 0, y: -20 - i * 2, s: .95, o: 1}], [47.8, {o: 0}]]);
+  e._batch = Math.floor(i / 3);
+  return e;
+});
+hook(t => tiles.forEach(e => { const k = ss(t, 27.8 + e._batch * .85, 28.5 + e._batch * .85); e.querySelectorAll('.ink i').forEach((l, j) => { l.style.transform = `scaleX(${clamp(k * 1.4 - j * .12)})`; }); }));
+const legend = mk('legend', C.bands.map((b, i) => `<span><i style="background:${BAND[i]}"></i>${b}<small>${['≥ .70', '.50–.70', '.30–.50', '< .30'][i]}</small></span>`).join(''));
+A(legend, [[20.4, {x: -424, y: -268, o: 0}], [20.9, {o: 1}], [26.8, {o: 1}], [27.4, {o: 0}]]);
+const planTag = mk('tag', 'check_paper_plan.py → paper-plan.json');
+A(planTag, [[20, {x: -424, y: -322, o: 0}], [20.5, {o: 1}], [26.8, {o: 1}], [27.4, {o: 0}]]);
+const meters = C.meters.map(([label, target, val], i) => {
+  const e = mk('meter', `<div class="row"><span>${label}</span><small>${target}</small><b>${val}</b></div><div class="rail"><u></u><i></i></div>`);
+  A(e, [[21 + i * .3, {x: 330, y: -130 + i * 120, o: 0}], [21.5 + i * .3, {o: 1}], [26.8, {o: 1}], [27.4, {x: 500, o: 0}]]);
+  const [lo, hi, v, max] = [[70, 100, 72, 100], [30, 100, 31, 100], [80, 92, 86, 120]][i];
+  const u = e.querySelector('u'), bar = e.querySelector('i'); u.style.left = `${lo / max * 100}%`; u.style.width = `${(hi - lo) / max * 100}%`;
+  hook(t => { bar.style.width = `${v / max * 100 * ss(t, 21.8 + i * .45, 23.2 + i * .45)}%`; });
+  return e;
+});
+/* writing: an item being written, checkpoints, refusals */
+const item = mk('item', `<h4><span>item 07 · batch-03.json</span><span>數 A · 多選</span></h4><div class="ln" style="width:92%"></div><div class="ln" style="width:78%"></div><div class="ln" style="width:85%"></div><div class="fig">figure · normalize_figure_asset.py</div><div class="opts"><span>(1)</span><span>(2)</span><span>(3)</span><span>(4)</span><span>(5)</span></div><div class="ans">${C.key}　(3)<div class="mask">${C.masked}</div></div>`);
+A(item, [[27.8, {x: 330, y: 20, o: 0, ry: 20}], [28.4, {x: 330, y: 0, o: 1, ry: 0}, 'o'], [35.8, {x: 330, y: 0}], [36.6, {x: -120, y: -10, s: .92}], [43.4, {x: -120, y: -10, s: .92, o: 1}], [44.2, {x: 0, y: -20, s: .5, o: 0}]]);
+hook(t => { item.querySelectorAll('.ln').forEach((l, j) => { l.style.transform = `scaleX(${ss(t, 28.5 + j * .35, 29.2 + j * .35)})`; });
+  item.querySelector('.fig').style.opacity = ss(t, 29.6, 30.2); item.querySelector('.opts').style.opacity = ss(t, 30.2, 30.8);
+  item.querySelector('.mask').style.transform = `scaleX(${ss(t, 36.9, 37.5)})`; });
+const saveChip = mk('save', '');
+A(saveChip, [[28.4, {x: 330, y: -300, o: 0}], [28.8, {o: 1}], [35.6, {o: 1}], [36.2, {o: 0}]]);
+hook(t => { const n = clamp(Math.floor((t - 27.8) / .85) + 1, 1, 7); saveChip.innerHTML = `✓ exam.json · ${C.save} ${n}/7`; saveChip.style.transform += ` scale(${1 + .08 * Math.max(0, 1 - ((t - 27.8) % .85) * 4)})`; });
+[['LaTeX', 29.4, 150], ['$ … $', 30.6, 330], [C.lowres, 31.8, 540]].forEach(([txt, t0, x]) => { const y = 250;
+  const e = mk('nope', `<s>${txt}</s><small>${C.nope}</small>`);
+  A(e, [[t0, {x, y, o: 0, s: 1.3}], [t0 + .3, {x, y, o: 1, s: 1}, 'o'], [t0 + 1.8, {x, y, o: 1}], [t0 + 2.3, {x, y: y + 30, o: 0}]]);
+});
+/* blind review */
+const reviewer = mk('item', `<h4><span>hosted_blind_review.py</span><span>${C.resolve}</span></h4><div class="ln" style="width:70%"></div><div class="ln" style="width:88%"></div><div class="ln" style="width:60%"></div><div class="ans" style="background:#eef5f1">→ (3)</div>`);
+A(reviewer, [[37.4, {x: 470, y: -150, o: 0, rz: 3}], [38, {x: 470, y: -170, o: 1, rz: 0}, 'o'], [43.4, {x: 470, y: -170, o: 1}], [44.2, {x: 300, o: 0}]]);
+hook(t => { reviewer.querySelectorAll('.ln').forEach((l, j) => { l.style.transform = `scaleX(${ss(t, 38.2 + j * .45, 38.9 + j * .45)})`; }); reviewer.querySelector('.ans').style.opacity = ss(t, 39.6, 40); });
+const matchChip = mk('save', `✓ ${C.key} (3) = (3) · ${C.match}`);
+A(matchChip, [[40.1, {x: -120, y: 250, o: 0, s: 1.3}], [40.4, {s: 1, o: 1}, 'o'], [43.4, {o: 1}], [44, {o: 0}]]);
+const gauge = mk('gauge', `<svg width="360" height="210" viewBox="0 0 360 210"><g fill="none" stroke-width="22">
+  <path d="M40 180 A140 140 0 0 1 63.1 103.2" stroke="${BAND[3]}"/><path d="M63.1 103.2 A140 140 0 0 1 136.7 46.8" stroke="${BAND[2]}"/><path d="M136.7 46.8 A140 140 0 0 1 223.3 46.8" stroke="${BAND[1]}"/><path d="M223.3 46.8 A140 140 0 0 1 320 180" stroke="${BAND[0]}"/></g>
+  <text x="18" y="204">0</text><text x="330" y="204">1</text><g id="needle"><line x1="180" y1="180" x2="180" y2="62" stroke="#392F46" stroke-width="4" stroke-linecap="round"/><circle cx="180" cy="180" r="9" fill="#392F46"/></g></svg>`);
+A(gauge, [[40.4, {x: 470, y: 90, o: 0}], [40.8, {o: 1}], [43.4, {o: 1}], [44, {o: 0}]]);
+const gaugeLbl = mk('big', '');
+A(gaugeLbl, [[41.6, {x: 470, y: 225, o: 0}], [42, {o: 1}], [43.4, {o: 1}], [44, {o: 0}]]);
+hook(t => { const p = lerp(.92, .41, ss(t, 40.8, 42.2)); $('needle').setAttribute('transform', `rotate(${-90 + p * 180} 180 180)`); gaugeLbl.innerHTML = `${C.est} <em>${p.toFixed(2)}</em> → ${C.band}`; });
+/* lock */
+const lock = mk('', `<svg width="120" height="140" viewBox="0 0 120 140"><path id="shackle" d="M30 64 V40 a30 30 0 0 1 60 0 V64" fill="none" stroke="#392F46" stroke-width="12" stroke-linecap="round"/><rect x="14" y="60" width="92" height="72" rx="16" fill="#392F46"/><circle cx="60" cy="92" r="9" fill="#FFFCF8"/><rect x="56" y="96" width="8" height="18" rx="4" fill="#FFFCF8"/></svg>`);
+A(lock, [[45, {x: 0, y: -60, o: 0, s: .6}], [45.4, {s: 1, o: 1}, 'back'], [47.2, {o: 1}], [47.8, {o: 0}]]);
+hook(t => { $('shackle').style.transform = `translateY(${-16 * (1 - ss(t, 45.8, 46.1))}px)`; });
+const lockTag = mk('tag', `lock-content → content-lock.json`);
+A(lockTag, [[46, {x: 0, y: 110, o: 0}], [46.3, {o: 1}], [47.2, {o: 1}], [47.8, {o: 0}]]);
+wipe(47.5);
+
+/* ---------------- scene: stamping onto the original template (exploded 3-D) ---------------- */
+const stack = mk('', '');
+stack.style.width = '420px'; stack.style.height = '594px';
+A(stack, [[48.2, {x: -140, y: 0, rx: 18, ry: -34, rz: 4, o: 1}], [52, {x: -120, y: 0, rx: 14, ry: -28, rz: 3}], [53.8, {x: 0, y: 0, rx: 0, ry: 0, rz: 0}], [55.6, {x: 0, y: 0, s: 1.02}], [56.3, {x: -200, s: .5, o: 0}]]);
+const frame = mk('layer paper', `<img src="${ASSET}layer-frame.png" alt="">`, stack), body = mk('layer', `<img src="${ASSET}layer-body.png" alt="">`, stack),
+  fields = mk('layer', `<div class="fields"><span style="left:3.5%;top:2.4%">第 1 頁</span><span style="left:3.5%;top:4.5%">共 3 頁</span><span style="right:3.5%;top:2.4%">116年學測</span><span style="left:47%;bottom:2.2%">- 1 -</span></div>`, stack);
+[frame, body, fields].forEach((e, i) => { e.style.left = '0'; e.style.top = '0'; });
+[[frame, -170], [body, 0], [fields, 170]].forEach(([e, z], i) => A(e, [[48.2 + i * .35, {x: 210, y: 297 - 60, z: z - 80, o: 0}], [48.8 + i * .35, {x: 210, y: 297, z, o: 1}, 'o'], [52, {x: 210, y: 297, z, o: 1}], [53.8, {x: 210, y: 297, z: i * .5, o: 1}, 'io'], [55.6, {o: 1}], [56.3, {o: 0}]]));
+const layerLbls = C.layers.map(([a, b], i) => { const e = mk('lbl', `${a}<small>${b}</small>`); A(e, [[49 + i * .35, {x: 420, y: [150, 0, -150][i], o: 0}], [49.5 + i * .35, {o: 1}], [52, {o: 1}], [52.6, {o: 0}]]); return e; });
+const composeTag = mk('tag', 'compose_hosted_pdf.py · locked header/footer pixels');
+A(composeTag, [[48.8, {x: 330, y: -300, o: 0}], [49.3, {o: 1}], [55.2, {o: 1}], [55.8, {o: 0}]]);
+const pixelOk = mk('save', `✓ ${C.pixel}`);
+A(pixelOk, [[54, {x: 0, y: 330, o: 0, s: 1.3}], [54.3, {s: 1, o: 1}, 'o'], [55.6, {o: 1}], [56.1, {o: 0}]]);
+
+/* ---------------- scene: every page inspected ---------------- */
+const pageSrc = ['p-math-a-q-1', 'p-math-a-q-2', 'p-math-a-q-3', 'p-math-a-s-0'];
+pageSrc.forEach((src, i) => {
+  const x = -495 + i * 330, pg = mk('page', `<img src="${ASSET}${src}.jpg" alt="">`);
+  A(pg, [[56 + i * .12, {x, y: -30, o: 0, ry: -30, z: -200}], [56.6 + i * .12, {x, y: -30, o: 1, ry: 0, z: 0}, 'o'], [61.4, {x, y: -30, o: 1}], [62.2, {x, y: -600, o: 0}, 'i']]);
+  const beam = mk('beam'); A(beam, [[56.8 + i * .9, {x, y: -230, o: 0}], [57 + i * .9, {o: 1}], [57.7 + i * .9, {x, y: 150, o: 1}, 'lin'], [57.9 + i * .9, {x, y: 170, o: 0}]]);
+  const ok = mk('okstamp', '✓'); A(ok, [[57.8 + i * .9, {x: x + 100, y: 110, s: 2, o: 0, rz: -12}], [58 + i * .9, {s: 1, o: .9}, 'i'], [61.4, {o: .9}], [62.2, {y: -500, o: 0}, 'i']]);
+});
+C.pages.forEach((txt, i) => { const e = mk('chip', `<b>✓</b>${txt}`); A(e, [[57 + i * .55, {x: -560 + i * 280, y: 250, o: 0}], [57.3 + i * .55, {o: 1}, 'o'], [61.4, {o: 1}], [62, {o: 0}]]); });
+const inspectTag = mk('tag', 'inspect_hosted_pdf.py · 9 hard failures · record-review');
+A(inspectTag, [[56.4, {x: 0, y: -330, o: 0}], [56.9, {o: 1}], [61.4, {o: 1}], [62, {o: 0}]]);
+
+/* ---------------- scene: delivery ---------------- */
+[[C.q, 'cover-math-a', '學測_數學A_20260920-01_題本.pdf', -220], [C.s, 'p-math-a-s-0', '學測_數學A_20260920-01_詳解.pdf', 220]].forEach(([n, img, file, x], i) => {
+  const e = mk('file', `<img src="${ASSET}${img}.jpg" alt=""><div><b>${n}</b><small>${file}</small></div>`);
+  A(e, [[62.3 + i * .25, {x: x * 1.25, y: -420, o: 0, rz: -6, s: 1.3}], [62.9 + i * .25, {x: x * 1.25, y: -40, o: 1, rz: i ? 2 : -2, s: 1.3}, 'back'], [65.8, {x: x * 1.25, y: -40, o: 1, s: 1.3}], [66.4, {x: x * 1.25, y: 30, o: 0, s: 1.1}]]);
+});
+const finTag = mk('tag', 'finalize → final-check.json · evidence-complete');
+A(finTag, [[63.4, {x: 0, y: 150, o: 0}], [63.8, {o: 1}], [65.8, {o: 1}], [66.3, {o: 0}]]);
+
+/* ---------------- scene: seven subjects ---------------- */
+['chinese', 'writing', 'english', 'math-a', 'math-b', 'science', 'social'].forEach((s, i) => {
+  const e = mk('cover', `<img src="${ASSET}cover-${s}.jpg" alt=""><span>${C.subjects[i]}</span>`), a = (i - 3) * 14;
+  const x = Math.sin(a * Math.PI / 180) * 950, y = 780 - Math.cos(a * Math.PI / 180) * 950 + 60;
+  A(e, [[66.4 + i * .1, {x: x * .3, y: 700, o: 0, rz: a * .3}], [67.2 + i * .1, {x, y: y - 40, rz: a, o: 1}, 'back'], [71.6, {x, y: y - 40, rz: a, o: 1}], [72.6, {x: x * 1.6, y: y + 500, rz: a * 2, o: 0}, 'i']]);
+});
+const stats = mk('stats', C.stats);
+A(stats, [[68.4, {x: 0, y: 262, o: 0}], [68.9, {o: 1}], [71.6, {o: 1}], [72.2, {o: 0}]]);
+
+/* ---------------- title ---------------- */
+const wm = mk('wordmark', `<img src="${ASSET}wordmark.svg" alt="Taiwan Exam">`);
+A(wm, [[72.4, {y: -40, o: 0, s: 1.25}], [73.4, {y: -60, o: 1, s: 1}, 'o'], [80, {y: -60, o: 1, s: 1.03}]]);
+const tag = mk('tagline', C.tagline); A(tag, [[74.2, {y: 170, o: 0}], [74.8, {y: 160, o: 1}, 'o'], [80, {y: 160, o: 1}]]);
+const plats = mk('platforms', 'Claude · ChatGPT · Gemini · Codex'); A(plats, [[75, {y: 215, o: 0}], [75.5, {o: 1}], [80, {o: 1}]]);
+const rel = mk('release', C.release); A(rel, [[76, {y: 290, o: 0, s: .9}], [76.4, {y: 290, o: 1, s: 1}, 'back'], [80, {o: 1}]]);
+
+/* ---------------- background: notebook ruling, margin line, petals ---------------- */
+const bg = $('bg'), bgx = bg.getContext('2d'), fx = $('fx'), fxx = fx.getContext('2d');
+const PET = Array.from({length: 42}, (_, i) => { const r = n => { const s = Math.sin(i * 127.1 + n * 311.7) * 43758.5453; return s - Math.floor(s); }; return {x: r(1), y: r(2), s: 8 + r(3) * 12, v: .04 + r(4) * .05, w: r(5) * 6.28, d: r(6)}; });
+function drawBg(t) {
+  const w = bg.width, h = bg.height, pr = w / innerWidth; bgx.clearRect(0, 0, w, h);
+  const k = ss(t, .1, 1.6), gap = 38 * pr;
+  bgx.strokeStyle = '#392f4612'; bgx.lineWidth = 1 * pr;
+  for (let y = gap * 1.6, i = 0; y < h; y += gap, i++) { bgx.beginPath(); bgx.moveTo(0, y); bgx.lineTo(w * clamp(k * 1.4 - i * .02), y); bgx.stroke(); }
+  bgx.strokeStyle = '#cc789355'; bgx.lineWidth = 2 * pr; bgx.beginPath(); bgx.moveTo(90 * pr, 0); bgx.lineTo(90 * pr, h * k); bgx.stroke();
+  const g = bgx.createRadialGradient(w, 0, 0, w, 0, w * .6); g.addColorStop(0, '#e6d5df88'); g.addColorStop(1, '#e6d5df00'); bgx.fillStyle = g; bgx.fillRect(0, 0, w, h);
+}
+function drawFx(t) {
+  const w = fx.width, h = fx.height, pr = w / innerWidth; fxx.clearRect(0, 0, w, h);
+  const dens = .35 + .65 * Math.max(1 - seg(t, 1, 6), ss(t, 72.4, 75));
+  PET.forEach((p, i) => { if (p.d > dens) return;
+    const y = ((p.y + t * p.v) % 1.1 - .05) * h, x = ((p.x + Math.sin(t * .6 + p.w) * .03 - t * .012) % 1 + 1) % 1 * w, r = p.s * pr;
+    fxx.save(); fxx.translate(x, y); fxx.rotate(t * .8 + p.w); fxx.scale(1, .6 + .4 * Math.sin(t * 2 + p.w));
+    fxx.fillStyle = i % 3 ? '#f2c3d2cc' : '#e7a9bdcc'; fxx.beginPath(); fxx.moveTo(0, -r); fxx.bezierCurveTo(r, -r * .6, r * .7, r * .6, 0, r); fxx.bezierCurveTo(-r * .7, r * .6, -r, -r * .6, 0, -r); fxx.fill(); fxx.restore(); });
+}
+
+/* ---------------- frame ---------------- */
+const TOTAL = 80;
+function update(t) {
+  ANIM.forEach(a => applyAnim(a, t)); HOOKS.forEach(f => f(t));
+  const drift = Math.sin(t * .21) * 6; world.style.transform = `translate3d(${drift}px,${Math.cos(t * .17) * 4}px,0)`;
+  drawBg(t); drawFx(t);
+  const s = C.subs.find(([a, b]) => t >= a && t <= b); const sub = $('sub'); sub.classList.toggle('on', !!s); if (s) sub.textContent = s[2];
+}
+
+/* ---------------- playback ---------------- */
+let time = clamp(Number(q.get('t')) || 0, 0, TOTAL), playing = false, last = 0, idleT;
+const fmt = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+const post = type => { if (EMBED) parent.postMessage({source: 'propaganda-film', type}, '*'); };
+function paint() { $('fill').style.width = `${time / TOTAL * 100}%`; $('time').textContent = `${fmt(time)} / ${fmt(TOTAL)}`;
+  $('play').innerHTML = playing ? '<svg viewBox="0 0 24 24"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>' : '<svg viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z"/></svg>'; }
+function loop(ts) {
+  const dt = last ? Math.min(.05, (ts - last) / 1000) : 0; last = ts;
+  if (playing) { time += dt; if (time >= TOTAL) { time = TOTAL; playing = false; post('ended'); } }
+  update(time); paint(); requestAnimationFrame(loop);
+}
+function play(on = !playing) { if (on && time >= TOTAL) time = 0; playing = on; last = 0; $('start').classList.add('off'); paint(); post(on ? 'play' : 'pause'); }
+function seek(t) { time = clamp(t, 0, TOTAL); paint(); update(time); }
+function resize() {
+  const w = innerWidth, h = innerHeight, k = Math.min(w / 1600, h / 900), pr = Math.min(2, devicePixelRatio || 1);
+  $('stage').style.transform = `translate(-50%,-50%) scale(${k})`;
+  [bg, fx].forEach(c => { c.width = w * pr; c.height = h * pr; });
+  update(time);
+}
+document.documentElement.lang = L === 'en' ? 'en' : L === 'zh-CN' ? 'zh-Hans' : 'zh-Hant';
+$('brand-sub').textContent = C.brand; $('go-label').textContent = C.go; $('go-sub').textContent = C.goSub;
+$('lang').textContent = {en: 'EN', 'zh-TW': '繁', 'zh-CN': '简'}[L];
+$('back').href = `${L === 'en' ? '/' : L === 'zh-CN' ? '/zh-cn/' : '/zh-tw/'}#research`;
+$('go').addEventListener('click', () => play(true)); $('play').addEventListener('click', () => play());
+$('track').addEventListener('click', e => { const r = e.currentTarget.getBoundingClientRect(); seek((e.clientX - r.left) / r.width * TOTAL); });
+$('lang').addEventListener('click', () => { const p = new URLSearchParams(q); p.set('lang', {en: 'zh-TW', 'zh-TW': 'zh-CN', 'zh-CN': 'en'}[L]); p.set('t', time.toFixed(1)); p.set('autoplay', playing ? '1' : '0'); location.replace(`?${p}`); });
+$('fs').addEventListener('click', () => document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen?.());
+document.addEventListener('click', e => { if (document.body.classList.contains('mini') && !e.target.closest('button,a')) play(); });
+addEventListener('keydown', e => {
+  if (e.key === ' ') { e.preventDefault(); play(); } else if (e.key === 'ArrowRight') seek(time + 5); else if (e.key === 'ArrowLeft') seek(time - 5);
+  else if (e.key.toLowerCase() === 'f') $('fs').click(); else if (e.key.toLowerCase() === 'r') { seek(0); play(true); }
+  else if (e.key === 'Escape' && EMBED) post('escape');
+});
+addEventListener('pointermove', () => { document.body.classList.remove('idle'); clearTimeout(idleT); idleT = setTimeout(() => playing && document.body.classList.add('idle'), 2400); });
+addEventListener('resize', () => { clearTimeout(resize.t); resize.t = setTimeout(resize, 120); });
+addEventListener('message', e => { const m = e.data; if (!m || m.source !== 'niansia-dock') return; if (m.type === 'mode') { document.body.classList.toggle('mini', !!m.mini); resize(); } if (m.type === 'play') play(true); if (m.type === 'pause') play(false); });
+window.__film = {seek, play, get time() { return time; }, TOTAL};
+if (EMBED) document.body.classList.add('embed');
+if (CLEAN) { $('ui').style.display = 'none'; $('sub').style.display = 'none'; }
+resize();
+if (q.has('t') || EMBED) { $('start').classList.add('off'); if (q.get('autoplay') === '1' || (EMBED && q.get('autoplay') !== '0')) play(true); }
+requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
