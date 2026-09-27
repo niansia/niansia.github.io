@@ -22,6 +22,7 @@
     psg:'agent governance mcp coding agents tasks review worktree 代理 治理 任務 審查 工作流',
     noveltyaudit:'novelty papers scholarly literature citation prior art research audit 論文 新穎性 文獻 引用 學術 審查',
     'research-meeting-coach':'meeting advisor research progress weekly report 開會 導師 會議 研究進度 報告 教授',
+    lumigrid:'low light low-light night dark enhancement enhance brighten denoise exposure ntire zero-dce curve grid photo 低光 夜景 暗 增亮 提亮 去噪 曝光 曲線 網格 夜拍',
     chromarecover:'computer vision vision color image images pixel recovery 電腦視覺 視覺 影像 圖片 色彩 顏色 還原'
   };
   const LANG_ALIASES = [

@@ -1,6 +1,17 @@
 window.NIANSIA_PROJECTS = {
   "en": [
     {
+      "id": "lumigrid",
+      "name": "LumiGrid",
+      "url": "https://github.com/niansia/LumiGrid",
+      "category": "Computer vision",
+      "status": "Research prototype",
+      "description": "Low-light image enhancement that predicts a luminance-guided bilateral grid of Zero-DCE curves and colour matrices from a thumbnail of the whole image, slices it at full resolution, and cleans noise and detail with a lightweight NAFNet refiner. Rebuilt from an earlier course project on the NTIRE 2025 challenge data.",
+      "evidence": "On 20 held-out NTIRE 2025 pairs with the official scoring code: 24.57 dB PSNR / 0.840 SSIM (24.63 dB with test-time augmentation), against 16.48 dB for the original Zero-DCE course pipeline and 20.91 dB for Zero-DCE trained on the same data; component ablations, released weights, 2.1 M parameters, 24-megapixel images on an 8 GB laptop GPU.",
+      "reference": "https://github.com/niansia/LumiGrid#results",
+      "referenceLabel": "Results and ablations"
+    },
+    {
       "id": "taiwan-exam",
       "name": "Taiwan Exam",
       "url": "https://github.com/niansia/taiwan-exam",
@@ -102,6 +113,17 @@ window.NIANSIA_PROJECTS = {
   ],
   "zh-TW": [
     {
+      "id": "lumigrid",
+      "name": "LumiGrid",
+      "url": "https://github.com/niansia/LumiGrid",
+      "category": "電腦視覺",
+      "status": "研究原型",
+      "description": "低光影像增強：從整張圖的縮圖預測以亮度引導的 Zero-DCE 曲線與色彩矩陣雙邊網格，在全解析度上逐像素切片套用，再用輕量 NAFNet 去除雜訊、補回細節。由先前的課堂專題，以 NTIRE 2025 競賽資料重新設計。",
+      "evidence": "在 20 組保留的 NTIRE 2025 測試圖上（官方評分程式）：PSNR 24.57 dB／SSIM 0.840（測試時增強 24.63 dB）；原本的 Zero-DCE 課堂作法為 16.48 dB，同資料監督訓練的 Zero-DCE 為 20.91 dB。附各元件消融實驗、公開權重；210 萬參數，8 GB 筆電顯卡可處理 2400 萬畫素影像。",
+      "reference": "https://github.com/niansia/LumiGrid#results",
+      "referenceLabel": "成果與消融實驗"
+    },
+    {
       "id": "taiwan-exam",
       "name": "Taiwan Exam",
       "url": "https://github.com/niansia/taiwan-exam",
@@ -202,6 +224,17 @@ window.NIANSIA_PROJECTS = {
     }
   ],
   "zh-CN": [
+    {
+      "id": "lumigrid",
+      "name": "LumiGrid",
+      "url": "https://github.com/niansia/LumiGrid",
+      "category": "电脑视觉",
+      "status": "研究原型",
+      "description": "低光影像增强：从整张图的缩略图预测以亮度引导的 Zero-DCE 曲线与色彩矩阵双边网格，在全分辨率上逐像素切片套用，再用轻量 NAFNet 去除杂讯、补回细节。由先前的课堂专题，以 NTIRE 2025 竞赛数据重新设计。",
+      "evidence": "在 20 组保留的 NTIRE 2025 测试图上（官方评分程序）：PSNR 24.57 dB／SSIM 0.840（测试时增强 24.63 dB）；原本的 Zero-DCE 课堂作法为 16.48 dB，同数据监督训练的 Zero-DCE 为 20.91 dB。附各组件消融实验、公开权重；210 万参数，8 GB 笔电显卡可处理 2400 万像素影像。",
+      "reference": "https://github.com/niansia/LumiGrid#results",
+      "referenceLabel": "成果与消融实验"
+    },
     {
       "id": "taiwan-exam",
       "name": "Taiwan Exam",

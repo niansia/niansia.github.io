@@ -242,12 +242,45 @@
   }
   root.addEventListener('click',event=>{
     const film=event.target.closest('.cap-film');
-    if (film && !event.metaKey && !event.ctrlKey && !event.shiftKey) { event.preventDefault(); openFilm(); return; }
+    if (film && !event.metaKey && !event.ctrlKey && !event.shiftKey) { event.preventDefault(); openFilm(film.dataset.src, film.dataset.title); return; }
     const lang=event.target.closest('[data-cap-lang]'), ex=event.target.closest('[data-cap-ex]'), jump=event.target.closest('[data-cap-jump]');
     if (lang) { capState.lang=lang.dataset.capLang; paintCapExample(false); }
     if (ex) { capState.i=Number(ex.dataset.capEx); paintCapExample(); }
     if (jump) $('#capstone')?.scrollIntoView({behavior:motion()?'smooth':'auto',block:'start'});
   });
+  /* LumiGrid project page: film card, a draggable before/after comparison on real test images, and the test table. */
+  let lgData=null;
+  const lgCopy=()=>({en:{film:'Watch the LumiGrid film',filmSub:'About 100 s: the real predicted curve grid, curves and before/after, in one continuous take.',before:'input',after:'LumiGrid',orig:'course pipeline',vs:'compare with',table:'Held-out test split (20 pairs, official NTIRE metrics)',method:'Method',note:'Not a leaderboard result: the challenge test ground truth is not public. For orientation, the public validation leaderboard spanned 24.1 dB (median) to 26.5 dB (best) on different images.',drag:'drag to compare'},
+    'zh-TW':{film:'觀看 LumiGrid 動畫',filmSub:'約 100 秒：用模型真實預測的曲線網格、曲線與前後對比，一鏡到底講完方法。',before:'輸入',after:'LumiGrid',orig:'課堂作法',vs:'對照',table:'保留測試集（20 組，NTIRE 官方評分程式）',method:'方法',note:'非排行榜成績：競賽測試集的正解未公開。僅供參考，公開驗證排行榜在另一批影像上介於 24.1 dB（中位數）到 26.5 dB（最佳）。',drag:'拖曳比較'},
+    'zh-CN':{film:'观看 LumiGrid 动画',filmSub:'约 100 秒：用模型真实预测的曲线网格、曲线与前后对比，一镜到底讲完方法。',before:'输入',after:'LumiGrid',orig:'课堂做法',vs:'对照',table:'保留测试集（20 组，NTIRE 官方评分程序）',method:'方法',note:'非排行榜成绩：竞赛测试集的正解未公开。仅供参考，公开验证排行榜在另一批影像上介于 24.1 dB（中位数）到 26.5 dB（最佳）。',drag:'拖曳比较'}}[locale]);
+  const LG_NAMES={input:'input',zerodce_pretrained:'Zero-DCE (pretrained)',original_pipeline:'Zero-DCE + filters (course)',zerodce_sup:'Zero-DCE, supervised',local_only:'NAFNet only',global_only:'curve grid only',lumigrid:'LumiGrid','lumigrid+tta':'LumiGrid + TTA'};
+  function lumigridShowcase() {
+    const c=lgCopy();
+    return `<section class="lg-show"><a class="cap-film lg-film" href="/assets/film/lumigrid.html?lang=${locale}" data-src="/assets/film/lumigrid.html" data-title="LumiGrid" aria-haspopup="dialog"><video src="/assets/lumigrid/teaser.mp4" poster="/assets/lumigrid/teaser-poster.jpg" muted loop playsinline preload="metadata" ${motion()?'autoplay':''} aria-hidden="true"></video><span class="cap-film-play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z"/></svg></span><span class="cap-film-text"><b>${esc(c.film)}</b><small>${esc(c.filmSub)}</small></span></a>
+      <div class="lg-compare" style="--x:50%"><img class="lg-after" alt="${esc(c.after)}" draggable="false"><img class="lg-before" alt="${esc(c.before)}" draggable="false"><span class="lg-line" aria-hidden="true"><i></i></span><span class="lg-tag lg-l"></span><span class="lg-tag lg-r">${esc(c.after)}</span><input class="lg-range" type="range" min="0" max="100" value="50" aria-label="${esc(c.drag)}"></div>
+      <div class="lg-bar"><div class="lg-thumbs" role="group"></div><div class="lg-vs" role="group"><span>${esc(c.vs)}</span><button type="button" data-lg-vs="in" aria-pressed="true">${esc(c.before)}</button><button type="button" data-lg-vs="orig" aria-pressed="false">${esc(c.orig)}</button></div></div>
+      <h2>${esc(c.table)}</h2><div class="lg-table"></div><p class="comment-line">${esc(c.note)}</p></section>`;
+  }
+  let lgState={i:0,vs:'in'};
+  function paintLumigrid() {
+    const box=$('.lg-show'); if(!box||!lgData)return; const c=lgCopy(), it=lgData.items[lgState.i];
+    box.querySelector('.lg-after').src=`/assets/lumigrid/${lgState.i}_out.jpg`;
+    box.querySelector('.lg-before').src=`/assets/lumigrid/${lgState.i}_${lgState.vs}.jpg`;
+    box.querySelector('.lg-compare').style.aspectRatio=`${it.size[0]} / ${it.size[1]}`;
+    box.querySelector('.lg-l').textContent=`${lgState.vs==='in'?c.before:c.orig} · ${(lgState.vs==='in'?it.psnr.input:it.psnr.original).toFixed(2)} dB`;
+    box.querySelector('.lg-r').textContent=`${c.after} · ${it.psnr.lumigrid.toFixed(2)} dB`;
+    box.querySelector('.lg-thumbs').innerHTML=lgData.items.map((x,i)=>`<button type="button" data-lg-i="${i}" aria-pressed="${i===lgState.i}"><img src="/assets/lumigrid/${i}_out.jpg" alt="" loading="lazy"></button>`).join('');
+    box.querySelectorAll('[data-lg-vs]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.lgVs===lgState.vs)));
+    const best=Math.max(...lgData.table.map(r=>r[1]));
+    box.querySelector('.lg-table').innerHTML=`<div class="lg-row lg-head"><span>${esc(c.method)}</span><span>PSNR</span><span>SSIM</span></div>`+lgData.table.map(r=>`<div class="lg-row ${r[0].startsWith('lumigrid')?'is-ours':''}"><span>${esc(LG_NAMES[r[0]]||r[0])}</span><span><i style="--v:${((r[1]-8)/(best-8)).toFixed(3)}"></i>${r[1].toFixed(2)}</span><span>${r[2].toFixed(3)}</span></div>`).join('');
+  }
+  function initLumigrid() {
+    const box=$('.lg-show'); if(!box)return;
+    const go=()=>{ paintLumigrid(); if(motion()){ const cmp=box.querySelector('.lg-compare'), t0=performance.now(); const step=now=>{ const k=Math.min(1,(now-t0)/1800), x=100-85*(1-Math.pow(1-k,3)); if(!cmp.isConnected)return; if(!cmp.dataset.touched){cmp.style.setProperty('--x',`${Math.max(50,x)}%`); box.querySelector('.lg-range').value=Math.max(50,x);} if(k<1)requestAnimationFrame(step); }; requestAnimationFrame(step);} };
+    if(lgData)go(); else fetch('/assets/lumigrid/showcase.json?v=1').then(r=>r.json()).then(d=>{lgData=d;go();}).catch(()=>{});
+  }
+  root.addEventListener('input',event=>{ if(event.target.matches('.lg-range')){ const cmp=event.target.closest('.lg-compare'); cmp.dataset.touched='1'; cmp.style.setProperty('--x',`${event.target.value}%`); } });
+  root.addEventListener('click',event=>{ const t=event.target.closest('[data-lg-i]'), v=event.target.closest('[data-lg-vs]'); if(t){lgState.i=Number(t.dataset.lgI);paintLumigrid();} if(v){lgState.vs=v.dataset.lgVs;paintLumigrid();} });
   /* Film dock: the capstone film plays in an in-page player that can shrink to a corner mini player
      (like YouTube) and keeps playing while the terminal is used. It lives on <body>, outside the re-rendered views. */
   let dock=null;
@@ -259,14 +292,15 @@
     dock.querySelector('iframe').contentWindow?.postMessage({source:'niansia-dock',type:'mode',mini:mode==='mini'},'*');
     dock.querySelector(mode==='full'?'[data-film="mini"]':'[data-film="full"]')?.focus({preventScroll:true});
   }
-  function openFilm() {
-    const d=dockCopy();
-    if (dock) { dockMode('full'); return; }
+  function openFilm(src='/assets/film/propaganda.html', title) {
+    const d={...dockCopy(), ...(title?{title}:{})};
+    if (dock && dock.dataset.src===src) { dockMode('full'); return; }
+    if (dock) { dock.remove(); dock=null; }
     dock=document.createElement('div');
     dock.className='film-dock'; dock.setAttribute('role','dialog'); dock.setAttribute('aria-label',d.title);
-    dock.innerHTML=`<div class="film-backdrop" data-film="mini"></div><div class="film-shell"><div class="film-frame"><iframe src="/assets/film/propaganda.html?lang=${locale}&embed=1" title="${esc(d.title)}" allow="autoplay; fullscreen" allowfullscreen></iframe><button type="button" class="film-hit" data-film="full" aria-label="${esc(d.full)}"></button></div>
+    dock.innerHTML=`<div class="film-backdrop" data-film="mini"></div><div class="film-shell"><div class="film-frame"><iframe src="${src}?lang=${locale}&embed=1" title="${esc(d.title)}" allow="autoplay; fullscreen" allowfullscreen></iframe><button type="button" class="film-hit" data-film="full" aria-label="${esc(d.full)}"></button></div>
       <div class="film-bar"><span class="film-title"><i></i>${esc(d.title)}</span><button type="button" data-film="mini" title="${esc(d.mini)}" aria-label="${esc(d.mini)}"><svg viewBox="0 0 24 24"><path d="M4 5h16v14H4zM12 12h7v6h-7z"/></svg></button><button type="button" data-film="full" title="${esc(d.full)}" aria-label="${esc(d.full)}"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button><button type="button" data-film="close" title="${esc(d.close)}" aria-label="${esc(d.close)}"><svg viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div></div>`;
-    document.body.append(dock);
+    dock.dataset.src=src; document.body.append(dock);
     dock.addEventListener('click',e=>{const b=e.target.closest('[data-film]');if(!b)return;const a=b.dataset.film;if(a==='close')closeFilm();else dockMode(a);});
     requestAnimationFrame(()=>dockMode('full'));
   }
@@ -324,9 +358,10 @@
     if (view==='hobbies') html=hobbiesScreen();
     if (view==='help') html=`${commandTitle('help')}<h1>${c.guideTitle}</h1><p>${c.guideIntro}</p><dl class="keyboard-guide">${c.keys.map(([key,description])=>`<div><dt><kbd>${key}</kbd></dt><dd>${description}</dd></div>`).join('')}</dl><h2>${c.commands}</h2>${commandCatalogue()}<p class="comment-line">${c.simulation}</p>`;
     if (view==='projects' && !item) html=`${commandTitle('ls ./projects/')}<div class="directory-heading"><h1>${c.all}</h1><span>${String(items.length).padStart(2,'0')} ${c.directory}</span></div><p class="screen-intro">${c.projectIntro}</p><div class="project-directory" aria-label="${c.all}">${items.map((p,i)=>`<button class="project-row ${i===selectedProject?'is-selected':''}" data-project="${p.id}" data-project-index="${i}" style="--i:${i}"><span class="row-index">${String(i+1).padStart(2,'0')}</span><span class="project-row-title"><strong translate="no">${p.name}</strong><small>${p.category}</small></span><span class="project-status">${p.status}</span><span class="row-arrow">↗</span></button>`).join('')}</div>`;
-    if (view==='projects' && item) html=`${commandTitle('cat projects/'+esc(item.id)+'/README.md')}<button class="back-link" data-view="projects">← ${c.all}</button><div class="project-detail"><p class="detail-meta">${esc(item.category)}<span>${esc(item.status)}</span></p><h1 translate="no">${esc(item.name)}</h1><p class="project-description">${esc(item.description)}</p>${item.id==='taiwan-exam'?'<img class="project-art" src="/assets/work/taiwan-exam-social-preview.png" width="1280" height="640" alt="Taiwan Exam" loading="lazy">':''}<h2>${c.evidence}</h2><p>${esc(item.evidence)}</p><div class="output-actions"><a class="action-button primary" href="${esc(item.url)}" target="_blank" rel="noopener noreferrer"><span>${c.source}</span>${icon('link')}</a><a class="action-button" href="${esc(item.reference)}" target="_blank" rel="noopener noreferrer"><span>${esc(item.referenceLabel)}</span>${icon('link')}</a><button class="action-button" data-ask="${esc(item.name)}">${icon('chat')}<span>${c.askTitle}</span></button></div><div class="project-pagination"><button data-project-step="-1">← ${c.prev}</button><span>${items.indexOf(item)+1} / ${items.length}</span><button data-project-step="1">${c.next} →</button></div></div>`;
+    if (view==='projects' && item) html=`${commandTitle('cat projects/'+esc(item.id)+'/README.md')}<button class="back-link" data-view="projects">← ${c.all}</button><div class="project-detail"><p class="detail-meta">${esc(item.category)}<span>${esc(item.status)}</span></p><h1 translate="no">${esc(item.name)}</h1><p class="project-description">${esc(item.description)}</p>${item.id==='taiwan-exam'?'<img class="project-art" src="/assets/work/taiwan-exam-social-preview.png" width="1280" height="640" alt="Taiwan Exam" loading="lazy">':''}${item.id==='lumigrid'?lumigridShowcase():''}<h2>${c.evidence}</h2><p>${esc(item.evidence)}</p><div class="output-actions"><a class="action-button primary" href="${esc(item.url)}" target="_blank" rel="noopener noreferrer"><span>${c.source}</span>${icon('link')}</a><a class="action-button" href="${esc(item.reference)}" target="_blank" rel="noopener noreferrer"><span>${esc(item.referenceLabel)}</span>${icon('link')}</a><button class="action-button" data-ask="${esc(item.name)}">${icon('chat')}<span>${c.askTitle}</span></button></div><div class="project-pagination"><button data-project-step="-1">← ${c.prev}</button><span>${items.indexOf(item)+1} / ${items.length}</span><button data-project-step="1">${c.next} →</button></div></div>`;
     const output=$('.terminal-output'); output.innerHTML=html; output.scrollTop=0; renderJournal();
     if (view==='research') initCapstone();
+    if (view==='projects' && projectId==='lumigrid') initLumigrid();
     output.classList.remove('screen-enter'); if (animate && motion()) { void output.offsetWidth; output.classList.add('screen-enter'); }
     root.querySelectorAll('[data-nav-index]').forEach((el,i)=>{el.classList.toggle('is-current',i===paths.indexOf(view));el.classList.toggle('is-selected',i===selectedNav);el.setAttribute('aria-current',i===paths.indexOf(view)?'page':'false');});
     moveIndicator();

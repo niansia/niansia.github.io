@@ -8,7 +8,7 @@ window.NIANSIA_TERMINAL = {
     ['research','research','research','Explore research interests','探索研究方向','探索研究方向'],
     ['capstone','capstone','capstone','Open the undergraduate capstone: propaganda detection with generative AI','查看大學專題：以生成式 AI 偵測宣傳新聞','查看大学专题：以生成式 AI 侦测宣传新闻'],
     ['deadlines','deadlines','deadlines','Count down to the conference deadlines being prepared for','查看準備投稿的會議截止倒數','查看准备投稿的会议截止倒数'],
-    ['projects','projects','projects','Open all nine projects','開啟全部九項作品','打开全部九项作品'],
+    ['projects','projects','projects','Open all ten projects','開啟全部十項作品','打开全部十项作品'],
     ['ls','ls [path]','ls projects/','List files or projects','列出檔案或作品','列出文件或作品'],
     ['cd','cd <path>','cd projects','Go to a directory; .. goes back','切換目錄；.. 返回上一層','切换目录；.. 返回上一层'],
     ['cat','cat <file>','cat about.md','Read a profile or project file','閱讀介紹或作品檔案','阅读介绍或作品文件'],
