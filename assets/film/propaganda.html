@@ -30,7 +30,7 @@ html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family
 .code .k{color:#c3a6ff;}.code .s{color:#ffd28a;}.code .c{color:#5f7a8c;}.code .o{color:var(--cyan);}.code .p{color:var(--pink);}
 .code .cur{display:inline-block;width:7px;height:13px;background:var(--cyan);vertical-align:-2px;animation:blink 1s steps(1) infinite;}
 .cap{position:absolute;left:50%;bottom:78px;transform:translateX(-50%);width:min(92vw,980px);text-align:center;}
-.cap .kick{font:600 11px var(--mono);color:var(--cyan);letter-spacing:.18em;text-transform:uppercase;opacity:0;transition:opacity .6s;}
+.cap .kick{font:600 11px var(--mono);color:var(--cyan);letter-spacing:.18em;text-transform:uppercase;opacity:0;transition:opacity .6s;min-height:1.6em;}
 .cap h2{margin:6px 0 6px;font:700 clamp(20px,2.7vw,34px)/1.25 Huninn,Quicksand,sans-serif;text-shadow:0 0 28px #000,0 2px 2px #000;opacity:0;transform:translateY(10px);filter:blur(6px);transition:opacity .7s,transform .7s cubic-bezier(.2,.8,.2,1),filter .7s;}
 .cap p{margin:0;font:500 clamp(12px,1.35vw,15px)/1.65 Quicksand,Huninn,sans-serif;color:#b9b5d3;text-shadow:0 0 20px #000;opacity:0;transition:opacity .7s .15s;}
 .cap.on .kick,.cap.on p{opacity:1;}.cap.on h2{opacity:1;transform:none;filter:none;}
@@ -75,7 +75,7 @@ html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family
   <div class="bar"><button class="play" id="play" type="button" aria-label="play"></button><div class="track" id="track"><div class="rail"></div><div class="fill" id="fill"></div></div><span class="time" id="time"></span></div>
   <div class="start" id="start"><button type="button" id="go"><span class="ring"><svg viewBox="0 0 24 24"><path d="M6 4l14 8-14 8z"/></svg></span><span id="go-label"></span><small id="go-sub"></small></button></div>
 </div>
-<script src="/assets/js/capstone-data.js?v=film-2"></script>
+<script src="/assets/js/capstone-data.js?v=film-3"></script>
 <script type="module">
 import * as THREE from 'three';
 import {EffectComposer} from 'three/addons/postprocessing/EffectComposer.js';
@@ -163,12 +163,17 @@ composer.addPass(new RenderPass(scene, camera));
 const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), .55, .42, .32);
 composer.addPass(bloom);
 const lens = new ShaderPass({
-  uniforms: {tDiffuse: {value: null}, uTime: {value: 0}, uGrain: {value: .045}, uRes: {value: new THREE.Vector2(1, 1)}},
+  uniforms: {tDiffuse: {value: null}, uTime: {value: 0}, uGrain: {value: .045}, uGlitch: {value: 0}, uWipe: {value: -1}, uRes: {value: new THREE.Vector2(1, 1)}},
   vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.); }',
-  fragmentShader: `uniform sampler2D tDiffuse; uniform float uTime, uGrain; uniform vec2 uRes; varying vec2 vUv;
+  fragmentShader: `uniform sampler2D tDiffuse; uniform float uTime, uGrain, uGlitch, uWipe; uniform vec2 uRes; varying vec2 vUv;
     float h(vec2 p){ return fract(sin(dot(p, vec2(12.9898,78.233))) * 43758.5453); }
-    void main(){ vec2 d = vUv - .5; float r = dot(d,d); float ca = .006 * r;
-      vec3 c = vec3(texture2D(tDiffuse, vUv + d*ca).r, texture2D(tDiffuse, vUv).g, texture2D(tDiffuse, vUv - d*ca).b);
+    void main(){ vec2 uv = vUv;
+      float band = floor(uv.y * 34.), rnd = h(vec2(band, floor(uTime * 24.)));
+      uv.x += (rnd - .5) * .09 * uGlitch * step(.72, rnd);
+      vec2 d = uv - .5; float r = dot(d,d); float ca = .006 * r + .012 * uGlitch;
+      vec3 c = vec3(texture2D(tDiffuse, uv + d*ca + vec2(.004*uGlitch,0.)).r, texture2D(tDiffuse, uv).g, texture2D(tDiffuse, uv - d*ca - vec2(.004*uGlitch,0.)).b);
+      float wl = exp(-pow((vUv.y - uWipe) * 90., 2.)); c += vec3(.35,.85,1.) * wl * .9 * step(0., uWipe);
+      c += vec3(.35,.85,1.) * step(.985, h(vec2(floor(vUv.y * 180.), floor(uTime * 30.)))) * uGlitch * .25;
       c *= 1. - r * 1.25;
       c += (h(vUv * uRes + fract(uTime) * 91.) - .5) * uGrain;
       c *= .985 + .015 * sin(vUv.y * uRes.y * 1.4);
@@ -239,27 +244,47 @@ const pGeo = new THREE.BufferGeometry();
 const swarm = new THREE.Points(pGeo, morphMat); swarm.frustumCulled = false; scene.add(swarm);
 let SH = {}, curPair = '';
 function morph(a, b, k) { const key = a + '>' + b; if (key !== curPair) { pGeo.attributes.pA.array.set(SH[a]); pGeo.attributes.pB.array.set(SH[b]); pGeo.attributes.pA.needsUpdate = pGeo.attributes.pB.needsUpdate = true; curPair = key; } morphMat.uniforms.uMix.value = k; }
+function placed(arr, at) { for (let i = 0; i < NP; i++) { arr[i * 3] += at.x; arr[i * 3 + 1] += at.y; arr[i * 3 + 2] += at.z; } return arr; }
+function fill(fn, seed) { const r = rng(seed), out = new Float32Array(NP * 3); for (let i = 0; i < NP; i++) { const v = fn(r, i); out[i * 3] = v[0]; out[i * 3 + 1] = v[1]; out[i * 3 + 2] = v[2]; } return out; }
 function buildShapes() {
-  const ex = D.examples[3];
-  SH = {cloud: sphereShape(34, 2), cloud2: sphereShape(60, 4), word: sampleShape('PROPAGANDA', {size: 200, width: 46}),
-    en: sampleShape(ex.text, {font: SANS, weight: 700, size: 120, width: 50, lines: 2}), zh: sampleShape(ex.zh, {font: SANS, weight: 700, size: 130, width: 50, lines: 2}),
-    ar: sampleShape(ex.ar, {font: ARAB, weight: 700, size: 130, width: 50, lines: 2, dir: 'rtl'}), ur: sampleShape(ex.ur, {font: ARAB, weight: 700, size: 130, width: 50, lines: 2, dir: 'rtl'}),
-    ps: sampleShape(ex.ps, {font: ARAB, weight: 700, size: 130, width: 50, lines: 2, dir: 'rtl'}),
-    title: sampleShape(L === 'en' ? 'propaganda.detect()' : L === 'zh-CN' ? '宣传侦测' : '宣傳偵測', {font: L === 'en' ? MONO : SANS, size: 190, width: 46})};
+  const ex = D.examples[3], at = i => ST[i];
+  const sent = set => { // particles sampled from the real word planes, so they land exactly where the words appear
+    const pts = [];
+    set.words.forEach(o => { const c = o.mesh.material.map.image, d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data, hh = o.width / o.mesh.userData.aspect;
+      for (let y = 0; y < c.height; y += 3) for (let x = 0; x < c.width; x += 3) if (d[(y * c.width + x) * 4 + 3] > 128) pts.push([o.px + (x / c.width - .5) * o.width, o.py - (y / c.height - .5) * hh]); });
+    return fill(r => { const q = pts[Math.floor(r() * pts.length)]; return [q[0] + (r() - .5) * .05, q[1] + (r() - .5) * .05, (r() - .5) * .3]; }, 46);
+  };
+  SH = {
+    cloud: placed(sphereShape(34, 2), at(0)), word: placed(sampleShape('PROPAGANDA', {size: 200, width: 46}), at(0)),
+    tunnel: placed(fill(r => { const a = r() * Math.PI * 2, rad = 6 + r() * 20; return [Math.cos(a) * rad * 1.5, Math.sin(a) * rad * .8, -12 - r() * 420]; }, 41), at(1)),
+    sent0: placed(sent(scanSets[0]), at(2)), sent2: placed(sent(scanSets[2]), at(2)),
+    sphere: placed(fill(r => { const u = r() * 2 - 1, th = r() * Math.PI * 2, rr = 13 + (r() - .5) * .6, q = Math.sqrt(1 - u * u); return [Math.cos(th) * q * rr, u * rr * .8, Math.sin(th) * q * rr]; }, 42), at(3)),
+    slabs: placed(fill(r => { const k = Math.floor(r() * 7); if (k === 6) return [-9.25 + r() * 7, 4.5 + r() * 5 * r(), (r() - .5) * .4]; return [-10.5 + r() * 9, -7 + k * 1.7 + (r() - .5) * .5, (r() - .5) * 5]; }, 43), at(4)),
+    en: placed(sampleShape(ex.text, {font: SANS, weight: 700, size: 120, width: 50, lines: 2}), at(5)), zh: placed(sampleShape(ex.zh, {font: SANS, weight: 700, size: 130, width: 50, lines: 2}), at(5)),
+    ar: placed(sampleShape(ex.ar, {font: ARAB, weight: 700, size: 130, width: 50, lines: 2, dir: 'rtl'}), at(5)), ur: placed(sampleShape(ex.ur, {font: ARAB, weight: 700, size: 130, width: 50, lines: 2, dir: 'rtl'}), at(5)),
+    ps: placed(sampleShape(ex.ps, {font: ARAB, weight: 700, size: 130, width: 50, lines: 2, dir: 'rtl'}), at(5)),
+    planes: placed(fill(r => [(r() - .5) * 20, (r() - .5) * 5, -Math.floor(r() * 13) * 6 + (r() - .5) * .3], 44), at(6)),
+    bars: placed(fill((r, i) => { const b = fp.bars[i % fp.bars.length]; return [b.position.x + (r() - .5) * .8, r() * b.userData.h, b.position.z + (r() - .5) * .8]; }, 45), at(7)),
+    title: placed(sampleShape(L === 'en' ? 'propaganda.detect()' : L === 'zh-CN' ? '宣传侦测' : '宣傳偵測', {font: L === 'en' ? MONO : SANS, size: 190, width: 46}), at(8)),
+  };
   curPair = '';
 }
 
 /* ---------------- ambient world: stars + neon floor grid ---------------- */
 {
-  const r = rng(21), n = 2500, p = new Float32Array(n * 3);
-  for (let i = 0; i < n; i++) { p[i * 3] = (r() - .5) * 700; p[i * 3 + 1] = (r() - .5) * 400; p[i * 3 + 2] = -r() * 600 + 100; }
+  const r = rng(21), n = 7000, p = new Float32Array(n * 3);
+  for (let i = 0; i < n; i++) { p[i * 3] = -420 + r() * 1100; p[i * 3 + 1] = (r() - .5) * 420; p[i * 3 + 2] = 260 - r() * 1900; }
   const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(p, 3));
   scene.add(new THREE.Points(g, new THREE.PointsMaterial({color: 0x9d95d8, size: .9, sizeAttenuation: true, transparent: true, opacity: .55, depthWrite: false, fog: false})));
 }
-const floor = new THREE.GridHelper(900, 150, 0x3a2f7a, 0x1d1840); floor.position.y = -22; floor.material.transparent = true; floor.material.opacity = .5; scene.add(floor);
+const floor = new THREE.GridHelper(1200, 200, 0x3a2f7a, 0x1d1840); floor.position.y = -22; floor.material.transparent = true; floor.material.opacity = .5; scene.add(floor);
 
 /* ---------------- scene groups ---------------- */
 const G = [...Array(9)].map(() => { const g = new THREE.Group(); scene.add(g); return g; });
+// one continuous world: each chapter is a station on the camera's flight path
+const ST = [[0, 0, 0], [0, 0, -150], [0, 0, -620], [75, 8, -700], [159, 0, -770], [195, 0, -880], [195, 0, -975], [120, 0, -1120], [120, 4, -1230]].map(a => new THREE.Vector3(...a));
+const ENTER = [null, null, [-16, 0, 0], [0, 0, 0], [0, -18, 0], null, [0, 0, -40], [0, -14, 0], null]; // direction each chapter slides in from
+G.forEach((g, i) => g.position.copy(ST[i]));
 const lineMat = (color, opacity = 1) => new THREE.LineBasicMaterial({color, transparent: true, opacity, blending: THREE.AdditiveBlending, depthWrite: false});
 
 // 2 · data stream: real, derived text records flying past
@@ -279,8 +304,8 @@ const streamRows = [];
     const [txt, hot, dir] = recs[i % recs.length];
     const m = textMesh(txt, 1.1 + r() * .6, {size: 44, font: dir === 'rtl' ? ARAB : MONO, weight: hot ? 700 : 500, color: hot ? '#ff5d9e' : r() < .5 ? '#9f96e0' : '#6fd9f0', dir: dir || 'ltr', additive: true});
     const ang = r() * Math.PI * 2, rad = 7 + r() * 16;
-    m.position.set(Math.cos(ang) * rad * 1.5, Math.sin(ang) * rad * .8, -i * 5.2 - r() * 4);
-    m.userData.z0 = m.position.z; streamRows.push(m); G[1].add(m);
+    m.position.set(Math.cos(ang) * rad * 1.5, Math.sin(ang) * rad * .8, -12 - i * 4.55 - r() * 3);
+    streamRows.push(m); G[1].add(m);
   }
 }
 
@@ -339,7 +364,6 @@ let taxPlus;
 
 // 5 · generation: 6 transformer blocks, logits bars, class columns, token stream
 const gen = {blocks: [], bars: [], toks: [], labels: []};
-G[4].position.x = 4;
 {
   for (let i = 0; i < 6; i++) {
     const b = new THREE.Group(), slab = new THREE.Mesh(new THREE.BoxGeometry(9, .5, 5), new THREE.MeshBasicMaterial({color: 0x241c55, transparent: true, opacity: .35})); slab.userData.baseOpacity = .35;
@@ -404,53 +428,93 @@ const fp = {bars: [], labels: []};
   fp.x = textMesh(`≈ ${ratio}×  ·  ${L === 'en' ? ptTop.en : L === 'zh-CN' ? (ptTop.zhcn || ptTop.zh) : ptTop.zh}`, 1.1, {size: 56, font: SANS, weight: 800, color: '#ff4f95', additive: true}); fp.x.position.set(4, 7, 0); G[7].add(fp.x);
 }
 
-/* ---------------- timeline ---------------- */
-const DUR = [9, 11, 15, 11, 13, 11, 12, 11, 9];
+/* ---------------- one continuous take ---------------- */
+const DUR = [9, 11, 15, 11, 13, 11, 12, 11, 9], TR = 2.6;
 const START = DUR.reduce((a, d, i) => (a.push(i ? a[i - 1] + DUR[i - 1] : 0), a), []);
 const TOTAL = START[8] + DUR[8];
-const cam = (x, y, z, tx = 0, ty = 0, tz = 0) => { camera.position.set(x, y, z); camera.rotation.z = 0; camera.lookAt(tx, ty, tz); };
-const fadeOf = (lt, d) => seg(lt, 0, .9) * (1 - seg(lt, d - .9, d));
+const V = (x, y, z) => new THREE.Vector3(x, y, z);
+const bell = k => Math.sin(Math.PI * clamp(k));
+// camera pose per station, relative to the station, as a function of local time
+const CAMS = [
+  lt => [V(Math.sin(lt * .05) * 8, 2 + Math.sin(lt * .3), 58 - easeOut(seg(lt, 0, 7)) * 16), V(0, 0, 0)],
+  lt => { const z = 34 - ease(seg(lt, 0, 11)) * 400; return [V(Math.sin(lt * .4) * 2.5, Math.cos(lt * .3) * 1.5, z), V(0, 0, z - 60)]; },
+  lt => [V(Math.sin(lt * .3) * 4, 2.5 - Math.sin(lt * .2) * 1.5, 34 - lt * .5), V(0, .5, 0)],
+  lt => { const a = lt * .2 + .6; return [V(Math.sin(a) * 44, 7 + Math.sin(lt * .2) * 3, Math.cos(a) * 44), V(0, -1, 0)]; },
+  lt => [V(Math.sin(lt * .2) * 5 - 6, 1.5, 38 - lt * .5), V(-4, -.5, 0)],
+  lt => [V(Math.sin(lt * .25) * 10, Math.cos(lt * .2) * 3, 44), V(0, 0, 0)],
+  lt => { const z = lerp(24, -44, ease(seg(lt, 0, 10.5))); return [V(11 + 3 * Math.sin(lt * .3), 5.5, z), V(0, 1, z - 30)]; },
+  lt => { const a = lerp(-.55, .35, ease(seg(lt, 0, 11))); return [V(Math.sin(a) * 22, 12.5 - lt * .25, Math.cos(a) * 17 + 5), V(-.5, 1.2, -7.5)]; },
+  lt => [V(Math.sin(lt * .15) * 4, 1, 50 - easeOut(seg(lt, 0, 6)) * 6), V(0, 0, 0)],
+];
+const pose = (i, t) => { const [a, b] = CAMS[i](clamp(t - START[i], 0, DUR[i])); return [a.add(ST[i]), b.add(ST[i])]; };
+const presence = (i, t) => (i ? seg(t, START[i] - TR / 2, START[i] + TR / 2) : 1) * (i < 8 ? 1 - seg(t, START[i] + DUR[i] - TR / 2, START[i] + DUR[i] + TR / 2) : 1);
+const boundary = t => { for (let i = 1; i < 9; i++) if (Math.abs(t - START[i]) < TR / 2) return i; return 0; };
+// particle shape each station hands over / receives, and how visible the dust is while the objects are shown
+const SHP_IN = ['word', 'tunnel', 'sent0', 'sphere', 'slabs', 'en', 'planes', 'bars', 'title'];
+const SHP_OUT = ['word', 'tunnel', 'sent2', 'sphere', 'slabs', 'ps', 'planes', 'bars', 'title'];
+const DUST = [1, .45, .03, .2, .16, 1, .16, .14, 1];
 
-function update(time) {
-  let sc = START.findIndex((s, k) => time < s + DUR[k]); if (sc < 0) sc = 8;
-  const lt = Math.min(DUR[sc], time - START[sc]), d = DUR[sc], f = fadeOf(lt, d) || (time >= TOTAL ? 1 : 0);
-  G.forEach((g, k) => { g.visible = k === sc; });
-  swarm.visible = [0, 5, 8].includes(sc); floor.visible = sc !== 6;
-  morphMat.uniforms.uTime.value = time; morphMat.uniforms.uOpacity.value = sc === 8 ? seg(lt, 0, .9) : f;
-  floor.material.opacity = .45 * (sc === 8 ? 1 : f);
-  if (sc === 0) {
-    morph('cloud', 'word', ease(seg(lt, 1.6, 5.2))); morphMat.uniforms.uScatter.value = 10;
-    cam(Math.sin(lt * .05) * 8, 2 + Math.sin(lt * .3), 58 - easeOut(seg(lt, 0, 7)) * 16);
+function flyCamera(t) {
+  const b = boundary(t);
+  if (!b) { const cur = START.findLastIndex(x => x <= t); const [p, q] = pose(cur, t); camera.position.copy(p); camera.up.set(0, 1, 0); camera.lookAt(q); if (cur === 1) camera.rotation.z += Math.sin((t - START[1]) * .25) * .08; return; }
+  const k = ease(seg(t, START[b] - TR / 2, START[b] + TR / 2));
+  const [pa, qa] = pose(b - 1, t), [pb, qb] = pose(b, t);
+  const p = pa.clone().lerp(pb, k), q = qa.clone().lerp(qb, k);
+  p.y += bell(k) * pa.distanceTo(pb) * .12;
+  camera.position.copy(p); camera.up.set(0, 1, 0); camera.lookAt(q);
+  camera.rotation.z += bell(k) * .07 * (b % 2 ? 1 : -1);
+}
+function flySwarm(t) {
+  const b = boundary(t);
+  let op, sc;
+  if (b) {
+    const k = ease(seg(t, START[b] - TR * .5, START[b] + TR * .5));
+    morph(SHP_OUT[b - 1], SHP_IN[b], k);
+    op = Math.max(lerp(DUST[b - 1], DUST[b], k), .95 * bell(k)); sc = 3 + 16 * bell(k);
+    langHud(b === 5 && k > .5 ? 'en' : b === 6 && k < .5 ? 'ps' : null);
+  } else {
+    const cur = START.findLastIndex(x => x <= t), lt = t - START[cur];
+    if (cur === 0) { morph('cloud', 'word', ease(seg(lt, 1.6, 5.2))); op = 1; sc = 10; }
+    else if (cur === 5) {
+      const order = ['en', 'zh', 'ar', 'ur', 'ps'], j = clamp(Math.floor((lt - 1.5) / 1.9) + 1, 0, 4);
+      if (j === 0) morph(SHP_OUT[4], 'en', 1); else morph(order[j - 1], order[j], ease(seg(lt, 1.5 + (j - 1) * 1.9, 2.6 + (j - 1) * 1.9)));
+      langHud(order[j]); op = 1; sc = 7;
+    } else if (cur === 2 && lt > DUR[2] - TR) { morph('sent0', 'sent2', 1); op = DUST[2]; sc = 3; }
+    else { morph(SHP_OUT[cur - 1] || 'cloud', SHP_IN[cur], 1); op = DUST[cur]; sc = 3; }
+    if (cur !== 5) langHud(null);
   }
-  if (sc === 1) {
-    cam(Math.sin(lt * .4) * 2, Math.cos(lt * .3) * 1.5, 34, 0, 0, -60); camera.rotation.z += Math.sin(lt * .25) * .08;
-    streamRows.forEach(m => { const z = m.userData.z0 + lt * 38; m.position.z = ((z % 470) + 470) % 470 - 440; const near = clamp((m.position.z + 440) / 200) * clamp((30 - m.position.z) / 10); m.lookAt(camera.position); setOpacity(m, f * near); });
-  }
-  if (sc === 2) {
-    const per = 5, k = Math.min(2, Math.floor(lt / per)), l = lt - k * per, set = scanSets[k];
-    scanSets.forEach((s, j) => { s.grp.visible = j === k; });
-    const fl = seg(l, 0, .5) * (1 - seg(l, per - .45, per)) * f;
+  morphMat.uniforms.uOpacity.value = op; morphMat.uniforms.uScatter.value = sc;
+}
+
+// each chapter's animation, given its local time lt and its presence f (0..1, overlapping neighbours)
+const SC = [
+  (lt, f, t) => {},
+  (lt, f, t) => {
+    streamRows.forEach(m => { const d = camera.position.z - (ST[1].z + m.position.z); m.lookAt(camera.position); setOpacity(m, f * clamp(d / 22) * clamp((230 - d) / 70)); });
+  },
+  (lt, f, t) => {
+    const per = 5, k = clamp(Math.floor(lt / per), 0, 2), l = lt - k * per, set = scanSets[k];
+    scanSets.forEach((s2, j) => { s2.grp.visible = j === k; });
+    const fl = (k === 0 ? 1 : seg(l, 0, .5)) * (k === 2 ? 1 : 1 - seg(l, per - .45, per)) * f;
     const bx = lerp(set.minX - 3, set.maxX + 3, ease(seg(l, .6, 2.6)));
     set.words.forEach(o => { const rel = (o.px - set.minX) / (set.maxX - set.minX); const lift = o.span ? easeOut(seg(l, .6 + rel * 2, 1.2 + rel * 2)) : 0;
-      o.mesh.position.z = o.hot.position.z = lift * 1.2; setOpacity(o.mesh, fl * (1 - lift * .92)); setOpacity(o.hot, fl * lift); });
+      const enter = easeOut(seg(l, -.4 + rel * .5, .3 + rel * .5));
+      o.mesh.position.z = o.hot.position.z = lift * 1.2 - (1 - enter) * 3; setOpacity(o.mesh, fl * enter * (1 - lift * .92)); setOpacity(o.hot, fl * lift); });
     const post = easeOut(seg(l, 2.7, 3.4)); setOpacity(set.box, fl * post); setOpacity(set.tag, fl * post); setOpacity(set.lead, fl * post);
     set.box.scale.set(1, 1, .3 + post * .7); set.tag.position.z = 1.6 + (1 - post) * 3;
     const ba = fl * seg(l, .5, .8) * (1 - seg(l, 2.5, 2.9)); beamGrp.position.set(bx, 0, 1); setOpacity(beam, ba); beamGlow.visible = ba > 0; beamGlow.material.uniforms.uA.value = ba;
-    cam(Math.sin(l * .35) * 3, 2.5 - l * .2, 34 - l * .7, 0, .5, 0);
     CODE[2] = `mark(context, span, technique)\n<span class="c">context</span> = <span class="s">"${set.e.text.slice(0, 44).replace(/"/g, '\\"')}…"</span>\n<span class="c">span   </span> = [<span class="o">${set.at}</span>, <span class="o">${set.at + set.e.span.length}</span>]   <span class="c"># "${set.e.span.slice(0, 26)}"</span>\n<span class="c">label  </span> = <span class="p">${set.tech.en.replace(/ /g, '_')}</span>`;
-    if (codeFor !== 20 + k) { codeFor = 20 + k; typeCode(CODE[2]); }
-  }
-  if (sc === 3) {
-    const a = lt * .2 + .6; cam(Math.sin(a) * 44, 7 + Math.sin(lt * .2) * 3, Math.cos(a) * 44, 0, -1, 0);
-    taxNodes.forEach((n, k) => { const ap = n.t.add ? easeOut(seg(lt, 5 + (k - 18) * .35, 5.8 + (k - 18) * .35)) : easeOut(seg(lt, .3 + k * .12, 1 + k * .12)); n.s.scale.setScalar(Math.max(.001, ap)); setOpacity(n.s, f * ap); setOpacity(n.lb, f * ap * .95); n.lb.lookAt(camera.position); });
+    if (hudScene === 2 && codeFor !== 20 + k) { codeFor = 20 + k; typeCode(CODE[2]); }
+  },
+  (lt, f, t) => {
+    taxNodes.forEach((n, k) => { const ap = n.t.add ? easeOut(seg(lt, 5 + (k - 18) * .35, 5.8 + (k - 18) * .35)) : easeOut(seg(lt, -.8 + k * .09, -.1 + k * .09)); n.s.scale.setScalar(Math.max(.001, ap)); setOpacity(n.s, f * ap); setOpacity(n.lb, f * ap * .95); n.lb.lookAt(camera.position); });
     taxRings.forEach((r, k) => { const w = seg(lt, 5 + k * .35, 7 + k * .35); r.scale.setScalar(1 + w * 3.5); setOpacity(r, f * (w > 0 && w < 1 ? 1 - w : 0)); r.lookAt(camera.position); });
     setOpacity(taxPlus, f * seg(lt, 6.4, 7.2)); taxPlus.lookAt(camera.position);
-    taxLines.forEach(o => setOpacity(o, f));
-  }
-  if (sc === 4) {
-    cam(Math.sin(lt * .2) * 5 - 2, 1.5, 38 - lt * .5, 0, -.5, 0);
-    gen.blocks.forEach(({b, edge}, k) => { setOpacity(b, f); edge.material.opacity = f * (.35 + .65 * Math.max(0, Math.sin(lt * 3 - k * .8))); });
-    const step = Math.floor(lt / .6), r = rng(300 + step), lg = [...Array(14)].map(() => r() * 3).sort((a, b) => b - a), ex = lg.map(Math.exp), Z = ex.reduce((a, b) => a + b), pr = ex.map(v => v / Z);
+    taxLines.forEach(o => setOpacity(o, f * seg(lt, 0, 1.2)));
+  },
+  (lt, f, t) => {
+    gen.blocks.forEach(({b, edge}, k) => { const e = easeOut(seg(lt, -.8 + k * .18, .2 + k * .18)); b.position.y = -7 + k * 1.7 - (1 - e) * 6; setOpacity(b, f * e); edge.material.opacity = f * e * (.35 + .65 * Math.max(0, Math.sin(lt * 3 - k * .8))); });
+    const step = Math.floor(Math.max(0, lt) / .6), r = rng(300 + step), lg = [...Array(14)].map(() => r() * 3).sort((a, b) => b - a), ex = lg.map(Math.exp), Z = ex.reduce((a, b) => a + b), pr = ex.map(v => v / Z);
     let cum = 0, K = 14; pr.forEach((v, j) => { cum += v; if (cum > .9 && K === 14) K = j + 1; }); K = Math.min(K, 6); const pick = Math.floor(r() * K);
     gen.bars.forEach((b, j) => { const h = pr[j] / pr[0] * 5 * easeOut(seg(lt, .5, 1.5)); b.scale.y = Math.max(.02, h); b.position.y = 4.5 + h / 2; b.material.color.setHex(j === pick ? COL.amber : j < K ? COL.pink : 0x3b3566); setOpacity(b, f); });
     gen.cut.position.x = -9.25 + K * .5 - .25; setOpacity(gen.cut, f); setOpacity(gen.kl, f); gen.kl.position.x = gen.cut.position.x;
@@ -459,50 +523,69 @@ function update(time) {
     gen.non.scale.y = Math.max(.001, hn); gen.non.position.y = -9 + hn / 2; gen.slo.scale.y = hs; gen.slo.position.y = -9 + hs / 2; gen.aug.scale.y = Math.max(.001, ha); gen.aug.position.y = -9 + hs + ha / 2;
     setOpacity(gen.non, f); setOpacity(gen.slo, f); setOpacity(gen.aug, aug > 0 ? f : 0);
     gen.labels.forEach(m => setOpacity(m, f));
-    gen.toks.forEach((t, k) => { const born = 2 + k * .6, life = seg(lt, born, born + 1.8), kk = ease(life);
-      const p = new THREE.Vector3(-6, 9.5, 0).lerp(new THREE.Vector3(13, -9 + hs + ha, 1.5), kk); p.y += Math.sin(kk * Math.PI) * 5;
-      t.position.copy(p); t.lookAt(camera.position); setOpacity(t, f * (life > 0 && life < 1 ? 1 - Math.abs(kk - .5) * .8 : 0)); });
-  }
-  if (sc === 5) {
-    const order = ['en', 'zh', 'ar', 'ur', 'ps'], per = 2.15, k = Math.min(4, Math.floor(lt / per)), l = lt - k * per;
-    if (k === 0) morph('cloud2', 'en', ease(seg(lt, 0, 1.4))); else morph(order[k - 1], order[k], ease(seg(l, 0, 1.1)));
-    morphMat.uniforms.uScatter.value = 7;
-    cam(Math.sin(lt * .25) * 10, Math.cos(lt * .2) * 3, 44);
-    langHud(order[k]);
-  } else langHud(null);
-  if (sc === 6) {
-    const z = lerp(24, -44, ease(seg(lt, 0, 10.5)));
-    cam(11 + 3 * Math.sin(lt * .3), 5.5, z, 0, 1, z - 30);
-    const NL = 12, wave = lt / 8.5 * NL;
-    bert.planes.forEach((p, l) => { const act = clamp(wave - l + 1); setOpacity(p.plane, f * (.35 + .65 * act)); setOpacity(p.frame, f * (.3 + .7 * act)); });
-    bert.cubes.forEach((row, l) => row.forEach(c => { const act = clamp(wave - l + 1); setOpacity(c, f * (.25 + .75 * act)); c.scale.setScalar(.7 + .5 * act); c.rotation.set(lt * .8, lt * .6, 0); }));
-    bert.beams.forEach(b => { const act = clamp(wave - b.userData.l); setOpacity(b, f * act * (b.userData.w - .75) * 3.2 * (.7 + .3 * Math.sin(time * 4 + b.userData.l))); });
+    gen.toks.forEach((tk, k) => { const born = 2 + k * .6, life = seg(lt, born, born + 1.8), kk = ease(life);
+      const q = new THREE.Vector3(-6, 9.5, 0).lerp(new THREE.Vector3(13, -9 + hs + ha, 1.5), kk); q.y += Math.sin(kk * Math.PI) * 5;
+      tk.position.copy(q); tk.lookAt(camera.position); setOpacity(tk, f * (life > 0 && life < 1 ? 1 - Math.abs(kk - .5) * .8 : 0)); });
+  },
+  (lt, f, t) => {},
+  (lt, f, t) => {
+    const NL = 12, wave = Math.max(0, lt) / 8.5 * NL;
+    bert.planes.forEach((q, l) => { const act = clamp(wave - l + 1), e = easeOut(seg(lt, -1 + l * .12, l * .12)); setOpacity(q.plane, f * e * (.35 + .65 * act)); setOpacity(q.frame, f * e * (.3 + .7 * act)); });
+    bert.cubes.forEach((row, l) => row.forEach(c => { const act = clamp(wave - l + 1); setOpacity(c, f * (.25 + .75 * act)); c.scale.setScalar(.7 + .5 * act); c.rotation.set(t * .8, t * .6, 0); }));
+    bert.beams.forEach(b => { const act = clamp(wave - b.userData.l); setOpacity(b, f * act * (b.userData.w - .75) * 3.2 * (.7 + .3 * Math.sin(t * 4 + b.userData.l))); });
     bert.labels.forEach(m => setOpacity(m, f));
     const out = easeOut(seg(lt, 8.6, 9.6)); setOpacity(bert.label, f * out); setOpacity(bert.beamUp, f * out); bert.label.lookAt(camera.position);
-  }
-  if (sc === 7) {
-    const a = lerp(-.55, .35, ease(seg(lt, 0, 11)));
-    cam(Math.sin(a) * 22, 12.5 - lt * .25, Math.cos(a) * 17 + 5, -.5, 1.2, -7.5);
-    fp.bars.forEach(b => { const {h, ri, k} = b.userData, g = easeOut(seg(lt, .4 + ri * .18 + k * .025, 1.6 + ri * .18 + k * .025)); b.scale.y = Math.max(.001, h * g); b.position.y = h * g / 2; setOpacity(b, f * (g > 0 ? 1 : 0)); });
+  },
+  (lt, f, t) => {
+    fp.bars.forEach(b => { const {h, ri, k} = b.userData, g = easeOut(seg(lt, .2 + ri * .16 + k * .022, 1.4 + ri * .16 + k * .022)); b.scale.y = Math.max(.001, h * g); b.position.y = h * g / 2; setOpacity(b, f * (g > 0 ? 1 : 0)); });
     fp.labels.forEach(m => { setOpacity(m, f * seg(lt, 1.5, 2.5)); m.lookAt(camera.position); });
-    const hl = seg(lt, 6.2, 7); setOpacity(fp.hl, f * hl * (.7 + .3 * Math.sin(time * 5))); setOpacity(fp.x, f * hl); fp.x.lookAt(camera.position);
-  }
-  if (sc === 8) {
-    morph('cloud', 'title', ease(seg(lt, .3, 4))); morphMat.uniforms.uScatter.value = 9;
-    cam(Math.sin(lt * .15) * 4, 1, 50 - easeOut(seg(lt, 0, 6)) * 6);
-  }
-  if (sc !== 2 && codeFor !== sc) { codeFor = sc; typeCode(CODE[sc]); }
-  setScene(sc);
+    const hl = seg(lt, 6.2, 7); setOpacity(fp.hl, f * hl * (.7 + .3 * Math.sin(t * 5))); setOpacity(fp.x, f * hl); fp.x.lookAt(camera.position);
+  },
+  (lt, f, t) => {},
+];
+
+let hudScene = 0;
+function update(time) {
+  flyCamera(time);
+  flySwarm(time);
+  G.forEach((g, i) => {
+    const f = presence(i, time); g.visible = f > .001; if (!g.visible) return;
+    const lt = time - START[i], pin = ease(seg(time, START[i] - TR / 2, START[i] + TR / 2)), pout = i < 8 ? ease(seg(time, START[i] + DUR[i] - TR / 2, START[i] + DUR[i] + TR / 2)) : 0;
+    g.position.copy(ST[i]); if (ENTER[i] && i) g.position.add(V(...ENTER[i]).multiplyScalar(1 - pin));
+    g.scale.setScalar(1 - pout * .12);
+    const flick = pin < 1 && Math.sin(time * 90 + i) > .6 ? .55 : 1; // hologram flicker while materialising
+    SC[i](Math.min(lt, DUR[i]), f * flick, time);
+  });
+  floor.position.set(Math.round(camera.position.x / 6) * 6, -22, Math.round(camera.position.z / 6) * 6);
+  floor.visible = presence(6, time) < .5;
+  // transition effects: glitch slices + RGB split + scan wipe, and a bloom surge
+  const b = boundary(time), k = b ? seg(time, START[b] - TR / 2, START[b] + TR / 2) : 0;
+  lens.uniforms.uGlitch.value = b ? Math.pow(bell(seg(time, START[b] - .45, START[b] + .45)), 2) : 0;
+  lens.uniforms.uWipe.value = b && Math.abs(time - START[b]) < .45 ? 1 - seg(time, START[b] - .45, START[b] + .45) : -1;
+  bloom.strength = .55 + .45 * bell(k);
+  morphMat.uniforms.uTime.value = time;
+  hudScene = START.findLastIndex(x => x <= time);
+  if (hudScene !== 2 && codeFor !== hudScene) { codeFor = hudScene; typeCode(CODE[hudScene]); }
+  setScene(hudScene);
 }
 
 /* ---------------- HUD: captions, code typing, language tag ---------------- */
 let shown = -1, codeFor = -1, typeTimer;
 function setScene(i) {
   if (i === shown) return; shown = i;
-  const cap = $('cap'); cap.classList.remove('on');
-  setTimeout(() => { if (shown !== i) return; $('cap-k').textContent = `// ${String(i + 1).padStart(2, '0')} · ${C.chapters[i]}`; $('cap-h').textContent = C.caps[i][0]; $('cap-p').textContent = C.caps[i][1]; cap.classList.add('on'); }, 280);
+  const cap = $('cap'); cap.classList.add('on');
+  decode($('cap-k'), `// ${String(i + 1).padStart(2, '0')} · ${C.chapters[i]}`, 380);
+  decode($('cap-h'), C.caps[i][0], 700); decode($('cap-p'), C.caps[i][1], 900);
   $('chap').textContent = `ch.${String(i + 1).padStart(2, '0')}/09 · ${C.chapters[i]}`;
   chime(i);
+}
+const GLYPHS = '01<>/\\{}[]#$%&*+=?~ABCDEFXYZ▓▒░';
+function decode(el, text, ms) { // characters resolve left to right out of glyph noise
+  const t0 = performance.now(), chars = [...text]; cancelAnimationFrame(el._raf);
+  const tick = now => { const k = clamp((now - t0) / ms), n = Math.floor(k * chars.length);
+    el.textContent = chars.map((c, j) => j < n || c === ' ' ? c : GLYPHS[(Math.random() * GLYPHS.length) | 0]).join('');
+    if (k < 1) el._raf = requestAnimationFrame(tick); };
+  el._raf = requestAnimationFrame(tick);
 }
 function typeCode(html) {
   clearInterval(typeTimer);
