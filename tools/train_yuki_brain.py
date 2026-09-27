@@ -293,6 +293,10 @@ def main() -> None:
     brain_check = {p: hashed(p) for p in probe}
     (ROOT / 'tools/yuki_brain_probe.json').write_text(json.dumps(brain_check, ensure_ascii=False), encoding='utf-8')
 
+    write_lines()
+
+
+def write_lines() -> None:
     lines = {'en': {}, 'zh-TW': {}, 'zh-CN': {}}
     for group in (REPLIES, LINES):
         for key, variants in group.items():
@@ -305,4 +309,6 @@ def main() -> None:
 
 
 if __name__ == '__main__':
-    main()
+    # --lines-only rewrites assets/js/yuki-lines.js without retraining the brain
+    import sys
+    write_lines() if '--lines-only' in sys.argv else main()

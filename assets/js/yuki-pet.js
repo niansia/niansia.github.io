@@ -57,7 +57,7 @@
       <svg class="bed-back" viewBox="0 0 200 62" preserveAspectRatio="none"><ellipse class="bed-rim" cx="100" cy="27" rx="98" ry="25"/><ellipse class="bed-hole" cx="100" cy="27" rx="84" ry="15"/></svg>
       <svg class="bed-front" viewBox="0 0 200 62" preserveAspectRatio="none"><defs><linearGradient id="yuki-bed-front" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="bed-front-top"/><stop offset="1" class="bed-front-bottom"/></linearGradient></defs><path fill="url(#yuki-bed-front)" d="M2 27A98 34 0 0 0 198 27L186 27A86 16 0 0 1 14 27Z"/><path class="bed-stitch" d="M22 40Q100 64 178 40"/></svg></div>
     <div class="yuki-tailbox" aria-hidden="true"><i class="yuki-tail"></i></div>
-    <button type="button" class="yuki-hit" aria-haspopup="true" aria-expanded="false"><span class="yuki-figure"><span class="yuki-sprite"></span><span class="yuki-acc" aria-hidden="true" hidden></span></span></button>
+    <button type="button" class="yuki-hit" aria-haspopup="true" aria-expanded="false"><span class="yuki-figure"><span class="yuki-sprite"><i class="ys-body"></i><i class="ys-head"></i></span><span class="yuki-headbox"><span class="yuki-acc" aria-hidden="true" hidden></span></span></span></button>
     <div class="yuki-blanket" aria-hidden="true"></div><div class="yuki-bowl" aria-hidden="true"><i class="bowl-fish"></i><i class="bowl-dish"></i></div>
     <div class="yuki-fx" aria-hidden="true"></div>
     <div class="yuki-bubble" role="status" aria-live="polite" hidden><p></p><div class="bubble-actions"></div></div>
@@ -68,7 +68,9 @@
   chat.className = 'yuki-chat'; chat.hidden = true; chat.setAttribute('role', 'dialog'); chat.setAttribute('aria-labelledby', 'yuki-chat-title');
   const ball = document.createElement('div');
   ball.className = 'yuki-ball'; ball.hidden = true; ball.setAttribute('aria-hidden', 'true');
-  document.body.append(pet, menu, chat, ball);
+  const fly = document.createElement('div');
+  fly.className = 'yuki-butterfly'; fly.hidden = true; fly.setAttribute('aria-hidden', 'true'); fly.innerHTML = '<i></i><i></i>';
+  document.body.append(pet, menu, chat, ball, fly);
   const $ = (sel, scope = pet) => scope.querySelector(sel);
   const hit = $('.yuki-hit'), bubble = $('.yuki-bubble'), fxLayer = $('.yuki-fx'), badge = $('.yuki-badge');
 
@@ -130,6 +132,8 @@
   let behaviourTimer, blinkTimer, poseTimer, bubbleTimer, rubTimer, lieTimer, munchTimer;
   let down = null, rub = 0, rubHearts = 0, pokes = [], unread = 0, messages = [], lastInteract = now(), lastActive = now(), nudges = 0, hiddenAt = 0, titleBackup = '';
   let ballState = null, sleptAt = 0, walkPhase = 0;
+  let gait = 'walk', look = 0, leaping = false, afterLand = null, bf = null, lastChatter = 0, danceTimer;
+  const NECK = .195; // chin below the crown, as a fraction of the cell: the head layer pivots here
   const WALK_STRIDE = 160; // cell pixels travelled per 8-frame cycle (two steps), measured from the baked frames
 
   function measure() {
@@ -155,6 +159,7 @@
     const px = tucked ? tuckX : x;
     pet.style.transform = `translate3d(${Math.round(px - W / 2)}px,${Math.round(y - H)}px,0)`;
     pet.style.setProperty('--dir', dir);
+    pet.style.setProperty('--look', `${(look * dir).toFixed(1)}deg`);
     if (!menu.hidden) placeMenu();
     if (!chat.hidden && !dragging) placeChat();
     if (!bubble.hidden) placeBubble();
@@ -174,12 +179,12 @@
   function setFrame(f) {
     frame = f; pet.dataset.frame = String(f); pet.style.setProperty('--f', f);
     const a = anchors[f];
-    if (a) { pet.style.setProperty('--ax', a[0]); pet.style.setProperty('--ay', a[1]); pet.style.setProperty('--aw', a[2]); }
+    if (a) { pet.style.setProperty('--ax', a[0]); pet.style.setProperty('--ay', a[1]); pet.style.setProperty('--aw', a[2]); pet.style.setProperty('--neck', `${((a[1] + NECK) * 100).toFixed(1)}%`); }
   }
   function setPose(next, f, ms, after = 'idle') {
     clearTimeout(poseTimer);
     pose = next; pet.dataset.pose = next;
-    setFrame(f ?? ({idle: 0, walk: 5, happy: 2, yawn: 3, pet: 4, lie: 0, sleep: 3, eat: 0, drag: 1, fall: 1, dizzy: 3, annoyed: 0, trick: 2}[next] ?? 0));
+    setFrame(f ?? ({idle: 0, walk: 5, happy: 2, yawn: 3, pet: 4, lie: 0, sleep: 3, eat: 0, drag: 1, fall: 1, dizzy: 3, annoyed: 0, trick: 2, crouch: 0, jump: 2, cute: 2, dance: 0}[next] ?? 0));
     if (ms) poseTimer = setTimeout(() => { if (pose === next) setPose(asleep ? 'sleep' : after); }, ms);
     paintState();
   }
@@ -202,11 +207,11 @@
     for (let i = 0; i < count; i++) {
       const el = document.createElement('span');
       el.className = `pfx pfx-${kind}`;
-      el.textContent = {note: pick(['♪', '♫']), zzz: 'z', anger: '', star: '', heart: '', crumb: '', sweat: ''}[kind] ?? '';
-      const ox = kind === 'zzz' ? W * .45 * -dir : rand(-W * .45, W * .45) * spread, oy = kind === 'zzz' ? -H * .48 : kind === 'crumb' ? -H * .12 : -H * rand(.62, .9);
+      el.textContent = {note: pick(['♪', '♫']), zzz: 'z', anger: '', star: '', heart: '', crumb: '', sweat: '', dust: '', question: '?'}[kind] ?? '';
+      const ox = kind === 'zzz' ? W * .45 * -dir : rand(-W * .45, W * .45) * spread, oy = kind === 'zzz' ? -H * .48 : kind === 'crumb' ? -H * .12 : kind === 'dust' ? -rand(2, 7) : -H * rand(.62, .9);
       el.style.left = `calc(50% + ${ox}px)`; el.style.top = `calc(100% + ${oy}px)`;
       fxLayer.append(el);
-      const dy = kind === 'crumb' ? rand(8, 16) : -rand(28, 56), dx = kind === 'zzz' ? rand(10, 26) : rand(-16, 16);
+      const dy = kind === 'crumb' ? rand(8, 16) : kind === 'dust' ? -rand(4, 12) : -rand(28, 56), dx = kind === 'zzz' ? rand(10, 26) : kind === 'dust' ? -dir * rand(8, 22) : rand(-16, 16);
       el.animate([
         {opacity: 0, transform: 'translate(-50%,-50%) scale(.3)'},
         {opacity: 1, transform: 'translate(-50%,-50%) scale(1)', offset: .2},
@@ -254,22 +259,24 @@
       vy += 2400 * dt; x += vx * dt; y += vy * dt; vx *= .985;
       if (x < a || x > b) { x = clamp(x, a, b); vx *= -.4; }
       const target = floors().filter(fl => fl.y >= dropFrom - 1).sort((p, q) => p.y - q.y)[0] || floors().at(-1);
-      if (y >= target.y) { y = target.y; floorKind = target.kind; land(); }
+      if (y >= target.y && vy >= 0) { y = target.y; floorKind = target.kind; land(); }
       else active = true;
     }
     if (walkTo !== null && grounded && !dragging) {
       // Eight baked walk frames cover two steps; moving exactly one stride per step keeps the feet planted.
-      const fps = busy === 'play' ? 16 : 10, speed = (stride * H / 444) * fps / 8;
+      const fps = busy === 'play' || gait === 'run' ? 18 : 10, speed = (stride * H / 444) * fps / 8;
       const dx = walkTo - x;
-      if (Math.abs(dx) < 3) { walkTo = null; if (pose === 'walk') restPose(); onArrive?.(); }
+      if (Math.abs(dx) < 3) { walkTo = null; setGait('walk'); if (pose === 'walk') restPose(); onArrive?.(); }
       else {
         dir = dx > 0 ? 1 : -1; x += Math.sign(dx) * Math.min(Math.abs(dx), speed * dt); x = clamp(x, a, b);
         if (pose !== 'walk') { setPose('walk'); walkPhase = 0; }
         walkPhase += dt * fps; const step = 5 + Math.floor(walkPhase) % 8; if (step !== frame) setFrame(step);
+        if (gait === 'run' && Math.random() < dt * 5) puff('dust', 1);
         active = true;
       }
     }
     if (ballState) active = stepBall(dt) || active;
+    if (bf) active = stepButterfly(dt) || active;
     place();
     raf = active ? requestAnimationFrame(loop) : 0;
     if (!raf) last = 0;
@@ -283,21 +290,27 @@
   function schedule() {
     clearTimeout(behaviourTimer);
     behaviourTimer = setTimeout(() => {
-      if (!busy && !asleep && !tucked && !dragging && grounded && menu.hidden && motion() && !document.hidden) {
+      if (!busy && walkTo === null && !asleep && !tucked && !dragging && grounded && !leaping && menu.hidden && motion() && !document.hidden) {
         const r = Math.random(), f = floorOf(floorKind), [a, b] = bounds(f);
         const near = pointer.t && now() - pointer.t < 8000 && pointer.y > f.y - H * 2.2;
+        const lively = S.energy > 40, lonely = S.mood < 55;
         if (S.energy < 35 && r < .25) { setPose('yawn', 3, 1300); puff('zzz', 1); }
-        else if (near && r < .4) { walk(clamp(pointer.x, a, b), () => { dir = pointer.x > x ? 1 : -1; setPose('happy', 2, 900); puff('heart', 1); }); }
-        else if (r < .3) walk(clamp(x + rand(-260, 260), a, b));
-        else if (r < .38) walk(x < (a + b) / 2 ? b - rand(0, 80) : a + rand(0, 80));
-        else if (r < .5) { dir = -dir; place(); setTimeout(() => { if (pose === 'idle') { dir = -dir; place(); } }, 1400); }
-        else if (r < .6) stretch();
-        else if (r < .68) { setPose('happy', 2, 900); pet.classList.remove('is-hop'); void pet.offsetWidth; pet.classList.add('is-hop'); }
-        else if (r < .72 && S.mood > 75) trick();
-        else if (r < .78 && S.energy < 55) lieDown(14000);
+        else if (near && r < (lonely ? .35 : .18)) beCute();
+        else if (near && lively && r < .3 && Math.abs(pointer.x - x) < 360 && Math.abs(pointer.y - f.y) < H * 1.4) pounce();
+        else if (near && r < .38) { walk(clamp(pointer.x, a, b), () => { dir = pointer.x > x ? 1 : -1; setPose('happy', 2, 900); puff('heart', 1); }); }
+        else if (r < .5) walk(clamp(x + rand(-260, 260), a, b));
+        else if (r < .55 && lively) dash(x < (a + b) / 2 ? b - rand(0, 80) : a + rand(0, 80));
+        else if (r < .6) walk(x < (a + b) / 2 ? b - rand(0, 80) : a + rand(0, 80));
+        else if (r < .66) lookAround();
+        else if (r < .7) stretch();
+        else if (r < .76 && lively) hopHop(Math.random() < .5 ? 1 : 2);
+        else if (r < .8 && lively) dance();
+        else if (r < .84 && lively && innerWidth > 720) chaseButterfly();
+        else if (r < .87 && S.mood > 70) trick();
+        else if (r < .92 && S.energy < 55) lieDown(14000);
       }
       schedule();
-    }, rand(6000, 13000));
+    }, rand(4500, 9500));
   }
 
   /* ---------- small behaviours ---------- */
@@ -307,8 +320,125 @@
     setPose('yawn', 3, 1500);
     pet.classList.remove('is-stretching'); void pet.offsetWidth; pet.classList.add('is-stretching');
   }
+  const restart = cls => { pet.classList.remove(cls); void pet.offsetWidth; pet.classList.add(cls); };
+  // Spontaneous lines stay rare: at most one every two minutes, and never while the chat or menu is open.
+  function chatter(key, chance = .4) {
+    if (Math.random() > chance || now() - lastChatter < 120000 || !chat.hidden || !menu.hidden) return;
+    lastChatter = now(); say(line(key), {ms: 2600});
+  }
+  function setGait(g) { gait = g; pet.dataset.gait = g; }
+  function setLook(deg) { look = clamp(deg, -12, 12); place(); }
+  function dash(target) { setGait('run'); walk(target, () => { setGait('walk'); setPose('happy', 2, 700); }); }
+  /* A real jump: crouch, launch under gravity (the same physics as a drop), land with a squash. */
+  function jump(toX, power = rand(560, 680), then) {
+    if (!grounded || dragging || leaping) return;
+    if (!motion()) { then?.(); return; }
+    walkTo = null; onArrive = null; leaping = true;
+    setPose('crouch', 0);
+    setTimeout(() => {
+      if (dragging || !grounded || !leaping) { leaping = false; return; }
+      const flight = 2 * power / 2400;
+      vx = toX == null ? 0 : clamp((toX - x) / flight, -560, 560);
+      if (Math.abs(vx) > 5) dir = vx > 0 ? 1 : -1;
+      vy = -power; grounded = false; dropFrom = y; afterLand = then;
+      setPose('jump', 2); kick();
+    }, 230);
+  }
+  function hopHop(n) {
+    jump(null, rand(380, 460), () => { puff('note', 1); if (n > 1) setTimeout(() => hopHop(n - 1), 260); });
+  }
+  /* Cat pounce: crouch low, wiggle, then leap at the pointer. */
+  function pounce() {
+    const target = clamp(pointer.x, ...bounds(floorOf(floorKind)));
+    dir = target > x ? 1 : -1; place();
+    busy = 'pounce'; setPose('crouch', 0); restart('is-wiggling');
+    setTimeout(() => {
+      pet.classList.remove('is-wiggling');
+      if (busy !== 'pounce') return;
+      busy = '';
+      jump(target, rand(520, 620), () => { puff('star', 2, .5); chatter('pounce', .35); });
+    }, 620);
+  }
+  /* Acting cute: come over, look up at you and rock side to side with a tilted head. */
+  function beCute() {
+    const f = floorOf(floorKind), [a, b] = bounds(f);
+    const side = pointer.x > x ? -1 : 1;
+    const spot = clamp(pointer.x + side * W * .9, a, b);
+    if (Math.abs(spot - x) > 220) setGait('run');
+    walk(spot, () => {
+      setGait('walk');
+      if (busy || asleep || dragging) return;
+      dir = pointer.x > x ? 1 : -1;
+      busy = 'cute'; setPose('cute', 2); setLook(dir * 9);
+      puff('heart', 2);
+      chatter('cute', .5);
+      setTimeout(() => { if (busy === 'cute') { busy = ''; setLook(0); restPose(); } }, 2800);
+    });
+  }
+  function dance() {
+    busy = 'dance'; setPose('dance', 0);
+    let n = 0;
+    clearInterval(danceTimer);
+    danceTimer = setInterval(() => {
+      if (busy !== 'dance') { clearInterval(danceTimer); return; }
+      setFrame(n++ % 2 ? 2 : 0);
+      if (n % 2) puff('note', 1);
+      if (n > 9) { clearInterval(danceTimer); busy = ''; restPose(); }
+    }, 380);
+  }
+  function lookAround() {
+    [[-9, 0], [9, 900], [0, 1900]].forEach(([deg, ms]) => setTimeout(() => { if (pose === 'idle' && !busy) setLook(deg); }, ms));
+    if (Math.random() < .5) setTimeout(() => pose === 'idle' && puff('question', 1, .3), 500);
+  }
+  /* A butterfly drifts by; she runs after it and jumps to catch it (it always gets away). */
+  function chaseButterfly() {
+    const f = floorOf(floorKind), [a, b] = bounds(f);
+    const fromLeft = x > (a + b) / 2;
+    bf = {x: fromLeft ? a - 40 : b + 40, y: 0, base: f.y - H * rand(1, 1.25), t: 0, vx: (fromLeft ? 1 : -1) * rand(55, 80), tries: 0, cool: 0, flee: false};
+    fly.hidden = false; fly.classList.remove('is-out');
+    busy = 'butterfly'; kick();
+  }
+  function stepButterfly(dt) {
+    const s = bf, [a, b] = bounds(floorOf(floorKind));
+    s.t += dt; s.cool -= dt;
+    if (s.flee) { s.vx *= 1 + dt; s.base -= 90 * dt; }
+    s.x += s.vx * dt + Math.sin(s.t * 1.3) * 26 * dt;
+    s.y = s.base + Math.sin(s.t * 2.6) * 16;
+    fly.style.transform = `translate3d(${s.x - 9}px,${s.y - 7}px,0) rotate(${Math.sin(s.t * 5) * 12}deg)`;
+    if (busy === 'butterfly' && !dragging && grounded && !leaping) {
+      setLook(clamp((s.x - x) / 30, -10, 10));
+      const gap = s.x - x;
+      if (s.tries < 3 && !s.flee && Math.abs(gap) < W * .5 && s.cool <= 0) {
+        s.tries++; s.cool = 1.4;
+        const rise = Math.max(60, y - H * .9 - s.y);
+        jump(s.x + s.vx * .4, clamp(Math.sqrt(2 * 2400 * rise), 420, 820), () => {
+          if (!bf) return;
+          if (bf.tries >= 3 || Math.random() < .35) { bf.flee = true; bf.vx = Math.sign(bf.vx || 1) * 140; chatter('butterfly', .5); }
+        });
+        s.vx += Math.sign(s.vx || 1) * 20; s.base -= 12;
+      } else if (!s.flee) {
+        setGait(Math.abs(gap) > 140 ? 'run' : 'walk');
+        walkTo = clamp(s.x, a, b); onArrive = null;
+      }
+    }
+    if (s.x < -60 || s.x > innerWidth + 60 || s.y < -40 || s.t > 22) endButterfly();
+    return !!bf;
+  }
+  function endButterfly() {
+    if (!bf) return;
+    bf = null; fly.classList.add('is-out'); setTimeout(() => { fly.hidden = true; }, 400);
+    if (busy === 'butterfly') { busy = ''; walkTo = null; setGait('walk'); setLook(0); if (grounded) restPose(); }
+  }
+  let lookFrame = 0;
+  function followPointer() {
+    lookFrame = 0;
+    if (busy || asleep || tucked || dragging || !(pose === 'idle' || pose === 'walk' || pose === 'happy')) return;
+    const dx = pointer.x - x, dist = Math.hypot(dx, pointer.y - (y - H * .85));
+    setLook(clamp(dx / 18, -1, 1) * 8 * clamp(1 - dist / 520, 0, 1));
+  }
   document.addEventListener('pointermove', event => {
     pointer.x = event.clientX; pointer.y = event.clientY; pointer.t = now();
+    if (!lookFrame && motion()) lookFrame = requestAnimationFrame(followPointer);
     // Wave when the pointer comes close (not while busy, asleep or being dragged).
     if (dragging || busy || asleep || tucked || pose !== 'idle' || now() - lastWave < 25000 || !motion()) return;
     const box = pet.getBoundingClientRect();
@@ -329,10 +459,13 @@
   function interact() { lastInteract = now(); nudges = 0; }
   function land() {
     grounded = true; vx = vy = 0;
-    const fell = y - dropFrom;
+    const fell = y - dropFrom, leapt = leaping, then = afterLand;
+    leaping = false; afterLand = null;
     pet.classList.remove('is-landing'); void pet.offsetWidth; pet.classList.add('is-landing');
+    puff('dust', 2, .5);
     if (fell > 220 && motion()) { setPose('dizzy', 3, 1600); puff('star', 3, .6); say(line('dropHigh')); gain(0, -3); }
-    else { setPose('happy', 2, 700); if (fell > 60) say(line('land'), {ms: 1800}); }
+    else { setPose('happy', 2, leapt ? 450 : 700); if (fell > 60 && !leapt) say(line('land'), {ms: 1800}); }
+    then?.();
   }
   function patReact(fromRub) {
     interact();
@@ -478,7 +611,8 @@
     lastActive = now();
     if (down) {
       if (!down.moved && Math.hypot(event.clientX - down.x, event.clientY - down.y) > 6 && !tucked) {
-        down.moved = true; dragging = true; grounded = false; walkTo = null; stopPlay();
+        down.moved = true; dragging = true; grounded = false; walkTo = null; stopPlay(); endButterfly();
+        leaping = false; afterLand = null; setGait('walk'); setLook(0); pet.classList.remove('is-wiggling');
         if (asleep) wake(true);
         busy = ''; clearInterval(munchTimer);
         closeMenu(); setPose('drag'); pet.classList.add('is-dragging');
@@ -975,8 +1109,9 @@
     if (asleep && S.energy >= 100 && stamp - sleptAt > 120000 && stamp - lastActive < 60000) { wake(false); }
     save(); paintState();
     if (document.hidden || dragging) return;
-    if (!asleep && !busy && stamp - lastActive > 180000) { sleep(); pushMessage({who: 'yuki', text: line('autoSleep'), unread: chat.hidden}); return; }
-    const gap = 75000 * Math.pow(1.6, nudges);
+    if (!asleep && !busy && stamp - lastActive > 360000) { sleep(); return; }
+    // Only speak up after about five minutes without attention, then back off further each time.
+    const gap = 300000 * Math.pow(1.6, nudges);
     if (!asleep && !tucked && chat.hidden && stamp - lastInteract > gap && stamp - lastActive < 60000) nudge();
   }, 15000);
   ['pointermove', 'keydown', 'scroll', 'wheel', 'touchstart'].forEach(type => window.addEventListener(type, () => { lastActive = now(); }, {passive: true, capture: true}));
@@ -984,12 +1119,12 @@
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
       hiddenAt = now();
-      titleTimer = setTimeout(() => { titleBackup = document.title; document.title = `(${unread + 1}) ♡ ${line('titleNudge')}`; }, 60000);
+      titleTimer = setTimeout(() => { titleBackup = document.title; document.title = `(${unread + 1}) ♡ ${line('titleNudge')}`; }, 300000);
     } else {
       clearTimeout(titleTimer);
       if (titleBackup) { document.title = titleBackup; titleBackup = ''; }
       const minutes = Math.round((now() - hiddenAt) / 60000);
-      if (hiddenAt && minutes >= 1) { if (asleep) wake(true); notify(line('welcomeBack', {minutes})); }
+      if (hiddenAt && minutes >= 5) { if (asleep) wake(true); notify(line('welcomeBack', {minutes})); }
       hiddenAt = 0;
     }
   });
@@ -1036,6 +1171,14 @@
 
   window.YUKI = {
     walkTo: target => walk(clamp(target, ...bounds(floorOf(floorKind)))), stretch,
+    move(name) {
+      if (asleep) wake(true);
+      if (busy || dragging || tucked || !grounded || leaping) return false;
+      walkTo = null; onArrive = null; setGait('walk');
+      const [a, b] = bounds(floorOf(floorKind)), far = x < (a + b) / 2 ? b - 40 : a + 40;
+      ({jump: () => hopHop(2), run: () => dash(far), dance, cute: beCute, pounce, butterfly: chaseButterfly, look: lookAround}[name] || (() => {}))();
+      return true;
+    },
     setOutfit, setAccessory, festivalLine, outfit: () => outfitChoice, accessory: () => accChoice,
     act, ask, say: (text, kind) => { if (kind === 'poke') poke(); say(text); pushMessage({who: 'yuki', text}); }, openChat, closeChat,
     asleep: () => asleep, dragging: () => dragging,

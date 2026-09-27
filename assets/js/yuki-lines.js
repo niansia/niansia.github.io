@@ -229,6 +229,20 @@ window.YUKI_LINES = {
    "Got it!",
    "Mine!"
   ],
+  "cute": [
+   "Pat me~?",
+   "Stay with me a little?",
+   "Nya~ look at me!",
+   "Headpats, please~"
+  ],
+  "pounce": [
+   "Gotcha!",
+   "Pounce!"
+  ],
+  "butterfly": [
+   "It got away… next time!",
+   "Butterfly, wait for me~"
+  ],
   "feelingGood": [
    "I feel great!"
   ],
@@ -474,6 +488,20 @@ window.YUKI_LINES = {
    "抓到了！",
    "是我的！"
   ],
+  "cute": [
+   "摸摸我嘛～",
+   "陪我一下下就好…",
+   "喵～看我看我！",
+   "人家想被摸頭啦～"
+  ],
+  "pounce": [
+   "逮到你了！",
+   "喵嗚——撲！"
+  ],
+  "butterfly": [
+   "被牠飛走了……下次一定！",
+   "蝴蝶等等我～"
+  ],
   "feelingGood": [
    "我現在很好！"
   ],
@@ -718,6 +746,20 @@ window.YUKI_LINES = {
   "caught": [
    "抓到了！",
    "是我的！"
+  ],
+  "cute": [
+   "摸摸我嘛～",
+   "陪我一下下就好…",
+   "喵～看我看我！",
+   "人家想被摸头啦～"
+  ],
+  "pounce": [
+   "逮到你了！",
+   "喵呜——扑！"
+  ],
+  "butterfly": [
+   "被牠飞走了……下次一定！",
+   "蝴蝶等等我～"
   ],
   "feelingGood": [
    "我现在很好！"
