@@ -1,0 +1,479 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Propaganda, decoded · Niansia</title>
+<meta name="description" content="An animated film about the undergraduate capstone: detecting propaganda techniques in news with generative AI.">
+<meta name="theme-color" content="#07060d">
+<link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Huninn&family=Quicksand:wght@500;700&family=M+PLUS+1+Code:wght@400;600&display=swap">
+<style>
+:root{--bg:#07060d;--ink:#f3eefc;--muted:#a79fbd;--pink:#ff4f9a;--violet:#8b7bff;--amber:#ffc46b;--cyan:#53e0ff;}
+*{box-sizing:border-box;}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:Quicksand,Huninn,system-ui,sans-serif;overflow:hidden;}
+canvas{position:fixed;inset:0;width:100%;height:100%;display:block;}
+.ui{position:fixed;inset:0;pointer-events:none;}
+.ui>*{pointer-events:auto;}
+.top{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:16px 20px;font:12px 'M PLUS 1 Code',monospace;color:var(--muted);transition:opacity .5s;}
+.top a,.top button{color:var(--muted);text-decoration:none;background:none;border:1px solid #ffffff22;border-radius:99px;padding:6px 12px;font:inherit;cursor:pointer;}
+.top a:hover,.top button:hover{color:var(--ink);border-color:#ffffff55;}
+.top .right{display:flex;gap:8px;}
+.caption{position:absolute;left:50%;bottom:92px;transform:translateX(-50%);width:min(92vw,900px);text-align:center;pointer-events:none;}
+.caption h2{margin:0 0 6px;font:700 clamp(18px,2.6vw,30px)/1.3 Huninn,Quicksand,sans-serif;letter-spacing:.02em;text-shadow:0 2px 24px #000;opacity:0;transform:translateY(10px);transition:opacity .7s,transform .7s cubic-bezier(.2,.8,.2,1);}
+.caption p{margin:0;font:500 clamp(12px,1.4vw,16px)/1.6 Quicksand,Huninn,sans-serif;color:var(--muted);text-shadow:0 2px 16px #000;opacity:0;transform:translateY(8px);transition:opacity .7s .12s,transform .7s .12s cubic-bezier(.2,.8,.2,1);}
+.caption.on h2,.caption.on p{opacity:1;transform:none;}
+.bar{position:absolute;left:0;right:0;bottom:0;padding:14px 20px 18px;display:flex;align-items:center;gap:14px;background:linear-gradient(transparent,#07060dcc 60%);transition:opacity .5s;}
+.bar button{flex:none;width:38px;height:38px;border-radius:50%;border:1px solid #ffffff33;background:#ffffff10;color:var(--ink);cursor:pointer;display:grid;place-items:center;}
+.bar button:hover{background:#ffffff22;}
+.bar svg{width:16px;height:16px;fill:currentColor;}
+.track{position:relative;flex:1;height:26px;cursor:pointer;}
+.track .rail{position:absolute;left:0;right:0;top:12px;height:3px;border-radius:3px;background:#ffffff1f;}
+.track .fill{position:absolute;left:0;top:12px;height:3px;border-radius:3px;background:linear-gradient(90deg,var(--violet),var(--pink));box-shadow:0 0 12px var(--pink);}
+.track .tick{position:absolute;top:8px;width:2px;height:11px;border-radius:2px;background:#ffffff44;}
+.track .tick span{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);white-space:nowrap;font:10px 'M PLUS 1 Code',monospace;color:var(--muted);opacity:0;transition:opacity .2s;}
+.track:hover .tick span{opacity:1;}
+.time{flex:none;font:12px 'M PLUS 1 Code',monospace;color:var(--muted);min-width:84px;text-align:right;}
+.end{position:absolute;left:50%;bottom:170px;transform:translateX(-50%);display:flex;gap:10px;opacity:0;pointer-events:none;transition:opacity .6s;}
+.end.on{opacity:1;pointer-events:auto;}
+.end a,.end button{font:600 13px Quicksand,Huninn,sans-serif;padding:10px 18px;border-radius:99px;border:1px solid #ffffff44;background:#ffffff12;color:var(--ink);text-decoration:none;cursor:pointer;}
+.end a{background:linear-gradient(90deg,var(--violet),var(--pink));border-color:transparent;}
+.start{position:absolute;inset:0;display:grid;place-items:center;background:radial-gradient(circle at 50% 45%,#1a1030cc,#07060df2 70%);transition:opacity .6s;}
+.start.off{opacity:0;pointer-events:none;}
+.start button{display:flex;flex-direction:column;align-items:center;gap:14px;background:none;border:0;color:var(--ink);cursor:pointer;font:600 14px Quicksand,Huninn,sans-serif;}
+.start .disc{width:88px;height:88px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,var(--violet),var(--pink));box-shadow:0 0 0 10px #ff4f9a1f,0 0 60px #ff4f9a88;animation:pulse 2.4s ease-in-out infinite;}
+.start .disc svg{width:30px;height:30px;fill:#fff;margin-left:4px;}
+.start small{color:var(--muted);font-weight:500;}
+.idle .top,.idle .bar{opacity:0;}
+@keyframes pulse{50%{box-shadow:0 0 0 18px #ff4f9a0a,0 0 80px #ff4f9aaa;}}
+@media(max-width:640px){.caption{bottom:84px;}.time{display:none;}.track .tick span{display:none;}}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="ui" id="ui">
+  <div class="top"><a id="back" href="/zh-tw/#research">← niansia.terminal</a><div class="right"><button id="lang" type="button">EN</button><button id="snd" type="button" aria-pressed="false">♪ off</button><button id="fs" type="button">⛶</button></div></div>
+  <div class="caption" id="cap"><h2 id="cap-h"></h2><p id="cap-p"></p></div>
+  <div class="end" id="end"><button id="replay" type="button">↺</button><a id="home" href="/zh-tw/#research"></a></div>
+  <div class="bar"><button id="play" type="button" aria-label="play"></button><div class="track" id="track"><div class="rail"></div><div class="fill" id="fill"></div></div><span class="time" id="time">0:00 / 0:00</span></div>
+  <div class="start" id="start"><button type="button" id="go"><span class="disc"><svg viewBox="0 0 24 24"><path d="M6 4l14 8-14 8z"/></svg></span><span id="go-label"></span><small id="go-sub"></small></button></div>
+</div>
+<script src="/assets/js/capstone-data.js?v=film-1"></script>
+<script>
+(() => {
+'use strict';
+const D = window.NIANSIA_CAPSTONE;
+const cv = document.getElementById('c'), ctx = cv.getContext('2d');
+const $ = id => document.getElementById(id);
+const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
+const seg = (t, a, b) => clamp((t - a) / (b - a));
+const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+const easeOut = t => 1 - Math.pow(1 - t, 3);
+const lerp = (a, b, k) => a + (b - a) * k;
+function rng(seed) { return () => { seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+const PINK = '#ff4f9a', VIOLET = '#8b7bff', AMBER = '#ffc46b', CYAN = '#53e0ff', INK = '#f3eefc', MUTED = '#a79fbd';
+const CJK = "Huninn, 'Noto Sans TC', 'Microsoft JhengHei', sans-serif", LAT = "Quicksand, Huninn, sans-serif", MONO = "'M PLUS 1 Code', monospace";
+
+/* ---------- language ---------- */
+const q = new URLSearchParams(location.search);
+let L = q.get('lang') || (/^zh-(cn|sg)/i.test(navigator.language) ? 'zh-CN' : /^zh/i.test(navigator.language) ? 'zh-TW' : 'en');
+if (!['en', 'zh-TW', 'zh-CN'].includes(L)) L = 'en';
+const name = o => L === 'en' ? o.en : L === 'zh-CN' ? (o.zhcn || o.zh) : o.zh;
+const n = v => v.toLocaleString(L === 'en' ? 'en' : L);
+const S = D.stats, ratio = (D.outlets[0].total / D.outlets.slice(1).reduce((a, o) => a + o.total, 0) * (D.outlets.length - 1)).toFixed(1);
+const T = {
+  'zh-TW': {
+    go: '播放專題動畫', goSub: '約 100 秒 · 可隨時暫停、跳章節', home: '回到網站', snd: ['♪ 關', '♪ 開'],
+    title: '以生成式 AI 偵測新聞中的宣傳手法', word: '宣傳',
+    chapters: ['開場', '新聞洪流', '逐段標註', '手法星圖', '生成式擴增', '五種語言', 'BERT 偵測', '媒體指紋', '結尾'],
+    caps: [
+      ['宣傳，藏在用字裡', '它不一定是假新聞：一個情緒化的形容詞、一句口號、一個非黑即白的二分法。'],
+      [`${n(S.sentences)} 句新聞，${n(S.spans)} 個宣傳片段`, '把新聞拆到「片段」層級，每一段都可能用了某種手法。'],
+      ['逐片段標註', '光束掃過句子，標出宣傳片段與它使用的手法。'],
+      ['18 種手法，再加 4 種', '在原有分類體系上加入美德詞彙、美好人物、抹黑與個人崇拜，擴充為 22 類。'],
+      ['生成式擴增', `口號只有 129 筆、非口號 6,002 筆。以 ${n(S.slogans)} 句標語微調 DistilGPT-2，用 top-k / top-p 取樣生成口號式文本。`],
+      ['五種語言，同一個句子', '英文、中文、阿拉伯語、烏爾都語、普什圖語的平行語料。'],
+      ['BERT 偵測', '句子經過多層注意力，最後判斷片段屬於哪一種宣傳手法。'],
+      ['每家媒體，都有自己的宣傳指紋', `${S.outlets} 家媒體、25,048 次手法出現；Pakistan Times 的總數約是其他前段媒體的 ${ratio} 倍。`],
+      ['以生成式 AI 偵測新聞中的宣傳手法', '大學專題 · niansia'],
+    ],
+    langs: {en: 'English', zh: '中文', ar: 'العربية', ur: 'اردو', ps: 'پښتو'},
+    slogan: '口號', nonSlogan: '非口號', augmented: '生成擴增', added: '+4 新增', cls: '[CLS] 判斷', layer: '注意力層',
+  },
+  en: {
+    go: 'Play the capstone film', goSub: 'About 100 seconds · pause or jump chapters anytime', home: 'Back to the site', snd: ['♪ off', '♪ on'],
+    title: 'Detecting propaganda techniques in news with generative AI', word: 'Propaganda',
+    chapters: ['Intro', 'News flood', 'Annotate', 'Technique map', 'Generate', 'Five languages', 'BERT', 'Fingerprints', 'End'],
+    caps: [
+      ['Propaganda hides in wording', 'It is not always fake news: a loaded adjective, a slogan, a black-and-white framing.'],
+      [`${n(S.sentences)} news sentences, ${n(S.spans)} propaganda spans`, 'News read at the span level, where every fragment may carry a technique.'],
+      ['Span-level annotation', 'A beam sweeps each sentence and marks the propaganda span and its technique.'],
+      ['18 techniques, plus 4', 'Virtue words, beautiful people, smears and cult of personality extend the taxonomy to 22.'],
+      ['Generative augmentation', `Only 129 slogans against 6,002 non-slogans. DistilGPT-2, fine-tuned on ${n(S.slogans)} taglines, samples slogan-style text with top-k / top-p.`],
+      ['Five languages, one sentence', 'A parallel corpus in English, Chinese, Arabic, Urdu and Pashto.'],
+      ['Detection with BERT', 'The sentence flows through layers of attention to the technique it uses.'],
+      ['Every outlet leaves a fingerprint', `${S.outlets} outlets, 25,048 technique occurrences; Pakistan Times shows about ${ratio}× the total of the other top outlets.`],
+      ['Detecting propaganda techniques in news with generative AI', 'Undergraduate capstone · niansia'],
+    ],
+    langs: {en: 'English', zh: '中文', ar: 'العربية', ur: 'اردو', ps: 'پښتو'},
+    slogan: 'Slogans', nonSlogan: 'Non-slogans', augmented: 'generated', added: '+4 added', cls: '[CLS] verdict', layer: 'attention layers',
+  },
+};
+const TW2CN = '個个偵侦傳传動动圖图場场學学專专層层屬属彙汇後后掃扫擴扩數数斷断於于時时暫暂標标樣样測测為为烏乌爾尔現现畫画種种筆笔節节約约紋纹級级結结經经網网緒绪總总聞闻與与號号裡里註注詞词語语調调過过開开關关隨随題题類类體体'; // Traditional → Simplified pairs for every character used above (generated with OpenCC)
+const cnMap = {}; for (let i = 0; i < TW2CN.length; i += 2) cnMap[TW2CN[i]] = TW2CN[i + 1];
+T['zh-CN'] = JSON.parse(JSON.stringify(T['zh-TW']).replace(/[一-鿿]/g, ch => cnMap[ch] || ch));
+let C = T[L];
+
+/* ---------- canvas & layout ---------- */
+let W = 0, H = 0, DPR = 1, TXT = {};
+function resize() {
+  DPR = Math.min(1.75, window.devicePixelRatio || 1);
+  W = innerWidth; H = innerHeight;
+  cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  buildParticles();
+}
+const unit = () => Math.min(W / 720, H * 1.6 / 1000); // layout unit: ~1px on a 1000px-wide stage, larger on phones
+
+/* ---------- text → particle targets ---------- */
+const NP = 2600;
+function wrap(c, text, maxW) {
+  const cjk = /[　-鿿]/.test(text) && !/\s/.test(text.trim());
+  const parts = cjk ? [...text] : text.split(/(\s+)/);
+  const lines = []; let line = '';
+  for (const p of parts) { const tryLine = line + p; if (c.measureText(tryLine).width > maxW && line.trim()) { lines.push(line.trim()); line = p.trimStart(); } else line = tryLine; }
+  if (line.trim()) lines.push(line.trim());
+  return lines;
+}
+function sample(text, size, font, rtl, maxLines = 3, cy = .42) {
+  const oc = document.createElement('canvas'); oc.width = Math.ceil(W); oc.height = Math.ceil(H);
+  const c = oc.getContext('2d'); c.fillStyle = '#fff'; c.textAlign = 'center'; c.textBaseline = 'middle';
+  if (rtl) c.direction = 'rtl';
+  let fs = size, lines;
+  for (;;) { c.font = `700 ${fs}px ${font}`; lines = wrap(c, text, W * .84); if (lines.length <= maxLines || fs < 14) break; fs *= .9; }
+  const lh = fs * 1.25, y0 = H * cy - (lines.length - 1) * lh / 2;
+  lines.forEach((ln, i) => c.fillText(ln, W / 2, y0 + i * lh));
+  const img = c.getImageData(0, 0, oc.width, oc.height).data, pts = [], step = Math.max(2, Math.round(fs / 16));
+  for (let y = 0; y < oc.height; y += step) for (let x = 0; x < oc.width; x += step) if (img[(y * oc.width + x) * 4 + 3] > 140) pts.push([x, y]);
+  const r = rng(7), out = [];
+  if (!pts.length) return Array.from({length: NP}, () => [W / 2, H / 2]);
+  for (let i = pts.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [pts[i], pts[j]] = [pts[j], pts[i]]; }
+  for (let i = 0; i < NP; i++) out.push(pts[i % pts.length]);
+  return out;
+}
+let SEED = [];
+function buildParticles() {
+  const u = unit(), ex = D.examples[3], cjkFont = L === 'en' ? LAT : CJK;
+  const r = rng(3);
+  SEED = Array.from({length: NP}, () => ({x: r() * W, y: r() * H, a: r() * Math.PI * 2, s: .4 + r() * .9, hue: r()}));
+  TXT = {
+    word: sample(C.word, 150 * u, cjkFont, false, 1),
+    title: sample(C.title, 58 * u, cjkFont, false, 2, .4),
+    en: sample(ex.text, 46 * u, LAT, false), zh: sample(ex.zh, 50 * u, CJK, false),
+    ar: sample(ex.ar, 50 * u, "'Segoe UI', 'Noto Naskh Arabic', Tahoma, sans-serif", true), ur: sample(ex.ur, 50 * u, "'Segoe UI', 'Noto Nastaliq Urdu', Tahoma, sans-serif", true),
+    ps: sample(ex.ps, 50 * u, "'Segoe UI', 'Noto Naskh Arabic', Tahoma, sans-serif", true),
+  };
+}
+function swarm(from, to, k, t, color = i => i % 3 ? PINK : VIOLET, jitter = 1) {
+  const bend = Math.sin(k * Math.PI) * 90 * unit();
+  ctx.globalCompositeOperation = 'lighter';
+  for (let i = 0; i < NP; i++) {
+    const a = from[i], b = to[i], s = SEED[i];
+    const ax = Array.isArray(a) ? a[0] : a.x, ay = Array.isArray(a) ? a[1] : a.y;
+    const x = lerp(ax, b[0], k) + Math.cos(s.a + t * .7) * bend * s.s + Math.sin(t * 2 + i) * .6 * jitter;
+    const y = lerp(ay, b[1], k) + Math.sin(s.a + t * .7) * bend * s.s + Math.cos(t * 2.3 + i) * .6 * jitter;
+    ctx.fillStyle = color(i, s);
+    ctx.globalAlpha = .55 + .45 * s.s * (1 - Math.abs(k - .5));
+    ctx.fillRect(x, y, 1.6, 1.6);
+  }
+  ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
+}
+
+/* ---------- drawing helpers ---------- */
+function crisp(text, size, cy, a, color, maxLines = 1) { // the real text, faded in once the particles settle
+  if (a <= 0) return; const u = unit(), font = L === 'en' ? LAT : CJK; let fs = size * u, lines;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  for (;;) { ctx.font = `700 ${fs}px ${font}`; lines = wrap(ctx, text, W * .84); if (lines.length <= maxLines || fs < 14) break; fs *= .9; }
+  const lh = fs * 1.25, y0 = H * cy - (lines.length - 1) * lh / 2;
+  ctx.globalAlpha = a * .9; glow(color, 28 * u); ctx.fillStyle = color === INK ? '#fff' : color;
+  lines.forEach((ln, i) => ctx.fillText(ln, W / 2, y0 + i * lh)); noGlow(); ctx.globalAlpha = 1;
+}
+function glow(color, blur) { ctx.shadowColor = color; ctx.shadowBlur = blur; }
+function noGlow() { ctx.shadowBlur = 0; }
+function rr(x, y, w, h, r) { ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x, y, w, h, r) : ctx.rect(x, y, w, h); }
+function label(text, x, y, {size = 13, color = MUTED, font = MONO, align = 'center', weight = 400} = {}) {
+  ctx.font = `${weight} ${size * unit()}px ${font}`; ctx.fillStyle = color; ctx.textAlign = align; ctx.textBaseline = 'middle'; ctx.fillText(text, x, y);
+}
+function chip(text, x, y, color, a = 1) {
+  const u = unit(); ctx.font = `700 ${14 * u}px ${L === 'en' ? LAT : CJK}`;
+  const w = ctx.measureText(text).width + 26 * u, h = 30 * u;
+  ctx.globalAlpha = a; glow(color, 24 * u); ctx.fillStyle = color; rr(x - w / 2, y - h / 2, w, h, h / 2); ctx.fill(); noGlow();
+  ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(text, x, y + 1); ctx.globalAlpha = 1;
+  return w;
+}
+function background(t) {
+  const g = ctx.createRadialGradient(W * .5, H * .42, 0, W * .5, H * .5, Math.max(W, H) * .8);
+  g.addColorStop(0, '#1a0f2e'); g.addColorStop(.55, '#0c0818'); g.addColorStop(1, '#050409');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  ctx.globalCompositeOperation = 'lighter';
+  for (let i = 0; i < 160; i++) {
+    const s = SEED[i]; const x = (s.x + t * 6 * s.s) % W, y = (s.y + Math.sin(t * .2 + s.a) * 12) % H;
+    ctx.fillStyle = s.hue > .7 ? PINK : s.hue > .4 ? VIOLET : '#ffffff';
+    ctx.globalAlpha = .08 + .18 * (Math.sin(t * 1.3 + s.a) * .5 + .5) * s.s;
+    ctx.fillRect(x, y, 1.4, 1.4);
+  }
+  ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
+}
+
+/* ---------- scenes ---------- */
+const TECH18 = [...D.techniques.map(t => ({...t})), {key: 'obf', en: 'Obfuscation', zh: '刻意模糊', zhcn: '刻意模糊', n: 8}];
+const SCENES = [
+  {dur: 8, draw(lt, p, t) { // intro: dust gathers into the word
+    const k = ease(seg(lt, .6, 4.2)), out = seg(lt, 6.4, 8);
+    swarm(SEED, TXT.word, k * (1 - out * .0), t, i => i % 4 ? PINK : AMBER);
+    crisp(C.word, 150, .42, seg(lt, 3.6, 4.6) * (1 - out), PINK);
+    if (lt > 4.2) { const u = unit(); ctx.globalAlpha = seg(lt, 4.2, 5.2) * (1 - out); glow(PINK, 30 * u); ctx.fillStyle = PINK; ctx.fillRect(W / 2 + 330 * u * (L === 'en' ? 1 : .5), H * .42 - 40 * u, 6 * u, 80 * u * (Math.sin(t * 6) > 0 ? 1 : 0)); noGlow(); ctx.globalAlpha = 1; }
+  }},
+  {dur: 11, draw(lt, p, t) { // news flood tunnel
+    const u = unit(), r = rng(11), cx = W / 2, cy = H * .45;
+    for (let i = 0; i < 260; i++) {
+      const x0 = (r() * 2 - 1), y0 = (r() * 2 - 1) * .7, len = .15 + r() * .5, hot = r() < .16, hotAt = r() * .7, z0 = r();
+      const z = ((z0 - lt * .09) % 1 + 1) % 1, sc = 1 / (z * 3.2 + .18);
+      const x = cx + x0 * W * .42 * sc, y = cy + y0 * H * .5 * sc, w = len * 260 * u * sc, h = Math.max(1, 5 * u * sc);
+      if (x + w < 0 || x - w > W || y < -20 || y > H + 20) continue;
+      const a = clamp(1.2 - z) * seg(lt, 0, 1.5) * (1 - seg(lt, 9.8, 11));
+      ctx.globalAlpha = a * .5; ctx.fillStyle = '#c9c1e6'; rr(x - w / 2, y, w, h, h / 2); ctx.fill();
+      if (hot && z < .55) { ctx.globalAlpha = a; glow(PINK, 14 * u); ctx.fillStyle = PINK; rr(x - w / 2 + w * hotAt, y, w * .28, h, h / 2); ctx.fill(); noGlow(); }
+    }
+    ctx.globalAlpha = 1;
+  }},
+  {dur: 14, draw(lt, p, t) { // scan three example sentences
+    const u = unit(), idx = Math.min(2, Math.floor(lt / 4.66)), l = lt - idx * 4.66, ex = D.examples[idx];
+    const fs = 34 * u; ctx.font = `600 ${fs}px ${LAT}`; ctx.textBaseline = 'middle';
+    const words = []; const at = ex.text.indexOf(ex.span); let pos = 0;
+    ex.text.split(/(\s+)/).forEach(w => { if (!w) return; words.push({w, a: pos, b: pos + w.length, span: pos >= at && pos < at + ex.span.length && w.trim()}); pos += w.length; });
+    const maxW = W * .78, lh = fs * 1.5; const rows = [[]]; let x = 0;
+    words.forEach(o => { const ww = ctx.measureText(o.w).width; if (x + ww > maxW && o.w.trim()) { rows.push([]); x = 0; } if (!(x === 0 && !o.w.trim())) { o.x = x; o.ww = ww; rows[rows.length - 1].push(o); x += ww; } });
+    const y0 = H * .4 - (rows.length - 1) * lh / 2, fade = seg(l, 0, .4) * (1 - seg(l, 4.3, 4.66));
+    const typed = seg(l, 0, 1.1) * ex.text.length, scanX = lerp(-.1, 1.1, seg(l, 1.2, 2.6));
+    let spanBox = null;
+    rows.forEach((row, ri) => {
+      const rw = row.reduce((m, o) => Math.max(m, o.x + o.ww), 0), left = W / 2 - rw / 2, y = y0 + ri * lh;
+      row.forEach(o => {
+        if (o.a > typed) return;
+        const gx = left + o.x, rel = (gx - (W / 2 - maxW / 2)) / maxW, hit = o.span && scanX > rel;
+        if (hit) { ctx.globalAlpha = fade * .85; glow(PINK, 22 * u); ctx.fillStyle = 'rgba(255,79,154,.28)'; rr(gx - 3 * u, y - fs * .62, o.ww + 6 * u, fs * 1.24, 6 * u); ctx.fill(); noGlow();
+          spanBox = spanBox ? {x0: Math.min(spanBox.x0, gx), x1: Math.max(spanBox.x1, gx + o.ww), y: Math.min(spanBox.y, y)} : {x0: gx, x1: gx + o.ww, y}; }
+        ctx.globalAlpha = fade; ctx.fillStyle = hit ? '#fff' : '#d8d0f0'; ctx.textAlign = 'left'; ctx.fillText(o.w, gx, y);
+      });
+    });
+    if (scanX > -.05 && scanX < 1.05) { const sx = W / 2 - maxW / 2 + scanX * maxW; const g = ctx.createLinearGradient(sx - 60 * u, 0, sx, 0); g.addColorStop(0, 'rgba(83,224,255,0)'); g.addColorStop(1, 'rgba(83,224,255,.35)');
+      ctx.globalAlpha = fade; ctx.fillStyle = g; ctx.fillRect(sx - 60 * u, y0 - lh, 60 * u, rows.length * lh + lh); glow(CYAN, 20 * u); ctx.fillStyle = CYAN; ctx.fillRect(sx, y0 - lh, 2 * u, rows.length * lh + lh); noGlow(); }
+    if (spanBox && l > 2.4) {
+      const tech = D.techniques.find(x => x.key === ex.tech), k = easeOut(seg(l, 2.4, 3)), cx = (spanBox.x0 + spanBox.x1) / 2, top = spanBox.y - fs * .7, cy = top - 70 * u * k;
+      ctx.globalAlpha = fade; ctx.strokeStyle = PINK; ctx.lineWidth = 1.5 * u; ctx.beginPath(); ctx.moveTo(cx, top); ctx.lineTo(cx, cy + 15 * u); ctx.stroke();
+      chip(name(tech), cx, cy, PINK, fade * k);
+    }
+    ctx.globalAlpha = 1;
+    label(`${idx + 1} / 3`, W / 2, H * .4 + 150 * u, {size: 12, color: MUTED});
+  }},
+  {dur: 11, draw(lt, p, t) { // technique constellation
+    const u = unit(), cx = W / 2, cy = H * .38, all = [...TECH18.map(x => ({...x, add: false})), ...D.added.map(x => ({...x, n: 30, add: true}))];
+    const pos = all.map((x, i) => { const a = i * 2.39996 + t * .05, rad = (30 + Math.sqrt(i + 1) * 50) * u; const sx = Math.min(1.45, W * .44 / ((30 + Math.sqrt(22) * 50) * u)); return {x: cx + Math.cos(a) * rad * sx, y: cy + Math.sin(a) * rad * .74, r: (4 + Math.sqrt(x.n) * .5) * u}; });
+    const fade = seg(lt, 0, .8) * (1 - seg(lt, 10.2, 11));
+    ctx.globalAlpha = fade * .25; ctx.strokeStyle = VIOLET; ctx.lineWidth = u;
+    for (let i = 0; i < all.length; i++) for (let j = i + 1; j < all.length; j++) { const d = Math.hypot(pos[i].x - pos[j].x, pos[i].y - pos[j].y); if (d < 150 * u && (!all[i].add && !all[j].add || lt > 6)) { ctx.beginPath(); ctx.moveTo(pos[i].x, pos[i].y); ctx.lineTo(pos[j].x, pos[j].y); ctx.stroke(); } }
+    all.forEach((x, i) => {
+      const appear = x.add ? easeOut(seg(lt, 5.4 + (i - 18) * .25, 6.2 + (i - 18) * .25)) : easeOut(seg(lt, .3 + i * .18, 1 + i * .18));
+      if (appear <= 0) return;
+      const c = x.add ? AMBER : i < 3 ? PINK : VIOLET;
+      ctx.globalAlpha = fade * appear; glow(c, 22 * u); ctx.fillStyle = c; ctx.beginPath(); ctx.arc(pos[i].x, pos[i].y, pos[i].r * appear, 0, Math.PI * 2); ctx.fill(); noGlow();
+      label(name(x), pos[i].x, pos[i].y + pos[i].r + 12 * u, {size: 11, color: x.add ? AMBER : '#d8d0f0', font: L === 'en' ? LAT : CJK});
+      if (x.add && lt > 5.4) { const w = seg(lt, 5.4 + (i - 18) * .25, 7 + (i - 18) * .25); ctx.globalAlpha = fade * (1 - w) * .8; ctx.strokeStyle = AMBER; ctx.lineWidth = 2 * u; ctx.beginPath(); ctx.arc(pos[i].x, pos[i].y, pos[i].r + w * 60 * u, 0, Math.PI * 2); ctx.stroke(); }
+    });
+    ctx.globalAlpha = fade * seg(lt, 6.4, 7.2);
+    label(C.added, cx, cy - 215 * u, {size: 22, color: AMBER, font: L === 'en' ? LAT : CJK, weight: 700});
+    label(`18 → 22`, cx, cy - 190 * u, {size: 13, color: MUTED});
+    ctx.globalAlpha = 1;
+  }},
+  {dur: 13, draw(lt, p, t) { // generative augmentation
+    const u = unit(), fade = seg(lt, 0, .8) * (1 - seg(lt, 12.2, 13)), ox = W * .64, oy = H * .3;
+    // class imbalance bars
+    const bx = W * .12, bw = W * .3, g1 = easeOut(seg(lt, .4, 2)), aug = easeOut(seg(lt, 4, 11));
+    ctx.globalAlpha = fade;
+    label(C.nonSlogan + ' 6,002', bx, oy - 60 * u, {size: 13, color: '#d8d0f0', align: 'left', font: L === 'en' ? LAT : CJK});
+    ctx.fillStyle = '#ffffff26'; rr(bx, oy - 46 * u, bw * g1, 14 * u, 7 * u); ctx.fill();
+    label(C.slogan + ' 129', bx, oy + 10 * u, {size: 13, color: PINK, align: 'left', font: L === 'en' ? LAT : CJK});
+    const sw = bw * 129 / 6002 * g1; glow(PINK, 14 * u); ctx.fillStyle = PINK; rr(bx, oy + 24 * u, Math.max(3 * u, sw), 14 * u, 7 * u); ctx.fill(); noGlow();
+    if (aug > 0) { ctx.fillStyle = 'rgba(255,196,107,.85)'; rr(bx + sw, oy + 24 * u, bw * .45 * aug, 14 * u, 7 * u); ctx.fill(); label(`${C.augmented} ↗`, bx + sw + bw * .45 * aug + 8 * u, oy + 31 * u, {size: 11, color: AMBER, align: 'left', font: L === 'en' ? LAT : CJK}); }
+    // model core
+    const R = 64 * u; glow(VIOLET, 50 * u); const gr = ctx.createRadialGradient(ox, oy, 0, ox, oy, R); gr.addColorStop(0, '#fff'); gr.addColorStop(.25, '#c3b8ff'); gr.addColorStop(1, 'rgba(139,123,255,0)');
+    ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(ox, oy, R * (1 + Math.sin(t * 3) * .04), 0, Math.PI * 2); ctx.fill(); noGlow();
+    for (let k = 0; k < 3; k++) { ctx.strokeStyle = k === 1 ? PINK : VIOLET; ctx.lineWidth = 1.5 * u; ctx.globalAlpha = fade * .7; ctx.beginPath(); ctx.ellipse(ox, oy, R * (1.5 + k * .35), R * (.55 + k * .15), t * (.4 + k * .2) * (k % 2 ? -1 : 1), 0, Math.PI * 1.6); ctx.stroke(); }
+    ctx.globalAlpha = fade; label('DistilGPT-2', ox, oy + R * 1.55, {size: 15, color: INK, font: LAT, weight: 700}); label(`fine-tuned · ${n(S.slogans)} taglines`, ox, oy + R * 1.55 + 20 * u, {size: 11});
+    // next-token distribution with top-k / top-p
+    const step = Math.floor(lt / .55), r = rng(100 + step), logits = Array.from({length: 14}, () => r() * 3);
+    logits.sort((a, b) => b - a); const ex = logits.map(Math.exp), Z = ex.reduce((a, b) => a + b); const pr = ex.map(v => v / Z);
+    const hx = ox - 150 * u, hy = oy + R * 2.25 + 80 * u, hw = 300 * u, hh = 62 * u, bwid = hw / pr.length; let cum = 0, cut = pr.length;
+    pr.forEach((v, i) => { cum += v; if (cum > .9 && cut === pr.length) cut = i + 1; });
+    const K = Math.min(6, cut), pick = Math.floor(r() * K);
+    pr.forEach((v, i) => { const h = v / pr[0] * hh; ctx.fillStyle = i === pick ? AMBER : i < K ? PINK : '#ffffff22'; ctx.globalAlpha = fade * (i < K ? 1 : .6); rr(hx + i * bwid + 2 * u, hy - h, bwid - 4 * u, h, 2 * u); ctx.fill(); });
+    ctx.globalAlpha = fade; ctx.strokeStyle = CYAN; ctx.setLineDash([4 * u, 4 * u]); ctx.beginPath(); ctx.moveTo(hx + K * bwid, hy - hh - 8 * u); ctx.lineTo(hx + K * bwid, hy + 4 * u); ctx.stroke(); ctx.setLineDash([]);
+    label('top-k / top-p', hx + K * bwid + 6 * u, hy - hh - 4 * u, {size: 11, color: CYAN, align: 'left'}); label('next-token distribution', hx, hy + 16 * u, {size: 10, align: 'left'});
+    // generated tokens stream into the slogan bar
+    for (let i = 0; i < 18; i++) {
+      const born = 2 + i * .45, life = seg(lt, born, born + 1.6); if (life <= 0 || life >= 1) continue;
+      const k = ease(life), sx = ox - R, sy = oy, tx = bx + sw + bw * .45 * aug, ty = oy + 31 * u;
+      const x = lerp(sx, tx, k), y = lerp(sy, ty, k) - Math.sin(k * Math.PI) * 90 * u;
+      const tok = i % 6 === 0 ? '<slogan>' : '▮'.repeat(2 + i % 4);
+      ctx.globalAlpha = fade * (1 - Math.abs(k - .5) * .6); ctx.font = `600 ${11 * u}px ${MONO}`; const tw = ctx.measureText(tok).width + 12 * u;
+      glow(AMBER, 12 * u); ctx.fillStyle = 'rgba(255,196,107,.18)'; ctx.strokeStyle = AMBER; ctx.lineWidth = u; rr(x - tw / 2, y - 10 * u, tw, 20 * u, 6 * u); ctx.fill(); ctx.stroke(); noGlow();
+      ctx.fillStyle = AMBER; ctx.textAlign = 'center'; ctx.fillText(tok, x, y + 1);
+    }
+    ctx.globalAlpha = 1;
+  }},
+  {dur: 11, draw(lt, p, t) { // five languages: particle morph
+    const u = unit(), order = ['en', 'zh', 'ar', 'ur', 'ps'], per = 2.1, i = Math.min(4, Math.floor(lt / per)), l = lt - i * per;
+    const from = i === 0 ? TXT.en : TXT[order[i - 1]], k = i === 0 ? 1 : ease(seg(l, 0, .9));
+    const fade = seg(lt, 0, .6) * (1 - seg(lt, 10.3, 11));
+    ctx.globalAlpha = fade; swarm(from, TXT[order[i]], k, t, (j) => [PINK, VIOLET, CYAN, AMBER, PINK][(i + (j % 7 === 0 ? 1 : 0)) % 5]); ctx.globalAlpha = fade;
+    order.forEach((lg, j) => { const x = W / 2 + (j - 2) * 110 * u, on = j === i; ctx.globalAlpha = fade * (on ? 1 : .35); label(C.langs[lg], x, H * .72, {size: on ? 15 : 12, color: on ? INK : MUTED, font: "Quicksand, 'Segoe UI', sans-serif", weight: on ? 700 : 400}); if (on) { glow(PINK, 12 * u); ctx.fillStyle = PINK; ctx.fillRect(x - 16 * u, H * .72 + 14 * u, 32 * u, 2 * u); noGlow(); } });
+    ctx.globalAlpha = fade; label(`${n(11506)} parallel rows`, W / 2, H * .72 + 36 * u, {size: 11});
+    ctx.globalAlpha = 1;
+  }},
+  {dur: 11, draw(lt, p, t) { // BERT: attention layers
+    const u = unit(), ex = D.examples[1], toks = ex.span.replace(/[’‘]/g, "'").split(/\s+/), Lyr = 6, fade = seg(lt, 0, .8) * (1 - seg(lt, 10.2, 11));
+    const x0 = W * .18, x1 = W * .82, yb = H * .66, yt = H * .2, cols = toks.length;
+    const P = (l, i) => ({x: lerp(x0, x1, cols === 1 ? .5 : i / (cols - 1)), y: lerp(yb, yt, l / Lyr)});
+    const wave = lt / 7 * Lyr;
+    for (let l = 0; l < Lyr; l++) { const r = rng(40 + l), act = clamp(wave - l);
+      for (let i = 0; i < cols; i++) for (let j = 0; j < cols; j++) { const w = r(); if (w < .72) continue; const a = P(l, i), b = P(l + 1, j);
+        ctx.globalAlpha = Math.min(1, fade * act * (w - .7) * 3.6 * (.65 + .35 * Math.sin(t * 3 + i + j))); ctx.strokeStyle = (i + j) % 3 ? VIOLET : PINK; ctx.lineWidth = (w - .7) * 7 * u;
+        ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.bezierCurveTo(a.x, lerp(a.y, b.y, .5), b.x, lerp(a.y, b.y, .5), b.x, b.y); ctx.stroke(); } }
+    for (let l = 0; l <= Lyr; l++) for (let i = 0; i < cols; i++) { const q = P(l, i), act = clamp(wave - l + 1); ctx.globalAlpha = fade * (.25 + .75 * act); glow(l === Lyr ? PINK : CYAN, 14 * u * act); ctx.fillStyle = l === 0 ? INK : l === Lyr ? PINK : CYAN; ctx.beginPath(); ctx.arc(q.x, q.y, (l === 0 ? 4 : 3) * u, 0, Math.PI * 2); ctx.fill(); noGlow(); }
+    toks.forEach((w, i) => { const q = P(0, i); ctx.globalAlpha = fade; label(w, q.x, q.y + 22 * u, {size: 14, color: INK, font: LAT, weight: 600}); });
+    ctx.globalAlpha = fade * .8; label(`${C.layer} ×12`, x0 - 20 * u, lerp(yb, yt, .5), {size: 11, align: 'right'}); label('[CLS]', P(Lyr, 0).x - 26 * u, P(Lyr, 0).y, {size: 11, align: 'right', color: PINK});
+    const k = easeOut(seg(lt, 7.2, 8.2));
+    if (k > 0) { const tech = D.techniques.find(x => x.key === ex.tech); ctx.globalAlpha = fade; chip(name(tech), W / 2, yt - 44 * u + (1 - k) * 20 * u, PINK, fade * k); label(C.cls, W / 2, yt - 72 * u, {size: 11, color: MUTED}); }
+    ctx.globalAlpha = 1;
+  }},
+  {dur: 12, draw(lt, p, t) { // media fingerprints
+    const u = unit(), rows = D.outlets, cw = Math.min(26 * u, W * .6 / 22), ch = cw * .9, gx = W / 2 - cw * 11 + 40 * u, gy = H * .16, fade = seg(lt, 0, .8) * (1 - seg(lt, 11.3, 12));
+    const r = rng(77);
+    rows.forEach((o, ri) => {
+      const top = Math.max(...o.mix), y = gy + ri * (ch + 8 * u);
+      ctx.globalAlpha = fade * seg(lt, .3 + ri * .12, .9 + ri * .12); label(o.name, gx - 14 * u, y + ch / 2, {size: 12, color: ri === 0 ? PINK : '#d8d0f0', align: 'right', font: LAT});
+      o.mix.forEach((m, k) => {
+        const sx = r() * W, sy = r() * H, e = ease(seg(lt, .6 + ri * .16 + k * .02, 2.2 + ri * .16 + k * .02)), a = m / top;
+        const x = lerp(sx, gx + k * cw, e), y2 = lerp(sy, y, e);
+        ctx.globalAlpha = fade * (.15 + .85 * e); ctx.fillStyle = `rgba(255,${Math.round(79 + (1 - a) * 120)},${Math.round(154 + (1 - a) * 60)},${.12 + a * .88})`;
+        if (a > .8 && e > .9) glow(PINK, 10 * u);
+        rr(x + 1, y2 + 1, cw - 2, ch - 2, 3 * u); ctx.fill(); noGlow();
+      });
+      ctx.globalAlpha = fade * seg(lt, 2.4 + ri * .16, 3 + ri * .16); label(n(Math.round(o.total * easeOut(seg(lt, 2.4 + ri * .16, 4 + ri * .16)))), gx + 22 * cw + 12 * u, y + ch / 2, {size: 12, color: ri === 0 ? PINK : MUTED, align: 'left'});
+    });
+    const hk = seg(lt, 6, 6.8);
+    if (hk > 0) { ctx.globalAlpha = fade * hk; glow(PINK, 30 * u); ctx.strokeStyle = PINK; ctx.lineWidth = 2 * u; rr(gx - 150 * u, gy - 6 * u, 22 * cw + 230 * u, ch + 12 * u, 10 * u); ctx.stroke(); noGlow();
+      label(`≈ ${ratio}×`, gx + 22 * cw, gy - 22 * u, {size: 18, color: PINK, weight: 700, font: LAT, align: 'right'}); }
+    ctx.globalAlpha = fade * seg(lt, 3, 4); label(D.mix.slice(0, 22).length + ' techniques →', gx, gy + rows.length * (ch + 8 * u) + 14 * u, {size: 11, align: 'left'});
+    ctx.globalAlpha = 1;
+  }},
+  {dur: 10, draw(lt, p, t) { // outro: the title condenses, stats underneath
+    const u = unit(), k = ease(seg(lt, .2, 3.4));
+    swarm(SEED, TXT.title, k, t, i => i % 5 === 0 ? AMBER : i % 2 ? PINK : VIOLET, .6);
+    crisp(C.title, 58, .4, seg(lt, 2.8, 4), INK, 2);
+    const stats = [[S.spans, L === 'en' ? 'spans' : '片段'], [22, L === 'en' ? 'techniques' : '手法'], [5, L === 'en' ? 'languages' : '語言'], [S.outlets, L === 'en' ? 'outlets' : '媒體'], [S.slogans, 'GPT-2']];
+    stats.forEach(([v, lab], i) => { const x = W / 2 + (i - 2) * 150 * u, a = seg(lt, 3.4 + i * .2, 4.2 + i * .2); ctx.globalAlpha = a; label(n(Math.round(v * easeOut(a))), x, H * .62, {size: 26, color: INK, font: MONO, weight: 600}); label(lab, x, H * .62 + 24 * u, {size: 11, font: L === 'en' ? LAT : CJK}); });
+    ctx.globalAlpha = 1;
+  }},
+];
+let acc = 0; SCENES.forEach(s => { s.start = acc; acc += s.dur; });
+const TOTAL = acc;
+
+/* ---------- playback ---------- */
+let time = Math.min(TOTAL, Math.max(0, Number(q.get('t')) || 0)), playing = false, last = 0, scene = -1, idleTimer;
+const fmt = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+function paintUI() {
+  $('fill').style.width = `${time / TOTAL * 100}%`;
+  $('time').textContent = `${fmt(time)} / ${fmt(TOTAL)}`;
+  $('play').innerHTML = playing ? '<svg viewBox="0 0 24 24"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>' : '<svg viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z"/></svg>';
+  $('end').classList.toggle('on', time >= TOTAL - .05);
+}
+function setScene(i) {
+  if (i === scene) return; scene = i;
+  const cap = $('cap'); cap.classList.remove('on');
+  setTimeout(() => { $('cap-h').textContent = C.caps[i][0]; $('cap-p').textContent = C.caps[i][1]; if (scene === i) cap.classList.add('on'); }, 260);
+  chime(i);
+}
+function frame(ts) {
+  const dt = last ? Math.min(.05, (ts - last) / 1000) : 0; last = ts;
+  if (playing) { time += dt; if (time >= TOTAL) { time = TOTAL; playing = false; } }
+  const i = Math.max(0, SCENES.findIndex(s => time < s.start + s.dur)) , s = SCENES[i === -1 ? SCENES.length - 1 : i];
+  setScene(SCENES.indexOf(s));
+  ctx.clearRect(0, 0, W, H); background(time);
+  s.draw(Math.min(s.dur, time - s.start), (time - s.start) / s.dur, time);
+  paintUI();
+  requestAnimationFrame(frame);
+}
+function play(on = !playing) { if (on && time >= TOTAL) time = 0; playing = on; last = 0; $('start').classList.add('off'); if (on) audio(true); paintUI(); }
+function seek(t) { time = clamp(t, 0, TOTAL); paintUI(); }
+
+/* ---------- optional ambient sound (Web Audio, generated, off by default) ---------- */
+let AC = null, master = null, soundOn = false;
+function audio(start) {
+  if (!soundOn || !start || AC) return;
+  AC = new (window.AudioContext || window.webkitAudioContext)(); master = AC.createGain(); master.gain.value = 0; master.connect(AC.destination);
+  const lp = AC.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 900; lp.connect(master);
+  [110, 164.8, 220.5, 329.6].forEach((f, i) => { const o = AC.createOscillator(), g = AC.createGain(); o.type = i % 2 ? 'sine' : 'triangle'; o.frequency.value = f; o.detune.value = (i - 1.5) * 6; g.gain.value = .05; o.connect(g); g.connect(lp); o.start(); });
+  const lfo = AC.createOscillator(), lg = AC.createGain(); lfo.frequency.value = .08; lg.gain.value = 400; lfo.connect(lg); lg.connect(lp.frequency); lfo.start();
+  master.gain.linearRampToValueAtTime(.35, AC.currentTime + 2);
+}
+function chime(i) {
+  if (!AC || !soundOn) return;
+  const o = AC.createOscillator(), g = AC.createGain(); o.type = 'sine'; o.frequency.value = [523, 587, 659, 784, 880, 988, 1047, 1175, 1319][i % 9];
+  g.gain.setValueAtTime(0, AC.currentTime); g.gain.linearRampToValueAtTime(.12, AC.currentTime + .02); g.gain.exponentialRampToValueAtTime(.0001, AC.currentTime + 1.6);
+  o.connect(g); g.connect(master); o.start(); o.stop(AC.currentTime + 1.7);
+}
+function toggleSound() {
+  soundOn = !soundOn; $('snd').textContent = C.snd[soundOn ? 1 : 0]; $('snd').setAttribute('aria-pressed', String(soundOn));
+  if (soundOn) { if (!AC) audio(true); else { AC.resume(); master.gain.linearRampToValueAtTime(.35, AC.currentTime + .5); } }
+  else if (AC) master.gain.linearRampToValueAtTime(0, AC.currentTime + .4);
+}
+
+/* ---------- UI wiring ---------- */
+function applyLang() {
+  C = T[L]; document.documentElement.lang = L === 'en' ? 'en' : L === 'zh-CN' ? 'zh-Hans' : 'zh-Hant';
+  const base = L === 'en' ? '/' : L === 'zh-CN' ? '/zh-cn/' : '/zh-tw/';
+  $('back').href = $('home').href = `${base}#research`; $('home').textContent = C.home;
+  $('go-label').textContent = C.go; $('go-sub').textContent = C.goSub; $('snd').textContent = C.snd[soundOn ? 1 : 0];
+  $('lang').textContent = {en: 'EN', 'zh-TW': '繁', 'zh-CN': '简'}[L];
+  $('track').querySelectorAll('.tick').forEach(e => e.remove());
+  SCENES.forEach((s, i) => { if (!i) return; const tk = document.createElement('div'); tk.className = 'tick'; tk.style.left = `${s.start / TOTAL * 100}%`; tk.innerHTML = `<span>${C.chapters[i]}</span>`; tk.addEventListener('click', e => { e.stopPropagation(); seek(s.start + .01); }); $('track').append(tk); });
+  scene = -1; buildParticles();
+}
+$('go').addEventListener('click', () => play(true));
+$('play').addEventListener('click', () => play());
+$('replay').addEventListener('click', () => { seek(0); play(true); });
+$('track').addEventListener('click', e => { const r = e.currentTarget.getBoundingClientRect(); seek((e.clientX - r.left) / r.width * TOTAL); });
+$('lang').addEventListener('click', () => { L = {en: 'zh-TW', 'zh-TW': 'zh-CN', 'zh-CN': 'en'}[L]; applyLang(); });
+$('snd').addEventListener('click', toggleSound);
+$('fs').addEventListener('click', () => document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen?.());
+addEventListener('keydown', e => {
+  if (e.key === ' ') { e.preventDefault(); play(); }
+  else if (e.key === 'ArrowRight') seek(time + 5); else if (e.key === 'ArrowLeft') seek(time - 5);
+  else if (e.key.toLowerCase() === 'f') $('fs').click(); else if (e.key.toLowerCase() === 'r') { seek(0); play(true); }
+});
+addEventListener('pointermove', () => { document.body.classList.remove('idle'); clearTimeout(idleTimer); idleTimer = setTimeout(() => playing && document.body.classList.add('idle'), 2600); });
+addEventListener('resize', () => { clearTimeout(resize.t); resize.t = setTimeout(resize, 150); });
+window.__film = {seek, play, get time() { return time; }, TOTAL};
+
+resize(); applyLang();
+(document.fonts?.ready || Promise.resolve()).then(() => buildParticles());
+if (q.get('clean') === '1') $('ui').style.display = 'none'; // for recording the teaser
+if (q.has('t')) { $('start').classList.add('off'); if (q.get('autoplay') === '1') play(true); }
+requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

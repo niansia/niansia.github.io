@@ -199,6 +199,7 @@
     return `<section class="capstone" id="capstone" aria-labelledby="cap-title">
       <p class="cap-kicker">${esc(C.kicker)}</p><h2 id="cap-title" class="cap-title">${esc(C.title)}</h2><p class="cap-lede">${esc(C.lede)}</p>
       <div class="cap-meta">${C.tags.map(t=>`<em>${esc(t)}</em>`).join('')}</div>
+      ${C.filmTitle?`<a class="cap-film" href="/assets/film/propaganda.html?lang=${locale}" target="_blank" rel="noopener"><video src="/assets/film/teaser.mp4" poster="/assets/film/teaser-poster.jpg" muted loop playsinline preload="metadata" ${motion()?'autoplay':''} aria-hidden="true"></video><span class="cap-film-play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z"/></svg></span><span class="cap-film-text"><b>${esc(C.filmTitle)}</b><small>${esc(C.filmSub)}</small></span></a>`:''}
       <div class="cap-stats">${stats}</div>
       <h3>${esc(C.pipeTitle)}</h3><ol class="cap-pipe">${pipe}</ol>
       <h3>${esc(C.demoTitle)}</h3><div class="cap-demo"><div class="cap-demo-bar"><span class="cap-led" aria-hidden="true"></span><span class="cap-demo-langs" role="group">${langs}</span></div><p class="cap-sentence" aria-live="polite"></p><div class="cap-verdict"><span class="cap-chip"></span><span class="cap-dots">${dots}</span></div><small>${esc(C.demoNote)}</small></div>

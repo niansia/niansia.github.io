@@ -667,7 +667,9 @@ window.NIANSIA_CAPSTONE = {
    "mediaNote": "Each cell is one of the 22 techniques; the darker it is, the larger that technique’s share at this outlet. Totals on the right.",
    "other": "other",
    "footnote": "# The original code and data stay private; this page shows the method and aggregate results only.",
-   "open": "See the capstone"
+   "open": "See the capstone",
+   "filmTitle": "Watch the capstone film",
+   "filmSub": "About 100 seconds of particles, scanning beams, a generative model and attention telling the whole project."
   },
   "zh-TW": {
    "kicker": "大學專題 · Undergraduate capstone",
@@ -742,7 +744,9 @@ window.NIANSIA_CAPSTONE = {
    "mediaNote": "每一格是一種宣傳手法（共 22 種），顏色越深代表該手法在這家媒體中佔比越高；右側為手法出現總次數。",
    "other": "其他",
    "footnote": "# 原始程式碼與資料不公開，此頁只呈現方法流程與彙總結果。",
-   "open": "看大學專題"
+   "open": "看大學專題",
+   "filmTitle": "觀看專題動畫",
+   "filmSub": "約 100 秒：粒子、掃描光束、生成模型與注意力，把整個專題演一遍。"
   },
   "zh-CN": {
    "kicker": "大学专题 · Undergraduate capstone",
@@ -817,7 +821,9 @@ window.NIANSIA_CAPSTONE = {
    "mediaNote": "每一格是一种宣传手法（共 22 种），颜色越深代表该手法在这家媒体中占比越高；右侧为手法出现总次数。",
    "other": "其他",
    "footnote": "# 原始代码与数据不公开，此页只呈现方法流程与汇总结果。",
-   "open": "看大学专题"
+   "open": "看大学专题",
+   "filmTitle": "观看专题动画",
+   "filmSub": "约 100 秒：粒子、扫描光束、生成模型与注意力，把整个专题演一遍。"
   }
  }
 };
