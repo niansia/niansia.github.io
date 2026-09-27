@@ -125,7 +125,10 @@
   }
   function button(path,label,primary=false) { return `<button class="action-button ${primary?'primary':''}" data-view="${path}"><span>${label}</span>${icon('arrow')}</button>`; }
   function homeScreen(c) {
-    const latest = projects()[0];
+    const featured = [
+      {id:'lumigrid',ext:'.pth',copy:c.newestLumi,media:'<span class="lg-thumb"><img src="/assets/lumigrid/0_out.jpg" alt="" loading="lazy" width="1280" height="856"><img class="lg-thumb-in" src="/assets/lumigrid/0_in.jpg" alt="" loading="lazy" width="1280" height="856"><i aria-hidden="true"></i></span>'},
+      {id:'taiwan-exam',ext:'.skill',copy:c.newest,media:'<img src="/assets/work/taiwan-exam-social-preview.png" alt="" loading="lazy" width="1280" height="640">'}
+    ].map(f=>({...f,p:projects().find(p=>p.id===f.id)})).filter(f=>f.p);
     const boot = booted || !motion() ? 'boot-lines' : 'boot-lines is-booting';
     booted = true;
     const name = c.name.replace('Niansia', '<span class="name-glow" translate="no">Niansia</span>');
@@ -135,7 +138,7 @@
       <div class="profile-facts"><span>${c.role}</span><span>${c.leave}</span>${subCopy()?`<button type="button" class="sub-chip" data-view="research">✍ ${subCopy().chip}${nextDeadline()?` · <b data-deadline="${nextDeadline().deadline}">${countdown(nextDeadline().deadline)}</b>`:''}</button>`:''}</div>
       <div class="output-actions">${button('projects',c.start,true)}${button('about',c.more)}</div>
       <div class="home-cards">
-        <button class="home-card latest-card" data-project="${latest.id}"><span class="card-label">${c.latestCard} <span>↗</span></span><img src="/assets/work/taiwan-exam-social-preview.png" alt="" loading="lazy" width="1280" height="640"><strong translate="no">${latest.name} <span class="file-extension">.skill</span></strong><span class="card-copy">${c.newest}</span></button>
+        <div class="home-card latest-card"><span class="card-label">${c.latestCard}${featured.length>1?`<span class="latest-dots">${featured.map((f,i)=>`<button type="button" class="latest-dot" data-latest-dot="${i}" aria-label="${esc(f.p.name)}" aria-pressed="${i===0}"></button>`).join('')}</span>`:''}</span><div class="latest-slides">${featured.map((f,i)=>`<button class="latest-slide${i?'':' is-on'}" data-project="${f.p.id}"${i?' tabindex="-1" aria-hidden="true"':''}>${f.media}<strong translate="no">${esc(f.p.name)} <span class="file-extension">${f.ext}</span></strong><span class="card-copy">${f.copy}</span></button>`).join('')}</div></div>
         <div class="home-card ask-card"><span class="card-label">${icon('chat')} ${c.askTitle}</span><p>${c.askIntro}</p><div class="ask-chips">${c.askChips.map(q=>`<button data-ask="${esc(q)}">${esc(q)}</button>`).join('')}</div></div>
       </div>
       <div class="quick-commands"><span class="card-label">${c.quickTitle}</span><div>${quick.map(cmd=>`<button data-command="${cmd}" translate="no"><span>$</span> ${cmd}</button>`).join('')}</div></div>`;
@@ -332,6 +335,12 @@
   }
   function paintCountdowns() { root.querySelectorAll('[data-deadline]').forEach(el=>{el.textContent=countdown(el.dataset.deadline);}); }
   setInterval(paintCountdowns,30000);
+  function showLatest(i) {
+    const card=$('.latest-card'); if(!card) return;
+    card.querySelectorAll('.latest-slide').forEach((el,k)=>{el.classList.toggle('is-on',k===i);el.tabIndex=k===i?0:-1;el.toggleAttribute('aria-hidden',k!==i);});
+    card.querySelectorAll('.latest-dot').forEach((el,k)=>el.setAttribute('aria-pressed',String(k===i)));
+  }
+  setInterval(()=>{const card=$('.latest-card');if(!card||!motion()||document.hidden||card.matches(':hover,:focus-within'))return;const slides=card.querySelectorAll('.latest-slide'),i=[...slides].findIndex(el=>el.classList.contains('is-on'));if(slides.length>1)showLatest((i+1)%slides.length);},6500);
   /* Off the clock: hobbies, cosplay and fandoms, kept apart from the research pages. */
   function hobbiesScreen() {
     const h=window.NIANSIA_HOBBIES, L=h?.[locale]||h?.en;
@@ -600,6 +609,7 @@
     if(!event.target.closest('.style-menu'))toggleStyles(false);
     if(event.target.closest('.window-title')&&$('.terminal-window').classList.contains('is-minimized'))windowAction('win-min');
     if(!target)return;
+    if(target.dataset.latestDot!==undefined){showLatest(Number(target.dataset.latestDot));return;}
     if(target.dataset.view){event.preventDefault();navigate(target.dataset.view,'',{keyboard:event.detail===0});}
     if(target.dataset.project){navigate('projects',target.dataset.project,{keyboard:event.detail===0});}
     if(target.dataset.projectStep){const i=projects().findIndex(p=>p.id===projectId),count=projects().length;navigate('projects',projects()[(i+Number(target.dataset.projectStep)+count)%count].id);}
