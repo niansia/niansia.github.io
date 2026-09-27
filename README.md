@@ -14,6 +14,8 @@ Publication and conference entries are designed to support a thumbnail, citation
 
 Yuki lives on the terminal's command line (`assets/js/yuki-pet.js`). Visitors can drag and drop her, rub her head, feed her, play yarn ball, send her to bed or ask her to lie down for pats. She keeps fullness, mood and energy in `localStorage`, nudges visitors who ignore her, and greets returning visitors. The pointer companion, trails (hearts, paw prints, stars, petals) and click bursts are in `assets/js/cursor-fx.js`. The page has five styles: porcelain, ink, sakura, matcha and retro CRT.
 
+She has a wardrobe of 24 looks and 14 head-anchored accessories (`assets/js/yuki-wardrobe.js`; see `tools/outfits/README.md` for how looks are built). On Taiwan holidays (`assets/js/festivals.js`: lunar dates via the browser's Chinese calendar, long weekends and compensatory days included) the whole page switches to a festival skin, Yuki changes into the matching look and accessory, and `festival list` shows the calendar.
+
 Her chat runs a small on-device model (`assets/js/yuki-brain.js`, weights in `assets/yuki/brain.json`, about 110 KB). Hashed character and word n-grams feed 16-d int8 embeddings, attention pooling and an MLP that picks one of 43 intents. Entity slots (project, language, style) and TF-IDF retrieval over the project texts ground the answers. Typed text never leaves the browser, and any line that isn't a command, typed into the terminal, is answered by Yuki.
 
 Regenerate the assets after editing their sources:

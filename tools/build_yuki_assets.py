@@ -1,4 +1,4 @@
-﻿"""Cut Yuki's original sprite sheet into the lightweight layers the site animates.
+"""Cut Yuki's original sprite sheet into the lightweight layers the site animates.
 
 Run from the repository root:  python tools/build_yuki_assets.py
 Input : assets/lab/yuki-sprites.png  (four full-body poses on one transparent sheet)
@@ -10,11 +10,15 @@ Output: assets/lab/yuki/pet.webp      (idle-without-tail, walk, happy, yawn, idl
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 
 import numpy as np
 from PIL import Image, ImageDraw, ImageFilter
 from scipy import ndimage
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from walk_cycle import cycle  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / 'assets/lab/yuki-sprites.png'
@@ -68,6 +72,10 @@ def split_tail(idle: np.ndarray) -> tuple[np.ndarray, np.ndarray, tuple[int, int
     if count > 1:
         sizes = ndimage.sum(rest, labels, range(1, count + 1))
         fur |= rest & (labels != int(np.argmax(sizes)) + 1) & region
+    if fur.sum() < 50:  # no separable tail (e.g. hidden by a dress): keep the body whole
+        tail = np.zeros_like(idle)
+        tail[h - 3:h - 1, w - 3:w - 1] = [255, 255, 255, 1]
+        return idle, tail, (h - 3, w - 3)
     tail = np.zeros_like(idle)
     tail[fur] = idle[fur]
     body = idle.copy()
@@ -99,34 +107,65 @@ def scaled(part: np.ndarray, factor: float) -> Image.Image:
     return img.resize((max(1, round(img.width * factor)), max(1, round(img.height * factor))), Image.LANCZOS)
 
 
-def main() -> None:
-    sheet = Image.open(SOURCE).convert('RGBA')
+def head_anchor(cell: np.ndarray) -> list[float]:
+    """Crown of the head (between the ears) and head width, as fractions of the cell, for accessories."""
+    h, w = cell.shape[:2]
+    alpha = cell[..., 3] > 60
+    cx = head_centre(cell)
+    band = alpha[:, max(0, int(cx - w * .06)):int(cx + w * .06)]
+    top = int(np.nonzero(band.any(axis=1))[0].min())
+    row = np.nonzero(alpha[min(h - 1, top + int(h * .06))])[0]
+    width = (row.max() - row.min()) if row.size else w * .4
+    return [round(cx / w, 4), round(top / h, 4), round(width / w, 4)]
+
+
+def skirt_hem(cell: np.ndarray) -> int:
+    """Lowest row of the skirt (navy, bluish pixels) in the lower body; a proportional fallback otherwise."""
+    h = cell.shape[0]
+    rgb = cell[..., :3].astype(int)
+    navy = (cell[..., 3] > 40) & (rgb[..., 2] - rgb[..., 0] > 10) & (rgb.mean(axis=2) < 110)
+    rows = [y for y in range(int(h * .45), int(h * .72)) if navy[y].sum() >= 6]
+    return (max(rows) - 2) if rows else int(h * .58)
+
+
+def main(source: Path = SOURCE, out: Path = OUT, blink_origin: bool = True) -> None:
+    sheet = Image.open(source).convert('RGBA')
     found = characters(sheet)
     parts = [part for part, _ in found]
     origin = found[0][1]
     names = ['idle', 'walk', 'happy', 'yawn']
     factor = CHAR_HEIGHT / max(p.shape[0] for p in parts)
     idle_body, tail, pivot = split_tail(parts[0])
-    frames = [idle_body, parts[1], parts[2], parts[3], blink(idle_body, origin)]
+    frames = [idle_body, parts[1], parts[2], parts[3], blink(idle_body, origin) if blink_origin else idle_body]
     centres = [head_centre(p) for p in parts] + [head_centre(parts[0])]
     half = max(max(c, p.shape[1] - c) for c, p in zip(centres, frames)) * factor
     cell_w, cell_h = int(np.ceil(half * 2)) + 4, CHAR_HEIGHT + 4
-    sheet_out = Image.new('RGBA', (cell_w * len(frames), cell_h))
-    offsets = []
-    for i, (frame, centre) in enumerate(zip(frames, centres)):
+    cells, offsets = [], []
+    for frame, centre in zip(frames, centres):
         img = scaled(frame, factor)
-        x = i * cell_w + round(cell_w / 2 - centre * factor)
-        y = cell_h - 2 - img.height
-        sheet_out.alpha_composite(img, (x, y))
-        offsets.append((x - i * cell_w, y))
+        cell = Image.new('RGBA', (cell_w, cell_h))
+        x, y = round(cell_w / 2 - centre * factor), cell_h - 2 - img.height
+        cell.alpha_composite(img, (x, y))
+        cells.append(np.asarray(cell)); offsets.append((x, y))
+    # Eight-frame walk cycle baked from the single walking pose (see walk_cycle.py).
+    try:
+        walk = cycle(cells[1], skirt_hem(cells[1]))
+    except Exception as error:  # long dresses hide the legs: fall back to the still stride
+        print('walk cycle fallback:', error)
+        walk = [cells[1]] * 8
+    cells += walk
+    sheet_out = Image.new('RGBA', (cell_w * len(cells), cell_h))
+    for i, cell in enumerate(cells):
+        sheet_out.alpha_composite(Image.fromarray(cell), (i * cell_w, 0))
     OUT.mkdir(parents=True, exist_ok=True)
-    sheet_out.save(OUT / 'pet.webp', quality=88, method=6)
+    out.mkdir(parents=True, exist_ok=True)
+    sheet_out.save(out / 'pet.webp', quality=88, method=6)
 
     ox, oy = offsets[0]
     tail_img = scaled(tail, factor)
     ys, xs = np.nonzero(np.asarray(tail_img)[..., 3] > 8)
     tail_box = (int(xs.min()), int(ys.min()), int(xs.max()) + 1, int(ys.max()) + 1)
-    tail_img.crop(tail_box).save(OUT / 'tail.webp', quality=88, method=6)
+    tail_img.crop(tail_box).save(out / 'tail.webp', quality=88, method=6)
 
     # Pointer companion busts: forehead-to-collar crops, square cells.
     # The happy bust shifts left so her whole waving hand stays in frame.
@@ -139,16 +178,21 @@ def main() -> None:
     heads = Image.new('RGBA', (160 * len(busts), 160))
     for i, bust in enumerate(busts):
         heads.alpha_composite(bust, (160 * i, 0))
-    heads.save(OUT / 'heads.webp', quality=90, method=6)
+    heads.save(out / 'heads.webp', quality=90, method=6)
 
     layout = {
-        'cell': [cell_w, cell_h], 'frames': names + ['blink'],
+        'cell': [cell_w, cell_h], 'frames': names + ['blink'] + [f'walk{i}' for i in range(8)],
+        'anchors': [head_anchor(cell) for cell in cells],
         'tail': {'box': [tail_box[0] + ox, tail_box[1] + oy, tail_box[2] + ox, tail_box[3] + oy],
                  'pivot': [round(pivot[0] * factor) + ox, round(pivot[1] * factor) + oy]},
     }
-    (OUT / 'layout.json').write_text(json.dumps(layout, indent=2) + '\n', encoding='utf-8')
+    (out / 'layout.json').write_text(json.dumps(layout, indent=2) + '\n', encoding='utf-8')
     print(json.dumps(layout))
 
 
 if __name__ == '__main__':
-    main()
+    # python tools/build_yuki_assets.py [sheet.png out_dir]  (defaults to the hoodie outfit)
+    if len(sys.argv) == 3:
+        main(Path(sys.argv[1]), Path(sys.argv[2]))
+    else:
+        main()

@@ -1,0 +1,352 @@
+[
+ {
+  "id": "01-jk-uniform",
+  "name": {
+   "zh-TW": "JK 學院制服",
+   "zh-CN": "JK 学院制服",
+   "en": "Academy uniform"
+  },
+  "festival": [],
+  "hair": "bob",
+  "long": false,
+  "sheet": "/assets/lab/yuki/outfits/01-jk-uniform/",
+  "thumb": "thumb.webp",
+  "ratio": 0.4887
+ },
+ {
+  "id": "02-sailor-uniform",
+  "name": {
+   "zh-TW": "水手服",
+   "zh-CN": "水手服",
+   "en": "Sailor outfit"
+  },
+  "festival": [],
+  "hair": "bob",
+  "long": false,
+  "sheet": "/assets/lab/yuki/outfits/02-sailor-uniform/",
+  "thumb": "thumb.webp",
+  "ratio": 0.4865
+ },
+ {
+  "id": "03-swimsuit",
+  "name": {
+   "zh-TW": "夏日泳裝",
+   "zh-CN": "夏日泳装",
+   "en": "Summer swimsuit"
+  },
+  "festival": [],
+  "hair": "bob",
+  "long": false,
+  "sheet": "/assets/lab/yuki/outfits/03-swimsuit/",
+  "thumb": "thumb.webp",
+  "ratio": 0.4887
+ },
+ {
+  "id": "04-wedding-dress",
+  "name": {
+   "zh-TW": "星光婚紗",
+   "zh-CN": "星光婚纱",
+   "en": "Wedding dress"
+  },
+  "festival": [
+   "valentine"
+  ],
+  "hair": "bob",
+  "long": true,
+  "sheet": "/assets/lab/yuki/outfits/04-wedding-dress/",
+  "thumb": "thumb.webp",
+  "ratio": 0.6441
+ },
+ {
+  "id": "05-yukata",
+  "name": {
+   "zh-TW": "花火浴衣",
+   "zh-CN": "花火浴衣",
+   "en": "Festival yukata"
+  },
+  "festival": [
+   "qixi"
+  ],
+  "hair": "bob",
+  "long": true,
+  "sheet": "/assets/lab/yuki/outfits/05-yukata/",
+  "thumb": "thumb.webp",
+  "ratio": 0.4887
+ },
+ {
+  "id": "06-midautumn-hanfu",
+  "name": {
+   "zh-TW": "月兔漢服",
+   "zh-CN": "月兔汉服",
+   "en": "Moon festival hanfu"
+  },
+  "festival": [
+   "lantern",
+   "dragonboat"
+  ],
+  "hair": "bob",
+  "long": true,
+  "sheet": "/assets/lab/yuki/outfits/06-midautumn-hanfu/",
+  "thumb": "thumb.webp",
+  "ratio": 0.5135
+ },
+ {
+  "id": "07-newyear-qipao",
+  "name": {
+   "zh-TW": "新春旗袍",
+   "zh-CN": "新春旗袍",
+   "en": "New year qipao"
+  },
+  "festival": [
+   "lunarnewyear"
+  ],
+  "hair": "bob",
+  "long": false,
+  "sheet": "/assets/lab/yuki/outfits/07-newyear-qipao/",
+  "thumb": "thumb.webp",
+  "ratio": 0.4865
+ },
+ {
+  "id": "08-researcher",
+  "name": {
+   "zh-TW": "研究員白袍",
+   "zh-CN": "研究员白袍",
+   "en": "Research lab coat"
+  },
+  "festival": [],
+  "hair": "bob",
+  "long": false,
+  "sheet": "/assets/lab/yuki/outfits/08-researcher/",
+  "thumb": "thumb.webp",
+  "ratio": 0.4955
+ },
+ {
+  "id": "09-cyber-techwear",
+  "name": {
+   "zh-TW": "賽博工程師",
+   "zh-CN": "赛博工程师",
+   "en": "Cyber techwear"
+  },
+  "festival": [
+   "labor"
+  ],
+  "hair": "bob",
+  "long": false,
+  "sheet": "/assets/lab/yuki/outfits/09-cyber-techwear/",
+  "thumb": "thumb.webp",
+  "ratio": 0.4865
+ },
+ {
+  "id": "10-cafe-maid",
+  "name": {
+   "zh-TW": "咖啡館女僕",
+   "zh-CN": "咖啡馆女仆",
+   "en": "Cafe maid"
+  },
+  "festival": [],
+  "hair": "bob",
+  "long": false,
+  "sheet": "/assets/lab/yuki/outfits/10-cafe-maid/",
+  "thumb": "thumb.webp",
+  "ratio": 0.4932
+ },
+ {
+  "id": "11-autumn-cardigan",
+  "name": {
+   "zh-TW": "秋日針織",
+   "zh-CN": "秋日针织",
+   "en": "Autumn knitwear"
+  },
+  "festival": [
+   "retrocession",
+   "peace"
+  ],
+  "hair": "bob",
+  "long": true,
+  "sheet": "/assets/lab/yuki/outfits/11-autumn-cardigan/",
+  "thumb": "thumb.webp",
+  "ratio": 0.4887
+ },
+ {
+  "id": "12-winter-coat",
+  "name": {
+   "zh-TW": "雪日大衣",
+   "zh-CN": "雪日大衣",
+   "en": "Winter coat"
+  },
+  "festival": [
+   "newyear"
+  ],
+  "hair": "bob",
+  "long": false,
+  "sheet": "/assets/lab/yuki/outfits/12-winter-coat/",
+  "thumb": "thumb.webp",
+  "ratio": 0.4932
+ },
+ {
+  "id": "13-christmas",
+  "name": {
+   "zh-TW": "聖誕冬裝",
+   "zh-CN": "圣诞冬装",
+   "en": "Christmas outfit"
+  },
+  "festival": [
+   "christmas"
+  ],
+  "hair": "bob",
+  "long": false,
+  "sheet": "/assets/lab/yuki/outfits/13-christmas/",
+  "thumb": "thumb.webp",
+  "ratio": 0.4887
+ },
+ {
+  "id": "14-halloween-witch",
+  "name": {
+   "zh-TW": "月夜魔女",
+   "zh-CN": "月夜魔女",
+   "en": "Moonlight witch"
+  },
+  "festival": [
+   "halloween"
+  ],
+  "hair": "low-twin-tails",
+  "long": false,
+  "sheet": "/assets/lab/yuki/outfits/14-halloween-witch/",
+  "thumb": "thumb.webp",
+  "ratio": 0.5
+ },
+ {
+  "id": "15-sportswear",
+  "name": {
+   "zh-TW": "元氣運動服",
+   "zh-CN": "元气运动服",
+   "en": "Sporty tennis outfit"
+  },
+  "festival": [
+   "children"
+  ],
+  "hair": "high-twin-tails",
+  "long": false,
+  "sheet": "/assets/lab/yuki/outfits/15-sportswear/",
+  "thumb": "thumb.webp",
+  "ratio": 0.473
+ },
+ {
+  "id": "16-pajamas",
+  "name": {
+   "zh-TW": "晚安睡衣",
+   "zh-CN": "晚安睡衣",
+   "en": "Cozy pajamas"
+  },
+  "festival": [],
+  "hair": "side-braid",
+  "long": false,
+  "sheet": "/assets/lab/yuki/outfits/16-pajamas/",
+  "thumb": "thumb.webp",
+  "ratio": 0.5023
+ },
+ {
+  "id": "17-summer-dress",
+  "name": {
+   "zh-TW": "紫藤洋裝",
+   "zh-CN": "紫藤洋装",
+   "en": "Wisteria sundress"
+  },
+  "festival": [],
+  "hair": "long-waves-half-up",
+  "long": false,
+  "sheet": "/assets/lab/yuki/outfits/17-summer-dress/",
+  "thumb": "thumb.webp",
+  "ratio": 0.482
+ },
+ {
+  "id": "18-teacher-formal",
+  "name": {
+   "zh-TW": "知性教師裝",
+   "zh-CN": "知性教师装",
+   "en": "Teacher formalwear"
+  },
+  "festival": [
+   "teachers"
+  ],
+  "hair": "low-ponytail",
+  "long": true,
+  "sheet": "/assets/lab/yuki/outfits/18-teacher-formal/",
+  "thumb": "thumb.webp",
+  "ratio": 0.4775
+ },
+ {
+  "id": "19-jk-white-twintails",
+  "name": {
+   "zh-TW": "白絲襪雙馬尾制服",
+   "zh-CN": "白丝袜双马尾制服",
+   "en": "Ivory tights & twin tails"
+  },
+  "festival": [],
+  "hair": "long-high-twin-tails",
+  "long": false,
+  "sheet": "/assets/lab/yuki/outfits/19-jk-white-twintails/",
+  "thumb": "thumb.webp",
+  "ratio": 0.482
+ },
+ {
+  "id": "20-pink-cafe-longhair",
+  "name": {
+   "zh-TW": "莓粉女僕・長髮白襪",
+   "zh-CN": "莓粉女仆・长发白袜",
+   "en": "Rose cafe & long hair"
+  },
+  "festival": [],
+  "hair": "long-straight-half-up",
+  "long": false,
+  "sheet": "/assets/lab/yuki/outfits/20-pink-cafe-longhair/",
+  "thumb": "thumb.webp",
+  "ratio": 0.4932
+ },
+ {
+  "id": "21-moon-rabbit-yukata",
+  "name": {
+   "zh-TW": "月兔浴衣",
+   "zh-CN": "月兔浴衣",
+   "en": "Moon rabbit yukata"
+  },
+  "festival": [
+   "midautumn"
+  ],
+  "hair": "twin-buns",
+  "long": true,
+  "sheet": "/assets/lab/yuki/outfits/21-moon-rabbit-yukata/",
+  "thumb": "thumb.webp",
+  "ratio": 0.4842
+ },
+ {
+  "id": "22-cat-pajamas",
+  "name": {
+   "zh-TW": "貓咪睡衣",
+   "zh-CN": "猫咪睡衣",
+   "en": "Cat pajamas"
+  },
+  "festival": [],
+  "hair": "loose-long-hair",
+  "long": false,
+  "sheet": "/assets/lab/yuki/outfits/22-cat-pajamas/",
+  "thumb": "thumb.webp",
+  "ratio": 0.4865
+ },
+ {
+  "id": "23-idol-stage",
+  "name": {
+   "zh-TW": "星光偶像舞台裝",
+   "zh-CN": "星光偶像舞台装",
+   "en": "Starlight idol outfit"
+  },
+  "festival": [
+   "national"
+  ],
+  "hair": "idol-twin-tails",
+  "long": false,
+  "sheet": "/assets/lab/yuki/outfits/23-idol-stage/",
+  "thumb": "thumb.webp",
+  "ratio": 0.5023
+ }
+]

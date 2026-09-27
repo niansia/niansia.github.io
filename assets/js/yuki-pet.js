@@ -57,7 +57,7 @@
       <svg class="bed-back" viewBox="0 0 200 62" preserveAspectRatio="none"><ellipse class="bed-rim" cx="100" cy="27" rx="98" ry="25"/><ellipse class="bed-hole" cx="100" cy="27" rx="84" ry="15"/></svg>
       <svg class="bed-front" viewBox="0 0 200 62" preserveAspectRatio="none"><defs><linearGradient id="yuki-bed-front" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="bed-front-top"/><stop offset="1" class="bed-front-bottom"/></linearGradient></defs><path fill="url(#yuki-bed-front)" d="M2 27A98 34 0 0 0 198 27L186 27A86 16 0 0 1 14 27Z"/><path class="bed-stitch" d="M22 40Q100 64 178 40"/></svg></div>
     <div class="yuki-tailbox" aria-hidden="true"><i class="yuki-tail"></i></div>
-    <button type="button" class="yuki-hit" aria-haspopup="true" aria-expanded="false"><span class="yuki-figure"><span class="yuki-sprite"></span></span></button>
+    <button type="button" class="yuki-hit" aria-haspopup="true" aria-expanded="false"><span class="yuki-figure"><span class="yuki-sprite"></span><span class="yuki-acc" aria-hidden="true" hidden></span></span></button>
     <div class="yuki-blanket" aria-hidden="true"></div><div class="yuki-bowl" aria-hidden="true"><i class="bowl-fish"></i><i class="bowl-dish"></i></div>
     <div class="yuki-fx" aria-hidden="true"></div>
     <div class="yuki-bubble" role="status" aria-live="polite" hidden><p></p><div class="bubble-actions"></div></div>
@@ -72,17 +72,70 @@
   const $ = (sel, scope = pet) => scope.querySelector(sel);
   const hit = $('.yuki-hit'), bubble = $('.yuki-bubble'), fxLayer = $('.yuki-fx'), badge = $('.yuki-badge');
 
+  /* ---------- wardrobe: outfit sheets, head-anchored accessories, festivals ---------- */
+  const accEl = $('.yuki-acc');
+  let outfitToken = 0, cellRatio = 191 / 444, stride = 160;
+  let anchors = [], outfitChoice = app.store.get('yuki-outfit', 'auto'), outfit = 'hoodie', accChoice = app.store.get('yuki-acc', 'auto'), wardrobeOpen = false;
+  const festival = () => window.NIANSIA_FESTIVAL?.active() || null;
+  const wardrobe = () => window.YukiWardrobe;
+  function loadOutfit(choice) {
+    const list = wardrobe()?.outfits() || [];
+    let id = choice;
+    if (choice === 'auto') {  // festival outfit when its art exists, otherwise the hoodie
+      const fest = festival();
+      id = (fest && fest.ids.map(fid => list.find(o => (o.festival || []).includes(fid))).find(Boolean)?.id) || 'hoodie';
+    }
+    const o = list.find(x => x.id === id) || list[0] || {id: 'hoodie', sheet: '/assets/lab/yuki/'};
+    outfit = o.id;
+    const token = ++outfitToken, first = !pet.style.getPropertyValue('--sheet');
+    // Preload the sheet and its layout, then swap everything in one go (no half-drawn frame).
+    const sheet = new Image();
+    sheet.src = `${o.sheet}pet.webp`;
+    Promise.all([fetch(o.sheet + 'layout.json').then(r => r.json()), sheet.decode().catch(() => {})]).then(([l]) => {
+      if (token !== outfitToken) return;
+      anchors = l.anchors || [];
+      cellRatio = l.cell ? l.cell[0] / l.cell[1] : 191 / 444;
+      stride = l.tail === null ? 120 : 160;
+      pet.dataset.tail = l.tail === null ? '0' : '1';
+      pet.style.setProperty('--sheet', `url('${o.sheet}pet.webp')`);
+      pet.style.setProperty('--tail-img', `url('${o.sheet}tail.webp')`);
+      document.documentElement.style.setProperty('--yuki-heads', `url('${o.sheet}heads.webp')`);
+      measure(); place(); setFrame(frame); pet.classList.add('is-ready');
+      if (!first && motion()) { pet.classList.remove('is-changing'); void pet.offsetWidth; pet.classList.add('is-changing'); puff('star', 4, .8); }
+    }).catch(() => {});
+  }
+  function accessoryId() {
+    if (accChoice === 'auto') return festival()?.primary.accessory || '';
+    return accChoice === 'none' ? '' : accChoice;
+  }
+  function paintAccessory() {
+    const item = wardrobe()?.render(accessoryId());
+    accEl.hidden = !item;
+    accEl.innerHTML = item ? item.html : '';
+    if (!item) return;
+    const vars = {'--aws': item.w, '--aax': item.ax, '--aay': item.ay, '--adx': item.dx || 0, '--ady': item.dy || 0, '--arot': `${item.rot || 0}deg`};
+    Object.entries(vars).forEach(([k, v]) => accEl.style.setProperty(k, v));
+  }
+  function festivalLine(f = festival()) {
+    if (!f) return '';
+    const L = app.locale();
+    const names = f.festivals.map(x => x.name[L]).join(L === 'en' ? ' & ' : '・');
+    const range = `${f.start.slice(5).replace('-', '/')}–${f.end.slice(5).replace('-', '/')}`;
+    return `${names}! ${f.primary.line[L]} (${range})`.replace('! ', L === 'en' ? '! ' : '！');
+  }
+
   /* ---------- geometry & motion state ---------- */
   let W = 67, H = 156, x = -999, y = 0, dir = -1, floorKind = 'command', grounded = true, vx = 0, vy = 0, dropFrom = 0;
   let pose = 'idle', frame = 0, asleep = false, tucked = false, dragging = false, busy = '', walkTo = null, raf = 0, last = 0;
   let behaviourTimer, blinkTimer, poseTimer, bubbleTimer, rubTimer, lieTimer, munchTimer;
   let down = null, rub = 0, rubHearts = 0, pokes = [], unread = 0, messages = [], lastInteract = now(), lastActive = now(), nudges = 0, hiddenAt = 0, titleBackup = '';
-  let ballState = null, sleptAt = 0;
+  let ballState = null, sleptAt = 0, walkPhase = 0;
+  const WALK_STRIDE = 160; // cell pixels travelled per 8-frame cycle (two steps), measured from the baked frames
 
   function measure() {
     const w = innerWidth, h = innerHeight;
     H = w < 720 ? 108 : (h < 760 || w < 1100) ? 134 : 156;
-    W = Math.round(H * 191 / 444);
+    W = Math.round(H * cellRatio);
     pet.style.setProperty('--h', `${H}px`); pet.style.setProperty('--w', `${W}px`);
   }
   function floors() {
@@ -118,11 +171,15 @@
   }
 
   /* ---------- poses ---------- */
-  function setFrame(f) { frame = f; pet.dataset.frame = String(f); }
+  function setFrame(f) {
+    frame = f; pet.dataset.frame = String(f); pet.style.setProperty('--f', f);
+    const a = anchors[f];
+    if (a) { pet.style.setProperty('--ax', a[0]); pet.style.setProperty('--ay', a[1]); pet.style.setProperty('--aw', a[2]); }
+  }
   function setPose(next, f, ms, after = 'idle') {
     clearTimeout(poseTimer);
     pose = next; pet.dataset.pose = next;
-    setFrame(f ?? ({idle: 0, walk: 1, happy: 2, yawn: 3, pet: 4, lie: 0, sleep: 3, eat: 0, drag: 1, fall: 1, dizzy: 3, annoyed: 0, trick: 2}[next] ?? 0));
+    setFrame(f ?? ({idle: 0, walk: 5, happy: 2, yawn: 3, pet: 4, lie: 0, sleep: 3, eat: 0, drag: 1, fall: 1, dizzy: 3, annoyed: 0, trick: 2}[next] ?? 0));
     if (ms) poseTimer = setTimeout(() => { if (pose === next) setPose(asleep ? 'sleep' : after); }, ms);
     paintState();
   }
@@ -201,10 +258,16 @@
       else active = true;
     }
     if (walkTo !== null && grounded && !dragging) {
-      const speed = busy === 'play' ? 150 : 60;
+      // Eight baked walk frames cover two steps; moving exactly one stride per step keeps the feet planted.
+      const fps = busy === 'play' ? 16 : 10, speed = (stride * H / 444) * fps / 8;
       const dx = walkTo - x;
       if (Math.abs(dx) < 3) { walkTo = null; if (pose === 'walk') restPose(); onArrive?.(); }
-      else { dir = dx > 0 ? 1 : -1; x += Math.sign(dx) * Math.min(Math.abs(dx), speed * dt); x = clamp(x, a, b); if (pose !== 'walk') setPose('walk'); active = true; }
+      else {
+        dir = dx > 0 ? 1 : -1; x += Math.sign(dx) * Math.min(Math.abs(dx), speed * dt); x = clamp(x, a, b);
+        if (pose !== 'walk') { setPose('walk'); walkPhase = 0; }
+        walkPhase += dt * fps; const step = 5 + Math.floor(walkPhase) % 8; if (step !== frame) setFrame(step);
+        active = true;
+      }
     }
     if (ballState) active = stepBall(dt) || active;
     place();
@@ -222,15 +285,45 @@
     behaviourTimer = setTimeout(() => {
       if (!busy && !asleep && !tucked && !dragging && grounded && menu.hidden && motion() && !document.hidden) {
         const r = Math.random(), f = floorOf(floorKind), [a, b] = bounds(f);
+        const near = pointer.t && now() - pointer.t < 8000 && pointer.y > f.y - H * 2.2;
         if (S.energy < 35 && r < .25) { setPose('yawn', 3, 1300); puff('zzz', 1); }
-        else if (r < .42) walk(clamp(x + rand(-260, 260), a, b));
-        else if (r < .56) { dir = -dir; place(); }
-        else if (r < .68) { setPose('happy', 2, 900); }
-        else if (r < .74 && S.energy < 55) lieDown(14000);
+        else if (near && r < .4) { walk(clamp(pointer.x, a, b), () => { dir = pointer.x > x ? 1 : -1; setPose('happy', 2, 900); puff('heart', 1); }); }
+        else if (r < .3) walk(clamp(x + rand(-260, 260), a, b));
+        else if (r < .38) walk(x < (a + b) / 2 ? b - rand(0, 80) : a + rand(0, 80));
+        else if (r < .5) { dir = -dir; place(); setTimeout(() => { if (pose === 'idle') { dir = -dir; place(); } }, 1400); }
+        else if (r < .6) stretch();
+        else if (r < .68) { setPose('happy', 2, 900); pet.classList.remove('is-hop'); void pet.offsetWidth; pet.classList.add('is-hop'); }
+        else if (r < .72 && S.mood > 75) trick();
+        else if (r < .78 && S.energy < 55) lieDown(14000);
       }
       schedule();
     }, rand(6000, 13000));
   }
+
+  /* ---------- small behaviours ---------- */
+  const pointer = {x: 0, y: 0, t: 0};
+  let lastWave = 0;
+  function stretch() {
+    setPose('yawn', 3, 1500);
+    pet.classList.remove('is-stretching'); void pet.offsetWidth; pet.classList.add('is-stretching');
+  }
+  document.addEventListener('pointermove', event => {
+    pointer.x = event.clientX; pointer.y = event.clientY; pointer.t = now();
+    // Wave when the pointer comes close (not while busy, asleep or being dragged).
+    if (dragging || busy || asleep || tucked || pose !== 'idle' || now() - lastWave < 25000 || !motion()) return;
+    const box = pet.getBoundingClientRect();
+    if (Math.hypot(event.clientX - (box.left + box.width / 2), event.clientY - (box.top + box.height * .3)) < 150 && !pet.contains(event.target)) {
+      lastWave = now(); dir = event.clientX > box.left + box.width / 2 ? 1 : -1; place();
+      setPose('happy', 2, 1000); puff('heart', 1);
+    }
+  }, {passive: true});
+  // Typing in the terminal: she turns to watch the command line.
+  document.addEventListener('input', event => {
+    if (!event.target.matches?.('[data-command-input]') || busy || asleep || dragging || tucked || pose !== 'idle') return;
+    const box = event.target.getBoundingClientRect();
+    const face = box.left + box.width / 2 > x ? 1 : -1;
+    if (face !== dir) { dir = face; place(); }
+  });
 
   /* ---------- actions ---------- */
   function interact() { lastInteract = now(); nudges = 0; }
@@ -452,7 +545,21 @@
       [asleep ? 'wake' : 'sleep', asleep ? 'sun' : 'moon', asleep ? a.wake : a.sleep], ['trick', 'star', a.trick], ['chat', 'chat', a.chat], ['hide', 'hide', a.hide]];
     menu.innerHTML = `<div class="menu-head"><span class="menu-avatar" data-face="${asleep ? 2 : S.mood > 70 ? 1 : 0}"></span><div><strong>Yuki</strong><small>${t().moodWords[moodKey()]}</small></div><span class="menu-level">♡ ${t().stats.level} ${level()}</span></div><p class="menu-say" aria-live="polite">${esc(bubble.hidden ? line('pet_pat') : bubble.querySelector('p').textContent)}</p>
       <div class="menu-stats">${statBar('food', S.food, 'is-food')}${statBar('mood', S.mood, 'is-mood')}${statBar('energy', S.energy, 'is-energy')}</div>
-      <div class="menu-actions">${acts.map(([key, ic, label]) => `<button type="button" role="menuitem" data-pet-act="${key}">${svg(ic)}<span>${label}</span>${key === 'chat' && unread ? `<em>${unread}</em>` : ''}</button>`).join('')}</div>`;
+      <div class="menu-actions">${acts.map(([key, ic, label]) => `<button type="button" role="menuitem" data-pet-act="${key}">${svg(ic)}<span>${label}</span>${key === 'chat' && unread ? `<em>${unread}</em>` : ''}</button>`).join('')}</div>
+      <button type="button" class="menu-wardrobe" data-wardrobe aria-expanded="${wardrobeOpen}">${svg('star')}<span>${t().wardrobe}</span><b>${wardrobeOpen ? '−' : '+'}</b></button>
+      ${wardrobeOpen ? renderWardrobe() : ''}`;
+  }
+  function renderWardrobe() {
+    const c = t(), L = app.locale(), list = wardrobe()?.outfits() || [], accs = wardrobe()?.accessories || {};
+    const fest = festival();
+    return `<div class="wardrobe">
+      <p>${c.outfitsLabel}</p><div class="wardrobe-outfits"><button type="button" data-outfit="auto" aria-pressed="${outfitChoice === 'auto'}"><span>✦ ${c.accAuto}</span></button>${list.map(o => `<button type="button" data-outfit="${o.id}" aria-pressed="${o.id === outfitChoice}" title="${esc(o.name?.[L] || o.id)}"><img src="${o.sheet}${o.thumb || 'heads.webp'}" alt="" loading="lazy" width="48" height="48"><span>${esc(o.name?.[L] || o.id)}</span></button>`).join('')}</div>
+      ${list.length < 2 ? `<small>${c.moreOutfits}</small>` : ''}
+      <p>${c.accessoriesLabel}</p><div class="wardrobe-accs">
+        <button type="button" data-acc="auto" aria-pressed="${accChoice === 'auto'}" title="${esc(c.accAuto)}">${fest ? window.NIANSIA_FESTIVAL.motif(fest.primary.motifs[0]) : '✦'}<span>${c.accAuto}</span></button>
+        <button type="button" data-acc="none" aria-pressed="${accChoice === 'none'}"><span>${c.accNone}</span></button>
+        ${Object.entries(accs).map(([id, a]) => `<button type="button" data-acc="${id}" aria-pressed="${accChoice === id}" title="${esc(a.name[L])}" aria-label="${esc(a.name[L])}">${a.svg}</button>`).join('')}
+      </div></div>`;
   }
   function placeMenu() {
     const box = pet.getBoundingClientRect(), mw = menu.offsetWidth, mh = menu.offsetHeight;
@@ -472,6 +579,11 @@
   }
   function closeMenu(refocus) { if (menu.hidden) return; menu.hidden = true; hit.setAttribute('aria-expanded', 'false'); if (refocus) hit.focus({preventScroll: true}); }
   menu.addEventListener('click', event => {
+    if (event.target.closest('[data-wardrobe]')) { wardrobeOpen = !wardrobeOpen; renderMenu(); placeMenu(); menu.querySelector('[data-wardrobe]')?.focus({preventScroll: true}); return; }
+    const o = event.target.closest('[data-outfit]');
+    if (o) { setOutfit(o.dataset.outfit); renderMenu(); say(t().outfitChanged); return; }
+    const a = event.target.closest('[data-acc]');
+    if (a) { setAccessory(a.dataset.acc); renderMenu(); menu.querySelector(`[data-acc="${a.dataset.acc}"]`)?.focus({preventScroll: true}); return; }
     const b = event.target.closest('[data-pet-act]'); if (!b) return;
     const key = b.dataset.petAct;
     if (key === 'chat') { closeMenu(); openChat(); return; }
@@ -485,6 +597,14 @@
     const step = {ArrowRight: 1, ArrowLeft: -1, ArrowDown: 4, ArrowUp: -4}[event.key];
     if (step) { event.preventDefault(); items[(i + step + items.length) % items.length]?.focus(); }
   });
+  function setOutfit(id) {
+    outfitChoice = id; loadOutfit(id); app.store.set('yuki-outfit', id);
+    setPose('trick', 2, 1100); pet.classList.remove('is-spinning'); void pet.offsetWidth; pet.classList.add('is-spinning'); puff('star', 3, .6);
+  }
+  function setAccessory(id) {
+    accChoice = id; app.store.set('yuki-acc', id); paintAccessory();
+    if (accessoryId()) { setPose('happy', 2, 900); puff('heart', 2); }
+  }
   function act(name) {
     interact();
     switch (name) {
@@ -690,6 +810,12 @@
   }
   async function think(raw) {
     const text = raw.trim();
+    if (/節日|节日|連假|连假|holiday|festival|什麼日子|什么日子/i.test(text)) {
+      const f = festival(), next = window.NIANSIA_FESTIVAL?.upcoming(new Date(), 1)[0];
+      const L = app.locale();
+      const upcoming = next ? `${next.festival.name[L]} ${next.start.slice(5).replace('-', '/')}` : '';
+      return {text: f ? festivalLine(f) : fill(t().festivalNone, {next: upcoming}), meta: 'festival'};
+    }
     let ok = !!brain;
     try { await brain.load(); } catch { ok = false; }
     const ent = ok ? brain.extract(text) : {text};
@@ -896,6 +1022,7 @@
   });
   window.addEventListener('niansia:theme', () => { if (!asleep) { setPose('happy', 2, 900); puff('star', 2, .5); } });
   window.addEventListener('niansia:locale', () => { if (!chat.hidden) renderChatShell(); if (!menu.hidden) renderMenu(); paintState(); });
+  window.addEventListener('niansia:festival', () => { loadOutfit(outfitChoice); paintAccessory(); if (!menu.hidden) renderMenu(); const l = festivalLine(); if (l) say(l); });
   window.addEventListener('niansia:shell', () => requestAnimationFrame(() => { reground(); paintState(); }));
   window.addEventListener('niansia:layout', () => requestAnimationFrame(reground));
   window.addEventListener('niansia:motion', event => { if (!event.detail.on) { walkTo = null; stopPlay(); } });
@@ -908,6 +1035,8 @@
   document.addEventListener('pointerdown', event => { if (!menu.hidden && !menu.contains(event.target) && !pet.contains(event.target)) closeMenu(); }, true);
 
   window.YUKI = {
+    walkTo: target => walk(clamp(target, ...bounds(floorOf(floorKind)))), stretch,
+    setOutfit, setAccessory, festivalLine, outfit: () => outfitChoice, accessory: () => accChoice,
     act, ask, say: (text, kind) => { if (kind === 'poke') poke(); say(text); pushMessage({who: 'yuki', text}); }, openChat, closeChat,
     asleep: () => asleep, dragging: () => dragging,
     summary: () => `${t().moodWords[moodKey()]} · Lv ${level()}`,
@@ -925,14 +1054,18 @@
 
   /* ---------- start ---------- */
   measure();
+  loadOutfit(outfitChoice); paintAccessory();
+  wardrobe()?.ready.then(() => { loadOutfit(outfitChoice); if (!menu.hidden) renderMenu(); });
   pet.dataset.pose = 'idle'; setFrame(0);
   tucked = app.store.get('yuki-tucked', coarse.matches || innerWidth < 720 ? '1' : '0') === '1';
   pet.classList.toggle('is-tucked', tucked);
   requestAnimationFrame(() => {
     reground();
-    pet.classList.add('is-ready');
+    setTimeout(() => pet.classList.add('is-ready'), 3000); // loadOutfit shows her once the look has loaded
     blink(); schedule(); paintState();
-    const greet = S.visits === 1 ? line('firstVisit') : line('returning', {visits: S.visits});
+    const fest = festival(), greetedKey = app.store.get('yuki-fest-greeted', '');
+    let greet = S.visits === 1 ? line('firstVisit') : line('returning', {visits: S.visits});
+    if (fest && greetedKey !== fest.key + app.locale()) { greet = festivalLine(fest); app.store.set('yuki-fest-greeted', fest.key + app.locale()); }
     setTimeout(() => { if (!tucked) say(greet, {ms: 6000}); pushMessage({who: 'yuki', text: greet}); }, 1400);
   });
   save();

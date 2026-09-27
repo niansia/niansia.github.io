@@ -154,4 +154,22 @@ Object.assign(window.NIANSIA_COPY['zh-CN'], {
   llmTitle:'唤醒完整版 Yuki', llmBody:'以 QLoRA 微调的 1.5B 参数语言模型，听得懂更长的问题与追问。首次需下载约 1 GB，之后会缓存在浏览器；全程在你的设备上运行。',
   llmWake:'唤醒她', llmLoading:'正在唤醒…', llmRetry:'再试一次', llmError:'模型加载失败，先由小模型陪你。',
   llmNoGpu:'这个浏览器不支持 WebGPU，先由小模型陪你。可以试试桌面版 Chrome 或 Edge。', llmNoF16:'这张显卡不支持模型需要的 16 位着色器。', llmUnpublished:'完整版模型还没发布。', llmDismiss:'收起'
+});/* Wardrobe and festival themes. */
+Object.assign(window.NIANSIA_COPY.en, {
+  wardrobe:'Wardrobe', outfitsLabel:'Outfits', accessoriesLabel:'Accessories', accAuto:'Auto', accNone:'None',
+  moreOutfits:'More outfits are on the way — swimsuit, school uniform, yukata…', outfitChanged:'Ta-da! How do I look?',
+  festivalNone:'No holiday today. The next one is {next}.', festCelebrate:'Celebrate with Yuki', festLongWeekend:'Long weekend',
+  festPreview:'Preview', festivalHelp:'Try festival list, festival midautumn, festival auto'
+});
+Object.assign(window.NIANSIA_COPY['zh-TW'], {
+  wardrobe:'換裝', outfitsLabel:'服裝', accessoriesLabel:'配件', accAuto:'自動', accNone:'不戴',
+  moreOutfits:'更多服裝準備中：泳裝、JK 制服、浴衣……', outfitChanged:'登登！這套好看嗎？',
+  festivalNone:'今天沒有節日喔。下一個是 {next}。', festCelebrate:'和 Yuki 一起慶祝', festLongWeekend:'連假',
+  festPreview:'預覽', festivalHelp:'試試 festival list、festival midautumn、festival auto'
+});
+Object.assign(window.NIANSIA_COPY['zh-CN'], {
+  wardrobe:'换装', outfitsLabel:'服装', accessoriesLabel:'配件', accAuto:'自动', accNone:'不戴',
+  moreOutfits:'更多服装准备中：泳装、JK 制服、浴衣……', outfitChanged:'登登！这套好看吗？',
+  festivalNone:'今天没有节日哦。下一个是 {next}。', festCelebrate:'和 Yuki 一起庆祝', festLongWeekend:'连假',
+  festPreview:'预览', festivalHelp:'试试 festival list、festival midautumn、festival auto'
 });

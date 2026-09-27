@@ -90,15 +90,15 @@
     root.innerHTML = `<div class="desktop">
       <header class="desktop-bar"><a class="brand" href="${langBase()}" data-view="home" translate="no">${icon('terminal')}<strong>niansia<span>.terminal</span></strong><i class="brand-caret" aria-hidden="true"></i></a><span class="desktop-motto">${c.desktop}</span>
         <div class="desktop-controls"><div class="language-switch" role="group" aria-label="${c.language}"><span class="lang-pill" aria-hidden="true"></span>${[['en','EN'],['zh-TW','繁'],['zh-CN','简']].map(([key,label])=>`<button type="button" data-lang="${key}" aria-pressed="${key===locale}" translate="no">${label}</button>`).join('')}</div><span class="control-divider"></span>
-          <div class="style-menu"><button class="icon-button" data-action="styles" title="${c.style}" aria-label="${c.style}" aria-expanded="false" aria-controls="style-popover">${icon('palette')}</button><div class="style-popover" id="style-popover" role="group" aria-label="${c.style}" hidden><p>${c.style}</p>${swatches}</div></div>
+          <div class="style-menu"><button class="icon-button" data-action="styles" title="${c.style}" aria-label="${c.style}" aria-expanded="false" aria-controls="style-popover">${icon('palette')}</button><div class="style-popover" id="style-popover" role="group" aria-label="${c.style}" hidden><p>${c.style}</p>${swatches}<button type="button" class="style-option fest-toggle" data-fest-skin aria-pressed="false" hidden></button></div></div>
           <button class="icon-button" data-action="theme" title="${c.theme}" aria-label="${c.theme}"></button><button class="icon-button" data-action="motion" title="${c.motion}" aria-label="${c.motion}"></button></div>
       </header>
       <section class="terminal-window" aria-label="Niansia terminal">
-        <div class="window-bar"><div class="window-dots"><button type="button" data-action="win-close" aria-label="close"></button><button type="button" data-action="win-min" aria-label="${c.winMin}"></button><button type="button" data-action="win-max" aria-label="${c.winMax}"></button></div><span class="window-title" translate="no">niansia@home <span class="muted">: ~</span></span><span class="window-note"><span class="window-clock" translate="no"></span>${icon('terminal')} portfolio / v.03</span></div>
+        <div class="window-bar"><div class="fest-garland" aria-hidden="true"></div><div class="window-dots"><button type="button" data-action="win-close" aria-label="close"></button><button type="button" data-action="win-min" aria-label="${c.winMin}"></button><button type="button" data-action="win-max" aria-label="${c.winMax}"></button></div><span class="window-title" translate="no">niansia@home <span class="muted">: ~</span></span><span class="window-note"><span class="window-clock" translate="no"></span>${icon('terminal')} portfolio / v.03</span></div>
         <div class="window-body">
         <div class="workspace">
           <div class="explorer"><div class="explorer-heading">${c.files}<span>~/</span></div><nav aria-label="${c.files}"><span class="nav-indicator" aria-hidden="true"></span>${paths.map((path,i)=>`<button class="file-item" data-view="${path}" data-nav-index="${i}" aria-label="${c.nav[i]} (${files[i]})"><span class="file-symbol">${icon(['terminal','file','folder','research','mail','help'][i])}</span><span><b translate="no">${files[i]}</b><small>${c.nav[i]}</small></span>${i===2?`<em>${String(projects().length).padStart(2,'0')}</em>`:''}</button>`).join('')}</nav><div class="explorer-bottom"><span class="branch-mark" aria-hidden="true">⑂</span><span translate="no">main</span><a href="https://github.com/niansia" target="_blank" rel="noopener noreferrer">GitHub ${icon('link')}</a></div></div>
-          <div class="terminal-main"><div class="pane-bar"><span class="pane-path" translate="no"></span><span class="pane-shortcut"><kbd>Esc</kbd> ${c.back}</span></div><div class="terminal-output" id="terminal-content" tabindex="-1"></div></div>
+          <div class="terminal-main"><div class="fest-watermark" aria-hidden="true"></div><div class="pane-bar"><span class="pane-path" translate="no"></span><span class="pane-shortcut"><kbd>Esc</kbd> ${c.back}</span></div><div class="terminal-output" id="terminal-content" tabindex="-1"></div></div>
         </div>
         <div class="command-area"><div class="command-message" role="status" aria-live="polite">${c.ready}</div><form class="command-form"><label for="terminal-command" class="prompt" translate="no"><span class="session-user">${esc(username)}</span><span>@home</span><b>:~$</b><span class="sr-only">${c.command}</span></label><input id="terminal-command" data-command-input maxlength="500" autocomplete="off" spellcheck="false" autocapitalize="none" placeholder="${c.placeholder}" aria-label="${c.command}"><button type="submit" aria-label="${c.run}">${icon('arrow')}<span>${c.run}</span></button></form></div>
         <footer class="terminal-status"><span class="status-keys"><kbd>↑</kbd><kbd>↓</kbd> ${c.selected} <kbd>Enter</kbd> ${c.open} <kbd>Esc</kbd> ${c.back}</span><button class="status-yuki" data-action="chat" data-yuki-status>${icon('paw')}<span>yuki</span></button><button data-view="help" aria-label="${c.nav[5]}">${icon('help')}<span>${c.nav[5]}</span></button><span class="status-signature" translate="no">made with curiosity <span>✦</span></span></footer>
@@ -107,6 +107,7 @@
     </div>
     <div class="toast" role="status" hidden></div>`;
     paintThemeControls(); applyMotion(); screen(false); tickClock();
+    if (document.querySelector('.fest-sky')) applyFestival();
     emit('shell', {locale});
   }
   function tickClock() {
@@ -126,7 +127,7 @@
     booted = true;
     const name = c.name.replace('Niansia', '<span class="name-glow" translate="no">Niansia</span>');
     const quick = ['projects','theme sakura','neofetch','trick','trail paws','help'];
-    return `${commandTitle('./start.sh')}<div class="${boot}"><span><b>✓</b> profile loaded</span><span><b>✓</b> ${projects().length} projects mounted</span><span><b>✓</b> yuki.exe is awake</span><span><b>✓</b> brain.nn ready</span></div>
+    return `${commandTitle('./start.sh')}${festivalBanner(c)}<div class="${boot}"><span><b>✓</b> profile loaded</span><span><b>✓</b> ${projects().length} projects mounted</span><span><b>✓</b> yuki.exe is awake</span><span><b>✓</b> brain.nn ready</span></div>
       <div class="welcome-copy"><p class="hello-world" translate="no">${c.welcome}<i class="text-cursor" aria-hidden="true"></i></p><h1>${name}</h1><p class="welcome-tagline">${c.tagline}</p><p>${c.intro}</p></div>
       <div class="profile-facts"><span>${c.role}</span><span>${c.leave}</span></div>
       <div class="output-actions">${button('projects',c.start,true)}${button('about',c.more)}</div>
@@ -135,6 +136,48 @@
         <div class="home-card ask-card"><span class="card-label">${icon('chat')} ${c.askTitle}</span><p>${c.askIntro}</p><div class="ask-chips">${c.askChips.map(q=>`<button data-ask="${esc(q)}">${esc(q)}</button>`).join('')}</div></div>
       </div>
       <div class="quick-commands"><span class="card-label">${c.quickTitle}</span><div>${quick.map(cmd=>`<button data-command="${cmd}" translate="no"><span>$</span> ${cmd}</button>`).join('')}</div></div>`;
+  }
+  function festivalBanner(c) {
+    const F = window.NIANSIA_FESTIVAL, fest = F?.active();
+    if (!fest) return '';
+    const names = fest.festivals.map(f => f.name[locale]).join(locale === 'en' ? ' & ' : '・');
+    const motifs = [...fest.primary.motifs, ...fest.festivals.slice(1).flatMap(f => f.motifs.slice(0, 2))].slice(0, 5);
+    const days = Math.round((new Date(fest.end) - new Date(fest.start)) / 864e5) + 1;
+    const range = `${fest.start.slice(5).replace('-', '/')} – ${fest.end.slice(5).replace('-', '/')}`;
+    return `<section class="fest-banner" data-fest="${fest.primary.id}" aria-label="${esc(names)}">
+      <div class="fest-scene" aria-hidden="true">${motifs.map((m, i) => F.motif(m, `m${i}`)).join('')}</div>
+      <div class="fest-copy"><span class="fest-kicker">${days > 1 ? `${c.festLongWeekend} · ` : ''}${days > 1 ? range : fest.start.slice(5).replace('-', '/')}</span><strong>${esc(names)}</strong><span>${esc(fest.festivals.map(f => f.line[locale]).join(' '))}</span></div>
+      <button type="button" class="fest-cta" data-fest-celebrate>${c.festCelebrate} ✨</button></section>`;
+  }
+  const GARLAND = {midautumn: ['lantern', 'lantern'], teachers: ['star', 'pencil'], lunarnewyear: ['lantern', 'fu'], lantern: ['lantern', 'lantern'],
+    valentine: ['heart', 'heart'], peace: ['dove', 'lily'], children: ['kite', 'balloon'], labor: ['star', 'coffee'], dragonboat: ['zongzi', 'star'],
+    qixi: ['star', 'magpie'], national: ['balloon', 'star'], retrocession: ['leaf', 'leaf'], halloween: ['bat', 'pumpkin'], christmas: ['snowflake', 'gift'], newyear: ['star', 'balloon']};
+  const WATERMARK = {midautumn: 'moon', teachers: 'book', lunarnewyear: 'fu', lantern: 'lantern', valentine: 'heart', peace: 'dove', children: 'kite', labor: 'coffee',
+    dragonboat: 'boat', qixi: 'magpie', national: 'fireworks', retrocession: 'leaf', halloween: 'pumpkin', christmas: 'tree', newyear: 'fireworks'};
+  function paintFestivalChrome(fest) {
+    const F = window.NIANSIA_FESTIVAL, garland = $('.fest-garland'), mark = $('.fest-watermark'), toggle = $('[data-fest-skin]');
+    const skin = fest && store.get('fest-skin', 'on') !== 'off';
+    if (toggle) {
+      toggle.hidden = !fest;
+      toggle.setAttribute('aria-pressed', String(!!skin));
+      toggle.innerHTML = fest ? `${F.motif(fest.primary.motifs[0], 'fest-toggle-icon')}${fest.primary.name[locale]}` : '';
+    }
+    if (garland) garland.innerHTML = skin ? (GARLAND[fest.primary.id] || ['star', 'star']).concat(GARLAND[fest.primary.id] || ['star'], GARLAND[fest.primary.id] || ['star']).slice(0, 6)
+      .map((m, i) => `<span style="--i:${i}">${F.motif(m)}</span>`).join('') : '';
+    if (mark) mark.innerHTML = skin ? F.motif(WATERMARK[fest.primary.id] || fest.primary.motifs[0]) : '';
+  }
+  function applyFestival() {
+    const fest = window.NIANSIA_FESTIVAL?.active();
+    const skin = fest && store.get('fest-skin', 'on') !== 'off';
+    document.documentElement.dataset.festival = fest ? fest.primary.id : '';
+    document.documentElement.dataset.fskin = skin ? fest.primary.id : '';
+    const tone = skin && getComputedStyle(document.documentElement).getPropertyValue('--desk').trim();
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', tone || themeColors[theme]);
+    paintFestivalChrome(fest);
+    let sky = document.querySelector('.fest-sky');
+    if (fest && !sky) { sky = document.createElement('div'); sky.className = 'fest-sky'; sky.setAttribute('aria-hidden', 'true'); document.body.prepend(sky); }
+    if (sky) sky.dataset.fest = fest ? fest.primary.id : '';
+    fx()?.ambient(fest ? fest.festivals.map(f => f.particle) : []);
   }
   function screen(animate=true) {
     const c=t(), items=projects(), item=items.find(p=>p.id===projectId);
@@ -212,7 +255,7 @@
   function complete(value) {
     const split=value.indexOf(' '),head=split<0?value:value.slice(0,split),tail=split<0?'':value.slice(split+1).toLowerCase();
     if(split<0)return catalogue.map(c=>c.name).filter(name=>name.startsWith(head.toLowerCase()));
-    const values={theme:themes,style:themes,lang:['en','zh-tw','zh-cn'],motion:['on','off'],follow:['on','off'],trail:['hearts','paws','stars','petals','off'],cursor:['s','m','l'],help:catalogue.map(c=>c.name)};
+    const values={festival:['list','auto','off',...(window.NIANSIA_FESTIVAL?.list||[]).map(f=>f.id)],accessory:['list','auto','none',...Object.keys(window.YukiWardrobe?.accessories||{})],outfit:['list','auto',...(window.YukiWardrobe?.outfits()||[]).map(o=>o.id)],theme:themes,style:themes,lang:['en','zh-tw','zh-cn'],motion:['on','off'],follow:['on','off'],trail:['hearts','paws','stars','petals','off'],cursor:['s','m','l'],help:catalogue.map(c=>c.name)};
     const destinations=['home','about.md','research.md','contact.txt','projects/',...projects().map(p=>p.id),...projects().map(p=>'projects/'+p.id+'/README.md')];
     return (values[head]||(['cd','cat','open','github'].includes(head)?destinations:[])).filter(item=>item.startsWith(tail)).map(item=>head+' '+item);
   }
@@ -321,6 +364,18 @@
              ${t().interests}`);break;
       case 'shortcuts':finish(t().keys.map(([key,description])=>`${key.padEnd(14)} ${description}`).join('\n')+'\n'+t().historyHint);break;
       case 'sudo':finish(t().sudo);yuki()?.act('poke');break;
+      case 'festival': {
+        const F=window.NIANSIA_FESTIVAL;if(!F){finish(t().unknown);break;}
+        if(lower==='list'){finish(F.upcoming(new Date(),8).map(o=>`${o.start}${o.end!==o.start?' → '+o.end:''}  ${o.festival.id.padEnd(13)} ${o.festival.name[locale]}`).join('\n'));break;}
+        if(lower){if(lower!=='auto'&&lower!=='off'&&!F.list.some(f=>f.id===lower)){finish(`${t().usage}: ${definition.usage}\n${F.list.map(f=>f.id).join(' ')}`);break;}F.force(lower==='auto'?'':lower);applyFestival();screen(false);emit('festival');}
+        const a=F.active();finish(a?`${a.festivals.map(f=>f.name[locale]).join(' + ')}  ${a.start} → ${a.end}\n${t().festivalHelp}`:`${t().festivalNone.replace('{next}',(F.upcoming(new Date(),1)[0]||{festival:{name:{}}}).festival.name[locale]||'-')}\n${t().festivalHelp}`);break;
+      }
+      case 'outfit':case 'accessory': {
+        const W=window.YukiWardrobe,Y=yuki();if(!W||!Y){finish(t().unknown);break;}
+        if(name==='outfit'){const list=W.outfits();if(!lower||lower==='list'){finish([`${Y.outfit()==='auto'?'●':'○'} auto         ${t().accAuto}`].concat(list.map(o=>`${o.id===Y.outfit()?'●':'○'} ${o.id.padEnd(12)} ${o.name?.[locale]||''}`)).join('\n')+(list.length<2?'\n'+t().moreOutfits:''));break;}if(lower!=='auto'&&!list.some(o=>o.id===lower)){usage();break;}Y.setOutfit(lower);finish(`outfit: ${lower}`);break;}
+        const ids=Object.keys(W.accessories);if(!lower||lower==='list'){finish(['auto','none',...ids].map(id=>`${id===Y.accessory()?'●':'○'} ${id.padEnd(12)} ${W.accessories[id]?.name[locale]||(id==='auto'?t().accAuto:t().accNone)}`).join('\n'));break;}
+        if(lower!=='auto'&&lower!=='none'&&!ids.includes(lower)){usage();break;}Y.setAccessory(lower);finish(`accessory: ${lower}`);break;
+      }
       default: {const target=resolveTarget(value);if(target)showTarget(target);else askYuki(value,value);}
     }
   }
@@ -345,7 +400,9 @@
     if(target.dataset.projectStep){const i=projects().findIndex(p=>p.id===projectId),count=projects().length;navigate('projects',projects()[(i+Number(target.dataset.projectStep)+count)%count].id);}
     if(target.dataset.lang&&target.dataset.lang!==locale){changeLanguage(target.dataset.lang,target);}
     if(target.dataset.themePick){setTheme(target.dataset.themePick,target);}
+    if(target.hasAttribute('data-fest-skin')){const on=store.get('fest-skin','on')==='off';store.set('fest-skin',on?'on':'off');transition(applyFestival,target);}
     if(target.dataset.command)runCommand(target.dataset.command);
+    if(target.hasAttribute('data-fest-celebrate')){const box=target.getBoundingClientRect();for(let i=0;i<3;i++)setTimeout(()=>fx()?.burst(box.left+box.width*(.2+.3*i),box.top+box.height/2,'hearts'),i*140);fx()?.celebrate();yuki()?.act('trick');const l=yuki()?.festivalLine();if(l)yuki()?.say(l);}
     if(target.dataset.ask){yuki()?.openChat(target.dataset.ask);}
     if(target.dataset.commandFill){const input=$('#screen-command');input.value=target.dataset.commandFill;input.focus();input.select();}
     switch(target.dataset.action){
@@ -401,5 +458,5 @@
   };
   document.documentElement.dataset.theme = theme;
   document.querySelector('meta[name="theme-color"]')?.setAttribute('content', themeColors[theme]);
-  readLocation();shell();
+  readLocation();shell();applyFestival();
 })();

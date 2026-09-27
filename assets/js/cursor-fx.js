@@ -151,8 +151,48 @@
   window.addEventListener('niansia:motion', event => { if (!event.detail.on) { clear(); hideBuddy(); } });
   window.addEventListener('yuki:state', event => { if (!faceTimer || face !== 1) setFace(event.detail.asleep ? 2 : 0); });
   fine.addEventListener('change', () => { if (!fine.matches) hideBuddy(); });
+  /* Festival ambience: a few particles drifting down the page, one festival palette each. */
+  const AMBIENT = {
+    osmanthus: {shape: 'bloom', colors: ['#ffc94d', '#ffb13b', '#ffd97a']}, chalk: {shape: 'star', colors: ['#fff3b0', '#ffc2d4', '#b8e0ff', '#c8f2c2']},
+    confetti: {shape: 'rect', colors: ['#ff8fbf', '#9b8cff', '#ffd166', '#6fd3c7']}, redpaper: {shape: 'rect', colors: ['#e63946', '#ff6b6b', '#ffd166']},
+    snow: {shape: 'dot', colors: ['#ffffff', '#e8f4ff']}, hearts: {shape: 'heart', colors: ['#ff8fbf', '#ffb3d1']},
+    petals: {shape: 'petal', colors: ['#ffc3d8', '#ffd6e6']}, leaves: {shape: 'petal', colors: ['#f4a261', '#e9c46a', '#7bd389']},
+    stars: {shape: 'star', colors: ['#ffd166', '#fff3b0']}, sparkles: {shape: 'star', colors: ['#b8b0ff', '#ffd166']},
+    bats: {shape: 'rect', colors: ['#4a3f6b', '#ff9f43', '#7a5cc9']}, glow: {shape: 'dot', colors: ['#ffb35c', '#ff7b5c', '#ffd98a']},
+    feathers: {shape: 'petal', colors: ['#ffffff', '#eef2ff']}
+  };
+  let ambientKinds = [], ambientTimer = 0, ambientTurn = 0;
+  function drop(kind, startY) {
+    const spec = AMBIENT[kind]; if (!spec || !app.motion() || document.hidden) return;
+    if (layer.querySelectorAll('.is-ambient').length > 16) return;
+    const size = rand(6, 11), x = rand(0, innerWidth), fall = innerHeight + 40 - (startY ?? -20), sway = rand(-60, 60), turn = rand(-240, 240);
+    const el = particle(spec.shape === 'rect' ? 'confetti' : spec.shape === 'bloom' ? 'bloom' : spec.shape === 'dot' ? 'snowdot' : spec.shape, x, startY ?? -20, [
+      {opacity: 0, transform: 'translate(-50%,-50%) rotate(0deg)'},
+      {opacity: .95, transform: `translate(calc(-50% + ${sway * .3}px),calc(-50% + ${fall * .1}px)) rotate(${turn * .1}deg)`, offset: .08},
+      {opacity: .9, transform: `translate(calc(-50% + ${sway}px),calc(-50% + ${fall * .9}px)) rotate(${turn}deg)`, offset: .92},
+      {opacity: 0, transform: `translate(calc(-50% + ${sway * 1.1}px),calc(-50% + ${fall}px)) rotate(${turn * 1.1}deg)`}
+    ], {duration: rand(9000, 14000), easing: 'linear'}, 'is-ambient');
+    el.style.width = el.style.height = `${size}px`;
+    el.style.background = pick(spec.colors);
+    if (spec.shape === 'rect') el.style.height = `${size * 1.5}px`;
+  }
+  const pick = list => list[Math.floor(Math.random() * list.length)];
+  function ambient(kinds) {
+    ambientKinds = (kinds || []).filter(k => AMBIENT[k]);
+    clearInterval(ambientTimer);
+    if (!ambientKinds.length) return;
+    ambientTimer = setInterval(() => drop(ambientKinds[ambientTurn++ % ambientKinds.length]), 1700);
+  }
+  function celebrate() {
+    const kinds = ambientKinds.length ? ambientKinds : ['confetti'];
+    for (let i = 0; i < 26; i++) setTimeout(() => drop(kinds[i % kinds.length], rand(-20, innerHeight * .3)), i * 60);
+  }
+  const fest = window.NIANSIA_FESTIVAL?.active();
+  if (fest) ambient(fest.festivals.map(f => f.particle));
+
   paintSize(); setFace(0);
   window.NIANSIA_FX = {
+    ambient, celebrate,
     setFollow(on) { follow = on; app.store.set('follow', on ? 'on' : 'off'); if (!on) hideBuddy(); },
     setTrail(mode) { trail = trails.includes(mode) ? mode : 'hearts'; app.store.set('trail', trail); if (trail === 'off') clear(); },
     setSize(next) { size = ['s', 'm', 'l'].includes(next) ? next : 'm'; app.store.set('cursor', size); paintSize(); },
