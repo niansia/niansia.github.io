@@ -27,7 +27,7 @@ TEMPLATE = {
     'profile': (
         "PROFILE\nNiansia · {role} · {leave}\n{undergrad}; {graduate}\n{interests}\n"
         "{researchA}: {researchABody}\n{researchB}: {researchBBody}\n{bio3}\n"
-        "email wilbur930202@gmail.com · github.com/niansia"
+        "email niansia930202@gmail.com · github.com/niansia"
     ),
     'projectsTitle': 'PROJECTS (newest first; id | name | category | status)',
     'project': '- {id} | {name} | {category} | {status}\n  {description}\n  evidence: {evidence}',

@@ -127,19 +127,58 @@ def leg_region(cell: np.ndarray, cx: float):
     return hem + 2, split, lo, hi
 
 
+def shift_rows(layer: np.ndarray, dx: np.ndarray) -> np.ndarray:
+    """Slide every row of an RGBA layer sideways by its own sub-pixel amount (premultiplied)."""
+    h, w = layer.shape[:2]
+    a = layer.astype(np.float32)
+    a[..., :3] *= a[..., 3:4] / 255
+    src = np.arange(w, dtype=np.float32)[None, :] - dx[:, None].astype(np.float32)
+    x0 = np.floor(src).astype(int)
+    f = (src - x0)[..., None]
+    def take(x):
+        ok = (x >= 0) & (x < w)
+        v = np.take_along_axis(a, np.clip(x, 0, w - 1)[..., None], axis=1)
+        return np.where(ok[..., None], v, 0)
+    out = take(x0) * (1 - f) + take(x0 + 1) * f
+    alpha = out[..., 3:4]
+    out[..., :3] = np.where(alpha > 0, out[..., :3] * 255 / np.maximum(alpha, 1e-3), 0)
+    return out.clip(0, 255).astype(np.uint8)
+
+
+def sway(h: int, top: int, bottom: int, phase: float, trail: float, amp: float) -> np.ndarray:
+    """Per-row offset of a garment hanging from the waist: it trails behind the walk and a ripple
+    runs down the fabric, so the hem moves most and a little later than the waist."""
+    dx = np.zeros(h, np.float32)
+    ys = np.arange(top, bottom)
+    t = (ys - top) / max(1, bottom - top)
+    dx[top:bottom] = t ** 1.6 * (trail + amp * np.sin(phase - 1.4 * t))
+    dx[bottom:] = dx[bottom - 1] if bottom > top else 0
+    return dx
+
+
 def walk_frames(cell: np.ndarray, cx: float, frames: int = 8) -> list[np.ndarray]:
+    """Eight frames of walking toward the viewer's right (the sprite is mirrored to walk left).
+
+    Visible legs lift in turn (squashed from the hem: a bent knee seen from the front), the body
+    dips while both feet are down, and the skirt, apron and tail trail behind with a ripple
+    running down to the hem. Long garments hide the legs, so the whole hem flows instead.
+    """
     h, w = cell.shape[:2]
     region = leg_region(cell, cx)
+    waist = int(h * .36)
     out = []
     if region is None:
-        # long garment: sway around the feet with a small bob
-        img = Image.fromarray(cell)
+        rows = np.nonzero(cell[..., 3].any(axis=1))[0]
+        bottom = int(rows.max()) + 1
+        img_h = bottom
         for i in range(frames):
             phase = 2 * math.pi * i / frames
-            angle = 2.2 * math.sin(phase)
+            flowed = shift_rows(cell, sway(h, waist, bottom, phase, -h * .018, h * .032))
+            # the hem lifts a touch with each step: squash from the feet up
+            dip = (1 - abs(math.cos(phase))) * h * .008
+            img = Image.fromarray(flowed).resize((w, max(1, round(img_h - dip))), Image.BICUBIC, box=(0, 0, w, img_h))
             canvas = Image.new('RGBA', (w, h))
-            rot = img.rotate(angle, resample=Image.BICUBIC, center=(cx, h - 2))
-            canvas.alpha_composite(rot, (0, -round(abs(math.sin(phase)) * h * .006)))
+            canvas.alpha_composite(img, (0, bottom - img.height))
             out.append(np.asarray(canvas))
         return out
     hem, split, lo, hi = region
@@ -156,18 +195,26 @@ def walk_frames(cell: np.ndarray, cx: float, frames: int = 8) -> list[np.ndarray
         return Image.fromarray(lay[hem:bottom])
     strips = (leg_strip(legs & (xx < gap_x)), leg_strip(legs & (xx >= gap_x)))
     length = bottom - hem
-    lift_max = h * .04
+    lift_max = h * .065
     for i in range(frames):
         phase = 2 * math.pi * i / frames
         s = math.sin(phase)
-        canvas = Image.new('RGBA', (w, h))
+        # Lowest while both feet are down, highest as a leg passes under the body.
+        bob = round((1 - abs(s)) * h * .011)
+        dx = sway(h, waist, hem, phase, -h * .012, h * .024)
+        legs_layer = Image.new('RGBA', (w, h))
         # Each leg is squashed from its hem, so the top stays joined to the garment while the foot
-        # rises (a bent knee seen from the front). No cut edge can open up.
+        # rises. The dip shortens both legs the same way, keeping the planted foot on the floor.
         for strip, lift in zip(strips, (max(0, s) * lift_max, max(0, -s) * lift_max)):
-            new_len = max(1, round(length - lift))
-            canvas.alpha_composite(strip.resize((w, new_len), Image.BICUBIC), (0, hem))
-        body_img = Image.fromarray(body)
-        canvas.alpha_composite(body_img, (0, 0))
-        # Settle the lifted-leg frames so the planted foot stays on the baseline.
+            new_len = max(1, round(length - lift - bob))
+            legs_layer.alpha_composite(strip.resize((w, new_len), Image.BICUBIC), (0, hem + bob))
+        # Thighs follow the skirt, feet stay where they are planted.
+        u = np.clip((np.arange(h) - hem - bob) / max(1, length - bob), 0, 1)
+        leg_dx = np.where(np.arange(h) >= hem + bob, dx[hem - 1] * (1 - u) ** 2, 0)
+        canvas = Image.fromarray(shift_rows(np.asarray(legs_layer), leg_dx))
+        moved = shift_rows(body, dx)
+        dropped = np.zeros_like(moved)
+        dropped[bob:] = moved[:h - bob]
+        canvas.alpha_composite(Image.fromarray(dropped), (0, 0))
         out.append(np.asarray(canvas))
     return out

@@ -213,7 +213,7 @@ def qa_profile(page, lang):
         (['What does Niansia research?', 'research interests?', 'what is the research about'], ['研究方向是什麼？', '他在研究什麼', '研究興趣'], '@open research\n',
          lambda: f"{c['researchA']}: {first_sentence(c['researchABody'])} {c['researchB']}: {first_sentence(c['researchBBody'])}" if lang == 'en' else c['researchA'] + '：' + first_sentence(c['researchABody']) + c['researchB'] + '：' + first_sentence(c['researchBBody'])),
         (['How can I contact Niansia?', 'email?', 'can we collaborate?'], ['怎麼聯絡他？', '信箱是多少', '可以合作嗎'], '@open contact\n',
-         lambda: "Write to wilbur930202@gmail.com — Niansia welcomes thoughtful conversations and collaborations." if lang == 'en' else zh('可以寫信到 wilbur930202@gmail.com，Niansia 很歡迎交流與合作。', lang)),
+         lambda: "Write to niansia930202@gmail.com — Niansia welcomes thoughtful conversations and collaborations." if lang == 'en' else zh('可以寫信到 niansia930202@gmail.com，Niansia 很歡迎交流與合作。', lang)),
         (['What skills does Niansia have?', 'what tech do they use?'], ['他會什麼技術？', '擅長什麼'], '',
          lambda: "From the projects: AI security, computer vision, Agent Skills and MCP tooling, static analysis of Python repos, statistical evaluation and multi-platform CI." if lang == 'en' else zh('從作品看得出來：AI 安全、電腦視覺、Agent Skill 與 MCP 工具、Python 儲存庫靜態分析、統計評估，還有跨平台 CI。', lang)),
     ]
@@ -237,7 +237,7 @@ def qa_unknown(page, lang):
     if general:
         body = "That's outside my little world — I only know Niansia and these projects. Want a project recommendation instead?" if lang == 'en' else zh('這超出我的小世界了，我只懂 Niansia 和這些作品。要不要我推薦一個作品？', lang)
     else:
-        body = "I don't know that one — it isn't in what Niansia shared here. You could ask directly at wilbur930202@gmail.com!" if lang == 'en' else zh('這個我不知道，Niansia 在這裡沒有提到。可以直接寫信問 wilbur930202@gmail.com 喔！', lang)
+        body = "I don't know that one — it isn't in what Niansia shared here. You could ask directly at niansia930202@gmail.com!" if lang == 'en' else zh('這個我不知道，Niansia 在這裡沒有提到。可以直接寫信問 niansia930202@gmail.com 喔！', lang)
     return q, persona(lang, body, False)
 
 

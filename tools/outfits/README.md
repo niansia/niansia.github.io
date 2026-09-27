@@ -76,6 +76,7 @@ The current 23 looks came as one standing illustration each (1024 x 1536 PNG). T
 `manifest.json` live in `art/wardrobe/` (git-ignored); `python tools/build_wardrobe.py [ids...]` turns
 each into the pet's layer set. Missing frames are synthesised by `tools/standing_frames.py`:
 closed / happy eyes are painted over the detected violet irises, visible legs are squashed from
-the garment hem in turn for a front-view step, and long garments sway. Festival outfits are mapped
+the garment hem in turn for a front-view step with a body bob, the skirt and tail trail behind with a
+ripple running down to the hem, and long garments flow the same way without separate steps. Festival outfits are mapped
 in `FESTIVALS` inside `build_wardrobe.py`. The four-pose spec above still works with
 `tools/build_outfits.py` if richer poses are generated later.

@@ -833,7 +833,7 @@
   }
   function perform(intent, {ent, ret, text}) {
     const L = app.locale(), c = t();
-    const vars = {user: app.store.get('user', 'niansia'), count: projects().length, email: 'wilbur930202@gmail.com', brain: brainText()};
+    const vars = {user: app.store.get('user', 'niansia'), count: projects().length, email: 'niansia930202@gmail.com', brain: brainText()};
     const out = (key, extra, after) => ({text: line(key, {...vars, ...extra}), after});
     const {view, projectId} = app.view();
     switch (intent) {
@@ -860,7 +860,7 @@
       case 'about_owner': app.navigate('about', '', {quiet: true}); return out('about_owner');
       case 'education': return out('education');
       case 'research': app.navigate('research', '', {quiet: true}); return out('research');
-      case 'contact': { app.navigate('contact', '', {quiet: true}); const r = out('contact'); r.links = [{label: c.send, run: () => { location.href = 'mailto:wilbur930202@gmail.com'; }}]; return r; }
+      case 'contact': { app.navigate('contact', '', {quiet: true}); const r = out('contact'); r.links = [{label: c.send, run: () => { location.href = 'mailto:niansia930202@gmail.com'; }}]; return r; }
       case 'github': {
         const item = byId(ent.project);
         const r = out('github'); r.links = [{label: item ? item.name : 'github.com/niansia', run: () => window.open(item ? item.url : 'https://github.com/niansia', '_blank', 'noopener')}];

@@ -30,7 +30,7 @@ CASES = [
     ('zh-TW', 'home', '那個幫忙出學測考卷的東西現在支援會考了嗎', set(), [['會考', '學測']], [], 'zh'),
     ('zh-TW', 'home', 'Merriv 目前到什麼階段', set(), [['Pre-alpha', 'pre-alpha']], [], 'zh'),
     ('zh-TW', 'home', '你主人研究所念哪裡？大學呢？', set(), [['陽明交通', '陽明交大', 'NYCU'], ['元智']], [], 'zh'),
-    ('zh-TW', 'home', '我想寄信給他討論合作', {'@open contact'}, [['wilbur930202@gmail.com']], [], 'zh'),
+    ('zh-TW', 'home', '我想寄信給他討論合作', {'@open contact'}, [['niansia930202@gmail.com']], [], 'zh'),
     ('zh-TW', 'home', '他今年幾歲？', set(), [['不知道', '沒有提到', '不清楚']], [], 'zh'),
     ('zh-TW', 'home', 'PSG 在 GitHub 上有幾顆星星', set(), [['不知道', '沒有提到', '不清楚']], [], 'zh'),
     ('zh-TW', 'home', '畫面好刺眼，可以暗一點嗎', {'@theme dark'}, [], [], 'zh'),
