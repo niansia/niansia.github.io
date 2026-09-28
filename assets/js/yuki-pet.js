@@ -14,7 +14,7 @@
   const rand = (a, b) => a + Math.random() * (b - a);
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
   const now = () => Date.now();
-  const motion = () => app.motion();
+  const motion = () => app.motion('yuki');
   const coarse = matchMedia('(pointer: coarse)');
   const ICON = {
     heart:'M12 20 3 11C-2 3 8-1 12 6c4-7 14-3 9 5z', pin:'M12 21s-6-5.6-6-11a6 6 0 0 1 12 0c0 5.4-6 11-6 11zM12 10.5h.01', fish:'M3 12q6-7 13-2l4-3v10l-4-3q-7 5-13-2zM13 11h.01',
@@ -1370,7 +1370,7 @@
   window.addEventListener('niansia:festival', () => { loadOutfit(outfitChoice); paintAccessory(); if (!menu.hidden) renderMenu(); const l = festivalLine(); if (l) say(l); });
   window.addEventListener('niansia:shell', () => requestAnimationFrame(() => { reground(); paintState(); }));
   window.addEventListener('niansia:layout', () => requestAnimationFrame(reground));
-  window.addEventListener('niansia:motion', event => { if (!event.detail.on) { walkTo = null; stopPlay(); } });
+  window.addEventListener('niansia:motion', () => { if (!motion()) { walkTo = null; stopPlay(); } });
   window.addEventListener('resize', reground);
   window.addEventListener('keydown', event => {
     if (event.key !== 'Escape') return;

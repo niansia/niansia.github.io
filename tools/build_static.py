@@ -202,7 +202,7 @@ def shell(*, loc: str, title: str, desc: str, url: str, og: str, alternates: dic
 <meta http-equiv="Content-Security-Policy" content="{CSP}">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml">
-<script src="/assets/js/page-transition.js?v=1"></script>
+<script src="/assets/js/page-transition.js?v=2"></script>
 {FONTS}
 <style>{CSS}{extra_css}</style>
 {ld}

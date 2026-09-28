@@ -31,7 +31,7 @@
   faces.onload = () => { faceReady = true; };
   faces.src = '/assets/lab/yuki/heads.webp';
   faces.decode?.().then(() => { faceReady = true; }).catch(() => {});
-  const active = () => app.motion() && fine.matches;
+  const active = () => app.motion('cursor') && fine.matches;
   const buddyAllowed = () => faceReady && innerWidth >= 720;
   function paintSize() { buddy.dataset.size = size; }
   function setFace(next, ms) {
@@ -101,7 +101,7 @@
     }
   }
   function burst(cx, cy, kind = trail) {
-    if (!app.motion()) return;
+    if (!app.motion('cursor')) return;
     particle('ring', cx, cy, [{opacity: .7, transform: 'translate(-50%,-50%) scale(.2)'}, {opacity: 0, transform: 'translate(-50%,-50%) scale(1)'}], {duration: 520, easing: 'cubic-bezier(.2,.7,.3,1)'});
     const shape = kind === 'off' || kind === 'paws' ? 'star' : kind === 'petals' ? 'petal' : kind === 'stars' ? 'star' : 'heart';
     for (let i = 0; i < 6; i++) {
@@ -142,13 +142,16 @@
   }
   document.addEventListener('pointermove', onMove, {passive: true});
   document.addEventListener('pointerdown', event => {
-    if (event.button !== 0 || !app.motion()) return;
+    if (event.button !== 0 || !app.motion('cursor')) return;
     burst(event.clientX, event.clientY);
     if (!buddy.hidden) { setFace(1, 900); buddy.classList.remove('is-hop'); void buddy.offsetWidth; buddy.classList.add('is-hop'); }
   }, {passive: true});
   document.addEventListener('pointerout', event => { if (!event.relatedTarget) hideBuddy(); });
   document.addEventListener('visibilitychange', () => { if (document.hidden) { clear(); hideBuddy(); } });
-  window.addEventListener('niansia:motion', event => { if (!event.detail.on) { clear(); hideBuddy(); } });
+  window.addEventListener('niansia:motion', () => {
+    if (!app.motion('cursor')) { layer.querySelectorAll('.fx-p:not(.is-ambient)').forEach(el => el.remove()); hideBuddy(); }
+    if (!app.motion('ui')) layer.querySelectorAll('.is-ambient').forEach(el => el.remove());
+  });
   window.addEventListener('yuki:state', event => { if (!faceTimer || face !== 1) setFace(event.detail.asleep ? 2 : 0); });
   fine.addEventListener('change', () => { if (!fine.matches) hideBuddy(); });
   /* Festival ambience: a few particles drifting down the page, one festival palette each. */
@@ -163,7 +166,7 @@
   };
   let ambientKinds = [], ambientTimer = 0, ambientTurn = 0;
   function drop(kind, startY) {
-    const spec = AMBIENT[kind]; if (!spec || !app.motion() || document.hidden) return;
+    const spec = AMBIENT[kind]; if (!spec || !app.motion('ui') || document.hidden) return;
     if (layer.querySelectorAll('.is-ambient').length > 16) return;
     const size = rand(6, 11), x = rand(0, innerWidth), fall = innerHeight + 40 - (startY ?? -20), sway = rand(-60, 60), turn = rand(-240, 240);
     const el = particle(spec.shape === 'rect' ? 'confetti' : spec.shape === 'bloom' ? 'bloom' : spec.shape === 'dot' ? 'snowdot' : spec.shape, x, startY ?? -20, [

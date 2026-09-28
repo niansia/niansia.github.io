@@ -140,7 +140,30 @@ kbd{background:var(--surface);border:1px solid var(--line);box-shadow:0 1px 0 va
 .language-switch:has([data-lang='zh-TW'][aria-pressed='true']) .lang-pill{transform:translateX(38px);}
 .language-switch:has([data-lang='zh-CN'][aria-pressed='true']) .lang-pill{transform:translateX(76px);}
 .control-divider{width:1px;height:20px;background:var(--line);margin:0 5px;}
-.style-menu{position:relative;}
+.style-menu,.motion-menu{position:relative;}
+/* Motion menu: one switch per kind of animation, plus all off / all on. */
+.motion-popover{position:absolute;right:0;top:calc(100% + 10px);z-index:50;width:318px;padding:12px 10px 8px;background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow-lg);animation:pop-in .28s var(--spring);transform-origin:90% 0;}
+.motion-popover[hidden]{display:none;}
+.motion-popover .style-head{align-items:center;margin:0 4px 8px;}
+.motion-all{padding:4px 10px;border-radius:99px;border:1px solid var(--line);font:600 11px var(--sans);color:var(--muted);transition:background .2s,color .2s,border-color .2s;}
+.motion-all:hover,.motion-all:focus-visible{background:var(--wash);color:var(--accent);border-color:color-mix(in srgb,var(--accent) 40%,var(--line));}
+.motion-reduced{margin:0 4px 8px;padding:8px 10px;border-radius:10px;background:var(--wash);font-size:11.5px;line-height:1.55;color:var(--muted);}
+.motion-row{display:grid;grid-template-columns:32px minmax(0,1fr) auto;align-items:center;gap:10px;width:100%;padding:8px 6px;border-radius:11px;text-align:left;transition:background .2s;}
+.motion-row:hover,.motion-row:focus-visible{background:var(--wash);}
+.motion-row:disabled{opacity:.5;cursor:default;}
+.motion-ico{display:grid;place-items:center;width:32px;height:32px;border-radius:10px;background:var(--wash);color:var(--muted);transition:background .2s,color .2s;}
+.motion-row[aria-checked='true'] .motion-ico{background:color-mix(in srgb,var(--accent) 16%,transparent);color:var(--accent);}
+.motion-text{display:flex;flex-direction:column;gap:2px;min-width:0;}
+.motion-text b{font-size:13px;font-weight:600;color:var(--ink);}
+.motion-text small{font-size:11px;line-height:1.45;color:var(--muted);}
+.motion-switch{position:relative;width:34px;height:20px;border-radius:99px;background:color-mix(in srgb,var(--muted) 35%,transparent);transition:background .25s;}
+.motion-switch:after{content:'';position:absolute;left:3px;top:3px;width:14px;height:14px;border-radius:50%;background:#fff;box-shadow:0 1px 3px #0003;transition:transform .3s var(--spring);}
+.motion-row[aria-checked='true'] .motion-switch{background:var(--accent);}
+.motion-row[aria-checked='true'] .motion-switch:after{transform:translateX(14px);}
+[data-action='motion'].is-partial{position:relative;}
+[data-action='motion'].is-partial:after{content:'';position:absolute;right:5px;top:5px;width:7px;height:7px;border-radius:50%;background:var(--accent-2);box-shadow:0 0 0 2px var(--surface);}
+@media(max-width:720px){.motion-popover{position:fixed;left:12px;right:12px;top:62px;width:auto;}}
+@media(pointer:coarse){.motion-row[data-motion-part='cursor']{display:none;}}
 .style-popover{position:absolute;right:0;top:calc(100% + 10px);z-index:50;width:210px;padding:8px;background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow-lg);animation:pop-in .28s var(--spring);transform-origin:90% 0;}
 .style-popover{width:452px;max-height:min(78vh,640px);overflow:auto;overscroll-behavior:contain;padding:12px;scrollbar-width:thin;}
 .style-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:2px 4px 10px;}
@@ -880,8 +903,12 @@ html.film-open .yuki,html.film-open .yuki-chat{visibility:hidden;}
 @media(max-height:700px) and (min-width:721px){.desktop-bar{height:52px;min-height:52px;}.desktop-footer{display:none;}.home-cards{margin-top:20px;}}
 @media(pointer:coarse){.icon-button{min-width:40px;min-height:40px;}.cursor-buddy{display:none!important;}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important;}.cursor-buddy,.fx-layer{display:none!important;}}
-:root[data-motion='off'] *,:root[data-motion='off'] *:before,:root[data-motion='off'] *:after{animation:none!important;transition:none!important;scroll-behavior:auto!important;}
-:root[data-motion='off'] .cursor-buddy,:root[data-motion='off'] .fx-layer{display:none!important;}
+/* The motion menu's four switches (see applyMotion in lab-terminal.js). Background & interface stills everything except
+   Yuki and the pointer effects, which have their own switches. */
+:root[data-fx-ui='off'] :not(.yuki,.yuki *,[class*='yuki-'],[class*='yuki-'] *,.cursor-buddy,.cursor-buddy *,.fx-layer *),:root[data-fx-ui='off'] :not(.yuki,.yuki *,[class*='yuki-'],[class*='yuki-'] *,.cursor-buddy,.cursor-buddy *,.fx-layer *):before,:root[data-fx-ui='off'] :not(.yuki,.yuki *,[class*='yuki-'],[class*='yuki-'] *,.cursor-buddy,.cursor-buddy *,.fx-layer *):after{animation:none!important;transition:none!important;scroll-behavior:auto!important;}
+:root[data-fx-ui='off'] .fx-layer>.is-ambient{display:none!important;}
+:root[data-fx-yuki='off'] :is(.yuki,[class*='yuki-']:not(.yuki-menu,.yuki-chat)),:root[data-fx-yuki='off'] :is(.yuki,[class*='yuki-']:not(.yuki-menu,.yuki-chat)) *,:root[data-fx-yuki='off'] :is(.yuki,[class*='yuki-']:not(.yuki-menu,.yuki-chat)) *:before,:root[data-fx-yuki='off'] :is(.yuki,[class*='yuki-']:not(.yuki-menu,.yuki-chat)) *:after{animation:none!important;}
+:root[data-fx-cursor='off'] .cursor-buddy,:root[data-fx-cursor='off'] .fx-layer>:not(.is-ambient){display:none!important;}
 .menu-say{margin:0 0 10px;padding:8px 11px;border-radius:12px 12px 12px 4px;background:var(--wash);font-size:11.5px;line-height:1.6;min-height:34px;}
 .menu-say.is-in{animation:msg-in .3s var(--spring);}
 /* Full-size Yuki: wake-up card and model badge */
@@ -1204,7 +1231,7 @@ button.brain-badge:disabled{cursor:default;transform:none;border-color:var(--lin
 .tour-ring{position:absolute;left:0;top:0;border-radius:14px;box-shadow:0 0 0 2px var(--accent),0 0 0 7px color-mix(in srgb,var(--accent) 22%,transparent);transition:transform .5s var(--ease),width .5s var(--ease),height .5s var(--ease),border-radius .5s var(--ease),opacity .3s;}
 .tour-ring:after{content:'';position:absolute;inset:-2px;border-radius:inherit;border:2px solid var(--accent);animation:tour-pulse 2s ease-out infinite;}
 .tour-ring.is-off{opacity:0;width:0!important;height:0!important;transform:translate(50vw,50vh)!important;}
-:root[data-motion='off'] .tour-hole{transition:none;}
+:root[data-fx-ui='off'] .tour-hole{transition:none;}
 .tour-ring.is-off:after{display:none;}
 @keyframes tour-pulse{from{opacity:.9;transform:scale(1);}to{opacity:0;transform:scale(1.06);}}
 .tour-card{position:fixed;left:50%;top:50%;width:min(360px,calc(100vw - 24px));padding:14px 16px 14px;border-radius:18px;background:var(--surface);border:1px solid var(--line);box-shadow:0 30px 80px -20px #0a0816aa,var(--shadow-lg);color:var(--ink);pointer-events:auto;transition:left .5s var(--ease),top .5s var(--ease),opacity .2s;}
@@ -1245,7 +1272,7 @@ button.brain-badge:disabled{cursor:default;transform:none;border-color:var(--lin
 .tour-cta{display:flex;align-items:center;gap:10px;width:100%;margin-top:12px;padding:10px 14px;border-radius:12px;border:1px dashed color-mix(in srgb,var(--accent) 55%,var(--line));color:var(--accent);background:color-mix(in srgb,var(--accent) 6%,transparent);font:600 12.5px var(--sans);text-align:left;transition:background .2s,transform .25s var(--spring);}
 .tour-cta .icon{width:17px;height:17px;}.tour-cta em{margin-left:auto;font-style:normal;transition:transform .25s var(--spring);}
 .tour-cta:hover{background:var(--wash);transform:translateY(-1px);}.tour-cta:hover em{transform:translateX(3px);}
-:root[data-motion='off'] .tour-ring,:root[data-motion='off'] .tour-card{transition:none;}
+:root[data-fx-ui='off'] .tour-ring,:root[data-fx-ui='off'] .tour-card{transition:none;}
 @media(max-width:720px){.tour-keys{display:none;}.tour-card.is-center{width:calc(100vw - 20px);}}
 @media(max-width:720px){:root:has(.style-popover:not([hidden])) :is(.yuki,.yuki-bubble){visibility:hidden;}}
 
@@ -1356,7 +1383,7 @@ button.brain-badge:disabled{cursor:default;transform:none;border-color:var(--lin
 .yuki.bow-up .yp-bowbox{translate:-22% 0;}
 .yuki.is-violin :is(.ys-head,.yuki-headbox){rotate:12deg;animation:head-sway 2.2s ease-in-out infinite;}
 .yuki.is-violin .yuki-sprite{animation:piano-sway 1.4s ease-in-out infinite;}
-:root[data-motion='off'] :is(.yuki-props,.yuki-headprops,.yuki-wand){display:none;}
+:root[data-fx-yuki='off'] :is(.yuki-props,.yuki-headprops,.yuki-wand){display:none;}
 /* menu: level badge, xp bar, rewards */
 .menu-level{cursor:pointer;border:0;font:inherit;}
 .menu-level.tier-2{background:linear-gradient(135deg,#e6e9f2,#cfd6e6);color:#44506a;}

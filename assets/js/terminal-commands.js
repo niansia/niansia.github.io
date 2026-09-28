@@ -52,7 +52,7 @@ window.NIANSIA_TERMINAL = {
     ['brain','brain','brain','Show how Yuki’s tiny model works','查看 Yuki 小模型的運作細節','查看 Yuki 小模型的运作细节'],
     ['follow','follow [on|off]','follow on','Toggle the pointer companion','切換游標夥伴跟隨','切换光标伙伴跟随'],
     ['cursor','cursor [s|m|l]','cursor l','Resize the pointer companion','調整游標夥伴大小','调整光标伙伴大小'],
-    ['motion','motion [on|off]','motion on','Pause or resume animations','暫停或繼續動畫','暂停或继续动画'],
+    ['motion','motion [ui|cursor|yuki|pages] [on|off]','motion cursor off','Pause or resume all animation, or one kind of it','暫停或繼續全部動畫，或只開關其中一類','暂停或继续全部动画，或只开关其中一类'],
     ['trail','trail [hearts|paws|stars|petals|off]','trail paws','Choose the pointer trail','選擇滑鼠拖尾樣式','选择鼠标拖尾样式'],
     ['clear','clear','clear','Clear terminal output','清除終端輸出','清除终端输出'],
     ['history','history','history','List this visit’s command history','查看這次造訪的指令歷史','查看本次访问的指令历史'],

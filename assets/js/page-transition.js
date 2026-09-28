@@ -11,7 +11,10 @@
   const root = document.documentElement;
   const still = () => {
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return true;
-    try { return localStorage.getItem('niansia-motion') === 'off'; } catch { return false; }
+    try {
+      const parts = JSON.parse(localStorage.getItem('niansia-motion-parts') || 'null');
+      return parts ? parts.pages === false : localStorage.getItem('niansia-motion') === 'off';
+    } catch { return false; }
   };
   const dark = () => matchMedia('(prefers-color-scheme: dark)').matches;
   const css = `

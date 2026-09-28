@@ -13,7 +13,7 @@
       move: 'move', open: 'open', close: 'close', cmds: 'commands', ask: 'ask Yuki', results: n => `${n} result${n === 1 ? '' : 's'}`,
       askYuki: q => `Ask Yuki: “${q}”`, run: q => `Run in the terminal: ${q}`, modeCmd: 'commands', modeAsk: 'ask Yuki',
       brief: 'One-page brief', briefSub: 'For professors and interviewers · printable', tour: 'Guided tour with Yuki', tours: {research: 'Research track · for professors', builder: 'Builder track · for engineers', fun: 'Just for fun · the playful bits'},
-      chat: 'Chat with Yuki', copyEmail: 'Copy email address', copied: 'Email address copied.', toggleDark: 'Toggle light / dark', motionOff: 'Pause animation', motionOn: 'Resume animation',
+      chat: 'Chat with Yuki', copyEmail: 'Copy email address', copied: 'Email address copied.', toggleDark: 'Toggle light / dark', motionOff: 'Pause all animation', motionOn: 'Resume all animation', motionMenu: 'Animation settings…',
       adv: 'Adversarial Lab: fool a neural network', advSub: 'FGSM / PGD attacks and a robust model, on your CPU',
       demo: 'Try LumiGrid in your browser', demoSub: 'Low-light enhancement on your own photo, on-device', github: 'GitHub profile', bib: 'Download papers as .bib', styleMenu: 'Open the style picker',
       lang: {en: 'Switch to English', 'zh-TW': '切換成繁體中文', 'zh-CN': '切换成简体中文'}, light: 'light', dark: 'dark', current: 'current', page: 'page', note: 'note', log: 'log',
@@ -23,7 +23,7 @@
       move: '移動', open: '開啟', close: '關閉', cmds: '指令', ask: '問 Yuki', results: n => `${n} 個結果`,
       askYuki: q => `問 Yuki：「${q}」`, run: q => `在終端執行：${q}`, modeCmd: '指令', modeAsk: '問 Yuki',
       brief: '一頁式簡介', briefSub: '給教授與面試官 · 可列印', tour: '讓 Yuki 帶你導覽', tours: {research: '研究路線 · 給教授', builder: '實作路線 · 給工程師', fun: '輕鬆逛逛 · 好玩的地方'},
-      chat: '和 Yuki 聊天', copyEmail: '複製電子郵件', copied: '已複製電子郵件。', toggleDark: '切換淺色／深色', motionOff: '暫停動畫', motionOn: '恢復動畫',
+      chat: '和 Yuki 聊天', copyEmail: '複製電子郵件', copied: '已複製電子郵件。', toggleDark: '切換淺色／深色', motionOff: '暫停全部動畫', motionOn: '恢復全部動畫', motionMenu: '動畫效果設定…',
       adv: '對抗樣本實驗室：騙過神經網路', advSub: 'FGSM／PGD 攻擊與穩健模型，在你的 CPU 上執行',
       demo: '在瀏覽器試玩 LumiGrid', demoSub: '用自己的照片做低光增強，在裝置上執行', github: 'GitHub 個人頁', bib: '下載論文 .bib', styleMenu: '打開網頁風格選單',
       lang: {en: 'Switch to English', 'zh-TW': '切換成繁體中文', 'zh-CN': '切换成简体中文'}, light: '淺色', dark: '深色', current: '使用中', page: '頁面', note: '筆記', log: '日誌',
@@ -33,7 +33,7 @@
       move: '移动', open: '打开', close: '关闭', cmds: '命令', ask: '问 Yuki', results: n => `${n} 个结果`,
       askYuki: q => `问 Yuki：「${q}」`, run: q => `在终端执行：${q}`, modeCmd: '命令', modeAsk: '问 Yuki',
       brief: '一页式简介', briefSub: '给教授与面试官 · 可打印', tour: '让 Yuki 带你导览', tours: {research: '研究路线 · 给教授', builder: '实作路线 · 给工程师', fun: '轻松逛逛 · 好玩的地方'},
-      chat: '和 Yuki 聊天', copyEmail: '复制电子邮件', copied: '已复制电子邮件。', toggleDark: '切换浅色／深色', motionOff: '暂停动画', motionOn: '恢复动画',
+      chat: '和 Yuki 聊天', copyEmail: '复制电子邮件', copied: '已复制电子邮件。', toggleDark: '切换浅色／深色', motionOff: '暂停全部动画', motionOn: '恢复全部动画', motionMenu: '动画效果设置…',
       adv: '对抗样本实验室：骗过神经网络', advSub: 'FGSM／PGD 攻击与稳健模型，在你的 CPU 上运行',
       demo: '在浏览器试玩 LumiGrid', demoSub: '用自己的照片做低光增强，在设备上运行', github: 'GitHub 个人页', bib: '下载论文 .bib', styleMenu: '打开网页风格菜单',
       lang: {en: 'Switch to English', 'zh-TW': '切換成繁體中文', 'zh-CN': '切换成简体中文'}, light: '浅色', dark: '深色', current: '使用中', page: '页面', note: '笔记', log: '日志',
@@ -73,7 +73,8 @@
     add('actions', {id: 'github', title: c.github, sub: 'github.com/niansia', icon: 'link', words: 'github code source', run: () => window.open('https://github.com/niansia', '_blank', 'noopener')});
     if (app.pubList().some(p => p.bibtex && !app.pubHidden(p))) add('actions', {id: 'bib', title: c.bib, sub: 'niansia.bib', icon: 'download', words: 'bibtex cite citation', run: () => app.runCommand('papers')});
     add('actions', {id: 'dark', title: c.toggleDark, sub: `theme · ${app.t().themeNames[app.theme()]}`, icon: app.darkThemes.includes(app.theme()) ? 'sun' : 'moon', words: 'dark light theme mode 深色 淺色', run: () => app.runCommand('theme')});
-    add('actions', {id: 'motion', title: app.motion() ? c.motionOff : c.motionOn, sub: 'motion', icon: app.motion() ? 'pause' : 'play', words: 'motion animation 動畫 动画', run: () => app.setMotion(!app.motion())});
+    add('actions', {id: 'motion', title: app.allMotionOff() ? c.motionOn : c.motionOff, sub: 'motion', icon: app.allMotionOff() ? 'play' : 'pause', words: 'motion animation 動畫 动画', run: () => app.setMotion(app.allMotionOff())});
+    add('actions', {id: 'motion-menu', title: c.motionMenu, sub: 'motion ui|cursor|yuki|pages', icon: 'spark', words: 'motion animation cursor trail transition 動畫 滑鼠 游標 轉場 动画 鼠标 转场', run: () => app.openMotion()});
     add('actions', {id: 'styles', title: c.styleMenu, sub: app.t().style, icon: 'palette', words: 'style theme palette 風格 风格', run: () => app.openStyles()});
     ['en', 'zh-TW', 'zh-CN'].filter(l => l !== L()).forEach(l => add('actions', {id: 'lang-' + l, title: c.lang[l], sub: l, icon: 'spark', words: `language lang ${l} 語言 语言`, run: () => app.setLanguage(l)}));
 

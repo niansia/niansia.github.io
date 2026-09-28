@@ -33,7 +33,7 @@
   const icon = (name, cls='') => `<svg class="icon ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${icons[name] || icons.file}"/></svg>`;
   let locale = root.dataset.locale || 'en';
   let view = root.dataset.initial || 'home', projectId = '', selectedNav = 0, selectedProject = 0;
-  let theme = themes.includes(store.get('theme','sakura')) ? store.get('theme','sakura') : 'sakura', paused = store.get('motion','on') === 'off';
+  let theme = themes.includes(store.get('theme','sakura')) ? store.get('theme','sakura') : 'sakura';
   let toastTimer, commandHistory = [], historyIndex = 0, booted = false;
   let username = store.get('user','niansia').slice(0,24), historyDraft = '', commandEntries = [];
   const catalogue = window.NIANSIA_TERMINAL.commands;
@@ -42,7 +42,16 @@
   const n = text => String(text).replace('{n}', catalogue.length);
   const projects = () => window.NIANSIA_PROJECTS[locale];
   const $ = selector => root.querySelector(selector);
-  const motion = () => !paused && !reduced.matches;
+  /* Animation is four switches (the motion menu): background & interface, pointer effects, Yuki, and page transitions.
+     'niansia-motion-parts' keeps them; 'niansia-motion' stays 'off' only when all four are off (older pages read it). */
+  const MOTION_PARTS = ['ui', 'cursor', 'yuki', 'pages'];
+  const motionParts = (() => {
+    let saved = null; try { saved = JSON.parse(store.get('motion-parts', 'null')); } catch {}
+    const legacyOff = store.get('motion', 'on') === 'off';
+    return Object.fromEntries(MOTION_PARTS.map(k => [k, saved && typeof saved === 'object' ? saved[k] !== false : !legacyOff]));
+  })();
+  const motion = (part = 'ui') => !reduced.matches && !!motionParts[part];
+  const allOff = () => MOTION_PARTS.every(k => !motionParts[k]);
   const langBase = () => locale === 'en' ? '/' : `/${locale.toLowerCase()}/`;
   const emit = (name, detail={}) => window.dispatchEvent(new CustomEvent(`niansia:${name}`, {detail}));
   const yuki = () => window.YUKI;
@@ -67,7 +76,7 @@
   const titleOf = () => root.querySelector('.project-detail h1');
   function navTransition(change, {dir, from, to}) {
     const html = document.documentElement;
-    if (!document.startViewTransition || !motion() || document.visibilityState !== 'visible' || html.dataset.vt) { change(); return; }
+    if (!document.startViewTransition || !motion('pages') || document.visibilityState !== 'visible' || html.dataset.vt) { change(); return; }
     const named = [];
     const name = (el, n) => { if (el) { el.style.viewTransitionName = n; named.push(el); } };
     name(from, 'vt-title');
@@ -120,12 +129,29 @@
   }
   function toggleTheme(origin) { setTheme(themePairs[theme] || (darkThemes.includes(theme) ? 'sakura' : 'dark'), origin); }
   function applyMotion() {
-    document.documentElement.dataset.motion = motion() ? 'on' : 'off';
+    const html = document.documentElement, on = MOTION_PARTS.filter(k => motion(k));
+    html.dataset.motion = on.length ? 'on' : 'off';
+    MOTION_PARTS.forEach(k => { html.dataset[`fx${k[0].toUpperCase()}${k.slice(1)}`] = motion(k) ? 'on' : 'off'; });
     const button = $('[data-action="motion"]');
-    if (button) { button.innerHTML = icon(motion() ? 'pause' : 'play'); button.setAttribute('aria-pressed', String(!motion())); }
-    emit('motion', {on: motion()});
+    if (button) { button.innerHTML = icon(on.length ? 'pause' : 'play'); button.classList.toggle('is-partial', on.length > 0 && on.length < MOTION_PARTS.length); }
+    root.querySelectorAll('[data-motion-part]').forEach(el => { el.setAttribute('aria-checked', String(motionParts[el.dataset.motionPart])); el.disabled = reduced.matches; });
+    const all = $('[data-motion-all]'); if (all) { all.textContent = allOff() ? motionCopy().allOn : motionCopy().allOff; all.disabled = reduced.matches; }
+    const note = $('.motion-reduced'); if (note) note.hidden = !reduced.matches;
+    emit('motion', {on: on.length > 0, parts: Object.fromEntries(MOTION_PARTS.map(k => [k, motion(k)]))});
   }
-  function setMotion(on) { paused = !on; store.set('motion', paused ? 'off' : 'on'); applyMotion(); }
+  // setMotion(on) turns everything on or off; setMotion(on, part) flips one switch.
+  function setMotion(on, part) {
+    MOTION_PARTS.forEach(k => { if (!part || k === part) motionParts[k] = !!on; });
+    store.set('motion-parts', JSON.stringify(motionParts)); store.set('motion', allOff() ? 'off' : 'on'); applyMotion();
+  }
+  const motionCopy=()=>({
+    en:{title:'Animation',allOff:'Turn all off',allOn:'Turn all on',reduced:'Your system asks for reduced motion, so animation stays off.',
+      parts:{ui:['Background & interface','Drifting backgrounds, festival particles, carousels, counters'],cursor:['Pointer effects','The little Yuki by the pointer, trails and click bursts'],yuki:['Yuki moving','Walking, playing, performing and her idle animation'],pages:['Page transitions','The card zoom between pages and the slide between sections']}},
+    'zh-TW':{title:'動畫效果',allOff:'全部關閉',allOn:'全部開啟',reduced:'系統開啟了「減少動態效果」，所以動畫維持關閉。',
+      parts:{ui:['背景與介面','背景流動、節日飄落、卡片輪播、數字跑動'],cursor:['滑鼠特效','游標旁的小 Yuki、拖尾與點擊煙火'],yuki:['Yuki 動作','走動、玩耍、表演與待機動作'],pages:['換頁轉場','換頁時的卡片放大、切換分頁的滑動']}},
+    'zh-CN':{title:'动画效果',allOff:'全部关闭',allOn:'全部开启',reduced:'系统开启了“减少动态效果”，所以动画保持关闭。',
+      parts:{ui:['背景与界面','背景流动、节日飘落、卡片轮播、数字跑动'],cursor:['鼠标特效','光标旁的小 Yuki、拖尾与点击烟花'],yuki:['Yuki 动作','走动、玩耍、表演与待机动作'],pages:['换页转场','换页时的卡片放大、切换分页的滑动']}}}[locale]);
+  const MOTION_ICONS = {ui: 'spark', cursor: 'heart', yuki: 'paw', pages: 'book'};
   function readLocation() {
     locale = location.pathname.startsWith('/zh-tw') ? 'zh-TW' : location.pathname.startsWith('/zh-cn') ? 'zh-CN' : 'en';
     let parts;
@@ -138,14 +164,14 @@
   function shell() {
     const c = t();
     document.documentElement.lang = locale;
-    const sc = styleCopy();
+    const sc = styleCopy(), mc = motionCopy();
     const thumb = name => `<span class="theme-thumb" data-theme-scope="${name}" aria-hidden="true"><i class="tt-desk"></i><i class="tt-win"><i class="tt-bar"><b></b><b></b><b></b></i><i class="tt-side"><b></b><b></b><b></b></i><i class="tt-main"><i class="tt-h"></i><i class="tt-l"></i><i class="tt-l tt-s"></i><i class="tt-btn"></i><i class="tt-chip"></i></i></i></span>`;
     const swatches = `<div class="style-groups">${themeGroups.map(([group, list]) => `<section class="style-block"><h3 class="style-group">${c.themeGroups[group]}</h3><div class="style-grid">` + list.map(name => `<button type="button" class="style-option" data-theme-pick="${name}" aria-pressed="${name===theme}" aria-label="${esc(c.themeNames[name])} · ${darkThemes.includes(name)?sc.dark:sc.light}">${thumb(name)}<span class="style-name">${c.themeNames[name]}<small>${darkThemes.includes(name)?'☾ '+sc.dark:'☀ '+sc.light}</small></span></button>`).join('') + `</div></section>`).join('')}</div>`;
     root.innerHTML = `<div class="desktop">
       <header class="desktop-bar"><a class="brand" href="${langBase()}" data-view="home" translate="no">${icon('terminal')}<strong>niansia<span>.terminal</span></strong><i class="brand-caret" aria-hidden="true"></i></a><span class="desktop-motto">${c.desktop}</span>
         <div class="desktop-controls"><button type="button" class="bar-pill bar-search" data-action="palette" aria-keyshortcuts="Control+K Meta+K" title="${esc(briefCopy().search)} (${modKey} K)">${icon('search')}<span>${esc(briefCopy().search)}</span><kbd translate="no">${modKey} K</kbd></button><a class="bar-pill bar-brief" href="/brief/${pubSeg()}" title="${esc(briefCopy().sub)}">${icon('bolt')}<span>${esc(briefCopy().label)}</span></a><span class="control-divider"></span><div class="language-switch" role="group" aria-label="${c.language}"><span class="lang-pill" aria-hidden="true"></span>${[['en','EN'],['zh-TW','繁'],['zh-CN','简']].map(([key,label])=>`<button type="button" data-lang="${key}" aria-pressed="${key===locale}" translate="no">${label}</button>`).join('')}</div><span class="control-divider"></span>
           <div class="style-menu"><button class="icon-button" data-action="styles" title="${c.style}" aria-label="${c.style}" aria-expanded="false" aria-controls="style-popover">${icon('palette')}</button><div class="style-popover" id="style-popover" role="group" aria-label="${c.style}" hidden><div class="style-head"><p>${c.style}</p><span>${sc.hint}</span></div>${swatches}<button type="button" class="style-option fest-toggle" data-fest-skin aria-pressed="false" hidden></button></div></div>
-          <button class="icon-button" data-action="theme" title="${c.theme}" aria-label="${c.theme}"></button><button class="icon-button" data-action="motion" title="${c.motion}" aria-label="${c.motion}"></button></div>
+          <button class="icon-button" data-action="theme" title="${c.theme}" aria-label="${c.theme}"></button><div class="motion-menu"><button class="icon-button" data-action="motion" title="${esc(mc.title)}" aria-label="${esc(mc.title)}" aria-expanded="false" aria-controls="motion-popover"></button><div class="motion-popover" id="motion-popover" role="group" aria-label="${esc(mc.title)}" hidden><div class="style-head"><p>${esc(mc.title)}</p><button type="button" class="motion-all" data-motion-all></button></div><p class="motion-reduced" hidden>${esc(mc.reduced)}</p>${MOTION_PARTS.map(k=>`<button type="button" class="motion-row" role="switch" data-motion-part="${k}" aria-checked="true"><span class="motion-ico">${icon(MOTION_ICONS[k])}</span><span class="motion-text"><b>${esc(mc.parts[k][0])}</b><small>${esc(mc.parts[k][1])}</small></span><i class="motion-switch" aria-hidden="true"></i></button>`).join('')}</div></div></div>
       </header>
       <section class="terminal-window" aria-label="Niansia terminal">
         <div class="window-bar"><div class="fest-garland" aria-hidden="true"></div><div class="window-dots"><button type="button" data-action="win-close" aria-label="close"></button><button type="button" data-action="win-min" aria-label="${c.winMin}"></button><button type="button" data-action="win-max" aria-label="${c.winMax}"></button></div><span class="window-title" translate="no">niansia@home <span class="muted">: ~</span></span><span class="window-note"><span class="window-clock" translate="no"></span>${icon('terminal')} portfolio / v.03</span></div>
@@ -608,7 +634,7 @@
     const leaving=projectId;
     const from=id&&options.origin?.querySelector?.('strong')||(leaving&&!id?titleOf(leaving):null);
     const to=id?()=>root.querySelector('.project-detail h1'):leaving?()=>root.querySelector(`[data-project="${CSS.escape(leaving)}"] strong`):null;
-    const smooth=!options.keyboard&&motion()&&!!document.startViewTransition;
+    const smooth=!options.keyboard&&motion('pages')&&!!document.startViewTransition;
     const change=()=>{
       view=next;projectId=id;selectedNav=paths.indexOf(view);
       if (id) selectedProject=Math.max(0,projects().findIndex(p=>p.id===id));
@@ -773,7 +799,7 @@
         const matches=projects().filter(p=>name==='skills'?/skill/i.test(p.description):`${p.name} ${p.id} ${p.description} ${p.category}`.toLowerCase().includes(lower));
         finish(matches.length?matches.map(p=>`${p.name} · ${p.category}`).join('\n'):t().noMatches,projectLinks(matches));break;
       }
-      case 'status':finish(`theme: ${theme}\nlanguage: ${locale}\nanimation: ${motion()?'on':'off'}\nfollow: ${fx()?.state().follow?'on':'off'}\nyuki stay: ${yuki()?.stay()?'on':'off'}\ntrail: ${fx()?.state().trail||'off'}\ncursor: ${fx()?.state().size||'m'}\nprojects: ${projects().length}\nyuki: ${yuki()?.summary()||'-'}`);break;
+      case 'status':finish(`theme: ${theme}\nlanguage: ${locale}\nanimation: ${MOTION_PARTS.map(k=>`${k} ${motion(k)?'on':'off'}`).join(' · ')}\nfollow: ${fx()?.state().follow?'on':'off'}\nyuki stay: ${yuki()?.stay()?'on':'off'}\ntrail: ${fx()?.state().trail||'off'}\ncursor: ${fx()?.state().size||'m'}\nprojects: ${projects().length}\nyuki: ${yuki()?.summary()||'-'}`);break;
       case 'email':finish('niansia930202@gmail.com',[{label:t().send,url:'mailto:niansia930202@gmail.com'}]);break;
       case 'github': {
         const item=arg?projects().find(p=>p.id===lower||p.name.toLowerCase()===lower):null;
@@ -804,7 +830,8 @@
       case 'brain':finish(yuki()?.brainReport()||t().brainOff);break;
       case 'follow':case 'motion':case 'trail':case 'cursor': {
         if(name==='follow'){if(arg&&!['on','off'].includes(lower)){usage();break;}const on=arg?lower==='on':!fx()?.state().follow;fx()?.setFollow(on);finish(on?t().followOn:t().followOff);}
-        if(name==='motion'){if(arg&&!['on','off'].includes(lower)){usage();break;}setMotion(arg?lower==='on':paused);finish(motion()?t().motionOn:t().motionOff);}
+        if(name==='motion'){const [a,b]=lower.split(/\s+/),part=MOTION_PARTS.includes(a)?a:'',state=part?b:a;if((a&&!part&&!['on','off'].includes(a))||(state&&!['on','off'].includes(state))){usage();break;}
+          if(part){const on=state?state==='on':!motionParts[part];setMotion(on,part);finish(`${motionCopy().parts[part][0]}: ${on?'on':'off'}`);}else{setMotion(state?state==='on':allOff());finish(allOff()?t().motionOff:t().motionOn);}}
         if(name==='trail'){const modes=['hearts','paws','stars','petals','off'],mode=!arg?(fx()?.state().trail==='off'?'hearts':'off'):lower==='on'?'hearts':lower;if(!modes.includes(mode)){usage();break;}fx()?.setTrail(mode);finish(`trail: ${t().trails[mode]}`);}
         if(name==='cursor'){const size={small:'s',medium:'m',large:'l'}[lower]||lower||'m';if(!['s','m','l'].includes(size)){usage();break;}fx()?.setSize(size);finish(`cursor: ${t().sizes[size]}`);}
         break;
@@ -845,6 +872,11 @@
     if(!next)endPreview();
     if(next)pop.querySelector('[aria-pressed="true"]')?.focus({preventScroll:true});
   }
+  function toggleMotionMenu(open) {
+    const pop=$('.motion-popover'),btn=$('[data-action="motion"]');if(!pop)return;
+    const next=open??pop.hidden;pop.hidden=!next;btn.setAttribute('aria-expanded',String(next));
+    if(next){toggleStyles(false);pop.querySelector('button:not(:disabled)')?.focus({preventScroll:true});}
+  }
   function windowAction(kind) {
     const win=$('.terminal-window');
     if(kind==='win-close'){win.classList.remove('is-shaking');void win.offsetWidth;win.classList.add('is-shaking');yuki()?.say(t().winClose,'poke');if(!yuki())toast(t().winClose);}
@@ -854,6 +886,7 @@
   root.addEventListener('click',async event=>{
     const target=event.target.closest('button,a');
     if(!event.target.closest('.style-menu'))toggleStyles(false);
+    if(!event.target.closest('.motion-menu'))toggleMotionMenu(false);
     if(event.target.closest('.window-title')&&$('.terminal-window').classList.contains('is-minimized'))windowAction('win-min');
     if(!target)return;
     if(target.dataset.filter){setProjectFilter(target.dataset.filter,true);return;}
@@ -865,6 +898,8 @@
     if(target.dataset.themePick)pickTheme(target.dataset.themePick,target);
     if(target.hasAttribute('data-fest-skin')){const f=window.NIANSIA_FESTIVAL?.active();if(f){store.set('fest-skin',festSkinOn(f)?`off:${f.primary.id}`:'on');transition(applyFestival,target);}}
     if(target.dataset.command)runCommand(target.dataset.command);
+    if(target.dataset.motionPart){setMotion(!motionParts[target.dataset.motionPart],target.dataset.motionPart);return;}
+    if(target.hasAttribute('data-motion-all')){setMotion(allOff());return;}
     if(target.hasAttribute('data-fest-celebrate')){const box=target.getBoundingClientRect();for(let i=0;i<3;i++)setTimeout(()=>fx()?.burst(box.left+box.width*(.2+.3*i),box.top+box.height/2,'hearts'),i*140);fx()?.celebrate();yuki()?.act('trick');const l=yuki()?.festivalLine();if(l)yuki()?.say(l);}
     if(target.dataset.ask){yuki()?.openChat(target.dataset.ask);}
     if(target.dataset.bib){const entry=pubList().find(p=>p.id===target.dataset.bib);try{await navigator.clipboard.writeText(entry.bibtex);toast(pubCopy().copied);}catch{toast(entry.bibtex.split('\n')[0]);}}
@@ -872,7 +907,7 @@
     switch(target.dataset.action){
       case 'theme':toggleTheme(target);break;
       case 'styles':toggleStyles();break;
-      case 'motion':setMotion(paused);toast(motion()?t().motionOn:t().motionOff);break;
+      case 'motion':toggleMotionMenu();break;
       case 'chat':yuki()?.openChat();break;
       case 'win-close':case 'win-min':case 'win-max':windowAction(target.dataset.action);break;
       case 'bib-all':{const blob=new Blob([bibtexAll()],{type:'application/x-bibtex'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='niansia.bib';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),4000);break;}
@@ -892,7 +927,7 @@
     if(event.isComposing||event.ctrlKey||event.metaKey||event.altKey||event.defaultPrevented)return;
     const target=event.target,editable=target.matches('input,textarea,select,[contenteditable="true"]');
     if(!root.contains(target)&&target!==document.body&&target!==document.documentElement)return;
-    if(event.key==='Escape'){event.preventDefault();if(!$('.style-popover').hidden){toggleStyles(false);$('[data-action="styles"]').focus();return;}goBack();return;}
+    if(event.key==='Escape'){event.preventDefault();if(!$('.style-popover').hidden){toggleStyles(false);$('[data-action="styles"]').focus();return;}if(!$('.motion-popover').hidden){toggleMotionMenu(false);$('[data-action="motion"]').focus();return;}goBack();return;}
     if(editable){
       if(target.matches('[data-command-input]')) {
         if(event.key==='Tab'&&cycleTab(target,event.shiftKey))event.preventDefault();
@@ -909,6 +944,10 @@
     if(target.closest('.project-filters')&&['ArrowLeft','ArrowRight'].includes(event.key)){
       event.preventDefault();const chips=[...root.querySelectorAll('.pf-chip')],i=chips.indexOf(target.closest('.pf-chip')),next=chips[(i+(event.key==='ArrowLeft'?-1:1)+chips.length)%chips.length];setProjectFilter(next.dataset.filter,true);return;
     }
+    if(target.closest('.motion-popover')&&['ArrowUp','ArrowDown'].includes(event.key)){
+      event.preventDefault();const rows=[...root.querySelectorAll('.motion-popover button:not(:disabled)')],i=rows.indexOf(target.closest('button'));
+      rows[(i+(event.key==='ArrowUp'?-1:1)+rows.length)%rows.length]?.focus();return;
+    }
     if(target.closest('.style-popover')&&['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(event.key)){
       event.preventDefault();const options=[...root.querySelectorAll('.style-option')],i=options.indexOf(target.closest('.style-option'));
       options[(i+(['ArrowUp','ArrowLeft'].includes(event.key)?-1:1)+options.length)%options.length].focus();return;
@@ -919,7 +958,7 @@
     if(event.key==='ArrowRight'||(event.key==='Enter'&&!target.closest('button,a'))){event.preventDefault();if(view==='projects'&&!projectId)navigate('projects',projects()[selectedProject].id,{keyboard:true});else if(!projectId)navigate(paths[selectedNav],'',{keyboard:true});}
   });
   reduced.addEventListener('change',applyMotion);
-  window.addEventListener('pageswap',event=>{ if(!motion()) event.viewTransition?.skipTransition(); });
+  window.addEventListener('pageswap',event=>{ if(!motion('pages')) event.viewTransition?.skipTransition(); });
   window.addEventListener('resize',moveIndicator);
   window.addEventListener('popstate',()=>{const before=locale;readLocation();if(before!==locale)shell();else screen(false);});
   setInterval(tickClock, 15000);
@@ -927,7 +966,7 @@
     locale:()=>locale, t, projects, view:()=>({view,projectId}), store, esc, icon,
     navigate, setTheme, theme:()=>theme, themes, themeGroups, darkThemes, setLanguage:changeLanguage, setMotion, motion, toast, message, record,
     previewTheme, endPreview, pickTheme, runCommand, paths:()=>paths, files:()=>files, navLabel, pubList, pubText, pubHidden, pubCopy, briefCopy, pubSeg, bibtexAll, modKey,
-    toggleStyles, openStyles:()=>toggleStyles(true)
+    toggleStyles, openStyles:()=>toggleStyles(true), motionParts:()=>({...motionParts}), allMotionOff:allOff, openMotion:()=>toggleMotionMenu(true)
   };
   document.documentElement.dataset.theme = theme;
   document.querySelector('meta[name="theme-color"]')?.setAttribute('content', themeColors[theme]);
