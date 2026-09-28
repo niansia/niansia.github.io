@@ -8,7 +8,21 @@ The public site has three language editions:
 - Traditional Chinese: `/zh-tw/`
 - Simplified Chinese: `/zh-cn/`
 
-Publication and conference entries are designed to support a thumbnail, citation, venue, authors, status, paper, code, project page, poster, and slides. A reusable starter entry lives in `_templates/publication-entry.qmd`; place future visuals in `assets/publications/`.
+## Papers, paper pages and the one-page brief
+
+- **Papers** live in `assets/js/publications-data.js` and appear in the terminal as `papers.bib`, in the one-page brief, and (with `page: true`) as a static project page at `/paper/<id>/`. Status runs from `in-prep` to `published`; `anonymous: true` keeps the title, authors and links hidden everywhere while a double-blind review is running. Longer sections for a paper page go in `papers_src/<id>.en.md` and `papers_src/<id>.zh-TW.md` (zh-CN is converted). Figures go in `assets/publications/`.
+- The `example` entry is a **draft template**: it is left out of every list and the sitemap, its page is built with `noindex` and a template banner, and the terminal shows it only with `?papers=preview`. Replace it with a real paper or delete it together with `papers_src/example.*.md`.
+- Manuscripts in preparation come from `assets/js/submissions-data.js` (venue, research area and deadline only).
+- **One-page brief** (`/brief/`, `/brief/zh-tw/`, `/brief/zh-cn/`) is a fast, printable page for professors and interviewers, generated from the same data as the terminal (profile copy, CV data, projects, papers, notes). It is linked from the top bar, the home screen, the no-JavaScript fallback, the palette and the `brief` command.
+
+`python tools/build_static.py --og-missing` rebuilds the static pages (notes, log, statement, share pages, brief, papers) and renders only the Open Graph images that do not exist yet.
+
+## Navigation and style
+
+- **Command palette**: Ctrl+K / ⌘K, the search pill in the top bar, or `palette [text]`. One fuzzy search over pages, projects, papers, notes, actions, styles and commands (`>` lists commands, `?` asks Yuki). Arrowing onto a style previews it; Enter keeps it. Recently used items come first (`assets/js/command-palette.js`).
+- **Style picker**: each of the 13 styles is shown as a miniature of the terminal drawn with that style's own tokens (`[data-theme-scope]` in `styles.scss`). Hovering or arrowing previews the whole page; a click keeps it.
+- **Transitions**: moving between files slides the reading pane in the direction of travel, and a project's title morphs between its directory row and its page (View Transitions; keyboard moves stay instant, and paused or reduced motion turns them off). The static pages cross-fade between each other and the terminal, and a note's title morphs from its card into the page heading.
+- **Yuki's tour** (`assets/js/yuki-tour.js`): three routes (research, builder, fun) with a spotlight and a card that follows the page. Start it from the home card, the palette, `tour [route]`, by asking Yuki ("show me around", 「帶我逛逛」), or with `?tour=research`. First-time visitors get one offer in Yuki's speech bubble.
 
 ## Yuki, the desktop companion
 

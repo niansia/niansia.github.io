@@ -953,6 +953,10 @@
   }
   async function think(raw) {
     const text = raw.trim();
+    const tour = window.YUKI_TOUR;
+    if (tour && /導覽|导览|\btour\b|guide me|show me around|帶我逛|带我逛|帶我參觀|带我参观|逛一圈/i.test(text)) {
+      return {text: tour.pitch(), links: tour.routes().map(r => ({label: r.label, run: () => tour.start(r.id)})), meta: 'tour'};
+    }
     if (/節日|节日|連假|连假|holiday|festival|什麼日子|什么日子/i.test(text)) {
       const f = festival(), next = window.NIANSIA_FESTIVAL?.upcoming(new Date(), 1)[0];
       const L = app.locale();
@@ -1197,6 +1201,7 @@
       return true;
     },
     setOutfit, setAccessory, festivalLine, outfit: () => outfitChoice, accessory: () => accChoice,
+    offer: (text, actions) => { if (tucked || asleep) { pushMessage({who: 'yuki', text, links: actions}); return; } say(text, {ms: 12000, actions}); pushMessage({who: 'yuki', text, links: actions}); },
     act, ask, say: (text, kind) => { if (kind === 'poke') poke(); say(text); pushMessage({who: 'yuki', text}); }, openChat, closeChat,
     asleep: () => asleep, dragging: () => dragging,
     summary: () => `${t().moodWords[moodKey()]} · Lv ${level()}`,

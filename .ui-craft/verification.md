@@ -51,3 +51,16 @@ Checked against a static preview assembled from the last Quarto render plus the 
 - Needs persist in localStorage; nudges back off 1.6x per unanswered message; auto-sleep after 3 idle minutes; welcome-back after one or more minutes hidden.
 - Model: 61k parameters, 43 intents, 99.0% validation, 99.1% on 109 held-out questions (EN / 繁 / 简). JS feature hashes match Python on probe strings. Chat verified for project lists, topic retrieval (vision to ChromaRecover), style switching (sakura) and language switching (to English).
 - Scripted terminal run (help, theme, trail, cursor, yuki, brain, feed, lie, trick, sudo, natural-language questions, neofetch, status, hide) produced no console errors.
+
+
+## Follow-up: papers, brief, palette, style previews, tour and transitions (2026-09-28)
+
+Checked against a local Quarto render (Quarto 1.10.18) plus `tools/build_static.py --og-missing`, in the in-app Chromium browser at desktop and 375 px mobile sizes.
+
+- `papers.bib` (explorer, `papers`, `pubs`, `論文`): empty-state shelf when no public papers, three anonymous in-preparation cards with live countdowns, writing links. `?papers=preview` shows the draft template card with links, topics, BibTeX copy and `.bib` export.
+- Palette: Ctrl+K opens and closes, suggested/recent groups, fuzzy match with highlighted characters (`lumi` finds the project, notes, log, demo and command), `>` and `?` modes, style items preview live and Esc restores the saved style. Mobile layout full width.
+- Style picker: 13 thumbnails drawn from each style's own tokens; hover preview and revert on leave; festival skin steps aside only when a style is chosen. Mobile shows it as a bottom sheet.
+- Tour: research, builder and fun routes step through their targets, move between views, scroll the reading pane so the card has room, and re-frame after late content (LumiGrid table). Arrow keys, Enter and Esc work; mobile docks the card at the bottom. Chat ("帶我逛逛") offers the three routes; first-visit offer appears in Yuki's bubble.
+- Brief (`/brief/`, zh-tw, zh-cn) and paper template page (`/paper/example/`, noindex, not in the sitemap) render; zh first-sentence extraction fixed for sentences without a trailing space.
+- In-page view transitions could not be observed visually because the preview pane was hidden (browsers skip view transitions in hidden documents); the naming and cleanup logic was checked by script.
+- Scripted commands (papers, tree, help tour, ls, find vision, theme, status, palette, tour) returned results with no console errors.

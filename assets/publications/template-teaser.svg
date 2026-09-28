@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 800" font-family="Inter,'Noto Sans TC',system-ui,sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fbf6ee"/><stop offset="1" stop-color="#f1e6d8"/></linearGradient>
+    <pattern id="dots" width="24" height="24" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1.4" fill="#2a22301c"/></pattern>
+    <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0 10 5 0 10z" fill="#c0673a"/></marker>
+  </defs>
+  <rect width="1600" height="800" fill="url(#bg)"/><rect width="1600" height="800" fill="url(#dots)"/>
+  <g stroke="#2a223040" stroke-width="3" stroke-dasharray="12 10" fill="#fffdf9">
+    <rect x="90" y="190" width="360" height="360" rx="28"/>
+    <rect x="620" y="150" width="360" height="440" rx="28" stroke="#c0673a" stroke-dasharray="0"/>
+    <rect x="1150" y="190" width="360" height="360" rx="28"/>
+  </g>
+  <g fill="none" stroke="#c0673a" stroke-width="5" marker-end="url(#arr)"><path d="M470 370h120"/><path d="M1000 370h120"/></g>
+  <g fill="#8f6bb3" opacity=".55"><rect x="150" y="260" width="240" height="160" rx="16"/><circle cx="1330" cy="350" r="80"/></g>
+  <g fill="#c0673a"><rect x="680" y="220" width="240" height="28" rx="14" opacity=".9"/><rect x="680" y="280" width="190" height="18" rx="9" opacity=".35"/><rect x="680" y="320" width="220" height="18" rx="9" opacity=".35"/><rect x="680" y="380" width="240" height="140" rx="16" opacity=".15"/></g>
+  <g font-size="30" font-weight="700" fill="#2a2230" text-anchor="middle"><text x="270" y="500">Input</text><text x="800" y="560">Method</text><text x="1330" y="500">Output</text></g>
+  <text x="800" y="700" text-anchor="middle" font-size="26" fill="#766b73" font-family="'JetBrains Mono',monospace">teaser figure placeholder · 16:8</text>
+</svg>

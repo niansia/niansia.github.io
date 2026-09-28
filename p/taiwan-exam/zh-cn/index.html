@@ -70,10 +70,16 @@ figure.fig figcaption{margin-top:8px;font-size:13.5px;color:var(--muted);line-he
 .log-entry h2 a{color:var(--ink);text-decoration:none;}
 .statement-link{display:flex;justify-content:space-between;align-items:center;}
 footer{max-width:760px;margin:0 auto;padding:26px 20px 50px;border-top:1px solid var(--line);font-size:14px;color:var(--muted);}
+@view-transition{navigation:auto;}
+::view-transition-old(root){animation:vt-out .18s ease-in both;}::view-transition-new(root){animation:vt-in .34s cubic-bezier(.22,1,.36,1) both;}
+@keyframes vt-out{to{opacity:0;}}@keyframes vt-in{from{opacity:0;transform:translateY(8px);}}
+::view-transition-group(*){animation-duration:.42s;animation-timing-function:cubic-bezier(.22,1,.36,1);}
+@media(prefers-reduced-motion:reduce){@view-transition{navigation:none;}}
 </style>
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "SoftwareSourceCode", "name": "Taiwan Exam", "description": "用于生成原创学测模拟考的 Agent Skill。流程包括答案与难度检查、套用正式考试版式，并分别交付试题 PDF 和答案详解 PDF。会考与分科测验仍在制作中。", "codeRepository": "https://github.com/niansia/taiwan-exam", "author": {"@type": "Person", "name": "Niansia", "url": "https://niansia.github.io/", "email": "mailto:niansia930202@gmail.com", "sameAs": ["https://github.com/niansia"]}, "inLanguage": "zh-Hans", "url": "https://niansia.github.io/p/taiwan-exam/zh-cn/"}</script>
 <script defer src="/assets/js/site-stats.js"></script>
 <script defer src="/assets/js/lightbox.js"></script>
+
 </head>
 <body>
 <header class="top"><a href="/zh-cn/"><b>~/niansia</b></a> / <a href="/zh-cn/#projects">projects</a><span class="sp"></span><span class="langs"><a href="/p/taiwan-exam/" hreflang="en">EN</a><a href="/p/taiwan-exam/zh-tw/" hreflang="zh-Hant">繁</a><a href="/p/taiwan-exam/zh-cn/" aria-current="page" hreflang="zh-Hans">简</a></span></header>

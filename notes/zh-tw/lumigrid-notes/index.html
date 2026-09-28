@@ -70,14 +70,20 @@ figure.fig figcaption{margin-top:8px;font-size:13.5px;color:var(--muted);line-he
 .log-entry h2 a{color:var(--ink);text-decoration:none;}
 .statement-link{display:flex;justify-content:space-between;align-items:center;}
 footer{max-width:760px;margin:0 auto;padding:26px 20px 50px;border-top:1px solid var(--line);font-size:14px;color:var(--muted);}
+@view-transition{navigation:auto;}
+::view-transition-old(root){animation:vt-out .18s ease-in both;}::view-transition-new(root){animation:vt-in .34s cubic-bezier(.22,1,.36,1) both;}
+@keyframes vt-out{to{opacity:0;}}@keyframes vt-in{from{opacity:0;transform:translateY(8px);}}
+::view-transition-group(*){animation-duration:.42s;animation-timing-function:cubic-bezier(.22,1,.36,1);}
+@media(prefers-reduced-motion:reduce){@view-transition{navigation:none;}}
 </style>
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "BlogPosting", "headline": "LumiGrid 研究筆記：一個亮度曲線網格，實際上學到了什麼", "description": "從 16.48 dB 的課堂作法到 24.57 dB：LumiGrid 的設計、消融實驗、兩個失敗案例，以及一個對自己方法不太有利的發現。", "datePublished": "2026-09-28", "dateModified": "2026-09-28", "inLanguage": "zh-Hant", "author": {"@type": "Person", "name": "Niansia", "url": "https://niansia.github.io/", "email": "mailto:niansia930202@gmail.com", "sameAs": ["https://github.com/niansia"]}, "mainEntityOfPage": "https://niansia.github.io/notes/zh-tw/lumigrid-notes/", "image": "https://niansia.github.io/assets/og/note-lumigrid-notes-zh-tw.jpg", "keywords": "電腦視覺, 低光增強, NTIRE 2025"}</script>
 <script defer src="/assets/js/site-stats.js"></script>
 <script defer src="/assets/js/lightbox.js"></script>
+
 </head>
 <body>
 <header class="top"><a href="/zh-tw/"><b>~/niansia</b></a> / <a href="/notes/zh-tw/">notes</a><span class="sp"></span><span class="langs"><a href="/notes/en/lumigrid-notes/" hreflang="en">EN</a><a href="/notes/zh-tw/lumigrid-notes/" aria-current="page" hreflang="zh-Hant">繁</a><a href="/notes/zh-cn/lumigrid-notes/" hreflang="zh-Hans">简</a></span></header>
-<main><p class="kicker">研究筆記</p><h1>LumiGrid 研究筆記：一個亮度曲線網格，實際上學到了什麼</h1><p class="lede">從 16.48 dB 的課堂作法到 24.57 dB：LumiGrid 的設計、消融實驗、兩個失敗案例，以及一個對自己方法不太有利的發現。</p><div class="meta"><time datetime="2026-09-28">2026-09-28</time><span>3 分鐘閱讀</span><span class="tag">電腦視覺</span><span class="tag">低光增強</span><span class="tag">NTIRE 2025</span></div><article><p>這篇整理 <a href="https://github.com/niansia/LumiGrid" rel="noopener noreferrer">LumiGrid</a> 的來龍去脈。除了結果，也會寫一個對我自己的方法<strong>不太有利</strong>的發現：模型其實幾乎沒有用到它名字裡的「亮度」那一軸。</p>
+<main><p class="kicker">研究筆記</p><h1 style="view-transition-name:n-lumigrid-notes">LumiGrid 研究筆記：一個亮度曲線網格，實際上學到了什麼</h1><p class="lede">從 16.48 dB 的課堂作法到 24.57 dB：LumiGrid 的設計、消融實驗、兩個失敗案例，以及一個對自己方法不太有利的發現。</p><div class="meta"><time datetime="2026-09-28">2026-09-28</time><span>3 分鐘閱讀</span><span class="tag">電腦視覺</span><span class="tag">低光增強</span><span class="tag">NTIRE 2025</span></div><article><p>這篇整理 <a href="https://github.com/niansia/LumiGrid" rel="noopener noreferrer">LumiGrid</a> 的來龍去脈。除了結果，也會寫一個對我自己的方法<strong>不太有利</strong>的發現：模型其實幾乎沒有用到它名字裡的「亮度」那一軸。</p>
 <h2>起點：一份不夠好的課堂作業</h2>
 <p>低光影像增強（LLIE）要把很暗的照片還原成正常曝光。我先在 NTIRE 2025 挑戰賽的資料上，把原本的課堂作法重做了一遍：Zero-DCE 加上雙邊濾波、gamma 和對比調整。在我切出來的 20 張保留測試圖上，它只有 <strong>16.48 dB / SSIM 0.742</strong>，甚至比直接用 Zero-DCE 預訓練權重的 19.00 dB 還低。</p>
 <p>問題很清楚：Zero-DCE 對每個像素套用同一種曲線，看不到整張圖的脈絡；後處理再把雜訊一起放大。</p>
@@ -184,7 +190,7 @@ footer{max-width:760px;margin:0 auto;padding:26px 20px 50px;border-top:1px solid
 <li>程式碼、權重與完整表格：<a href="https://github.com/niansia/LumiGrid" rel="noopener noreferrer">github.com/niansia/LumiGrid</a></li>
 <li>用你自己的暗照片試試看：<a href="/lab/lumigrid/?lang=zh-TW">在瀏覽器執行的 LumiGrid</a></li>
 <li>瀏覽器版是怎麼做出來的（以及我在 WebGPU 上踩到的坑）：<a href="/notes/zh-tw/lumigrid-in-the-browser/">下一篇筆記</a></li>
-</ul></article><h2 style="margin-top:48px">其他筆記</h2><a class="card" href="/notes/zh-tw/lumigrid-in-the-browser/"><b>把 LumiGrid 搬進瀏覽器：一個只在 WebGPU 出錯的 6 通道卷積</b><small>兩個神經網路加上一段自己寫的 WebGL 著色器，逐像素對照 PyTorch 驗證；以及一個讓 WebGPU 版本只剩 28.75 dB 的錯，是怎麼一步步二分找出來的。</small></a><a class="card" href="/notes/zh-tw/taiwan-exam-design/"><b>Taiwan Exam 設計筆記：讓模型出題，讓程式只負責檢查</b><small>一個讓 AI 出原創學測模擬考的 Agent Skill，為什麼刻意不讓程式替題目品質背書，以及那些檢查、鎖定與套版是怎麼設計的。</small></a><div class="btns"><a class="btn" href="/notes/zh-tw/">研究筆記</a><a class="btn primary" href="/zh-tw/#research">回到作品集</a></div></main>
+</ul></article><h2 style="margin-top:48px">其他筆記</h2><a class="card" href="/notes/zh-tw/lumigrid-in-the-browser/"><b style="view-transition-name:n-lumigrid-in-the-browser">把 LumiGrid 搬進瀏覽器：一個只在 WebGPU 出錯的 6 通道卷積</b><small>兩個神經網路加上一段自己寫的 WebGL 著色器，逐像素對照 PyTorch 驗證；以及一個讓 WebGPU 版本只剩 28.75 dB 的錯，是怎麼一步步二分找出來的。</small></a><a class="card" href="/notes/zh-tw/taiwan-exam-design/"><b style="view-transition-name:n-taiwan-exam-design">Taiwan Exam 設計筆記：讓模型出題，讓程式只負責檢查</b><small>一個讓 AI 出原創學測模擬考的 Agent Skill，為什麼刻意不讓程式替題目品質背書，以及那些檢查、鎖定與套版是怎麼設計的。</small></a><div class="btns"><a class="btn" href="/notes/zh-tw/">研究筆記</a><a class="btn primary" href="/zh-tw/#research">回到作品集</a></div></main>
 <footer>有問題或想法？寫信到 <a href="mailto:niansia930202@gmail.com">niansia930202@gmail.com</a> · <a href="/zh-tw/">niansia.github.io</a> · <a href="https://github.com/niansia">github.com/niansia</a><span class="stats" data-stats hidden> · <i class="live-dot"></i> <b data-stat="online">–</b> 人在線 · <b data-stat="total">–</b> 次造訪</span></footer>
 </body>
 </html>

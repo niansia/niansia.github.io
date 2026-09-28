@@ -5,9 +5,9 @@
   if (!root || !window.NIANSIA_COPY || !window.NIANSIA_PROJECTS || !window.NIANSIA_TERMINAL) return;
   const esc = value => String(value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
   const store = { get(key, fallback) { try { return localStorage.getItem(`niansia-${key}`) ?? fallback; } catch { return fallback; } }, set(key,value) { try { localStorage.setItem(`niansia-${key}`,value); } catch {} } };
-  const BASE_PATHS = ['home','about','projects','research','contact','hobbies','cv','help'];
-  const BASE_FILES = ['start.sh','about.md','projects/','research.md','contact.txt','hobbies.md','cv.pdf','help'];
-  const NAV_ICONS = {home:'terminal',about:'file',projects:'folder',research:'research',contact:'mail',hobbies:'heart',cv:'badge',help:'help'};
+  const BASE_PATHS = ['home','about','projects','research','papers','contact','hobbies','cv','help'];
+  const BASE_FILES = ['start.sh','about.md','projects/','research.md','papers.bib','contact.txt','hobbies.md','cv.pdf','help'];
+  const NAV_ICONS = {home:'terminal',about:'file',projects:'folder',research:'research',papers:'paper',contact:'mail',hobbies:'heart',cv:'badge',help:'help'};
   const cvState = () => { const s = window.NIANSIA_CV?.status || 'hidden'; return s === 'locked' && new URLSearchParams(location.search).get('cv') === 'preview' ? 'preview' : s; };
   const paths = BASE_PATHS.filter(p => p !== 'cv' || cvState() !== 'hidden');
   const files = paths.map(p => BASE_FILES[BASE_PATHS.indexOf(p)]);
@@ -27,7 +27,8 @@
     arrow:'M4 12h15m-6-6 6 6-6 6', close:'m6 6 12 12M6 18 18 6', chat:'M4 4h16v13H9l-5 4z', link:'M8 16 16 8M10 4h10v10M5 9H3v12h12v-2', copy:'M8 8h12v12H8zM4 16H2V2h14v2', heart:'M12 20 3 11C-2 3 8-1 12 6c4-7 14-3 9 5z',
     palette:'M12 3a9 9 0 1 0 0 18c1.5 0 2-1 1.4-2.2-.7-1.3.2-2.8 1.7-2.8H18a3 3 0 0 0 3-3c0-5.5-4-10-9-10zM7.5 11h.01M10 7h.01M15 7.5h.01',
     spark:'M12 3v5m0 8v5M3 12h5m8 0h5M6 6l3 3m6 6 3 3M6 18l3-3m6-6 3-3',
-    badge:'M6 3h12v18H6zM9 8h6M9 12h6M9 16h3', lock:'M6 11h12v10H6zM8.5 11V8a3.5 3.5 0 0 1 7 0v3M12 15v2', download:'M12 3v12m-5-5 5 5 5-5M4 20h16'
+    badge:'M6 3h12v18H6zM9 8h6M9 12h6M9 16h3', paper:'M6 2h9l4 4v16H6zM14 2v5h5M9 11h7M9 15h7M9 19h4', bolt:'M13 2 4 14h7l-1 8 9-12h-7z',
+    search:'M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zm9 16-4.2-4.2', compass:'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zm3.5 5.5-2 5-5 2 2-5z', book:'M4 5q4-2 8 0v15q-4-2-8 0zM12 5q4-2 8 0v15q-4-2-8 0z', lock:'M6 11h12v10H6zM8.5 11V8a3.5 3.5 0 0 1 7 0v3M12 15v2', download:'M12 3v12m-5-5 5 5 5-5M4 20h16'
   };
   const icon = (name, cls='') => `<svg class="icon ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${icons[name] || icons.file}"/></svg>`;
   let locale = root.dataset.locale || 'en';
@@ -54,8 +55,26 @@
     const x = box ? box.left + box.width / 2 : innerWidth - 60, y = box ? box.top + box.height / 2 : 30;
     document.documentElement.style.setProperty('--reveal-x', `${x}px`);
     document.documentElement.style.setProperty('--reveal-y', `${y}px`);
+    document.documentElement.dataset.vt = 'reveal';
     const vt = document.startViewTransition(change);
-    [vt.ready, vt.finished, vt.updateCallbackDone].forEach(p => p?.catch(() => {}));
+    [vt.ready, vt.updateCallbackDone].forEach(p => p?.catch(() => {}));
+    vt.finished.catch(() => {}).finally(() => { if (document.documentElement.dataset.vt === 'reveal') delete document.documentElement.dataset.vt; });
+  }
+  /* Moving between files: the reading pane slides in the direction of travel (deeper → from the right, back → from the left),
+     and a project's title morphs between its directory row and its page. Keyboard moves stay instant. */
+  const modKey = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent) ? '⌘' : 'Ctrl';
+  const depthOf = (v, id) => v === 'home' ? 0 : id ? 2 : 1;
+  const titleOf = () => root.querySelector('.project-detail h1');
+  function navTransition(change, {dir, from, to}) {
+    const html = document.documentElement;
+    if (!document.startViewTransition || !motion() || document.visibilityState !== 'visible' || html.dataset.vt) { change(); return; }
+    const named = [];
+    const name = (el, n) => { if (el) { el.style.viewTransitionName = n; named.push(el); } };
+    name(from, 'vt-title');
+    html.dataset.vt = 'nav'; html.dataset.vtDir = dir;
+    const vt = document.startViewTransition(() => { named.forEach(el => { el.style.viewTransitionName = ''; }); named.length = 0; change(); if (from) name(to?.(), 'vt-title'); });
+    [vt.ready, vt.updateCallbackDone].forEach(p => p?.catch(() => {}));
+    vt.finished.catch(() => {}).finally(() => { named.forEach(el => { el.style.viewTransitionName = ''; }); if (html.dataset.vt === 'nav') { delete html.dataset.vt; delete html.dataset.vtDir; } });
   }
   function setTheme(next, origin) {
     next = themes.includes(next) ? next : 'sakura';
@@ -74,6 +93,30 @@
     const button = $('[data-action="theme"]');
     if (button) { button.innerHTML = icon(darkThemes.includes(theme) ? 'sun' : 'moon'); button.setAttribute('aria-pressed', String(darkThemes.includes(theme))); }
     root.querySelectorAll('[data-theme-pick]').forEach(el => el.setAttribute('aria-pressed', String(el.dataset.themePick === theme)));
+  }
+  /* Style picker: hovering or arrowing onto a style previews it on the whole page; only a click keeps it. */
+  const styleCopy=()=>({en:{hint:'Hover to preview · click to keep',light:'light',dark:'dark'},'zh-TW':{hint:'滑過預覽 · 點一下套用',light:'淺色',dark:'深色'},'zh-CN':{hint:'滑过预览 · 点一下套用',light:'浅色',dark:'深色'}}[locale]);
+  let previewing=null;
+  function previewTheme(name) {
+    if (!themes.includes(name)) return;
+    const html=document.documentElement;
+    if (previewing===null) previewing={fskin:html.dataset.fskin||''};
+    html.dataset.fskin=''; html.dataset.theme=name;
+    root.querySelectorAll('[data-theme-pick]').forEach(el=>el.classList.toggle('is-previewing',el.dataset.themePick===name&&name!==theme));
+  }
+  function endPreview() {
+    if (previewing===null) return;
+    const html=document.documentElement;
+    html.dataset.theme=theme; html.dataset.fskin=previewing.fskin; previewing=null;
+    root.querySelectorAll('.is-previewing').forEach(el=>el.classList.remove('is-previewing'));
+  }
+  /* Choosing a style (picker, palette or Yuki): keep the preview, and step out of a festival skin so the style shows. */
+  function pickTheme(name, origin) {
+    if (previewing) { document.documentElement.dataset.fskin=previewing.fskin; previewing=null; }
+    root.querySelectorAll('.is-previewing').forEach(el=>el.classList.remove('is-previewing'));
+    const f=window.NIANSIA_FESTIVAL?.active();
+    if (f&&festSkinOn(f)) { store.set('fest-skin',`off:${f.primary.id}`); applyFestival(); }
+    setTheme(name, origin);
   }
   function toggleTheme(origin) { setTheme(themePairs[theme] || (darkThemes.includes(theme) ? 'sakura' : 'dark'), origin); }
   function applyMotion() {
@@ -95,11 +138,13 @@
   function shell() {
     const c = t();
     document.documentElement.lang = locale;
-    const swatches = `<div class="style-grid">${themeGroups.map(([group, list]) => `<span class="style-group">${c.themeGroups[group]}</span>` + list.map(name => `<button type="button" class="style-option" data-theme-pick="${name}" aria-pressed="${name===theme}"><span class="swatch swatch-${name}" aria-hidden="true"><i></i><i></i><i></i></span>${c.themeNames[name]}</button>`).join('')).join('')}</div>`;
+    const sc = styleCopy();
+    const thumb = name => `<span class="theme-thumb" data-theme-scope="${name}" aria-hidden="true"><i class="tt-desk"></i><i class="tt-win"><i class="tt-bar"><b></b><b></b><b></b></i><i class="tt-side"><b></b><b></b><b></b></i><i class="tt-main"><i class="tt-h"></i><i class="tt-l"></i><i class="tt-l tt-s"></i><i class="tt-btn"></i><i class="tt-chip"></i></i></i></span>`;
+    const swatches = `<div class="style-groups">${themeGroups.map(([group, list]) => `<section class="style-block"><h3 class="style-group">${c.themeGroups[group]}</h3><div class="style-grid">` + list.map(name => `<button type="button" class="style-option" data-theme-pick="${name}" aria-pressed="${name===theme}" aria-label="${esc(c.themeNames[name])} · ${darkThemes.includes(name)?sc.dark:sc.light}">${thumb(name)}<span class="style-name">${c.themeNames[name]}<small>${darkThemes.includes(name)?'☾ '+sc.dark:'☀ '+sc.light}</small></span></button>`).join('') + `</div></section>`).join('')}</div>`;
     root.innerHTML = `<div class="desktop">
       <header class="desktop-bar"><a class="brand" href="${langBase()}" data-view="home" translate="no">${icon('terminal')}<strong>niansia<span>.terminal</span></strong><i class="brand-caret" aria-hidden="true"></i></a><span class="desktop-motto">${c.desktop}</span>
-        <div class="desktop-controls"><div class="language-switch" role="group" aria-label="${c.language}"><span class="lang-pill" aria-hidden="true"></span>${[['en','EN'],['zh-TW','繁'],['zh-CN','简']].map(([key,label])=>`<button type="button" data-lang="${key}" aria-pressed="${key===locale}" translate="no">${label}</button>`).join('')}</div><span class="control-divider"></span>
-          <div class="style-menu"><button class="icon-button" data-action="styles" title="${c.style}" aria-label="${c.style}" aria-expanded="false" aria-controls="style-popover">${icon('palette')}</button><div class="style-popover" id="style-popover" role="group" aria-label="${c.style}" hidden><p>${c.style}</p>${swatches}<button type="button" class="style-option fest-toggle" data-fest-skin aria-pressed="false" hidden></button></div></div>
+        <div class="desktop-controls"><button type="button" class="bar-pill bar-search" data-action="palette" aria-keyshortcuts="Control+K Meta+K" title="${esc(briefCopy().search)} (${modKey} K)">${icon('search')}<span>${esc(briefCopy().search)}</span><kbd translate="no">${modKey} K</kbd></button><a class="bar-pill bar-brief" href="/brief/${pubSeg()}" title="${esc(briefCopy().sub)}">${icon('bolt')}<span>${esc(briefCopy().label)}</span></a><span class="control-divider"></span><div class="language-switch" role="group" aria-label="${c.language}"><span class="lang-pill" aria-hidden="true"></span>${[['en','EN'],['zh-TW','繁'],['zh-CN','简']].map(([key,label])=>`<button type="button" data-lang="${key}" aria-pressed="${key===locale}" translate="no">${label}</button>`).join('')}</div><span class="control-divider"></span>
+          <div class="style-menu"><button class="icon-button" data-action="styles" title="${c.style}" aria-label="${c.style}" aria-expanded="false" aria-controls="style-popover">${icon('palette')}</button><div class="style-popover" id="style-popover" role="group" aria-label="${c.style}" hidden><div class="style-head"><p>${c.style}</p><span>${sc.hint}</span></div>${swatches}<button type="button" class="style-option fest-toggle" data-fest-skin aria-pressed="false" hidden></button></div></div>
           <button class="icon-button" data-action="theme" title="${c.theme}" aria-label="${c.theme}"></button><button class="icon-button" data-action="motion" title="${c.motion}" aria-label="${c.motion}"></button></div>
       </header>
       <section class="terminal-window" aria-label="Niansia terminal">
@@ -141,11 +186,11 @@
     const quick = ['projects','theme sakura','neofetch','trick','trail paws','help'];
     return `${commandTitle('./start.sh')}${festivalBanner(c)}<div class="${boot}"><span><b>✓</b> profile loaded</span><span><b>✓</b> ${projects().length} projects mounted</span><span><b>✓</b> yuki.exe is awake</span><span><b>✓</b> brain.nn ready</span></div>
       <div class="welcome-copy"><p class="hello-world" translate="no">${c.welcome}<i class="text-cursor" aria-hidden="true"></i></p><h1>${name}</h1><p class="welcome-tagline">${c.tagline}</p><p>${c.intro}</p></div>
-      <div class="profile-facts"><span>${c.role}</span><span>${c.leave}</span>${subCopy()?`<button type="button" class="sub-chip" data-view="research">✍ ${subCopy().chip}${nextDeadline()?` · <b data-deadline="${nextDeadline().deadline}">${countdown(nextDeadline().deadline)}</b>`:''}</button>`:''}</div>
+      <a class="brief-chip" href="/brief/${pubSeg()}">${icon('bolt')}<span>${esc(briefCopy().chip)}</span><em aria-hidden="true">→</em></a><div class="profile-facts"><span>${c.role}</span><span>${c.leave}</span>${subCopy()?`<button type="button" class="sub-chip" data-view="research">✍ ${subCopy().chip}${nextDeadline()?` · <b data-deadline="${nextDeadline().deadline}">${countdown(nextDeadline().deadline)}</b>`:''}</button>`:''}</div>
       <div class="output-actions">${button('projects',c.start,true)}${button('about',c.more)}</div>
       <div class="home-cards">
         <div class="home-card latest-card"><span class="card-label">${c.latestCard}${featured.length>1?`<span class="latest-dots">${featured.map((f,i)=>`<button type="button" class="latest-dot" data-latest-dot="${i}" aria-label="${esc(f.p.name)}" aria-pressed="${i===0}"></button>`).join('')}</span>`:''}</span><div class="latest-slides">${featured.map((f,i)=>`<button class="latest-slide${i?'':' is-on'}" data-project="${f.p.id}"${i?' tabindex="-1" aria-hidden="true"':''}>${f.media}<strong translate="no">${esc(f.p.name)} <span class="file-extension">${f.ext}</span></strong><span class="card-copy">${f.copy}</span></button>`).join('')}</div></div>
-        <div class="home-card ask-card"><span class="card-label">${icon('chat')} ${c.askTitle}</span><p>${c.askIntro}</p><div class="ask-chips">${c.askChips.map(q=>`<button data-ask="${esc(q)}">${esc(q)}</button>`).join('')}</div></div>
+        <div class="home-card ask-card"><span class="card-label">${icon('chat')} ${c.askTitle}</span><p>${c.askIntro}</p><div class="ask-chips">${c.askChips.map(q=>`<button data-ask="${esc(q)}">${esc(q)}</button>`).join('')}</div>${window.YUKI_TOUR||document.querySelector('script[src*="yuki-tour"]')?`<button type="button" class="tour-cta" data-tour="">${icon('compass')}<span>${esc(tourCta())}</span><em aria-hidden="true">→</em></button>`:''}</div>
       </div>
       <div class="site-pulse" data-stats hidden><div><span>${esc(statCopy().totalL)}</span><b data-stat="total" data-count>–</b></div><div><span>${esc(statCopy().todayL)}</span><b data-stat="today" data-count>–</b></div><div class="is-live"><span><i class="live-dot" aria-hidden="true"></i>${esc(statCopy().onlineL)}</span><b data-stat="online">–</b></div><small>${esc(statCopy().note)}</small></div>
       <div class="quick-commands"><span class="card-label">${c.quickTitle}</span><div>${quick.map(cmd=>`<button data-command="${cmd}" translate="no"><span>$</span> ${cmd}</button>`).join('')}</div></div>`;
@@ -437,6 +482,54 @@
       <div class="hobby-card"><p>${esc(L.nick)}</p><div class="hobby-facts">${L.facts.map(f=>`<span>${esc(f)}</span>`).join('')}</div><div class="interest-tags">${L.circles.map(c=>`<span>${esc(c)}</span>`).join('')}</div><p class="hobby-langs"><b>${esc(L.langLabel)}</b>${L.langs.map(esc).join(' ❅ ')}<small>${esc(L.langNote)}</small></p></div>
       ${sections}<h2 class="hobby-social-title">${esc(L.socialTitle)}</h2><div class="hobby-links">${links}</div><p class="comment-line">${esc(L.footnote)}</p>`;
   }
+  /* papers.bib: publications (from publications-data.js) and anonymous manuscripts in preparation (from submissions-data.js). */
+  const pubs=()=>window.NIANSIA_PUBS;
+  const pubCopy=()=>pubs()?.copy[locale]||pubs()?.copy.en;
+  const pubPreview=()=>new URLSearchParams(location.search).get('papers')==='preview';
+  const pubText=v=>v&&typeof v==='object'?(v[locale]??v.en??''):(v||'');
+  const pubSeg=()=>locale==='en'?'':locale.toLowerCase()+'/';
+  function pubList() { return (pubs()?.papers||[]).filter(p=>!p.draft||pubPreview()); }
+  const pubHidden=p=>p.anonymous&&['under-review','in-prep'].includes(p.status);
+  const PUB_ORDER=['published','accepted','preprint','under-review','in-prep'];
+  function pubCard(p,i) {
+    const P=pubCopy(), hidden=pubHidden(p);
+    const authors=hidden?'':`<p class="pub-authors">${(p.authors||[]).map(a=>`<span class="${a.me?'is-me':''}">${esc(a.name)}${a.equal?'*':''}</span>`).join(', ')}</p>`;
+    const page=p.page&&!hidden?`/paper/${esc(p.id)}/${pubSeg()}`:'';
+    const links=hidden?'':[['paper','paper'],['arxiv','file'],['code','link'],['video','play'],['slides','file'],['poster','file']].filter(([k])=>p.links?.[k]).map(([k,ic])=>`<a class="pub-link" href="${esc(p.links[k])}" target="_blank" rel="noopener noreferrer">${icon(ic)}<span>${esc(P.links[k])}</span></a>`).join('')
+      +(page?`<a class="pub-link is-page" href="${page}">${icon('arrow')}<span>${esc(P.links.project)}</span></a>`:'');
+    const bib=!hidden&&p.bibtex?`<details class="pub-bib"><summary>${icon('copy')}<span>${esc(P.bibtex)}</span></summary><pre translate="no">${esc(p.bibtex)}</pre><button type="button" class="pub-copy" data-bib="${esc(p.id)}">${esc(P.copy)}</button></details>`:'';
+    return `<article class="pub-card${hidden?' is-blind':''}${p.draft?' is-draft':''}" style="--i:${i}">
+      ${!hidden&&p.teaser?`<a class="pub-thumb" href="${page||esc(p.links?.paper||'#')}"><img src="${esc(p.teaser.src)}" alt="${esc(p.teaser.alt||'')}" loading="lazy"></a>`:`<span class="pub-thumb is-empty" aria-hidden="true">${icon(hidden?'lock':'paper')}</span>`}
+      <div class="pub-body"><p class="pub-meta"><span class="pub-status" data-status="${esc(p.status)}">${esc(P.status[p.status]||p.status)}</span><b translate="no">${esc(p.venue||'')}</b>${p.draft?`<em>${esc(P.draft)}</em>`:''}</p>
+        <h2>${hidden?esc(P.blind):page?`<a href="${page}">${esc(pubText(p.title))}</a>`:esc(pubText(p.title))}</h2>${authors}
+        ${!hidden&&p.tldr?`<p class="pub-tldr">${esc(pubText(p.tldr))}</p>`:''}
+        ${(p.topics||[]).length?`<p class="pub-topics">${p.topics.map(x=>`<span>${esc(x)}</span>`).join('')}</p>`:''}
+        ${links?`<div class="pub-links">${links}</div>`:''}${bib}</div></article>`;
+  }
+  function papersScreen() {
+    const P=pubCopy(), S=subCopy(); if (!P) return `${commandTitle('cat papers.bib')}<p>${t().noMatches}</p>`;
+    const list=pubList().sort((a,b)=>PUB_ORDER.indexOf(a.status)-PUB_ORDER.indexOf(b.status)||(b.year||0)-(a.year||0));
+    const venues=subs()?.venues||[];
+    const notes=(window.NIANSIA_NOTES?.[locale]||[]).length;
+    const stats=[[list.filter(p=>!p.draft).length,P.count.pubs],[venues.length,P.count.prep],[notes,P.count.notes]];
+    const empty=`<div class="pub-empty"><span class="pub-shelf" aria-hidden="true"><i></i><i></i><i></i><i></i></span><div><b>${esc(P.none)}</b><p>${esc(P.noneBody)}</p></div></div>`;
+    const prep=venues.map((v,i)=>`<article class="prep-card" style="--i:${i}"><header><a href="${esc(v.url)}" target="_blank" rel="noopener noreferrer" translate="no">${esc(v.venue)}${icon('link')}</a><span class="pub-status" data-status="in-prep">${esc(P.status['in-prep'])}</span></header>
+      <p class="prep-topic">${esc(v.topic[locale]||v.topic.en)}</p><p class="prep-blind">${icon('lock')}<span>${esc(P.blind)}</span></p>
+      <p class="prep-when">${v.deadline?`<span>${esc(P.deadline)} ${aoeDate(v.deadline)}</span><b data-deadline="${v.deadline}">${countdown(v.deadline)}</b>`:`<span>${esc(S?.tba||'')}</span>`}</p></article>`).join('');
+    const seg=locale==='en'?'en':locale.toLowerCase();
+    const writing=`<div class="pub-writing">${statementLink()}<a class="statement-card" href="/notes/${seg}/"><span class="statement-icon" aria-hidden="true">${icon('book')}</span><span><b>${esc(noteCopy().title)}</b><small>${esc(noteCopy().lede)}</small></span><em aria-hidden="true">↗</em></a><a class="statement-card" href="/brief/${pubSeg()}"><span class="statement-icon" aria-hidden="true">${icon('bolt')}</span><span><b>${esc(P.brief)}</b><small>${esc(briefCopy().sub)}</small></span><em aria-hidden="true">↗</em></a></div>`;
+    const bibAll=list.some(p=>p.bibtex&&!pubHidden(p))?`<button type="button" class="action-button pub-export" data-action="bib-all">${icon('download')}<span>${esc(P.exportAll)}</span></button>`:'';
+    return `${commandTitle('cat papers.bib')}${pubPreview()?`<p class="cv-preview-note">${icon('lock')} ${esc(P.preview)}</p>`:''}<h1>${esc(P.title)}</h1><p class="screen-intro">${esc(P.intro)}</p>
+      <div class="pub-stats">${stats.map(([n,l])=>`<div><b>${n}</b><span>${esc(l)}</span></div>`).join('')}</div>
+      <section class="pub-section"><h2 class="pub-h">${esc(P.published)}</h2>${list.length?`<div class="pub-list">${list.map(pubCard).join('')}</div>${bibAll}`:empty}</section>
+      ${prep?`<section class="pub-section"><h2 class="pub-h">${esc(P.prep)}</h2><div class="prep-grid">${prep}</div></section>`:''}
+      <section class="pub-section"><h2 class="pub-h">${esc(P.writing)}</h2>${writing}</section>`;
+  }
+  const briefCopy=()=>({en:{chip:'In a hurry? One-page brief',sub:'Research, papers, selected projects and contact on one printable page.',label:'Brief',search:'Search'},
+    'zh-TW':{chip:'時間不多？一頁式簡介',sub:'研究方向、論文、代表作品與聯絡方式，一頁看完，也能列印。',label:'快速瀏覽',search:'搜尋'},
+    'zh-CN':{chip:'时间不多？一页式简介',sub:'研究方向、论文、代表作品与联系方式，一页看完，也能打印。',label:'快速浏览',search:'搜索'}}[locale]);
+  const tourCta=()=>({en:'Take a one-minute tour with Yuki','zh-TW':'讓 Yuki 帶你導覽一分鐘','zh-CN':'让 Yuki 带你导览一分钟'}[locale]);
+  function bibtexAll() { return pubList().filter(p=>p.bibtex&&!pubHidden(p)).map(p=>p.bibtex).join('\n\n')+'\n'; }
   function screen(animate=true) {
     const c=t(), items=projects(), item=items.find(p=>p.id===projectId);
     let html='';
@@ -448,6 +541,7 @@
     if (view==='contact') html=`${commandTitle('cat contact.txt')}<h1>${c.contactTitle}</h1><div class="reading"><p>${c.contactBody}</p><div class="contact-address"><span translate="no">email:</span><a href="mailto:niansia930202@gmail.com" translate="no">niansia930202@gmail.com</a></div><div class="output-actions"><a class="action-button primary" href="mailto:niansia930202@gmail.com">${icon('mail')}<span>${c.send}</span></a><button class="action-button" data-action="copy">${icon('copy')}<span>${c.copy}</span></button></div><a class="github-link" href="https://github.com/niansia" target="_blank" rel="noopener noreferrer">github.com/niansia ${icon('link')}</a></div>`;
     if (view==='hobbies') html=hobbiesScreen();
     if (view==='cv') html=cvScreen();
+    if (view==='papers') html=papersScreen();
     if (view==='help') html=`${commandTitle('help')}<h1>${c.guideTitle}</h1><p>${c.guideIntro}</p><dl class="keyboard-guide">${c.keys.map(([key,description])=>`<div><dt><kbd>${key}</kbd></dt><dd>${description}</dd></div>`).join('')}</dl><h2>${c.commands}</h2>${commandCatalogue()}<p class="comment-line">${c.simulation}</p>`;
     if (view==='projects' && !item) html=`${commandTitle('ls ./projects/')}<div class="directory-heading"><h1>${c.all}</h1><span>${String(items.length).padStart(2,'0')} ${c.directory}</span></div><p class="screen-intro">${c.projectIntro}</p><div class="project-directory" aria-label="${c.all}">${items.map((p,i)=>`<button class="project-row ${i===selectedProject?'is-selected':''}" data-project="${p.id}" data-project-index="${i}" style="--i:${i}"><span class="row-index">${String(i+1).padStart(2,'0')}</span><span class="project-row-title"><strong translate="no">${p.name}</strong><small>${p.category}</small></span><span class="project-status">${p.status}</span><span class="row-arrow">↗</span></button>`).join('')}</div>`;
     if (view==='projects' && item) html=`${commandTitle('cat projects/'+esc(item.id)+'/README.md')}<button class="back-link" data-view="projects">← ${c.all}</button><div class="project-detail"><p class="detail-meta">${esc(item.category)}<span>${esc(item.status)}</span></p><h1 translate="no">${esc(item.name)}</h1><p class="project-description">${esc(item.description)}</p>${item.id==='taiwan-exam'?'<img class="project-art" src="/assets/work/taiwan-exam-social-preview.png" width="1280" height="640" alt="Taiwan Exam" loading="lazy">'+teFilmCard():''}${item.id==='lumigrid'?lumigridShowcase():''}<h2>${c.evidence}</h2><p>${esc(item.evidence)}</p><div class="output-actions"><a class="action-button primary" href="${esc(item.url)}" target="_blank" rel="noopener noreferrer"><span>${c.source}</span>${icon('link')}</a><a class="action-button" href="${esc(item.reference)}" target="_blank" rel="noopener noreferrer"><span>${esc(item.referenceLabel)}</span>${icon('link')}</a><button class="action-button" data-ask="${esc(item.name)}">${icon('chat')}<span>${c.askTitle}</span></button><button class="action-button" data-action="share" data-share="/p/${esc(item.id)}/${locale==='en'?'':locale.toLowerCase()+'/'}">${icon('link')}<span>${esc(noteCopy().share)}</span></button></div><div class="project-pagination"><button data-project-step="-1">← ${c.prev}</button><span>${items.indexOf(item)+1} / ${items.length}</span><button data-project-step="1">${c.next} →</button></div></div>`;
@@ -466,12 +560,22 @@
   }
   function navigate(next,id='',options={}) {
     if (!paths.includes(next)) return;
-    view=next;projectId=id;selectedNav=paths.indexOf(view);
-    if (id) selectedProject=Math.max(0,projects().findIndex(p=>p.id===id));
-    history.pushState(null,'',`${langBase()}#${view}${id?'/'+encodeURIComponent(id):''}`);
-    screen(!options.keyboard); message(t().ready);
-    emit('navigate', {view, id, quiet: !!options.quiet});
-    if (options.keyboard) $('.terminal-output').focus({preventScroll:true});
+    const a=depthOf(view,projectId), b=depthOf(next,id);
+    const dir=b>a?'fwd':b<a?'back':paths.indexOf(next)>=paths.indexOf(view)?'fwd':'back';
+    // The morphing title: the row (or card) that was clicked going in, the page heading coming back out.
+    const leaving=projectId;
+    const from=id&&options.origin?.querySelector?.('strong')||(leaving&&!id?titleOf(leaving):null);
+    const to=id?()=>root.querySelector('.project-detail h1'):leaving?()=>root.querySelector(`[data-project="${CSS.escape(leaving)}"] strong`):null;
+    const smooth=!options.keyboard&&motion()&&!!document.startViewTransition;
+    const change=()=>{
+      view=next;projectId=id;selectedNav=paths.indexOf(view);
+      if (id) selectedProject=Math.max(0,projects().findIndex(p=>p.id===id));
+      history.pushState(null,'',`${langBase()}#${view}${id?'/'+encodeURIComponent(id):''}`);
+      screen(!options.keyboard&&!smooth); message(t().ready);
+      emit('navigate', {view, id, quiet: !!options.quiet});
+      if (options.keyboard) $('.terminal-output').focus({preventScroll:true});
+    };
+    if (smooth) navTransition(change,{dir,from,to}); else change();
   }
   function goBack() {
     const input=document.activeElement?.matches('[data-command-input]') ? document.activeElement : $('#terminal-command');
@@ -517,8 +621,8 @@
   function complete(value) {
     const split=value.indexOf(' '),head=split<0?value:value.slice(0,split),tail=split<0?'':value.slice(split+1).toLowerCase();
     if(split<0)return catalogue.map(c=>c.name).filter(name=>name.startsWith(head.toLowerCase()));
-    const values={festival:['list','auto','off',...(window.NIANSIA_FESTIVAL?.list||[]).map(f=>f.id)],accessory:['list','auto','none',...Object.keys(window.YukiWardrobe?.accessories||{})],outfit:['list','auto',...(window.YukiWardrobe?.outfits()||[]).map(o=>o.id)],theme:themes,style:themes,lang:['en','zh-tw','zh-cn'],motion:['on','off'],follow:['on','off'],trail:['hearts','paws','stars','petals','off'],cursor:['s','m','l'],help:catalogue.map(c=>c.name)};
-    const destinations=['home','about.md','research.md','contact.txt','hobbies.md','projects/',...projects().map(p=>p.id),...projects().map(p=>'projects/'+p.id+'/README.md')];
+    const values={festival:['list','auto','off',...(window.NIANSIA_FESTIVAL?.list||[]).map(f=>f.id)],accessory:['list','auto','none',...Object.keys(window.YukiWardrobe?.accessories||{})],outfit:['list','auto',...(window.YukiWardrobe?.outfits()||[]).map(o=>o.id)],theme:themes,style:themes,lang:['en','zh-tw','zh-cn'],tour:['research','builder','fun'],motion:['on','off'],follow:['on','off'],trail:['hearts','paws','stars','petals','off'],cursor:['s','m','l'],help:catalogue.map(c=>c.name)};
+    const destinations=['home','about.md','research.md','papers.bib','contact.txt','hobbies.md','projects/',...projects().map(p=>p.id),...projects().map(p=>'projects/'+p.id+'/README.md')];
     return (values[head]||(['cd','cat','open','github'].includes(head)?destinations:[])).filter(item=>item.startsWith(tail)).map(item=>head+' '+item);
   }
   let tabCycle=null;
@@ -547,7 +651,7 @@
   }
   function resolveTarget(value) {
     const name=value.toLowerCase().replace(/^(~\/|\.\/|\/)/,'').replace(/\/readme\.md$/,'').replace(/\/$/,'');
-    const aliases={'':'home','~':'home','start.sh':'home','about.md':'about','profile':'about','research.md':'research','contact.txt':'contact','hobbies.md':'hobbies','cv.pdf':'cv','hobby':'hobbies','cosplay':'hobbies','work':'projects','portfolio':'projects'};
+    const aliases={'':'home','~':'home','start.sh':'home','about.md':'about','profile':'about','research.md':'research','contact.txt':'contact','hobbies.md':'hobbies','cv.pdf':'cv','papers.bib':'papers','publications':'papers','pubs':'papers','bib':'papers','hobby':'hobbies','cosplay':'hobbies','work':'projects','portfolio':'projects'};
     const path=aliases[name]||name;
     if(paths.includes(path))return {view:path};
     const item=projects().find(p=>p.id===name.replace(/^projects\//,'')||p.name.toLowerCase()===name);
@@ -569,7 +673,7 @@
     commandHistory.push(value);if(commandHistory.length>50)commandHistory.shift();historyIndex=commandHistory.length;
     const parsed=window.NIANSIA_TERMINAL.parse(value);
     if(parsed.error){record(value,t().quoteError);return;}
-    const aliases={'?':'help',resume:'cv',linkedin:'cv','cv.pdf':'cv','履歷':'cv','简历':'cv',work:'projects',portfolio:'projects',profile:'about','./start.sh':'home','start.sh':'home',meow:'pet',search:'find','作品':'projects','研究':'research','聯絡':'contact','联系':'contact',ddl:'deadlines',countdown:'deadlines','專題':'capstone','专题':'capstone','投稿':'deadlines','截止':'deadlines',hobby:'hobbies',cosplay:'hobbies',cos:'hobbies',fun:'hobbies','興趣':'hobbies','兴趣':'hobbies','日常':'hobbies','關於':'about','关于':'about'};
+    const aliases={'?':'help',resume:'cv',linkedin:'cv','cv.pdf':'cv','履歷':'cv','简历':'cv',work:'projects',portfolio:'projects',profile:'about','./start.sh':'home','start.sh':'home',meow:'pet',search:'find','作品':'projects','研究':'research','聯絡':'contact','联系':'contact',ddl:'deadlines',countdown:'deadlines',publications:'papers',pubs:'papers',bib:'papers','論文':'papers','论文':'papers',paper:'papers',quick:'brief','快速瀏覽':'brief','快速浏览':'brief','簡介':'brief','简介':'brief',guide:'tour','導覽':'tour','导览':'tour',cmdk:'palette','ctrl+k':'palette','專題':'capstone','专题':'capstone','投稿':'deadlines','截止':'deadlines',hobby:'hobbies',cosplay:'hobbies',cos:'hobbies',fun:'hobbies','興趣':'hobbies','兴趣':'hobbies','日常':'hobbies','關於':'about','关于':'about'};
     const name=aliases[parsed.name]||parsed.name,args=parsed.args,arg=args.join(' '),lower=arg.toLowerCase();
     const definition=catalogue.find(c=>c.name===name);
     const usage=()=>record(value,`${t().usage}: ${definition?.usage||'help'}\n${definition?.description[locale]||t().unknown}`);
@@ -596,6 +700,9 @@
         finish(`${S.title}\n`+subs().venues.map(v=>`${v.venue.padEnd(10)} ${(v.topic[locale]||v.topic.en)} · ${v.deadline?`${aoeDate(v.deadline)} · ${countdown(v.deadline)}`:S.tba}`).join('\n'));
         break;
       }
+      case 'brief':finish(`/brief/${pubSeg()}`);location.href=`/brief/${pubSeg()}`;break;
+      case 'tour':{const T=window.YUKI_TOUR;if(!T){finish(t().unknown);break;}const track=['research','builder','fun'].includes(lower)?lower:'';finish(track?`tour: ${track}`:'tour');T.start(track);break;}
+      case 'palette':window.NIANSIA_PALETTE?.open(arg);finish('⌘K / Ctrl+K');break;
       case 'whoami':finish(`Niansia\n${t().role}\n${t().leave}\n${t().interests}`);break;
       case 'ls': {
         const location=lower|| (view==='projects'?'projects':'~');
@@ -611,7 +718,7 @@
         break;
       }
       case 'pwd':finish(view==='projects'?'~/projects/'+projectId:'~/');break;
-      case 'tree':finish('~/\n├── start.sh\n├── about.md\n├── research.md\n├── contact.txt\n├── hobbies.md\n└── projects/\n'+projects().map((p,i)=>`    ${i===projects().length-1?'└':'├'}── ${p.id}/`).join('\n'));break;
+      case 'tree':finish('~/\n├── start.sh\n├── about.md\n├── research.md\n├── papers.bib\n├── contact.txt\n├── hobbies.md\n└── projects/\n'+projects().map((p,i)=>`    ${i===projects().length-1?'└':'├'}── ${p.id}/`).join('\n'));break;
       case 'find':case 'skills': {
         if(name==='find'&&!arg){usage();break;}
         const matches=projects().filter(p=>name==='skills'?/skill/i.test(p.description):`${p.name} ${p.id} ${p.description} ${p.category}`.toLowerCase().includes(lower));
@@ -685,6 +792,7 @@
   function toggleStyles(open) {
     const pop=$('.style-popover'),btn=$('[data-action="styles"]');if(!pop)return;
     const next=open??pop.hidden;pop.hidden=!next;btn.setAttribute('aria-expanded',String(next));
+    if(!next)endPreview();
     if(next)pop.querySelector('[aria-pressed="true"]')?.focus({preventScroll:true});
   }
   function windowAction(kind) {
@@ -699,15 +807,16 @@
     if(event.target.closest('.window-title')&&$('.terminal-window').classList.contains('is-minimized'))windowAction('win-min');
     if(!target)return;
     if(target.dataset.latestDot!==undefined){showLatest(Number(target.dataset.latestDot));return;}
-    if(target.dataset.view){event.preventDefault();navigate(target.dataset.view,'',{keyboard:event.detail===0});}
-    if(target.dataset.project){navigate('projects',target.dataset.project,{keyboard:event.detail===0});}
+    if(target.dataset.view){event.preventDefault();navigate(target.dataset.view,'',{keyboard:event.detail===0,origin:target});}
+    if(target.dataset.project){navigate('projects',target.dataset.project,{keyboard:event.detail===0,origin:target});}
     if(target.dataset.projectStep){const i=projects().findIndex(p=>p.id===projectId),count=projects().length;navigate('projects',projects()[(i+Number(target.dataset.projectStep)+count)%count].id);}
     if(target.dataset.lang&&target.dataset.lang!==locale){changeLanguage(target.dataset.lang,target);}
-    if(target.dataset.themePick){const f=window.NIANSIA_FESTIVAL?.active();if(f&&festSkinOn(f)){store.set('fest-skin',`off:${f.primary.id}`);applyFestival();}setTheme(target.dataset.themePick,target);}
+    if(target.dataset.themePick)pickTheme(target.dataset.themePick,target);
     if(target.hasAttribute('data-fest-skin')){const f=window.NIANSIA_FESTIVAL?.active();if(f){store.set('fest-skin',festSkinOn(f)?`off:${f.primary.id}`:'on');transition(applyFestival,target);}}
     if(target.dataset.command)runCommand(target.dataset.command);
     if(target.hasAttribute('data-fest-celebrate')){const box=target.getBoundingClientRect();for(let i=0;i<3;i++)setTimeout(()=>fx()?.burst(box.left+box.width*(.2+.3*i),box.top+box.height/2,'hearts'),i*140);fx()?.celebrate();yuki()?.act('trick');const l=yuki()?.festivalLine();if(l)yuki()?.say(l);}
     if(target.dataset.ask){yuki()?.openChat(target.dataset.ask);}
+    if(target.dataset.bib){const entry=pubList().find(p=>p.id===target.dataset.bib);try{await navigator.clipboard.writeText(entry.bibtex);toast(pubCopy().copied);}catch{toast(entry.bibtex.split('\n')[0]);}}
     if(target.dataset.commandFill){const input=$('#screen-command');input.value=target.dataset.commandFill;input.focus();input.select();}
     switch(target.dataset.action){
       case 'theme':toggleTheme(target);break;
@@ -715,10 +824,15 @@
       case 'motion':setMotion(paused);toast(motion()?t().motionOn:t().motionOff);break;
       case 'chat':yuki()?.openChat();break;
       case 'win-close':case 'win-min':case 'win-max':windowAction(target.dataset.action);break;
+      case 'bib-all':{const blob=new Blob([bibtexAll()],{type:'application/x-bibtex'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='niansia.bib';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),4000);break;}
+      case 'palette':window.NIANSIA_PALETTE?.open();break;
       case 'copy':try{await navigator.clipboard.writeText('niansia930202@gmail.com');toast(t().copied);}catch{toast(t().copyFail);}break;
       case 'share':{const url=`https://niansia.github.io${target.dataset.share}`;try{if(navigator.share&&matchMedia('(pointer:coarse)').matches){await navigator.share({url});}else{await navigator.clipboard.writeText(url);toast(noteCopy().shared);}}catch(e){if(e?.name!=='AbortError')toast(url);}break;}
     }
   });
+  root.addEventListener('pointerover',event=>{const pick=event.target.closest('.style-popover [data-theme-pick]');if(pick&&event.pointerType!=='touch')previewTheme(pick.dataset.themePick);});
+  root.addEventListener('pointerout',event=>{const pop=event.target.closest('.style-popover');if(pop&&!pop.contains(event.relatedTarget))endPreview();});
+  root.addEventListener('focusin',event=>{const pick=event.target.closest('.style-popover [data-theme-pick]');if(pick&&pick.matches(':focus-visible'))previewTheme(pick.dataset.themePick);});
   root.addEventListener('submit',event=>{
     event.preventDefault();
     if(event.target.matches('.command-form,.inline-command-form')){const input=event.target.querySelector('[data-command-input]'),id=input.id,value=input.value;input.value='';historyDraft='';runCommand(value);$('#'+id)?.focus({preventScroll:true});}
@@ -751,12 +865,15 @@
     if(event.key==='ArrowRight'||(event.key==='Enter'&&!target.closest('button,a'))){event.preventDefault();if(view==='projects'&&!projectId)navigate('projects',projects()[selectedProject].id,{keyboard:true});else if(!projectId)navigate(paths[selectedNav],'',{keyboard:true});}
   });
   reduced.addEventListener('change',applyMotion);
+  window.addEventListener('pageswap',event=>{ if(!motion()) event.viewTransition?.skipTransition(); });
   window.addEventListener('resize',moveIndicator);
   window.addEventListener('popstate',()=>{const before=locale;readLocation();if(before!==locale)shell();else screen(false);});
   setInterval(tickClock, 15000);
   window.NIANSIA_APP = {
     locale:()=>locale, t, projects, view:()=>({view,projectId}), store, esc, icon,
-    navigate, setTheme, theme:()=>theme, themes, setLanguage:changeLanguage, setMotion, motion, toast, message, record
+    navigate, setTheme, theme:()=>theme, themes, themeGroups, darkThemes, setLanguage:changeLanguage, setMotion, motion, toast, message, record,
+    previewTheme, endPreview, pickTheme, runCommand, paths:()=>paths, files:()=>files, navLabel, pubList, pubText, pubHidden, pubCopy, briefCopy, pubSeg, bibtexAll, modKey,
+    toggleStyles, openStyles:()=>toggleStyles(true)
   };
   document.documentElement.dataset.theme = theme;
   document.querySelector('meta[name="theme-color"]')?.setAttribute('content', themeColors[theme]);
