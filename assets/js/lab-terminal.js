@@ -264,6 +264,19 @@
   const noteCopy=()=>({en:{title:'Research notes',lede:'Short, honest write-ups: what worked, what did not, and how I checked.',all:'All notes',min:'min read',share:'Copy share link',shared:'Share link copied.'},
     'zh-TW':{title:'研究筆記',lede:'把做法、有效的地方、沒成功的地方，以及怎麼驗證的，誠實寫下來。',all:'全部筆記',min:'分鐘閱讀',share:'複製分享連結',shared:'已複製分享連結。'},
     'zh-CN':{title:'研究笔记',lede:'把做法、有效的地方、没成功的地方，以及怎么验证的，诚实写下来。',all:'全部笔记',min:'分钟阅读',share:'复制分享链接',shared:'已复制分享链接。'}}[locale]);
+  const logCopy=()=>({en:{title:'Research log',all:'Full log',lede:'Dated snapshots of work in progress.',read:'Read the research statement',st:'What I study and why'},
+    'zh-TW':{title:'研究日誌',all:'完整日誌',lede:'有日期的工作紀錄：截圖、圖表和小里程碑。',read:'閱讀研究方向說明',st:'我研究什麼、為什麼'},
+    'zh-CN':{title:'研究日志',all:'完整日志',lede:'有日期的工作记录：截图、图表和小里程碑。',read:'阅读研究方向说明',st:'我研究什么、为什么'}}[locale]);
+  function statementLink() {
+    const st=window.NIANSIA_STATEMENT?.[locale]; if (!st) return '';
+    return `<a class="statement-card" href="${esc(st.url)}"><span class="statement-icon" aria-hidden="true">${icon('research')}</span><span><b>${esc(logCopy().read)}</b><small>${esc(st.description)}</small></span><em aria-hidden="true">↗</em></a>`;
+  }
+  function logBlock() {
+    const list=window.NIANSIA_LOG?.[locale]; if (!list?.length) return '';
+    const c=logCopy(), seg=locale==='en'?'en':locale.toLowerCase();
+    return `<section class="notes-block log-block" aria-labelledby="log-title"><div class="notes-head"><h2 id="log-title">${esc(c.title)}</h2><a href="/log/${seg}/">${esc(c.all)} →</a></div><p class="notes-lede">${esc(c.lede)}</p>
+      <div class="log-list">${list.slice(0,4).map(n=>`<a class="log-card" href="${esc(n.url)}">${n.thumb?`<img src="${esc(n.thumb)}" alt="${esc(n.alt)}" loading="lazy">`:''}<span class="note-date">${esc(n.date)}</span><b>${esc(n.title)}</b></a>`).join('')}</div></section>`;
+  }
   function notesBlock() {
     const list=window.NIANSIA_NOTES?.[locale]; if (!list?.length) return '';
     const c=noteCopy(), seg=locale==='en'?'en':locale.toLowerCase();
@@ -431,7 +444,7 @@
     document.title = `${item?.name || navLabel(view,c)} | Niansia terminal`;
     if (view==='home') html=homeScreen(c);
     if (view==='about') html=`${commandTitle('cat about.md')}<h1>${c.aboutTitle}</h1><div class="reading"><p>${c.bio}</p><p>${c.bio2}</p><p>${c.bio3}</p><h2>${c.education}</h2><ul class="education-list"><li><span class="edu-dot" aria-hidden="true"></span>${c.undergrad}</li><li><span class="edu-dot is-now" aria-hidden="true"></span>${c.graduate}<small>${c.leave}</small></li></ul><div class="interest-tags">${c.interests.split(' / ').map(tag=>`<span>${tag}</span>`).join('')}</div></div>${button('research',c.nav[3],true)}`;
-    if (view==='research') html=`${commandTitle('cat research.md')}<h1>${c.researchTitle}</h1><p class="screen-intro">${c.researchIntro}</p>${capCopy()?`<button type="button" class="cap-jump" data-cap-jump>✦ ${esc(capCopy().open)} ↓</button>`:''}<div class="research-entry"><span>01</span><div><h2>${c.researchA}</h2><p>${c.researchABody}</p><small>security / robustness / evaluation</small></div></div><div class="research-entry"><span>02</span><div><h2>${c.researchB}</h2><p>${c.researchBBody}</p><small>vision / reasoning / grounding</small></div></div>${notesBlock()}${capstoneBlock()}${teBlock()}${submissionsBlock()}<p class="comment-line">${c.researchNote}</p>`;
+    if (view==='research') html=`${commandTitle('cat research.md')}<h1>${c.researchTitle}</h1><p class="screen-intro">${c.researchIntro}</p>${capCopy()?`<button type="button" class="cap-jump" data-cap-jump>✦ ${esc(capCopy().open)} ↓</button>`:''}<div class="research-entry"><span>01</span><div><h2>${c.researchA}</h2><p>${c.researchABody}</p><small>security / robustness / evaluation</small></div></div><div class="research-entry"><span>02</span><div><h2>${c.researchB}</h2><p>${c.researchBBody}</p><small>vision / reasoning / grounding</small></div></div>${statementLink()}${notesBlock()}${logBlock()}${capstoneBlock()}${teBlock()}${submissionsBlock()}<p class="comment-line">${c.researchNote}</p>`;
     if (view==='contact') html=`${commandTitle('cat contact.txt')}<h1>${c.contactTitle}</h1><div class="reading"><p>${c.contactBody}</p><div class="contact-address"><span translate="no">email:</span><a href="mailto:niansia930202@gmail.com" translate="no">niansia930202@gmail.com</a></div><div class="output-actions"><a class="action-button primary" href="mailto:niansia930202@gmail.com">${icon('mail')}<span>${c.send}</span></a><button class="action-button" data-action="copy">${icon('copy')}<span>${c.copy}</span></button></div><a class="github-link" href="https://github.com/niansia" target="_blank" rel="noopener noreferrer">github.com/niansia ${icon('link')}</a></div>`;
     if (view==='hobbies') html=hobbiesScreen();
     if (view==='cv') html=cvScreen();
@@ -624,6 +637,8 @@
       case 'pet':case 'feed':case 'play':case 'sleep':case 'wake':case 'lie':case 'trick':case 'hide':petCommand(name,value);break;
       case 'yuki':finish(yuki()?.report()||'-');break;
       case 'cv':if(cvState()==='hidden'){finish(t().unknown);break;}navigate('cv');break;
+      case 'log':location.href=`/log/${locale==='en'?'en':locale.toLowerCase()}/`;finish('/log/');break;
+      case 'statement':location.href=`/statement/${locale==='en'?'en':locale.toLowerCase()}/`;finish('/statement/');break;
       case 'notes':finish(`/notes/${locale==='en'?'en':locale.toLowerCase()}/`);location.href=`/notes/${locale==='en'?'en':locale.toLowerCase()}/`;break;
       case 'demo':finish('/lab/lumigrid/');location.href=`/lab/lumigrid/?lang=${locale}`;break;
       case 'stay':{const Y=yuki();if(!Y){finish(t().unknown);break;}const on=arg?!/^(off|no|0|roam)$/i.test(arg):!Y.stay();finish(Y.stay(on));break;}

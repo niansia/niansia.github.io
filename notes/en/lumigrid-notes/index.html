@@ -14,6 +14,8 @@
 <meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://niansia.github.io/assets/og/note-lumigrid-notes-en.jpg">
 
 <meta name="theme-color" content="#fbf6ee" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#15142a" media="(prefers-color-scheme: dark)">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://*.firebasedatabase.app; connect-src 'self' https://*.firebasedatabase.app wss://*.firebasedatabase.app; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; frame-src https://*.firebasedatabase.app; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap">
 <style>
@@ -54,14 +56,28 @@ article blockquote{margin:18px 0;padding:4px 18px;border-left:3px solid var(--ac
 .btn:hover{border-color:var(--accent);}
 .note{font-size:13.5px;color:var(--muted);}
 .live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#34c38f;box-shadow:0 0 0 3px #34c38f33;vertical-align:1px;}footer b{color:var(--ink);font-weight:600;}
+figure.fig{margin:24px 0;}figure.fig a{display:block;border-radius:14px;overflow:hidden;border:1px solid var(--line);cursor:zoom-in;background:var(--code);}
+figure.fig img{display:block;width:100%;height:auto;transition:transform .4s;}figure.fig a:hover img{transform:scale(1.015);}
+figure.fig figcaption{margin-top:8px;font-size:13.5px;color:var(--muted);line-height:1.6;}
+.lb{position:fixed;inset:0;z-index:50;display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px;background:#0d0b16ee;}
+.lb.on{display:flex;}.lb img{max-width:100%;max-height:84vh;border-radius:10px;box-shadow:0 30px 80px #000a;}
+.lb p{margin:0;color:#e9e4f2;font-size:14px;text-align:center;max-width:760px;}
+.lb-x{position:absolute;top:14px;right:18px;width:40px;height:40px;border-radius:50%;border:1px solid #ffffff44;background:transparent;color:#fff;font-size:24px;cursor:pointer;}
+.log-entry{position:relative;padding:0 0 34px 26px;border-left:2px solid var(--line);}
+.log-entry:before{content:'';position:absolute;left:-7px;top:8px;width:12px;height:12px;border-radius:50%;background:var(--bg);border:2px solid var(--accent);}
+.log-entry time{font:500 12.5px 'JetBrains Mono',monospace;color:var(--accent);}
+.log-entry h2{margin:4px 0 6px!important;font-size:21px!important;}
+.log-entry h2 a{color:var(--ink);text-decoration:none;}
+.statement-link{display:flex;justify-content:space-between;align-items:center;}
 footer{max-width:760px;margin:0 auto;padding:26px 20px 50px;border-top:1px solid var(--line);font-size:14px;color:var(--muted);}
 </style>
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "BlogPosting", "headline": "LumiGrid notes: what a luminance-guided curve grid actually learned", "description": "From a 16.48 dB course pipeline to 24.57 dB — the design, the ablation, two failure cases, and one finding that does not flatter the method.", "datePublished": "2026-09-28", "dateModified": "2026-09-28", "inLanguage": "en", "author": {"@type": "Person", "name": "Niansia", "url": "https://niansia.github.io/", "email": "mailto:niansia930202@gmail.com", "sameAs": ["https://github.com/niansia"]}, "mainEntityOfPage": "https://niansia.github.io/notes/en/lumigrid-notes/", "image": "https://niansia.github.io/assets/og/note-lumigrid-notes-en.jpg", "keywords": "computer vision, low-light enhancement, NTIRE 2025"}</script>
 <script defer src="/assets/js/site-stats.js"></script>
+<script defer src="/assets/js/lightbox.js"></script>
 </head>
 <body>
 <header class="top"><a href="/"><b>~/niansia</b></a> / <a href="/notes/en/">notes</a><span class="sp"></span><span class="langs"><a href="/notes/en/lumigrid-notes/" aria-current="page" hreflang="en">EN</a><a href="/notes/zh-tw/lumigrid-notes/" hreflang="zh-Hant">繁</a><a href="/notes/zh-cn/lumigrid-notes/" hreflang="zh-Hans">简</a></span></header>
-<main><p class="kicker">Research notes</p><h1>LumiGrid notes: what a luminance-guided curve grid actually learned</h1><p class="lede">From a 16.48 dB course pipeline to 24.57 dB — the design, the ablation, two failure cases, and one finding that does not flatter the method.</p><div class="meta"><time datetime="2026-09-28">2026-09-28</time><span>4 min read</span><span class="tag">computer vision</span><span class="tag">low-light enhancement</span><span class="tag">NTIRE 2025</span></div><article><p>These notes walk through <a href="https://github.com/niansia/LumiGrid">LumiGrid</a>: what it does, how well it does it, and one finding that is <strong>not</strong> in its favour — the model barely uses the "luminance" axis it is named after.</p>
+<main><p class="kicker">Research notes</p><h1>LumiGrid notes: what a luminance-guided curve grid actually learned</h1><p class="lede">From a 16.48 dB course pipeline to 24.57 dB — the design, the ablation, two failure cases, and one finding that does not flatter the method.</p><div class="meta"><time datetime="2026-09-28">2026-09-28</time><span>4 min read</span><span class="tag">computer vision</span><span class="tag">low-light enhancement</span><span class="tag">NTIRE 2025</span></div><article><p>These notes walk through <a href="https://github.com/niansia/LumiGrid" rel="noopener noreferrer">LumiGrid</a>: what it does, how well it does it, and one finding that is <strong>not</strong> in its favour — the model barely uses the "luminance" axis it is named after.</p>
 <h2>Starting point: a course pipeline that was not good enough</h2>
 <p>Low-light image enhancement (LLIE) turns very dark photos into normally exposed ones. I first reproduced my original course pipeline on the NTIRE 2025 challenge data: Zero-DCE, then a bilateral filter, gamma and contrast. On my 20 held-out test pairs it scored <strong>16.48 dB / 0.742 SSIM</strong> — worse than simply running the pretrained Zero-DCE weights (19.00 dB).</p>
 <p>The reasons were clear: Zero-DCE applies the same kind of curve everywhere without seeing the whole scene, and the post-processing amplified the noise along with the signal.</p>
@@ -165,7 +181,7 @@ footer{max-width:760px;margin:0 auto;padding:26px 20px 50px;border-top:1px solid
 <p>These two pull the mean down noticeably. With only 20 test images, I would not read much into differences below about 0.2 dB.</p>
 <h2>More</h2>
 <ul>
-<li>Code, weights and the full tables: <a href="https://github.com/niansia/LumiGrid">github.com/niansia/LumiGrid</a></li>
+<li>Code, weights and the full tables: <a href="https://github.com/niansia/LumiGrid" rel="noopener noreferrer">github.com/niansia/LumiGrid</a></li>
 <li>Try it on your own dark photo: <a href="/lab/lumigrid/?lang=en">LumiGrid in the browser</a></li>
 <li>How the browser version was built — and the WebGPU bug I hit on the way: <a href="/notes/en/lumigrid-in-the-browser/">next note</a></li>
 </ul></article><h2 style="margin-top:48px">More notes</h2><a class="card" href="/notes/en/lumigrid-in-the-browser/"><b>Porting LumiGrid to the browser: a 6-channel convolution that only broke on WebGPU</b><small>Two neural networks and a hand-written WebGL shader, verified pixel by pixel against PyTorch — and how a bug that left the WebGPU version at 28.75 dB was found by bisection.</small></a><a class="card" href="/notes/en/taiwan-exam-design/"><b>Taiwan Exam design notes: the model writes, the scripts only check</b><small>An Agent Skill that has an AI write original GSAT practice exams — why its scripts deliberately never vouch for question quality, and how the checks, locks and template stamping are designed.</small></a><div class="btns"><a class="btn" href="/notes/en/">Research notes</a><a class="btn primary" href="/#research">Back to the portfolio</a></div></main>

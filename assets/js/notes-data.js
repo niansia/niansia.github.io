@@ -78,3 +78,76 @@ window.NIANSIA_NOTES = {
   }
  ]
 };
+window.NIANSIA_LOG = {
+ "en": [
+  {
+   "slug": "2026-09-28-taiwan-exam-launch",
+   "title": "Taiwan Exam goes public",
+   "date": "2026-09-28",
+   "url": "/log/en/#2026-09-28-taiwan-exam-launch",
+   "thumb": "/assets/media/e668ca4a24f2abed-t.webp",
+   "alt": "The last frame of the trailer"
+  },
+  {
+   "slug": "2026-09-28-lumigrid-in-browser",
+   "title": "LumiGrid now runs in the browser",
+   "date": "2026-09-28",
+   "url": "/log/en/#2026-09-28-lumigrid-in-browser",
+   "thumb": "/assets/media/66d077d53381af09-t.webp",
+   "alt": "The browser version of LumiGrid: input on the left, result on the right, per-step timings on the side"
+  }
+ ],
+ "zh-TW": [
+  {
+   "slug": "2026-09-28-taiwan-exam-launch",
+   "title": "Taiwan Exam 正式公開",
+   "date": "2026-09-28",
+   "url": "/log/zh-tw/#2026-09-28-taiwan-exam-launch",
+   "thumb": "/assets/media/e668ca4a24f2abed-t.webp",
+   "alt": "前導片的結尾畫面"
+  },
+  {
+   "slug": "2026-09-28-lumigrid-in-browser",
+   "title": "LumiGrid 在瀏覽器裡跑起來了",
+   "date": "2026-09-28",
+   "url": "/log/zh-tw/#2026-09-28-lumigrid-in-browser",
+   "thumb": "/assets/media/66d077d53381af09-t.webp",
+   "alt": "瀏覽器版 LumiGrid：左邊是輸入，右邊是結果，右側列出每一步花的時間"
+  }
+ ],
+ "zh-CN": [
+  {
+   "slug": "2026-09-28-taiwan-exam-launch",
+   "title": "Taiwan Exam 正式公开",
+   "date": "2026-09-28",
+   "url": "/log/zh-cn/#2026-09-28-taiwan-exam-launch",
+   "thumb": "/assets/media/e668ca4a24f2abed-t.webp",
+   "alt": "前导片的结尾画面"
+  },
+  {
+   "slug": "2026-09-28-lumigrid-in-browser",
+   "title": "LumiGrid 在浏览器里跑起来了",
+   "date": "2026-09-28",
+   "url": "/log/zh-cn/#2026-09-28-lumigrid-in-browser",
+   "thumb": "/assets/media/66d077d53381af09-t.webp",
+   "alt": "浏览器版 LumiGrid：左边是输入，右边是结果，右侧列出每一步花的时间"
+  }
+ ]
+};
+window.NIANSIA_STATEMENT = {
+ "en": {
+  "title": "Research statement",
+  "description": "The question I care about is when multimodal models can still be trusted — and whether we can show the evidence for it.",
+  "url": "/statement/en/"
+ },
+ "zh-TW": {
+  "title": "研究方向說明",
+  "description": "我關心的是：多模態模型在什麼條件下還值得信任，以及我們能不能拿出證據證明這一點。",
+  "url": "/statement/zh-tw/"
+ },
+ "zh-CN": {
+  "title": "研究方向说明",
+  "description": "我关心的是：多模态模型在什么条件下还值得信任，以及我们能不能拿出证据证明这一点。",
+  "url": "/statement/zh-cn/"
+ }
+};

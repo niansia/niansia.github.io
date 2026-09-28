@@ -1,6 +1,9 @@
 """Build the static, crawlable parts of the site that live outside the terminal app.
 
     notes_src/<slug>.<lang>.md  ->  notes/<lang>/<slug>/index.html, notes/<lang>/index.html, notes/index.html
+    log_src/<date>-<slug>.<lang>.md -> log/<lang>/index.html (research log with images)
+    statement_src/statement.<lang>.md -> statement/<lang>/index.html
+    images referenced from sources -> assets/media/<hash>.{webp,jpg} + -t.webp (metadata stripped, see content_safety.py)
     assets/js/portfolio-data.js ->  p/<id>/index.html (+ zh-tw/, zh-cn/) share pages
     open-graph images           ->  assets/og/*.jpg (1200 x 630, rendered with Playwright)
     sitemap-extra.xml, robots.txt, assets/js/notes-data.js
@@ -24,6 +27,9 @@ import markdown
 import opencc
 from PIL import Image
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from content_safety import UnsafeContent, privacy_lint, render_markdown  # noqa: E402
+
 ROOT = Path(__file__).resolve().parents[1]
 SITE = "https://niansia.github.io"
 LANGS = {"en": "en", "zh-tw": "zh-TW", "zh-cn": "zh-CN"}          # url segment -> locale
@@ -32,16 +38,25 @@ HOME = {"en": "/", "zh-TW": "/zh-tw/", "zh-CN": "/zh-cn/"}
 T2S = opencc.OpenCC("tw2sp")
 S_FIX = {"缺省": "默认", "杂凑": "哈希", "笔电": "笔记本电脑", "影像": "图像", "信息工程": "资讯工程"}
 EMAIL = "niansia930202@gmail.com"
+MEDIA = ROOT / "assets" / "media"
+MD = lambda t: markdown.markdown(t, extensions=["tables", "fenced_code", "sane_lists"])
+# Static pages only load their own scripts, Google Fonts and the Firebase SDK used by the visitor counter.
+CSP = ("default-src 'self'; script-src 'self' https://www.gstatic.com https://*.firebasedatabase.app; "
+       "connect-src 'self' https://*.firebasedatabase.app wss://*.firebasedatabase.app; img-src 'self' data:; "
+       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; "
+       "frame-src https://*.firebasedatabase.app; object-src 'none'; base-uri 'self'; form-action 'none'")
 
 UI = {
     "en": {"notes": "Research notes", "notes_lede": "Short, honest write-ups of what I built, what worked, and what did not.", "min": "min read",
            "back": "Back to the portfolio", "more": "More notes", "open": "Open the interactive portfolio", "repo": "Source", "evidence": "Evidence",
            "share_note": "This is a lightweight page for sharing. The full, interactive version lives in the terminal portfolio.", "contact": "Questions or ideas? Email",
-           "demo": "Try it in your browser", "film": "Watch the film", "all": "All projects", "read": "Read", "online": "online", "visits": "visits"},
+           "demo": "Try it in your browser", "film": "Watch the film", "all": "All projects", "read": "Read", "online": "online", "visits": "visits",
+           "log": "Research log", "log_lede": "Dated snapshots of work in progress: screenshots, figures and small milestones.", "statement": "Research statement"},
     "zh-TW": {"notes": "研究筆記", "notes_lede": "把做過的東西、有效的方法，還有沒成功的地方，誠實地寫下來。", "min": "分鐘閱讀",
               "back": "回到作品集", "more": "其他筆記", "open": "打開互動式作品集", "repo": "原始碼", "evidence": "佐證",
               "share_note": "這是方便分享的精簡頁面；完整、可互動的版本在終端作品集裡。", "contact": "有問題或想法？寫信到",
-              "demo": "在瀏覽器試試", "film": "觀看動畫", "all": "全部作品", "read": "閱讀", "online": "人在線", "visits": "次造訪"},
+              "demo": "在瀏覽器試試", "film": "觀看動畫", "all": "全部作品", "read": "閱讀", "online": "人在線", "visits": "次造訪",
+              "log": "研究日誌", "log_lede": "有日期的工作紀錄：截圖、圖表和一些小里程碑。", "statement": "研究方向說明"},
 }
 UI["zh-CN"] = {k: T2S.convert(v) for k, v in UI["zh-TW"].items()}
 
@@ -137,6 +152,19 @@ article blockquote{margin:18px 0;padding:4px 18px;border-left:3px solid var(--ac
 .btn:hover{border-color:var(--accent);}
 .note{font-size:13.5px;color:var(--muted);}
 .live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#34c38f;box-shadow:0 0 0 3px #34c38f33;vertical-align:1px;}footer b{color:var(--ink);font-weight:600;}
+figure.fig{margin:24px 0;}figure.fig a{display:block;border-radius:14px;overflow:hidden;border:1px solid var(--line);cursor:zoom-in;background:var(--code);}
+figure.fig img{display:block;width:100%;height:auto;transition:transform .4s;}figure.fig a:hover img{transform:scale(1.015);}
+figure.fig figcaption{margin-top:8px;font-size:13.5px;color:var(--muted);line-height:1.6;}
+.lb{position:fixed;inset:0;z-index:50;display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px;background:#0d0b16ee;}
+.lb.on{display:flex;}.lb img{max-width:100%;max-height:84vh;border-radius:10px;box-shadow:0 30px 80px #000a;}
+.lb p{margin:0;color:#e9e4f2;font-size:14px;text-align:center;max-width:760px;}
+.lb-x{position:absolute;top:14px;right:18px;width:40px;height:40px;border-radius:50%;border:1px solid #ffffff44;background:transparent;color:#fff;font-size:24px;cursor:pointer;}
+.log-entry{position:relative;padding:0 0 34px 26px;border-left:2px solid var(--line);}
+.log-entry:before{content:'';position:absolute;left:-7px;top:8px;width:12px;height:12px;border-radius:50%;background:var(--bg);border:2px solid var(--accent);}
+.log-entry time{font:500 12.5px 'JetBrains Mono',monospace;color:var(--accent);}
+.log-entry h2{margin:4px 0 6px!important;font-size:21px!important;}
+.log-entry h2 a{color:var(--ink);text-decoration:none;}
+.statement-link{display:flex;justify-content:space-between;align-items:center;}
 footer{max-width:760px;margin:0 auto;padding:26px 20px 50px;border-top:1px solid var(--line);font-size:14px;color:var(--muted);}
 """
 FONTS = ('<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
@@ -169,11 +197,14 @@ def shell(*, loc: str, title: str, desc: str, url: str, og: str, alternates: dic
 <meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="{SITE}{og}">
 {'<meta name="robots" content="noindex,follow">' if noindex else ''}
 <meta name="theme-color" content="#fbf6ee" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#15142a" media="(prefers-color-scheme: dark)">
+<meta http-equiv="Content-Security-Policy" content="{CSP}">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml">
 {FONTS}
 <style>{CSS}</style>
 {ld}
 <script defer src="/assets/js/site-stats.js"></script>
+<script defer src="/assets/js/lightbox.js"></script>
 </head>
 <body>
 <header class="top"><a href="{HOME[loc]}"><b>~/niansia</b></a>{crumbs}<span class="sp"></span><span class="langs">{langs}</span></header>
@@ -190,7 +221,7 @@ PERSON = {"@type": "Person", "name": "Niansia", "url": f"{SITE}/", "email": f"ma
 # ------------------------------------------------------------------------------------------------ notes
 def build_notes(notes: dict) -> list[str]:
     urls = []
-    md = lambda t: markdown.markdown(t, extensions=["tables", "fenced_code", "sane_lists"])
+    md = lambda t: render_markdown(t, src_dir=ROOT / "notes_src", media_dir=MEDIA, md=MD)[0]
     for seg, loc in LANGS.items():
         cards = []
         for slug, by in notes.items():
@@ -233,6 +264,85 @@ def build_notes(notes: dict) -> list[str]:
                    "minutes": read_minutes(b[loc]["body"], loc), "url": f"/notes/{seg}/{s}/"} for s, b in notes.items()] for seg, loc in LANGS.items()}
     (ROOT / "assets/js/notes-data.js").write_text("window.NIANSIA_NOTES = " + json.dumps(data, ensure_ascii=False, indent=1) + ";\n", encoding="utf-8")
     return urls
+
+
+
+# ------------------------------------------------------------------------------------------------ research log
+def load_log() -> dict:
+    entries = {}
+    for f in sorted((ROOT / "log_src").glob("*.md")):
+        slug, lang = f.stem.rsplit(".", 1)
+        entries.setdefault(slug, {})[lang] = parse_note(f)
+    for slug, by in entries.items():
+        tw = by["zh-TW"]
+        by["zh-CN"] = {k: (s_fix(v) if isinstance(v, str) else [s_fix(x) for x in v] if isinstance(v, list) else v) for k, v in tw.items()}
+        by["zh-CN"]["body"] = s_fix(tw["body"]).replace("/zh-tw/", "/zh-cn/").replace("lang=zh-TW", "lang=zh-CN")
+    return dict(sorted(entries.items(), key=lambda kv: kv[0], reverse=True))
+
+
+def build_log(entries: dict) -> tuple[list[str], dict]:
+    urls, data = [], {}
+    for seg, loc in LANGS.items():
+        items, data[loc] = [], []
+        for slug, by in entries.items():
+            n = by[loc]
+            body, figs = render_markdown(n["body"], src_dir=ROOT / "log_src", media_dir=MEDIA, md=MD)
+            tags = "".join(f'<span class="tag">{e(t)}</span>' for t in n.get("tags", []))
+            items.append(f'<section class="log-entry" id="{e(slug)}"><time datetime="{n["date"]}">{n["date"]}</time>'
+                         f'<h2><a href="#{e(slug)}">{e(n["title"])}</a></h2><div class="meta" style="border:0;padding:0;margin:0 0 6px">{tags}</div><article>{body}</article></section>')
+            data[loc].append({"slug": slug, "title": n["title"], "date": n["date"], "url": f"/log/{seg}/#{slug}",
+                              "thumb": f'/assets/media/{figs[0]["name"]}-t.webp' if figs else "", "alt": figs[0]["alt"] if figs else ""})
+        page = (f'<main><p class="kicker">~/niansia/log</p><h1>{e(UI[loc]["log"])}</h1><p class="lede">{e(UI[loc]["log_lede"])}</p>{"".join(items)}'
+                f'<div class="btns"><a class="btn" href="/notes/{seg}/">{e(UI[loc]["notes"])}</a><a class="btn primary" href="{HOME[loc]}#research">{e(UI[loc]["back"])}</a></div></main>')
+        ld = {"@context": "https://schema.org", "@type": "Blog", "name": f'Niansia · {UI[loc]["log"]}', "url": f"{SITE}/log/{seg}/", "author": PERSON, "inLanguage": HTML_LANG[loc]}
+        out = ROOT / "log" / seg / "index.html"
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(shell(loc=loc, title=f'{UI[loc]["log"]} · Niansia', desc=UI[loc]["log_lede"], url=f"/log/{seg}/", og=f"/assets/og/log-{seg}.jpg",
+                             alternates={l: f"/log/{s}/" for s, l in LANGS.items()}, body=page, jsonld=ld, crumbs=" / log", og_type="website"), encoding="utf-8")
+        urls.append(f"/log/{seg}/")
+    return urls, data
+
+
+# ------------------------------------------------------------------------------------------------ research statement
+def build_statement() -> tuple[list[str], dict]:
+    by = {"en": parse_note(ROOT / "statement_src" / "statement.en.md"), "zh-TW": parse_note(ROOT / "statement_src" / "statement.zh-TW.md")}
+    tw = by["zh-TW"]
+    by["zh-CN"] = {k: (s_fix(v) if isinstance(v, str) else v) for k, v in tw.items()}
+    by["zh-CN"]["body"] = s_fix(tw["body"]).replace("/zh-tw/", "/zh-cn/")
+    urls, data = [], {}
+    for seg, loc in LANGS.items():
+        n = by[loc]
+        body, _ = render_markdown(n["body"], src_dir=ROOT / "statement_src", media_dir=MEDIA, md=MD)
+        page = (f'<main><p class="kicker">~/niansia/statement</p><h1>{e(n["title"])}</h1><p class="lede">{e(n["description"])}</p>'
+                f'<div class="meta"><time datetime="{n["date"]}">{n["date"]}</time></div><article>{body}</article>'
+                f'<div class="btns"><a class="btn primary" href="mailto:{EMAIL}">{EMAIL}</a><a class="btn" href="/notes/{seg}/">{e(UI[loc]["notes"])}</a>'
+                f'<a class="btn" href="{HOME[loc]}#research">{e(UI[loc]["back"])}</a></div></main>')
+        ld = {"@context": "https://schema.org", "@type": "AboutPage", "name": n["title"], "description": n["description"], "url": f"{SITE}/statement/{seg}/",
+              "inLanguage": HTML_LANG[loc], "about": PERSON, "dateModified": n["date"]}
+        out = ROOT / "statement" / seg / "index.html"
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(shell(loc=loc, title=f'{n["title"]} · Niansia', desc=n["description"], url=f"/statement/{seg}/", og=f"/assets/og/statement-{seg}.jpg",
+                             alternates={l: f"/statement/{s}/" for s, l in LANGS.items()}, body=page, jsonld=ld, crumbs=" / statement", og_type="profile"), encoding="utf-8")
+        urls.append(f"/statement/{seg}/")
+        data[loc] = {"title": n["title"], "description": n["description"], "url": f"/statement/{seg}/"}
+    return urls, data
+
+
+def lint_sources() -> None:
+    """Checked before anything is written, so a refused build leaves no unsafe page behind."""
+    for folder in ("notes_src", "log_src", "statement_src"):
+        for f in (ROOT / folder).rglob("*"):
+            if f.is_file():
+                privacy_lint(str(f.relative_to(ROOT)), f.name + ("\n" + f.read_text(encoding="utf-8") if f.suffix == ".md" else ""))
+
+
+def lint_sources_and_output() -> None:
+    """Refuse to publish if any source or generated page carries something private (see content_safety.FORBIDDEN)."""
+    lint_sources()
+    for folder in ("notes", "log", "statement", "p"):
+        for f in (ROOT / folder).rglob("*.html"):
+            privacy_lint(str(f.relative_to(ROOT)), f.read_text(encoding="utf-8"))
+    privacy_lint("assets/js/notes-data.js", (ROOT / "assets/js/notes-data.js").read_text(encoding="utf-8"))
 
 
 # ------------------------------------------------------------------------------------------------ share pages
@@ -344,6 +454,10 @@ def og_jobs(projects: dict, notes: dict) -> list[tuple[str, str]]:
             n = by[loc]
             jobs.append((f"note-{slug}-{seg}", og_page("note", title=n["title"], desc=n["description"], date=n["date"], label=UI[loc]["notes"])))
         jobs.append((f"notes-{seg}", og_page("note", title=UI[loc]["notes"], desc=UI[loc]["notes_lede"], date=str(date.today()), label="niansia.github.io")))
+        jobs.append((f"log-{seg}", og_page("note", title=UI[loc]["log"], desc=UI[loc]["log_lede"], date=str(date.today()), label="niansia.github.io")))
+        st = parse_note(ROOT / "statement_src" / ("statement.en.md" if loc == "en" else "statement.zh-TW.md"))
+        jobs.append((f"statement-{seg}", og_page("note", title=s_fix(st["title"]) if loc == "zh-CN" else st["title"],
+                                                  desc=s_fix(st["description"]) if loc == "zh-CN" else st["description"], date=st["date"], label=UI[loc]["statement"])))
     roles = {"en": ("M.S. student in Computer Science · NYCU", ["AI Security", "Computer Vision", "VLMs"], "An interactive terminal portfolio: research tools, a browser-run CV model, films and notes."),
              "zh-tw": ("陽明交大資工碩士生", ["AI 安全", "電腦視覺", "視覺語言模型"], "互動式終端作品集：研究工具、在瀏覽器執行的電腦視覺模型、動畫與研究筆記。"),
              "zh-cn": ("阳明交大资工硕士生", ["AI 安全", "计算机视觉", "视觉语言模型"], "互动式终端作品集：研究工具、在浏览器运行的计算机视觉模型、动画与研究笔记。")}
@@ -365,8 +479,20 @@ def write_sitemap(urls: list[str]) -> None:
 
 
 if __name__ == "__main__":
-    projects, notes = load_projects(), load_notes()
-    urls = build_notes(notes) + build_share(projects)
+    projects, notes, log = load_projects(), load_notes(), load_log()
+    try:
+        lint_sources()
+        urls = build_notes(notes) + build_share(projects)
+        log_urls, log_data = build_log(log)
+        st_urls, st_data = build_statement()
+        urls += log_urls + st_urls
+        data_file = ROOT / "assets/js/notes-data.js"
+        data_file.write_text(data_file.read_text(encoding="utf-8")
+                             + "window.NIANSIA_LOG = " + json.dumps(log_data, ensure_ascii=False, indent=1) + ";\n"
+                             + "window.NIANSIA_STATEMENT = " + json.dumps(st_data, ensure_ascii=False, indent=1) + ";\n", encoding="utf-8")
+        lint_sources_and_output()
+    except UnsafeContent as err:
+        sys.exit(f"REFUSED TO BUILD: {err}")
     write_sitemap(urls)
     if "--no-og" not in sys.argv:
         asyncio.run(render_og(og_jobs(projects, notes)))

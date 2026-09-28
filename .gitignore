@@ -8,3 +8,8 @@ Thumbs.db
 
 __pycache__/
 art/
+
+# Original photos for notes / research log: may carry EXIF or GPS data. Only the cleaned copies in assets/media/ are published.
+log_src/img/
+notes_src/img/
+statement_src/img/
