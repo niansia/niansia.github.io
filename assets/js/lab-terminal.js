@@ -28,7 +28,7 @@
     palette:'M12 3a9 9 0 1 0 0 18c1.5 0 2-1 1.4-2.2-.7-1.3.2-2.8 1.7-2.8H18a3 3 0 0 0 3-3c0-5.5-4-10-9-10zM7.5 11h.01M10 7h.01M15 7.5h.01',
     spark:'M12 3v5m0 8v5M3 12h5m8 0h5M6 6l3 3m6 6 3 3M6 18l3-3m6-6 3-3',
     badge:'M6 3h12v18H6zM9 8h6M9 12h6M9 16h3', paper:'M6 2h9l4 4v16H6zM14 2v5h5M9 11h7M9 15h7M9 19h4', bolt:'M13 2 4 14h7l-1 8 9-12h-7z',
-    search:'M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zm9 16-4.2-4.2', compass:'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zm3.5 5.5-2 5-5 2 2-5z', book:'M4 5q4-2 8 0v15q-4-2-8 0zM12 5q4-2 8 0v15q-4-2-8 0z', lock:'M6 11h12v10H6zM8.5 11V8a3.5 3.5 0 0 1 7 0v3M12 15v2', download:'M12 3v12m-5-5 5 5 5-5M4 20h16'
+    search:'M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zm9 16-4.2-4.2', compass:'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zm3.5 5.5-2 5-5 2 2-5z', book:'M4 5q4-2 8 0v15q-4-2-8 0zM12 5q4-2 8 0v15q-4-2-8 0z', lock:'M6 11h12v10H6zM8.5 11V8a3.5 3.5 0 0 1 7 0v3M12 15v2', clock:'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zm0 4.5V12l3 2', download:'M12 3v12m-5-5 5 5 5-5M4 20h16'
   };
   const icon = (name, cls='') => `<svg class="icon ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${icons[name] || icons.file}"/></svg>`;
   let locale = root.dataset.locale || 'en';
@@ -180,7 +180,7 @@
         <div class="window-body">
         <div class="workspace">
           <div class="explorer"><div class="explorer-heading">${c.files}<span>~/</span></div><nav aria-label="${c.files}"><span class="nav-indicator" aria-hidden="true"></span>${paths.map((path,i)=>`<button class="file-item" data-view="${path}" data-nav-index="${i}" aria-label="${navLabel(path,c)} (${files[i]})"><span class="file-symbol">${icon(NAV_ICONS[path])}</span><span><b translate="no">${files[i]}</b><small>${navLabel(path,c)}</small></span>${path==='projects'?`<em>${String(projects().length).padStart(2,'0')}</em>`:path==='cv'&&cvState()==='locked'?`<em class="nav-lock" title="${esc(cvCopy().lockedTag)}">${icon('lock')}</em>`:''}</button>`).join('')}</nav><div class="explorer-bottom"><span class="branch-mark" aria-hidden="true">⑂</span><span translate="no">main</span><a href="https://github.com/niansia" target="_blank" rel="noopener noreferrer">GitHub ${icon('link')}</a></div></div>
-          <div class="terminal-main"><div class="fest-watermark" aria-hidden="true"></div><div class="pane-bar"><span class="pane-path" translate="no"></span><span class="pane-shortcut"><kbd>Esc</kbd> ${c.back}</span></div><div class="terminal-output" id="terminal-content" tabindex="-1"></div></div>
+          <div class="terminal-main"><div class="fest-watermark" aria-hidden="true"></div><div class="pane-bar"><span class="pane-path" translate="no"></span></div><div class="terminal-output" id="terminal-content" tabindex="-1"></div></div>
         </div>
         <div class="command-area"><div class="command-message" role="status" aria-live="polite">${c.ready}</div><form class="command-form"><label for="terminal-command" class="prompt" translate="no"><span class="session-user">${esc(username)}</span><span>@home</span><b>:~$</b><span class="sr-only">${c.command}</span></label><input id="terminal-command" data-command-input maxlength="500" autocomplete="off" spellcheck="false" autocapitalize="none" placeholder="${c.placeholder}" aria-label="${c.command}"><button type="submit" aria-label="${c.run}">${icon('arrow')}<span>${c.run}</span></button></form></div>
         <footer class="terminal-status"><span class="status-keys"><kbd>↑</kbd><kbd>↓</kbd> ${c.selected} <kbd>Enter</kbd> ${c.open} <kbd>Esc</kbd> ${c.back}</span><button class="status-yuki" data-action="chat" data-yuki-status>${icon('paw')}<span>yuki</span></button><button data-view="help" aria-label="${c.nav[paths.indexOf('help')]}">${icon('help')}<span>${c.nav[paths.indexOf('help')]}</span></button><span class="status-stats" data-stats hidden><i class="live-dot" aria-hidden="true"></i><b data-stat="online">–</b> ${esc(statCopy().online)} · <b data-stat="total">–</b> ${esc(statCopy().visits)}</span><span class="status-signature" translate="no">made with curiosity <span>✦</span></span></footer>
@@ -196,7 +196,10 @@
     const el = $('.window-clock');
     if (el) el.textContent = new Intl.DateTimeFormat(locale, {hour:'2-digit', minute:'2-digit'}).format(new Date());
   }
+  /* Only the home screen keeps a second, inline prompt (the tour points at it); every other screen shows the command as a
+     read-only line, so the command bar at the bottom is the one place to type. Command output still lands in .command-results. */
   function commandTitle(command) {
+    if (view !== 'home') return `<p class="output-command is-static" translate="no"><span class="output-prompt" aria-hidden="true">❯</span><span>${esc(command)}</span><i class="output-caret" aria-hidden="true"></i></p><section class="command-results" aria-label="${t().output}" hidden></section>`;
     return `<form class="output-command inline-command-form"><label for="screen-command" aria-hidden="true">❯</label><input id="screen-command" data-command-input maxlength="500" autocomplete="off" autocapitalize="none" spellcheck="false" aria-label="${t().inlineCommand}" aria-describedby="screen-command-hint" placeholder="${esc(command)} · ${t().typeHere}"><button type="submit" aria-label="${t().run}"><kbd>Enter</kbd><span>↵</span></button></form><div id="screen-command-hint" class="command-hint">${t().historyHint}</div><section class="command-results" aria-label="${t().output}" hidden></section>`;
   }
   function commandCatalogue() {
@@ -556,24 +559,28 @@
       <section class="pub-section"><h2 class="pub-h">${esc(P.writing)}</h2>${writing}</section>`;
   }
   /* blog/: monthly updates, paper notes, posts and answered questions (blog-data.js, built from blog_src/), together with the
-     research notes and the research log, newest first, with a filter per kind, the anonymous question box and a reading footprint. */
+     research notes and the research log, newest first. The list comes first (the latest monthly update pinned on top as a
+     compact card); a sticky side column holds what is next (with deadline countdowns), the question box and the reading footprint. */
   const BLOG_KINDS=['all','now','paper','note','log','post','qa'];
   const blogCopy=()=>({
     en:{title:'Blog',intro:'Monthly updates, notes on the papers I read and what I make of them, and answers to your questions. The research notes and the research log live here too.',
       kinds:{all:'All',now:'Now',paper:'Paper notes',note:'Research notes',log:'Research log',post:'Posts',qa:'Q&A'},kind:{now:'Now',paper:'Paper note',note:'Research note',log:'Log',post:'Post',qa:'Q&A'},
-      nowLabel:'Now',readNow:'Read the update',ask:'Ask anonymously',askSub:'No sign-up needed. Good questions get answered under Q&A.',askSoon:'The question box opens soon',
+      count:n=>`${n} post${n===1?'':'s'}`,pinned:'Pinned',nowLabel:'Now',readNow:'Read the update',side:'Blog side panel',
+      next:'Up next',nextAll:'All submissions',ask:'Ask anonymously',askBtn:'Ask me a question',askSub:'No sign-up needed. Good questions get answered under Q&A.',askSoon:'The question box opens soon',
       qa:'Q&A',rss:'RSS',foot:'Reading footprint',footN:n=>`${n} paper note${n===1?'':'s'} in the last 12 months`,footNone:'The first paper note is on its way.',
-      empty:'Nothing here yet.',zh:'中文',min:'min',filter:'Filter posts',page:'Blog page',depth:{deep:'read closely',skim:'skimmed'}},
+      empty:'Nothing here yet.',zh:'中文',min:'min',filter:'Filter posts',page:'Standalone page',depth:{deep:'read closely',skim:'skimmed'}},
     'zh-TW':{title:'Blog',intro:'每月近況、讀過的論文和我的看法，以及大家問的問題；研究筆記和研究日誌也都整理在這裡。',
       kinds:{all:'全部',now:'近況',paper:'論文筆記',note:'研究筆記',log:'研究日誌',post:'隨筆',qa:'Q&A'},kind:{now:'近況',paper:'論文筆記',note:'研究筆記',log:'日誌',post:'隨筆',qa:'Q&A'},
-      nowLabel:'本月近況',readNow:'閱讀近況',ask:'匿名提問',askSub:'不用註冊；回答後會整理在 Q&A。',askSoon:'提問箱即將開放',
+      count:n=>`共 ${n} 篇`,pinned:'置頂',nowLabel:'本月近況',readNow:'閱讀近況',side:'Blog 側欄',
+      next:'接下來',nextAll:'所有投稿進度',ask:'匿名提問',askBtn:'問我一個問題',askSub:'不用註冊；回答後會整理在 Q&A。',askSoon:'提問箱即將開放',
       qa:'Q&A',rss:'RSS 訂閱',foot:'閱讀足跡',footN:n=>`過去 12 個月寫了 ${n} 篇論文筆記`,footNone:'第一篇論文筆記準備中。',
-      empty:'這裡還沒有文章。',zh:'中文',min:'分鐘',filter:'篩選文章',page:'Blog 頁面',depth:{deep:'精讀',skim:'略讀'}},
+      empty:'這裡還沒有文章。',zh:'中文',min:'分鐘',filter:'篩選文章',page:'獨立頁面',depth:{deep:'精讀',skim:'略讀'}},
     'zh-CN':{title:'Blog',intro:'每月近况、读过的论文和我的看法，以及大家问的问题；研究笔记和研究日志也都整理在这里。',
       kinds:{all:'全部',now:'近况',paper:'论文笔记',note:'研究笔记',log:'研究日志',post:'随笔',qa:'Q&A'},kind:{now:'近况',paper:'论文笔记',note:'研究笔记',log:'日志',post:'随笔',qa:'Q&A'},
-      nowLabel:'本月近况',readNow:'阅读近况',ask:'匿名提问',askSub:'不用注册；回答后会整理在 Q&A。',askSoon:'提问箱即将开放',
+      count:n=>`共 ${n} 篇`,pinned:'置顶',nowLabel:'本月近况',readNow:'阅读近况',side:'Blog 侧栏',
+      next:'接下来',nextAll:'所有投稿进度',ask:'匿名提问',askBtn:'问我一个问题',askSub:'不用注册；回答后会整理在 Q&A。',askSoon:'提问箱即将开放',
       qa:'Q&A',rss:'RSS 订阅',foot:'阅读足迹',footN:n=>`过去 12 个月写了 ${n} 篇论文笔记`,footNone:'第一篇论文笔记准备中。',
-      empty:'这里还没有文章。',zh:'中文',min:'分钟',filter:'筛选文章',page:'Blog 页面',depth:{deep:'精读',skim:'略读'}}}[locale]);
+      empty:'这里还没有文章。',zh:'中文',min:'分钟',filter:'筛选文章',page:'独立页面',depth:{deep:'精读',skim:'略读'}}}[locale]);
   let blogFilter=(()=>{try{return sessionStorage.getItem('niansia-blog-filter')||'all';}catch{return 'all';}})();
   if(!BLOG_KINDS.includes(blogFilter))blogFilter='all';
   function blogEntries() {
@@ -591,26 +598,44 @@
       <strong>${esc(p.type==='qa'?'「'+p.title+'」':p.title)}</strong>${p.type==='paper'&&p.paper?`<small class="blog-paper" translate="no">${esc(p.paper)}</small>`:''}${p.description?`<small>${esc(p.description)}</small>`:''}${extra?`<span class="blog-meta">${extra}</span>`:''}</span>
       ${p.thumb?`<img class="blog-thumb" src="${esc(p.thumb)}" alt="" loading="lazy">`:`<span class="row-arrow" aria-hidden="true">↗</span>`}</a>`;
   }
+  // The latest monthly update, pinned on top of the full list: title and what got done. What is next lives in the side column.
+  function blogNow(p) {
+    const B=blogCopy(), done=(p.groups||[])[0];
+    const pts=done?.items?.length?`<ul class="blog-now-pts" aria-label="${esc(done.title)}">${done.items.map((pt,i)=>`<li style="--i:${i}">${esc(pt)}</li>`).join('')}</ul>`:p.description?`<small>${esc(p.description)}</small>`:'';
+    return `<a class="blog-now" data-kind="now" href="${esc(p.url)}"><span class="blog-now-k">${icon('spark')}<span>${esc(B.nowLabel)} · ${esc(p.date.slice(0,7))}</span><i class="blog-pin">${esc(B.pinned)}</i></span>
+      <b>${esc(p.title)}</b>${pts}<span class="blog-now-more">${esc(B.readNow)} <span aria-hidden="true">→</span></span></a>`;
+  }
   function blogList() {
     const B=blogCopy(), all=blogEntries(), list=blogFilter==='all'?all:all.filter(p=>p.type===blogFilter);
-    return list.length?list.map(blogRow).join(''):`<p class="blog-empty">${esc(blogFilter==='paper'?B.footNone:B.empty)}</p>`;
+    const pin=blogFilter==='all'?list.find(p=>p.type==='now'):null;
+    return list.length?(pin?blogNow(pin):'')+list.filter(p=>p!==pin).map(blogRow).join(''):`<p class="blog-empty">${esc(blogFilter==='paper'?B.footNone:B.empty)}</p>`;
+  }
+  // Up next: the "next" items of the latest monthly update (or the venues being prepared), each with its deadline countdown.
+  function blogNext(now) {
+    const B=blogCopy(), S=subCopy(), venues=subs()?.venues||[];
+    const items=(now?.groups||[])[1]?.items||venues.map(v=>v.venue);
+    if(!items.length)return '';
+    const rows=items.map((name,i)=>{
+      const v=venues.find(x=>name.startsWith(x.venue)), open=v?.deadline&&Date.parse(v.deadline)>Date.now();
+      return `<li class="${open?'is-dated':''}" style="--i:${i}"><span class="bn-dot" aria-hidden="true"></span><b class="bn-name" translate="no">${esc(name)}</b>
+        ${v?`<span class="bn-when">${v.deadline?`<b data-deadline="${v.deadline}">${countdown(v.deadline)}</b>`:`<small>${esc(S?.tba||'')}</small>`}</span><small class="bn-topic">${esc(v.topic[locale]||v.topic.en)}${v.deadline?` · ${aoeDate(v.deadline)}`:''}</small>`:''}</li>`;
+    }).join('');
+    return `<div class="blog-card blog-next"><p class="blog-side-h">${icon('clock')}${esc(B.next)}</p><ul>${rows}</ul>${venues.length?`<button type="button" class="blog-side-more" data-view="research">${esc(B.nextAll)} →</button>`:''}</div>`;
   }
   function blogScreen() {
     const B=blogCopy(), all=blogEntries(), seg=locale==='en'?'en':locale.toLowerCase(), ask=window.NIANSIA_BLOG?.ask||'';
     const count=k=>k==='all'?all.length:all.filter(p=>p.type===k).length;
     const chips=BLOG_KINDS.filter(k=>['all','now','paper','note','qa'].includes(k)||count(k)).map(k=>`<button type="button" class="pf-chip" data-blog-filter="${k}" aria-pressed="${k===blogFilter}"${!count(k)&&k!=='all'?' data-empty':''}><span>${esc(B.kinds[k])}</span><em>${count(k)}</em></button>`).join('');
-    const now=all.find(p=>p.type==='now');
-    const nowCard=now?`<a class="blog-now" href="${esc(now.url)}"><span class="blog-now-k">${icon('spark')}${esc(B.nowLabel)} · ${esc(now.date.slice(0,7))}</span><b>${esc(now.title)}</b><small>${esc(now.description||'')}</small>${(now.groups||[]).map((g,gi)=>`<div class="blog-now-g${gi?' is-next':''}"><p>${esc(g.title)}</p><ul class="blog-now-pts">${g.items.map((pt,i)=>`<li style="--i:${gi*4+i}">${esc(pt)}</li>`).join('')}</ul></div>`).join('')}<em>${esc(B.readNow)} →</em></a>`:'';
-    // Reading footprint: paper notes per month over the last 12 months.
+    // Reading footprint: paper notes per month over the last 12 months; it only shows up once there is a paper note to count.
     const today=new Date(), months=[...Array(12)].map((_,i)=>{const d=new Date(today.getFullYear(),today.getMonth()-11+i,1);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;});
     const papers=all.filter(p=>p.type==='paper'), per=months.map(mo=>papers.filter(p=>p.date.startsWith(mo)).length), top=Math.max(1,...per), total=per.reduce((a,b)=>a+b,0);
     const bars=months.map((mo,i)=>`<i style="--h:${per[i]?Math.max(18,per[i]/top*100):6}%" data-n="${per[i]}" title="${mo} · ${per[i]}"></i>`).join('');
-    const foot=`<div class="blog-foot"><p class="blog-side-h">${esc(B.foot)}</p><div class="blog-bars" aria-hidden="true">${bars}</div><small>${esc(total?B.footN(total):B.footNone)}</small></div>`;
-    const askCard=`<div class="blog-ask"><p class="blog-side-h">${icon('chat')}${esc(B.ask)}</p><small>${esc(B.askSub)}</small>${ask?`<a class="action-button primary" href="${esc(ask)}" target="_blank" rel="noopener noreferrer"><span>${esc(B.ask)}</span>${icon('link')}</a>`:`<span class="action-button is-soon" aria-disabled="true">${esc(B.askSoon)}</span>`}
+    const foot=total?`<div class="blog-card blog-foot"><p class="blog-side-h">${icon('book')}${esc(B.foot)}</p><div class="blog-bars" aria-hidden="true">${bars}</div><small>${esc(B.footN(total))}</small></div>`:'';
+    const askCard=`<div class="blog-card blog-ask"><p class="blog-side-h">${icon('chat')}${esc(B.ask)}</p><small>${esc(B.askSub)}</small>${ask?`<a class="action-button primary" href="${esc(ask)}" target="_blank" rel="noopener noreferrer"><span>${esc(B.askBtn)}</span>${icon('link')}</a>`:`<span class="action-button is-soon" aria-disabled="true">${esc(B.askSoon)}</span>`}
       <span class="blog-side-links"><a href="/blog/${seg}/qa/">${esc(B.qa)} →</a><a href="/blog/${seg}/feed.xml">${esc(B.rss)}</a><a href="/blog/${seg}/">${esc(B.page)} ↗</a></span></div>`;
-    return `${commandTitle('ls ./blog/')}<div class="directory-heading"><h1>${esc(B.title)}</h1><span class="dir-count">${String(all.length).padStart(2,'0')}</span></div><p class="screen-intro">${esc(B.intro)}</p>
-      <div class="blog-top">${nowCard}<div class="blog-side">${askCard}${foot}</div></div>
-      <div class="project-filters blog-filters" role="group" aria-label="${esc(B.filter)}">${chips}</div><div class="blog-list">${blogList()}</div>`;
+    return `${commandTitle('ls ./blog/')}<div class="directory-heading"><h1>${esc(B.title)}</h1><span class="dir-count">${esc(B.count(all.length))}</span></div><p class="screen-intro">${esc(B.intro)}</p>
+      <div class="blog-layout"><div class="blog-col"><div class="project-filters blog-filters" role="group" aria-label="${esc(B.filter)}">${chips}</div><div class="blog-list">${blogList()}</div></div>
+      <div class="blog-side" role="complementary" aria-label="${esc(B.side)}">${blogNext(all.find(p=>p.type==='now'))}${askCard}${foot}</div></div>`;
   }
   function setBlogFilter(key, focus) {
     if(!BLOG_KINDS.includes(key))return false;
@@ -682,7 +707,7 @@
     if (view==='help') html=`${commandTitle('help')}<h1>${c.guideTitle}</h1><p>${c.guideIntro}</p><dl class="keyboard-guide">${c.keys.map(([key,description])=>`<div><dt><kbd>${key}</kbd></dt><dd>${description}</dd></div>`).join('')}</dl><h2>${c.commands}</h2>${commandCatalogue()}<p class="comment-line">${c.simulation}</p>`;
     if (view==='projects' && !item) html=`${commandTitle('ls ./projects/')}${directoryHTML(c)}`;
     if (view==='projects' && item) html=`${commandTitle('cat projects/'+esc(item.id)+'/README.md')}<button class="back-link" data-view="projects">← ${c.all}</button><div class="project-detail"><p class="detail-meta">${esc(item.category)}<span>${esc(item.status)}</span></p><h1 translate="no">${esc(item.name)}</h1><p class="project-description">${esc(item.description)}</p>${item.id==='taiwan-exam'?'<img class="project-art" src="/assets/work/taiwan-exam-social-preview.png" width="1280" height="640" alt="Taiwan Exam" loading="lazy">'+teFilmCard():''}${item.id==='lumigrid'?lumigridShowcase():''}${item.id==='adversarial-lab'?'<img class="project-art" src="/assets/og/adversarial-demo.jpg" width="1200" height="630" alt="Adversarial Lab" loading="lazy">'+advCard():''}<h2>${c.evidence}</h2><p>${esc(item.evidence)}</p><div class="output-actions"><a class="action-button primary" href="${esc(item.url)}" target="_blank" rel="noopener noreferrer"><span>${c.source}</span>${icon('link')}</a><a class="action-button" href="${esc(item.reference)}" target="_blank" rel="noopener noreferrer"><span>${esc(item.referenceLabel)}</span>${icon('link')}</a><button class="action-button" data-ask="${esc(item.name)}">${icon('chat')}<span>${c.askTitle}</span></button><button class="action-button" data-action="share" data-share="/p/${esc(item.id)}/${locale==='en'?'':locale.toLowerCase()+'/'}">${icon('link')}<span>${esc(noteCopy().share)}</span></button></div><div class="project-pagination"><button data-project-step="-1">← ${c.prev}</button><span>${items.indexOf(item)+1} / ${items.length}</span><button data-project-step="1">${c.next} →</button></div></div>`;
-    const output=$('.terminal-output'); output.innerHTML=html; output.scrollTop=0; renderJournal();
+    const output=$('.terminal-output'); output.dataset.view=view; output.innerHTML=html; output.scrollTop=0; renderJournal();
     if (view==='research') initCapstone();
     if (view==='projects' && projectId==='lumigrid') initLumigrid();
     output.classList.remove('screen-enter'); if (animate && motion()) { void output.offsetWidth; output.classList.add('screen-enter'); }
@@ -973,7 +998,7 @@
     if(target.hasAttribute('data-fest-celebrate')){const box=target.getBoundingClientRect();for(let i=0;i<3;i++)setTimeout(()=>fx()?.burst(box.left+box.width*(.2+.3*i),box.top+box.height/2,'hearts'),i*140);fx()?.celebrate();yuki()?.act('trick');const l=yuki()?.festivalLine();if(l)yuki()?.say(l);}
     if(target.dataset.ask){yuki()?.openChat(target.dataset.ask);}
     if(target.dataset.bib){const entry=pubList().find(p=>p.id===target.dataset.bib);try{await navigator.clipboard.writeText(entry.bibtex);toast(pubCopy().copied);}catch{toast(entry.bibtex.split('\n')[0]);}}
-    if(target.dataset.commandFill){const input=$('#screen-command');input.value=target.dataset.commandFill;input.focus();input.select();}
+    if(target.dataset.commandFill){const input=$('#screen-command')||$('#terminal-command');input.value=target.dataset.commandFill;input.focus();input.select();}
     switch(target.dataset.action){
       case 'theme':toggleTheme(target);break;
       case 'styles':toggleStyles();break;
@@ -1025,7 +1050,7 @@
       event.preventDefault();const options=[...root.querySelectorAll('.style-option')],i=options.indexOf(target.closest('.style-option'));
       options[(i+(['ArrowUp','ArrowLeft'].includes(event.key)?-1:1)+options.length)%options.length].focus();return;
     }
-    if(event.key==='/'){event.preventDefault();$('#screen-command').focus();return;}
+    if(event.key==='/'){event.preventDefault();($('#screen-command')||$('#terminal-command')).focus();return;}
     if(event.key==='ArrowLeft'){event.preventDefault();goBack();return;}
     if(['ArrowUp','ArrowDown','Home','End'].includes(event.key)&&!projectId){event.preventDefault();moveSelection(event.key);return;}
     if(event.key==='ArrowRight'||(event.key==='Enter'&&!target.closest('button,a'))){event.preventDefault();if(view==='projects'&&!projectId)navigate('projects',projects()[selectedProject].id,{keyboard:true});else if(!projectId)navigate(paths[selectedNav],'',{keyboard:true});}
