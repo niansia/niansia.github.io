@@ -44,16 +44,17 @@
   const EMAIL = 'niansia930202@gmail.com';
 
   /* ---------- items ---------- */
-  const allNav = p => ['en', 'zh-TW', 'zh-CN'].map(l => window.NIANSIA_COPY[l]?.nav[['home', 'about', 'projects', 'research', 'papers', 'contact', 'hobbies', 'cv', 'help'].indexOf(p)] || '').join(' ');
+  const allNav = p => ['en', 'zh-TW', 'zh-CN'].map(l => window.NIANSIA_COPY[l]?.nav[['home', 'about', 'projects', 'research', 'papers', 'blog', 'contact', 'hobbies', 'cv', 'help'].indexOf(p)] || '').join(' ');
   const go = url => { location.href = url; };
   function items() {
     const c = C(), out = [], add = (group, it) => out.push({group, ...it, key: `${group}:${it.id}`});
-    const paths = app.paths(), files = app.files(), NAV = {home: 'terminal', about: 'file', projects: 'folder', research: 'research', papers: 'paper', contact: 'mail', hobbies: 'heart', cv: 'badge', help: 'help'};
+    const paths = app.paths(), files = app.files(), NAV = {home: 'terminal', about: 'file', projects: 'folder', research: 'research', papers: 'paper', blog: 'pen', contact: 'mail', hobbies: 'heart', cv: 'badge', help: 'help'};
     paths.forEach((p, i) => add('pages', {id: p, title: app.navLabel(p), sub: files[i], icon: NAV[p], words: `${files[i]} ${allNav(p)}`, hint: c.page, run: () => app.navigate(p)}));
     app.projects().forEach(p => add('projects', {id: p.id, title: p.name, sub: `${p.category} · ${p.status}`, icon: 'folder', words: `${p.id} ${p.category} ${p.description}`, run: () => app.navigate('projects', p.id)}));
     app.pubList().filter(p => !app.pubHidden(p)).forEach(p => add('papers', {id: p.id, title: app.pubText(p.title), sub: `${p.venue || ''} · ${app.pubCopy().status[p.status] || p.status}`, icon: 'paper', words: (p.topics || []).join(' '),
       run: () => (p.page ? go(`/paper/${p.id}/${app.pubSeg()}`) : app.navigate('papers'))}));
     (window.NIANSIA_SUBMISSIONS?.venues || []).forEach(v => add('papers', {id: v.id, title: `${v.venue} · ${v.topic[L()] || v.topic.en}`, sub: c.deadline, icon: 'lock', words: 'deadline submission 投稿 截止', run: () => app.navigate('papers')}));
+    (window.NIANSIA_BLOG?.posts?.[L()] || []).forEach(n => add('writing', {id: 'blog-' + n.slug, title: n.title, sub: `${n.date} · Blog`, icon: 'pen', words: `blog 部落格 博客 ${n.type} ${n.paper || ''} ${n.venue || ''} ${(n.tags || []).join(' ')} ${n.description || ''}`, run: () => go(n.url)}));
     (window.NIANSIA_NOTES?.[L()] || []).forEach(n => add('writing', {id: n.slug, title: n.title, sub: `${n.date} · ${c.note}`, icon: 'book', words: n.description, run: () => go(n.url)}));
     (window.NIANSIA_LOG?.[L()] || []).forEach(n => add('writing', {id: 'log-' + n.slug, title: n.title, sub: `${n.date} · ${c.log}`, icon: 'research', words: 'log 日誌 日志', run: () => go(n.url)}));
     const st = window.NIANSIA_STATEMENT?.[L()];

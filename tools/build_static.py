@@ -3,6 +3,7 @@
     notes_src/<slug>.<lang>.md  ->  notes/<lang>/<slug>/index.html, notes/<lang>/index.html, notes/index.html
     log_src/<date>-<slug>.<lang>.md -> log/<lang>/index.html (research log with images)
     statement_src/statement.<lang>.md -> statement/<lang>/index.html
+    blog_src/<date>-<slug>.<lang>.md -> blog/<lang>/<slug>/, blog/<lang>/qa/, blog/<lang>/feed.xml, assets/js/blog-data.js
     images referenced from sources -> assets/media/<hash>.{webp,jpg} + -t.webp (metadata stripped, see content_safety.py)
     assets/js/portfolio-data.js ->  p/<id>/index.html (+ zh-tw/, zh-cn/) share pages
     open-graph images           ->  assets/og/*.jpg (1200 x 630, rendered with Playwright)
@@ -175,7 +176,8 @@ FONTS = ('<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="
 
 
 def shell(*, loc: str, title: str, desc: str, url: str, og: str, alternates: dict, body: str, jsonld: dict | None = None,
-          crumbs: str = "", og_type: str = "article", noindex: bool = False, extra_css: str = "", scripts: tuple = (), top_extra: str = "") -> str:
+          crumbs: str = "", og_type: str = "article", noindex: bool = False, extra_css: str = "", scripts: tuple = (), top_extra: str = "",
+          head_extra: str = "") -> str:
     alt = "".join(f'<link rel="alternate" hreflang="{HTML_LANG[l].split("-")[0] if l == "en" else ("zh-Hant-TW" if l == "zh-TW" else "zh-Hans-CN")}" href="{SITE}{u}">'
                   for l, u in alternates.items())
     if "en" in alternates:
@@ -205,7 +207,7 @@ def shell(*, loc: str, title: str, desc: str, url: str, og: str, alternates: dic
 <script src="/assets/js/page-transition.js?v=2"></script>
 {FONTS}
 <style>{CSS}{extra_css}</style>
-{ld}
+{head_extra}{ld}
 <script defer src="/assets/js/site-stats.js"></script>
 <script defer src="/assets/js/lightbox.js"></script>
 {"".join(f'<script defer src="{x}"></script>' for x in scripts)}
@@ -329,6 +331,199 @@ def build_statement() -> tuple[list[str], dict]:
                              alternates={l: f"/statement/{s}/" for s, l in LANGS.items()}, body=page, jsonld=ld, crumbs=" / statement", og_type="profile"), encoding="utf-8")
         urls.append(f"/statement/{seg}/")
         data[loc] = {"title": n["title"], "description": n["description"], "url": f"/statement/{seg}/"}
+    return urls, data
+
+
+# ------------------------------------------------------------------------------------------------ blog
+# blog_src/<date>-<slug>.<lang>.md with `type:` now (monthly update) | paper (reading note) | post | qa (an answered question).
+# zh-TW is required; en is optional (English pages link to the Chinese post when there is no translation); zh-CN is converted.
+# blog_src/blog.json: {"ask": "<anonymous question box URL, e.g. Peing>"}.
+BLOG_TYPES = ("now", "paper", "post", "qa")
+BLOG_UI = {
+    "en": {"blog": "Blog", "lede": "Monthly updates, notes on the papers I read and what I make of them, and answers to your questions.",
+           "types": {"now": "Now", "paper": "Paper note", "post": "Post", "qa": "Q&A"}, "more": "More posts", "all": "All posts",
+           "qa_title": "Questions & answers", "qa_lede": "Questions sent anonymously, answered here.", "ask": "Ask anonymously",
+           "ask_soon": "The question box opens soon", "rss": "RSS", "depth": {"deep": "Read closely", "skim": "Skimmed"},
+           "link": "Paper", "code": "Code", "zh": "In Chinese", "q": "Q", "a": "A", "none_qa": "No answered questions yet."},
+    "zh-TW": {"blog": "Blog", "lede": "每月近況、讀過的論文和我的看法，以及大家問的問題。",
+              "types": {"now": "近況", "paper": "論文筆記", "post": "隨筆", "qa": "Q&A"}, "more": "其他文章", "all": "全部文章",
+              "qa_title": "Q&A", "qa_lede": "匿名提問，在這裡回答。", "ask": "匿名提問",
+              "ask_soon": "提問箱即將開放", "rss": "RSS", "depth": {"deep": "精讀", "skim": "略讀"},
+              "link": "論文", "code": "程式碼", "zh": "中文", "q": "問", "a": "答", "none_qa": "還沒有回答過的問題。"},
+}
+BLOG_UI["zh-CN"] = {k: (T2S.convert(v) if isinstance(v, str) else {a: T2S.convert(b) for a, b in v.items()}) for k, v in BLOG_UI["zh-TW"].items()}
+BLOG_CSS = """
+.paper-box{margin:0 0 26px;padding:18px 20px;border-radius:16px;background:var(--paper);border:1px solid var(--line);border-left:4px solid var(--accent2);}
+.paper-box .pv{font:600 12px 'JetBrains Mono',monospace;color:var(--accent2);letter-spacing:.04em;margin:0 0 6px;}
+.paper-box b{display:block;font-size:17px;line-height:1.45;}
+.paper-box .pa{margin:6px 0 0;font-size:13.5px;color:var(--muted);line-height:1.6;}
+.paper-box .pl{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+.paper-box .pl a{font:600 12.5px 'JetBrains Mono',monospace;padding:5px 12px;border-radius:99px;border:1px solid var(--line);text-decoration:none;}
+.paper-box .pl a:hover{border-color:var(--accent);}
+.type{display:inline-block;padding:2px 9px;border-radius:99px;background:var(--accent);color:#fff;font:600 11.5px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;}
+.type.paper{background:var(--accent2);}.type.qa{background:#3f9f86;}.type.post{background:var(--muted);}
+.card .type{margin-bottom:8px;}.card .zh{margin-left:8px;font:500 11.5px 'JetBrains Mono',monospace;color:var(--muted);}
+.now-card{border-left:4px solid var(--accent);}
+.qa{padding:20px 0;border-bottom:1px solid var(--line);}
+.qa .qq{display:flex;gap:12px;font-weight:700;font-size:17px;line-height:1.55;margin:0 0 8px;}
+.qa .qq span,.qa .qa-a>span{flex:none;display:grid;place-items:center;width:28px;height:28px;border-radius:9px;background:var(--code);color:var(--accent);font-size:13px;}
+.qa .qa-a{display:flex;gap:12px;}.qa .qa-a>span{background:var(--accent);color:#fff;}.qa .qa-a article>:first-child{margin-top:0;}
+.qa time{display:block;margin:6px 0 0 40px;font:500 12px 'JetBrains Mono',monospace;color:var(--muted);}
+.ask{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:18px 0 8px;padding:16px 18px;border-radius:16px;background:var(--code);}
+.ask b{display:block;font-size:15.5px;}.ask small{display:block;color:var(--muted);font-size:13px;}
+.ask .btn{flex:none;margin:0;}.ask .btn[aria-disabled]{opacity:.55;pointer-events:none;}
+"""
+
+
+def load_blog() -> tuple[dict, dict]:
+    posts = {}
+    for f in sorted((ROOT / "blog_src").glob("*.md")):
+        slug, lang = f.stem.rsplit(".", 1)
+        info = parse_note(f)
+        info.setdefault("type", "post")
+        if info["type"] not in BLOG_TYPES:
+            sys.exit(f"{f.name}: type must be one of {', '.join(BLOG_TYPES)}")
+        if str(info.get("draft", "")).lower() == "true":
+            continue
+        posts.setdefault(slug, {})[lang] = info
+    for slug, by in posts.items():
+        if "zh-TW" not in by:
+            sys.exit(f"blog_src/{slug}: a zh-TW version is required")
+        tw = by["zh-TW"]
+        by["zh-CN"] = {k: (s_fix(v) if isinstance(v, str) else [s_fix(x) for x in v] if isinstance(v, list) else v) for k, v in tw.items()}
+        by["zh-CN"]["body"] = s_fix(tw["body"]).replace("/zh-tw/", "/zh-cn/").replace("lang=zh-TW", "lang=zh-CN")
+        for k in ("paper", "authors", "venue", "link", "code"):   # the paper itself is not translated
+            if k in tw:
+                by["zh-CN"][k] = tw[k]
+    cfg_file = ROOT / "blog_src" / "blog.json"
+    cfg = json.loads(cfg_file.read_text(encoding="utf-8")) if cfg_file.exists() else {}
+    ask = cfg.get("ask", "")
+    if ask and not re.match(r"^https://[\w.-]+/", ask):
+        sys.exit("blog_src/blog.json: ask must be an https:// URL")
+    return dict(sorted(posts.items(), key=lambda kv: (kv[1]["zh-TW"]["date"], kv[0]), reverse=True)), {"ask": ask}
+
+
+def blog_version(by: dict, loc: str) -> tuple[dict, str]:
+    """The post as shown to readers of `loc`, and the locale it is actually written in (English falls back to zh-TW)."""
+    return (by[loc], loc) if loc in by else (by["zh-TW"], "zh-TW")
+
+
+BLOG_SEG = {l: s for s, l in LANGS.items()}   # zh-TW -> zh-tw: blog URLs always carry the language (as notes do)
+
+
+def blog_url(slug: str, loc: str) -> str:
+    return f"/blog/{BLOG_SEG[loc]}/{slug}/"
+
+
+def build_blog(posts: dict, cfg: dict) -> tuple[list[str], dict]:
+    from email.utils import format_datetime
+    from datetime import datetime, timezone
+    urls, data = [], {}
+    md = lambda t: render_markdown(t, src_dir=ROOT / "blog_src", media_dir=MEDIA, md=MD)[0]
+    rss_link = lambda seg: f'<link rel="alternate" type="application/rss+xml" title="Niansia · Blog" href="/blog/{seg}/feed.xml">'
+    for seg, loc in LANGS.items():
+        U, cards, qas, feed, data[loc] = BLOG_UI[loc], [], [], [], []
+        ask_btn = (f'<a class="btn primary" href="{e(cfg["ask"])}" target="_blank" rel="noopener noreferrer">{e(U["ask"])} ↗</a>' if cfg["ask"]
+                   else f'<span class="btn" aria-disabled="true">{e(U["ask_soon"])}</span>')
+        ask_box = f'<div class="ask"><div><b>{e(U["qa_title"])}</b><small>{e(U["qa_lede"])}</small></div>{ask_btn}</div>'
+        for slug, by in posts.items():
+            n, wrote = blog_version(by, loc)
+            kind, mins = n["type"], read_minutes(n["body"], wrote)
+            zh = f'<span class="zh">{e(U["zh"])}</span>' if wrote != loc else ""
+            entry = {"slug": slug, "type": kind, "title": n["title"], "description": n.get("description", ""), "date": n["date"], "minutes": mins,
+                     "tags": n.get("tags", []), "lang": wrote}
+            if kind == "paper":
+                entry.update({k: n.get(k, "") for k in ("paper", "venue", "depth")})
+            if kind == "now":   # each section's bullets (their bold lead), shown on the terminal's now card
+                groups = []
+                for line in n["body"].splitlines():
+                    if line.startswith("## "):
+                        groups.append({"title": line[3:].strip(), "items": []})
+                    elif groups and (m := re.match(r"^\s*[-*]\s+\*\*(.+?)\*\*", line)):
+                        groups[-1]["items"].append(m.group(1))
+                entry["groups"] = [g for g in groups if g["items"]][:2]
+            if kind == "qa":
+                entry["url"] = f"/blog/{seg}/qa/#{slug}"
+                qas.append(f'<section class="qa" id="{e(slug)}"><p class="qq"><span>{e(U["q"])}</span>{e(n["title"])}</p>'
+                           f'<div class="qa-a"><span>{e(U["a"])}</span><article lang="{HTML_LANG[wrote]}">{md(n["body"])}</article></div><time datetime="{n["date"]}">{n["date"]}</time></section>')
+                data[loc].append(entry)
+                feed.append((n, f"{SITE}/blog/{seg}/qa/#{slug}"))
+                continue
+            url = blog_url(slug, wrote)
+            entry["url"] = url
+            data[loc].append(entry)
+            feed.append((n, SITE + url))
+            cards.append(f'<a class="card{" now-card" if kind == "now" else ""}" href="{url}"><span class="type {kind}">{e(U["types"][kind])}</span>{zh}'
+                         f'<b>{e(n["title"])}</b><small>{e(n.get("description", ""))}</small><i>{n["date"]} · {mins} {e(UI[loc]["min"])}</i></a>')
+            if wrote != loc:
+                continue   # no English page for a post written only in Chinese
+            alts = {l: blog_url(slug, l) for s, l in LANGS.items() if l in by}
+            box = ""
+            if kind == "paper":
+                depth = U["depth"].get(n.get("depth", ""), "")
+                links = "".join(f'<a href="{e(n[k])}" target="_blank" rel="noopener noreferrer">{e(U[k])} ↗</a>' for k in ("link", "code") if n.get(k))
+                venue = " · ".join(x for x in (n.get("venue", ""), depth) if x)
+                authors = f'<p class="pa" lang="en">{e(n["authors"])}</p>' if n.get("authors") else ""
+                links = f'<div class="pl">{links}</div>' if links else ""
+                box = f'<aside class="paper-box"><p class="pv">{e(venue)}</p><b lang="en">{e(n.get("paper", ""))}</b>{authors}{links}</aside>'
+            others = "".join(f'<a class="card" href="{blog_url(s, blog_version(b, loc)[1])}"><span class="type {b["zh-TW"]["type"]}">{e(U["types"][b["zh-TW"]["type"]])}</span>'
+                             f'<b>{e(blog_version(b, loc)[0]["title"])}</b><small>{e(blog_version(b, loc)[0].get("description", ""))}</small></a>'
+                             for s, b in list((s, b) for s, b in posts.items() if s != slug and b["zh-TW"]["type"] != "qa")[:3])
+            lede = f'<p class="lede">{e(n["description"])}</p>' if n.get("description") else ""
+            body = (f'<main><p class="kicker">{e(U["types"][kind])}</p><h1>{e(n["title"])}</h1>'
+                    f'{lede}'
+                    f'<div class="meta"><time datetime="{n["date"]}">{n["date"]}</time><span>{mins} {e(UI[loc]["min"])}</span>'
+                    + "".join(f'<span class="tag">{e(t)}</span>' for t in n.get("tags", [])) +
+                    f'</div>{box}<article>{md(n["body"])}</article>{ask_box}'
+                    + (f'<h2 style="margin-top:48px">{e(U["more"])}</h2>{others}' if others else "") +
+                    f'<div class="btns"><a class="btn" href="/blog/{seg}/">{e(U["all"])}</a><a class="btn primary" href="{HOME[loc]}#blog">{e(UI[loc]["back"])}</a></div></main>')
+            ld = {"@context": "https://schema.org", "@type": "BlogPosting", "headline": n["title"], "description": n.get("description", ""),
+                  "datePublished": n["date"], "dateModified": n["date"], "inLanguage": HTML_LANG[loc], "author": PERSON,
+                  "mainEntityOfPage": f"{SITE}{url}", "keywords": ", ".join(n.get("tags", []))}
+            if kind == "paper" and n.get("link"):
+                ld["citation"] = {"@type": "ScholarlyArticle", "name": n.get("paper", ""), "url": n["link"]}
+            out = ROOT / url.strip("/") / "index.html"
+            out.parent.mkdir(parents=True, exist_ok=True)
+            og = f"/assets/og/blog-{slug}-{seg}.jpg"
+            out.write_text(shell(loc=loc, title=f'{n["title"]} · Niansia', desc=n.get("description", "") or U["lede"], url=url,
+                                 og=og if (ROOT / og.lstrip("/")).exists() else f"/assets/og/blog-{seg}.jpg", alternates=alts, body=body, jsonld=ld,
+                                 crumbs=f' / <a href="/blog/{seg}/">blog</a>', extra_css=BLOG_CSS, head_extra=rss_link(seg)), encoding="utf-8")
+            urls.append(url)
+        # Q&A page
+        qa_body = (f'<main><p class="kicker">~/niansia/blog/qa</p><h1>{e(U["qa_title"])}</h1><p class="lede">{e(U["qa_lede"])}</p>{ask_box}'
+                   f'{"".join(qas) or "<p class=note>" + e(U["none_qa"]) + "</p>"}'
+                   f'<div class="btns"><a class="btn" href="/blog/{seg}/">{e(U["all"])}</a><a class="btn primary" href="{HOME[loc]}#blog">{e(UI[loc]["back"])}</a></div></main>')
+        (ROOT / "blog" / seg / "qa").mkdir(parents=True, exist_ok=True)
+        (ROOT / "blog" / seg / "qa" / "index.html").write_text(shell(
+            loc=loc, title=f'{U["qa_title"]} · Niansia', desc=U["qa_lede"], url=f"/blog/{seg}/qa/", og=f"/assets/og/blog-{seg}.jpg",
+            alternates={l: f"/blog/{s}/qa/" for s, l in LANGS.items()}, body=qa_body, crumbs=f' / <a href="/blog/{seg}/">blog</a> / qa',
+            og_type="website", extra_css=BLOG_CSS, head_extra=rss_link(seg), noindex=not qas), encoding="utf-8")
+        if qas:
+            urls.append(f"/blog/{seg}/qa/")
+        # index
+        idx = (f'<main><p class="kicker">~/niansia/blog</p><h1>{e(U["blog"])}</h1><p class="lede">{e(U["lede"])}</p>{"".join(cards)}{ask_box}'
+               f'<div class="btns"><a class="btn" href="/blog/{seg}/feed.xml">{e(U["rss"])}</a><a class="btn" href="/blog/{seg}/qa/">{e(U["qa_title"])}</a>'
+               f'<a class="btn primary" href="{HOME[loc]}#blog">{e(UI[loc]["back"])}</a></div></main>')
+        ld = {"@context": "https://schema.org", "@type": "Blog", "name": f'Niansia · {U["blog"]}', "url": f"{SITE}/blog/{seg}/", "author": PERSON, "inLanguage": HTML_LANG[loc]}
+        (ROOT / "blog" / seg / "index.html").write_text(shell(
+            loc=loc, title=f'{U["blog"]} · Niansia', desc=U["lede"], url=f"/blog/{seg}/", og=f"/assets/og/blog-{seg}.jpg",
+            alternates={l: f"/blog/{s}/" for s, l in LANGS.items()}, body=idx, jsonld=ld, crumbs=" / blog", og_type="website",
+            extra_css=BLOG_CSS, head_extra=rss_link(seg)), encoding="utf-8")
+        urls.append(f"/blog/{seg}/")
+        # RSS 2.0
+        stamp = lambda d: format_datetime(datetime.fromisoformat(d).replace(hour=12, tzinfo=timezone.utc))
+        items = "".join(f'<item><title>{e(n["title"])}</title><link>{e(link)}</link><guid>{e(link)}</guid><pubDate>{stamp(n["date"])}</pubDate>'
+                        f'<description>{e(n.get("description", ""))}</description></item>' for n, link in feed[:30])
+        (ROOT / "blog" / seg / "feed.xml").write_text(
+            f'<?xml version="1.0" encoding="UTF-8"?>\n<rss version="2.0"><channel><title>Niansia · {e(U["blog"])}</title><link>{SITE}/blog/{seg}/</link>'
+            f'<description>{e(U["lede"])}</description><language>{HTML_LANG[loc]}</language>{items}</channel></rss>\n', encoding="utf-8")
+    (ROOT / "blog" / "index.html").write_text(
+        '<!doctype html><html><head><meta charset="utf-8"><title>Blog · Niansia</title><link rel="canonical" href="https://niansia.github.io/blog/en/">'
+        '<meta name="robots" content="noindex,follow"><script>var l=(navigator.language||"").toLowerCase();'
+        'location.replace("/blog/"+(/^zh-(cn|sg)/.test(l)?"zh-cn":/^zh/.test(l)?"zh-tw":"en")+"/");</script></head>'
+        '<body><a href="/blog/en/">English</a> · <a href="/blog/zh-tw/">繁體中文</a> · <a href="/blog/zh-cn/">简体中文</a></body></html>', encoding="utf-8")
+    js = {"ask": cfg["ask"], "posts": data}
+    (ROOT / "assets/js/blog-data.js").write_text("window.NIANSIA_BLOG = " + json.dumps(js, ensure_ascii=False, indent=1) + ";\n", encoding="utf-8")
     return urls, data
 
 
@@ -704,7 +899,7 @@ def build_papers(pubs: dict) -> tuple[list[str], list[str]]:
 
 def lint_sources() -> None:
     """Checked before anything is written, so a refused build leaves no unsafe page behind."""
-    for folder in ("notes_src", "log_src", "statement_src", "papers_src"):
+    for folder in ("notes_src", "log_src", "statement_src", "papers_src", "blog_src"):
         for f in (ROOT / folder).rglob("*"):
             if f.is_file():
                 privacy_lint(str(f.relative_to(ROOT)), f.name + ("\n" + f.read_text(encoding="utf-8") if f.suffix == ".md" else ""))
@@ -713,10 +908,10 @@ def lint_sources() -> None:
 def lint_sources_and_output() -> None:
     """Refuse to publish if any source or generated page carries something private (see content_safety.FORBIDDEN)."""
     lint_sources()
-    for folder in ("notes", "log", "statement", "p", "brief", "paper"):
+    for folder in ("notes", "log", "statement", "p", "brief", "paper", "blog"):
         for f in (ROOT / folder).rglob("*.html"):
             privacy_lint(str(f.relative_to(ROOT)), f.read_text(encoding="utf-8"))
-    for rel in ("assets/js/notes-data.js", "assets/js/publications-data.js"):
+    for rel in ("assets/js/notes-data.js", "assets/js/publications-data.js", "assets/js/blog-data.js"):
         privacy_lint(rel, (ROOT / rel).read_text(encoding="utf-8"))
 
 
@@ -782,7 +977,7 @@ def og_page(kind: str, **k) -> str:
                 f'<div class="d" style="top:{320 if len(k["title"]) <= 14 else 340}px">{e(k["desc"])}</div>{img}'
                 f'<div class="f"><b>Niansia</b> · AI security × CV × VLM</div>')
     elif kind == "note":
-        body = (f'<div class="k"><b>niansia.github.io</b> / notes</div><div class="t small" style="width:1060px;font-size:54px">{e(k["title"])}</div>'
+        body = (f'<div class="k"><b>niansia.github.io</b> / {e(k.get("path", "notes"))}</div><div class="t small" style="width:1060px;font-size:54px">{e(k["title"])}</div>'
                 f'<div class="d" style="top:330px;width:1000px;-webkit-line-clamp:3">{e(k["desc"])}</div>'
                 f'<div class="f"><b>Niansia</b> · {e(k["label"])} · {e(k["date"])}</div>')
     elif kind == "home":
@@ -849,6 +1044,13 @@ def og_jobs(projects: dict, notes: dict, pubs: dict | None = None) -> list[tuple
                                                   chips=[p.get("venue", ""), PAPER_UI["en"]["status"].get(p.get("status"), "")],
                                                   desc=PAPER_UI["en"]["blindBody"] if hidden else pick(p.get("tldr"), "en"),
                                                   img=uri(teaser) if teaser and not hidden else None, cover=True)))
+    blog_posts, _ = load_blog()
+    for seg, loc in LANGS.items():
+        jobs.append((f"blog-{seg}", og_page("note", title=f'Niansia · {BLOG_UI[loc]["blog"]}', desc=BLOG_UI[loc]["lede"], date=str(date.today()), label="niansia.github.io/blog", path="blog")))
+        for slug, by in blog_posts.items():
+            n = by.get(loc)
+            if n and n["type"] != "qa":
+                jobs.append((f"blog-{slug}-{seg}", og_page("note", title=n["title"], desc=n.get("description", ""), date=n["date"], label=BLOG_UI[loc]["types"][n["type"]], path="blog")))
     jobs.append(("lumigrid-demo", og_page("demo", img=uri("/assets/work/cards/lumigrid.jpg"), title="Try LumiGrid in your browser", sub="low-light enhancement · runs on your device")))
     jobs.append(("film-lumigrid", og_page("film", img=uri("/assets/lumigrid/teaser-poster.jpg"), title="LumiGrid · one continuous take", sub="computer vision film")))
     jobs.append(("film-taiwan-exam", og_page("film", img=uri("/assets/taiwan-exam/teaser-poster.jpg"), title="Taiwan Exam · the film", sub="an Agent Skill for GSAT practice exams")))
@@ -866,6 +1068,7 @@ def write_sitemap(urls: list[str]) -> None:
 
 if __name__ == "__main__":
     projects, notes, log = load_projects(), load_notes(), load_log()
+    blog, blog_cfg = load_blog()
     copy, cv = load_js("assets/js/terminal-copy.js", "NIANSIA_COPY"), load_js("assets/js/cv-data.js", "NIANSIA_CV")
     subs, pubs = load_js("assets/js/submissions-data.js", "NIANSIA_SUBMISSIONS"), load_js("assets/js/publications-data.js", "NIANSIA_PUBS")
     try:
@@ -877,6 +1080,8 @@ if __name__ == "__main__":
         urls += build_brief(projects, notes, copy, cv, subs, pubs)
         paper_urls, _ = build_papers(pubs)
         urls += paper_urls
+        blog_urls, _ = build_blog(blog, blog_cfg)
+        urls += blog_urls
         data_file = ROOT / "assets/js/notes-data.js"
         data_file.write_text(data_file.read_text(encoding="utf-8")
                              + "window.NIANSIA_LOG = " + json.dumps(log_data, ensure_ascii=False, indent=1) + ";\n"
@@ -890,4 +1095,4 @@ if __name__ == "__main__":
         if "--og-missing" in sys.argv:
             jobs = [j for j in jobs if not (ROOT / "assets" / "og" / f"{j[0]}.jpg").exists()]
         asyncio.run(render_og(jobs))
-    print(f"notes: {len(notes)} x {len(LANGS)} · share pages: {sum(len(v) for v in projects.values())} · urls: {len(urls)}")
+    print(f"blog: {len(blog)} · notes: {len(notes)} x {len(LANGS)} · share pages: {sum(len(v) for v in projects.values())} · urls: {len(urls)}")

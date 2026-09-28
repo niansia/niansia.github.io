@@ -5,9 +5,9 @@
   if (!root || !window.NIANSIA_COPY || !window.NIANSIA_PROJECTS || !window.NIANSIA_TERMINAL) return;
   const esc = value => String(value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
   const store = { get(key, fallback) { try { return localStorage.getItem(`niansia-${key}`) ?? fallback; } catch { return fallback; } }, set(key,value) { try { localStorage.setItem(`niansia-${key}`,value); } catch {} } };
-  const BASE_PATHS = ['home','about','projects','research','papers','contact','hobbies','cv','help'];
-  const BASE_FILES = ['start.sh','about.md','projects/','research.md','papers.bib','contact.txt','hobbies.md','cv.pdf','help'];
-  const NAV_ICONS = {home:'terminal',about:'file',projects:'folder',research:'research',papers:'paper',contact:'mail',hobbies:'heart',cv:'badge',help:'help'};
+  const BASE_PATHS = ['home','about','projects','research','papers','blog','contact','hobbies','cv','help'];
+  const BASE_FILES = ['start.sh','about.md','projects/','research.md','papers.bib','blog/','contact.txt','hobbies.md','cv.pdf','help'];
+  const NAV_ICONS = {home:'terminal',about:'file',projects:'folder',research:'research',papers:'paper',blog:'pen',contact:'mail',hobbies:'heart',cv:'badge',help:'help'};
   const cvState = () => { const s = window.NIANSIA_CV?.status || 'hidden'; return s === 'locked' && new URLSearchParams(location.search).get('cv') === 'preview' ? 'preview' : s; };
   const paths = BASE_PATHS.filter(p => p !== 'cv' || cvState() !== 'hidden');
   const files = paths.map(p => BASE_FILES[BASE_PATHS.indexOf(p)]);
@@ -19,7 +19,7 @@
   const themeColors = {light:'#edf0f7',dark:'#101117',sakura:'#fbf0f4',matcha:'#eef2e8',retro:'#060a07',fuji:'#efe8fb',aizome:'#e8edf3',momiji:'#fbefe6',yozakura:'#110f1c',washi:'#f5f1e8',asagi:'#ecf7f6',glass:'#dfe8ff','glass-night':'#070914'};
   const icons = {
     terminal:'m4 5 6 7-6 7m9 0h7', file:'M14 2H6a2 2 0 0 0-2 2v16h16V8zM14 2v6h6M8 13h8M8 17h5',
-    folder:'M3 7V4h6l2 3h10v13H3z', research:'M9 3h6m-5 0v7l-5 9q-1 2 2 2h10q3 0 2-2l-5-9V3M8 15h8',
+    folder:'M3 7V4h6l2 3h10v13H3z', pen:'M4 20h4L19 9l-4-4L4 16zM13.5 6.5l4 4M14 20h6', research:'M9 3h6m-5 0v7l-5 9q-1 2 2 2h10q3 0 2-2l-5-9V3M8 15h8',
     mail:'M3 5h18v14H3zM3 5l9 8 9-8', help:'M9 8a3 3 0 1 1 5 3l-2 2v1M12 18h.01',
     sun:'M12 3v2m0 14v2M3 12h2m14 0h2M5.6 5.6 1.4 1.4m10 10 1.4 1.4M5.6 18.4 1.4-1.4m10-10 1.4-1.4M16 12a4 4 0 1 1-8 0 4 4 0 0 1 8 0',
     moon:'M20 14A8 8 0 0 1 10 4a8 8 0 1 0 10 10z', pause:'M8 5v14M16 5v14', play:'m8 4 12 8-12 8z',
@@ -555,6 +555,72 @@
       ${prep?`<section class="pub-section"><h2 class="pub-h">${esc(P.prep)}</h2><div class="prep-grid">${prep}</div></section>`:''}
       <section class="pub-section"><h2 class="pub-h">${esc(P.writing)}</h2>${writing}</section>`;
   }
+  /* blog/: monthly updates, paper notes, posts and answered questions (blog-data.js, built from blog_src/), together with the
+     research notes and the research log, newest first, with a filter per kind, the anonymous question box and a reading footprint. */
+  const BLOG_KINDS=['all','now','paper','note','log','post','qa'];
+  const blogCopy=()=>({
+    en:{title:'Blog',intro:'Monthly updates, notes on the papers I read and what I make of them, and answers to your questions. The research notes and the research log live here too.',
+      kinds:{all:'All',now:'Now',paper:'Paper notes',note:'Research notes',log:'Research log',post:'Posts',qa:'Q&A'},kind:{now:'Now',paper:'Paper note',note:'Research note',log:'Log',post:'Post',qa:'Q&A'},
+      nowLabel:'Now',readNow:'Read the update',ask:'Ask anonymously',askSub:'No sign-up needed. Good questions get answered under Q&A.',askSoon:'The question box opens soon',
+      qa:'Q&A',rss:'RSS',foot:'Reading footprint',footN:n=>`${n} paper note${n===1?'':'s'} in the last 12 months`,footNone:'The first paper note is on its way.',
+      empty:'Nothing here yet.',zh:'中文',min:'min',filter:'Filter posts',page:'Blog page',depth:{deep:'read closely',skim:'skimmed'}},
+    'zh-TW':{title:'Blog',intro:'每月近況、讀過的論文和我的看法，以及大家問的問題；研究筆記和研究日誌也都整理在這裡。',
+      kinds:{all:'全部',now:'近況',paper:'論文筆記',note:'研究筆記',log:'研究日誌',post:'隨筆',qa:'Q&A'},kind:{now:'近況',paper:'論文筆記',note:'研究筆記',log:'日誌',post:'隨筆',qa:'Q&A'},
+      nowLabel:'本月近況',readNow:'閱讀近況',ask:'匿名提問',askSub:'不用註冊；回答後會整理在 Q&A。',askSoon:'提問箱即將開放',
+      qa:'Q&A',rss:'RSS 訂閱',foot:'閱讀足跡',footN:n=>`過去 12 個月寫了 ${n} 篇論文筆記`,footNone:'第一篇論文筆記準備中。',
+      empty:'這裡還沒有文章。',zh:'中文',min:'分鐘',filter:'篩選文章',page:'Blog 頁面',depth:{deep:'精讀',skim:'略讀'}},
+    'zh-CN':{title:'Blog',intro:'每月近况、读过的论文和我的看法，以及大家问的问题；研究笔记和研究日志也都整理在这里。',
+      kinds:{all:'全部',now:'近况',paper:'论文笔记',note:'研究笔记',log:'研究日志',post:'随笔',qa:'Q&A'},kind:{now:'近况',paper:'论文笔记',note:'研究笔记',log:'日志',post:'随笔',qa:'Q&A'},
+      nowLabel:'本月近况',readNow:'阅读近况',ask:'匿名提问',askSub:'不用注册；回答后会整理在 Q&A。',askSoon:'提问箱即将开放',
+      qa:'Q&A',rss:'RSS 订阅',foot:'阅读足迹',footN:n=>`过去 12 个月写了 ${n} 篇论文笔记`,footNone:'第一篇论文笔记准备中。',
+      empty:'这里还没有文章。',zh:'中文',min:'分钟',filter:'筛选文章',page:'Blog 页面',depth:{deep:'精读',skim:'略读'}}}[locale]);
+  let blogFilter=(()=>{try{return sessionStorage.getItem('niansia-blog-filter')||'all';}catch{return 'all';}})();
+  if(!BLOG_KINDS.includes(blogFilter))blogFilter='all';
+  function blogEntries() {
+    const own=(window.NIANSIA_BLOG?.posts?.[locale]||[]).map(p=>({...p}));
+    const notes=(window.NIANSIA_NOTES?.[locale]||[]).map(n=>({...n,type:'note'}));
+    const log=(window.NIANSIA_LOG?.[locale]||[]).map(n=>({...n,type:'log'}));
+    return [...own,...notes,...log].sort((a,b)=>b.date.localeCompare(a.date)||a.title.localeCompare(b.title));
+  }
+  function blogRow(p,i) {
+    const B=blogCopy(), [y,m,d]=p.date.split('-');
+    const extra=[p.type==='paper'&&p.venue?`<span class="blog-venue" translate="no">${esc(p.venue)}</span>`:'',p.type==='paper'&&B.depth[p.depth]?`<span>${esc(B.depth[p.depth])}</span>`:'',
+      p.minutes?`<span>${p.minutes} ${esc(B.min)}</span>`:'',...(p.tags||[]).slice(0,3).map(tg=>`<span class="blog-tag">${esc(tg)}</span>`)].filter(Boolean).join('');
+    return `<a class="blog-row" data-kind="${esc(p.type)}" href="${esc(p.url)}" style="--i:${i}"><span class="blog-date"><b>${m}/${d}</b><small>${y}</small></span>
+      <span class="blog-main"><span class="blog-kind">${esc(B.kind[p.type]||p.type)}</span>${p.lang&&p.lang!==locale?`<span class="blog-lang">${esc(B.zh)}</span>`:''}
+      <strong>${esc(p.type==='qa'?'「'+p.title+'」':p.title)}</strong>${p.type==='paper'&&p.paper?`<small class="blog-paper" translate="no">${esc(p.paper)}</small>`:''}${p.description?`<small>${esc(p.description)}</small>`:''}${extra?`<span class="blog-meta">${extra}</span>`:''}</span>
+      ${p.thumb?`<img class="blog-thumb" src="${esc(p.thumb)}" alt="" loading="lazy">`:`<span class="row-arrow" aria-hidden="true">↗</span>`}</a>`;
+  }
+  function blogList() {
+    const B=blogCopy(), all=blogEntries(), list=blogFilter==='all'?all:all.filter(p=>p.type===blogFilter);
+    return list.length?list.map(blogRow).join(''):`<p class="blog-empty">${esc(blogFilter==='paper'?B.footNone:B.empty)}</p>`;
+  }
+  function blogScreen() {
+    const B=blogCopy(), all=blogEntries(), seg=locale==='en'?'en':locale.toLowerCase(), ask=window.NIANSIA_BLOG?.ask||'';
+    const count=k=>k==='all'?all.length:all.filter(p=>p.type===k).length;
+    const chips=BLOG_KINDS.filter(k=>['all','now','paper','note','qa'].includes(k)||count(k)).map(k=>`<button type="button" class="pf-chip" data-blog-filter="${k}" aria-pressed="${k===blogFilter}"${!count(k)&&k!=='all'?' data-empty':''}><span>${esc(B.kinds[k])}</span><em>${count(k)}</em></button>`).join('');
+    const now=all.find(p=>p.type==='now');
+    const nowCard=now?`<a class="blog-now" href="${esc(now.url)}"><span class="blog-now-k">${icon('spark')}${esc(B.nowLabel)} · ${esc(now.date.slice(0,7))}</span><b>${esc(now.title)}</b><small>${esc(now.description||'')}</small>${(now.groups||[]).map((g,gi)=>`<div class="blog-now-g${gi?' is-next':''}"><p>${esc(g.title)}</p><ul class="blog-now-pts">${g.items.map((pt,i)=>`<li style="--i:${gi*4+i}">${esc(pt)}</li>`).join('')}</ul></div>`).join('')}<em>${esc(B.readNow)} →</em></a>`:'';
+    // Reading footprint: paper notes per month over the last 12 months.
+    const today=new Date(), months=[...Array(12)].map((_,i)=>{const d=new Date(today.getFullYear(),today.getMonth()-11+i,1);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;});
+    const papers=all.filter(p=>p.type==='paper'), per=months.map(mo=>papers.filter(p=>p.date.startsWith(mo)).length), top=Math.max(1,...per), total=per.reduce((a,b)=>a+b,0);
+    const bars=months.map((mo,i)=>`<i style="--h:${per[i]?Math.max(18,per[i]/top*100):6}%" data-n="${per[i]}" title="${mo} · ${per[i]}"></i>`).join('');
+    const foot=`<div class="blog-foot"><p class="blog-side-h">${esc(B.foot)}</p><div class="blog-bars" aria-hidden="true">${bars}</div><small>${esc(total?B.footN(total):B.footNone)}</small></div>`;
+    const askCard=`<div class="blog-ask"><p class="blog-side-h">${icon('chat')}${esc(B.ask)}</p><small>${esc(B.askSub)}</small>${ask?`<a class="action-button primary" href="${esc(ask)}" target="_blank" rel="noopener noreferrer"><span>${esc(B.ask)}</span>${icon('link')}</a>`:`<span class="action-button is-soon" aria-disabled="true">${esc(B.askSoon)}</span>`}
+      <span class="blog-side-links"><a href="/blog/${seg}/qa/">${esc(B.qa)} →</a><a href="/blog/${seg}/feed.xml">${esc(B.rss)}</a><a href="/blog/${seg}/">${esc(B.page)} ↗</a></span></div>`;
+    return `${commandTitle('ls ./blog/')}<div class="directory-heading"><h1>${esc(B.title)}</h1><span class="dir-count">${String(all.length).padStart(2,'0')}</span></div><p class="screen-intro">${esc(B.intro)}</p>
+      <div class="blog-top">${nowCard}<div class="blog-side">${askCard}${foot}</div></div>
+      <div class="project-filters blog-filters" role="group" aria-label="${esc(B.filter)}">${chips}</div><div class="blog-list">${blogList()}</div>`;
+  }
+  function setBlogFilter(key, focus) {
+    if(!BLOG_KINDS.includes(key))return false;
+    blogFilter=key; try{sessionStorage.setItem('niansia-blog-filter',key);}catch{}
+    if(view!=='blog')return true;
+    root.querySelectorAll('[data-blog-filter]').forEach(el=>el.setAttribute('aria-pressed',String(el.dataset.blogFilter===key)));
+    const list=$('.blog-list'); if(list){ list.innerHTML=blogList(); if(motion()){list.classList.remove('is-filtering');void list.offsetWidth;list.classList.add('is-filtering');} }
+    if(focus)root.querySelector(`[data-blog-filter="${key}"]`)?.focus({preventScroll:true});
+    return true;
+  }
   const briefCopy=()=>({en:{chip:'In a hurry? One-page brief',sub:'Research, papers, selected projects and contact on one printable page.',label:'Brief',search:'Search'},
     'zh-TW':{chip:'時間不多？一頁式簡介',sub:'研究方向、論文、代表作品與聯絡方式，一頁看完，也能列印。',label:'快速瀏覽',search:'搜尋'},
     'zh-CN':{chip:'时间不多？一页式简介',sub:'研究方向、论文、代表作品与联系方式，一页看完，也能打印。',label:'快速浏览',search:'搜索'}}[locale]);
@@ -612,6 +678,7 @@
     if (view==='hobbies') html=hobbiesScreen();
     if (view==='cv') html=cvScreen();
     if (view==='papers') html=papersScreen();
+    if (view==='blog') html=blogScreen();
     if (view==='help') html=`${commandTitle('help')}<h1>${c.guideTitle}</h1><p>${c.guideIntro}</p><dl class="keyboard-guide">${c.keys.map(([key,description])=>`<div><dt><kbd>${key}</kbd></dt><dd>${description}</dd></div>`).join('')}</dl><h2>${c.commands}</h2>${commandCatalogue()}<p class="comment-line">${c.simulation}</p>`;
     if (view==='projects' && !item) html=`${commandTitle('ls ./projects/')}${directoryHTML(c)}`;
     if (view==='projects' && item) html=`${commandTitle('cat projects/'+esc(item.id)+'/README.md')}<button class="back-link" data-view="projects">← ${c.all}</button><div class="project-detail"><p class="detail-meta">${esc(item.category)}<span>${esc(item.status)}</span></p><h1 translate="no">${esc(item.name)}</h1><p class="project-description">${esc(item.description)}</p>${item.id==='taiwan-exam'?'<img class="project-art" src="/assets/work/taiwan-exam-social-preview.png" width="1280" height="640" alt="Taiwan Exam" loading="lazy">'+teFilmCard():''}${item.id==='lumigrid'?lumigridShowcase():''}${item.id==='adversarial-lab'?'<img class="project-art" src="/assets/og/adversarial-demo.jpg" width="1200" height="630" alt="Adversarial Lab" loading="lazy">'+advCard():''}<h2>${c.evidence}</h2><p>${esc(item.evidence)}</p><div class="output-actions"><a class="action-button primary" href="${esc(item.url)}" target="_blank" rel="noopener noreferrer"><span>${c.source}</span>${icon('link')}</a><a class="action-button" href="${esc(item.reference)}" target="_blank" rel="noopener noreferrer"><span>${esc(item.referenceLabel)}</span>${icon('link')}</a><button class="action-button" data-ask="${esc(item.name)}">${icon('chat')}<span>${c.askTitle}</span></button><button class="action-button" data-action="share" data-share="/p/${esc(item.id)}/${locale==='en'?'':locale.toLowerCase()+'/'}">${icon('link')}<span>${esc(noteCopy().share)}</span></button></div><div class="project-pagination"><button data-project-step="-1">← ${c.prev}</button><span>${items.indexOf(item)+1} / ${items.length}</span><button data-project-step="1">${c.next} →</button></div></div>`;
@@ -722,7 +789,7 @@
   }
   function resolveTarget(value) {
     const name=value.toLowerCase().replace(/^(~\/|\.\/|\/)/,'').replace(/\/readme\.md$/,'').replace(/\/$/,'');
-    const aliases={'':'home','~':'home','start.sh':'home','about.md':'about','profile':'about','research.md':'research','contact.txt':'contact','hobbies.md':'hobbies','cv.pdf':'cv','papers.bib':'papers','publications':'papers','pubs':'papers','bib':'papers','hobby':'hobbies','cosplay':'hobbies','work':'projects','portfolio':'projects'};
+    const aliases={'':'home','~':'home','start.sh':'home','about.md':'about','profile':'about','research.md':'research','contact.txt':'contact','hobbies.md':'hobbies','cv.pdf':'cv','papers.bib':'papers','blog/':'blog','now':'blog','qa':'blog','publications':'papers','pubs':'papers','bib':'papers','hobby':'hobbies','cosplay':'hobbies','work':'projects','portfolio':'projects'};
     const path=aliases[name]||name;
     if(paths.includes(path))return {view:path};
     const item=projects().find(p=>p.id===name.replace(/^projects\//,'')||p.name.toLowerCase()===name);
@@ -744,7 +811,7 @@
     commandHistory.push(value);if(commandHistory.length>50)commandHistory.shift();historyIndex=commandHistory.length;
     const parsed=window.NIANSIA_TERMINAL.parse(value);
     if(parsed.error){record(value,t().quoteError);return;}
-    const aliases={'?':'help',resume:'cv',linkedin:'cv','cv.pdf':'cv','履歷':'cv','简历':'cv',work:'projects',portfolio:'projects',profile:'about','./start.sh':'home','start.sh':'home',meow:'pet',search:'find','作品':'projects','研究':'research','聯絡':'contact','联系':'contact',ddl:'deadlines',countdown:'deadlines',publications:'papers',pubs:'papers',bib:'papers','論文':'papers','论文':'papers',paper:'papers',quick:'brief','快速瀏覽':'brief','快速浏览':'brief','簡介':'brief','简介':'brief',guide:'tour','導覽':'tour','导览':'tour',cmdk:'palette','ctrl+k':'palette',adversarial:'attack',adv:'attack',fgsm:'attack',pgd:'attack','對抗':'attack','对抗':'attack','專題':'capstone','专题':'capstone','投稿':'deadlines','截止':'deadlines',hobby:'hobbies',cosplay:'hobbies',cos:'hobbies',fun:'hobbies','興趣':'hobbies','兴趣':'hobbies','日常':'hobbies','關於':'about','关于':'about'};
+    const aliases={'?':'help',resume:'cv',linkedin:'cv','cv.pdf':'cv','履歷':'cv','简历':'cv',work:'projects',portfolio:'projects',profile:'about','./start.sh':'home','start.sh':'home',meow:'pet',search:'find','作品':'projects','研究':'research','聯絡':'contact','联系':'contact',ddl:'deadlines',countdown:'deadlines',publications:'papers',pubs:'papers',bib:'papers','部落格':'blog','博客':'blog',now:'blog',posts:'blog','論文':'papers','论文':'papers',paper:'papers',quick:'brief','快速瀏覽':'brief','快速浏览':'brief','簡介':'brief','简介':'brief',guide:'tour','導覽':'tour','导览':'tour',cmdk:'palette','ctrl+k':'palette',adversarial:'attack',adv:'attack',fgsm:'attack',pgd:'attack','對抗':'attack','对抗':'attack','專題':'capstone','专题':'capstone','投稿':'deadlines','截止':'deadlines',hobby:'hobbies',cosplay:'hobbies',cos:'hobbies',fun:'hobbies','興趣':'hobbies','兴趣':'hobbies','日常':'hobbies','關於':'about','关于':'about'};
     const name=aliases[parsed.name]||parsed.name,args=parsed.args,arg=args.join(' '),lower=arg.toLowerCase();
     const definition=catalogue.find(c=>c.name===name);
     const usage=()=>record(value,`${t().usage}: ${definition?.usage||'help'}\n${definition?.description[locale]||t().unknown}`);
@@ -795,7 +862,7 @@
         break;
       }
       case 'pwd':finish(view==='projects'?'~/projects/'+projectId:'~/');break;
-      case 'tree':finish('~/\n├── start.sh\n├── about.md\n├── research.md\n├── papers.bib\n├── contact.txt\n├── hobbies.md\n└── projects/\n'+projects().map((p,i)=>`    ${i===projects().length-1?'└':'├'}── ${p.id}/`).join('\n'));break;
+      case 'tree':finish('~/\n├── start.sh\n├── about.md\n├── research.md\n├── papers.bib\n├── blog/\n├── contact.txt\n├── hobbies.md\n└── projects/\n'+projects().map((p,i)=>`    ${i===projects().length-1?'└':'├'}── ${p.id}/`).join('\n'));break;
       case 'find':case 'skills': {
         if(name==='find'&&!arg){usage();break;}
         const matches=projects().filter(p=>name==='skills'?/skill/i.test(p.description):`${p.name} ${p.id} ${p.description} ${p.category}`.toLowerCase().includes(lower));
@@ -892,6 +959,7 @@
     if(event.target.closest('.window-title')&&$('.terminal-window').classList.contains('is-minimized'))windowAction('win-min');
     if(!target)return;
     if(target.dataset.filter){setProjectFilter(target.dataset.filter,true);return;}
+    if(target.dataset.blogFilter){setBlogFilter(target.dataset.blogFilter,true);return;}
     if(target.dataset.latestDot!==undefined){showLatest(Number(target.dataset.latestDot));return;}
     if(target.dataset.view){event.preventDefault();navigate(target.dataset.view,'',{keyboard:event.detail===0,origin:target});}
     if(target.dataset.project){navigate('projects',target.dataset.project,{keyboard:event.detail===0,origin:target});}
@@ -942,6 +1010,9 @@
         }
       }
       return;
+    }
+    if(target.closest('.blog-filters')&&['ArrowLeft','ArrowRight'].includes(event.key)){
+      event.preventDefault();const chips=[...root.querySelectorAll('.blog-filters .pf-chip:not(:disabled)')],i=chips.indexOf(target.closest('.pf-chip')),next=chips[(i+(event.key==='ArrowLeft'?-1:1)+chips.length)%chips.length];setBlogFilter(next.dataset.blogFilter,true);return;
     }
     if(target.closest('.project-filters')&&['ArrowLeft','ArrowRight'].includes(event.key)){
       event.preventDefault();const chips=[...root.querySelectorAll('.pf-chip')],i=chips.indexOf(target.closest('.pf-chip')),next=chips[(i+(event.key==='ArrowLeft'?-1:1)+chips.length)%chips.length];setProjectFilter(next.dataset.filter,true);return;

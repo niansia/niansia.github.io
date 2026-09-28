@@ -9,6 +9,7 @@ window.NIANSIA_TERMINAL = {
     ['capstone','capstone','capstone','Open the undergraduate capstone: propaganda detection with generative AI','查看大學專題：以生成式 AI 偵測宣傳新聞','查看大学专题：以生成式 AI 侦测宣传新闻'],
     ['deadlines','deadlines','deadlines','Count down to the conference deadlines being prepared for','查看準備投稿的會議截止倒數','查看准备投稿的会议截止倒数'],
     ['papers','papers','papers','Open papers.bib: publications and manuscripts in preparation','開啟 papers.bib：論文與準備中的稿件','打开 papers.bib：论文与准备中的稿件'],
+    ['blog','blog','blog','Open blog/: monthly updates, paper notes and answered questions','開啟 blog/：每月近況、論文筆記與 Q&A','打开 blog/：每月近况、论文笔记与 Q&A'],
     ['brief','brief','brief','Open the one-page brief for professors and interviewers','開啟給教授與面試官的一頁式簡介','打开给教授与面试官的一页式简介'],
     ['tour','tour [research|builder|fun]','tour research','Let Yuki show you around, step by step','讓 Yuki 一步一步帶你導覽','让 Yuki 一步一步带你导览'],
     ['palette','palette [search]','palette lumigrid','Open the command palette (Ctrl+K / ⌘K) to jump anywhere','開啟指令面板（Ctrl+K / ⌘K），快速跳到任何地方','打开命令面板（Ctrl+K / ⌘K），快速跳到任何地方'],
