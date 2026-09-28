@@ -106,22 +106,24 @@
   /* Style picker: hovering or arrowing onto a style previews it on the whole page; only a click keeps it. */
   const styleCopy=()=>({en:{hint:'Hover to preview · click to keep',light:'light',dark:'dark'},'zh-TW':{hint:'滑過預覽 · 點一下套用',light:'淺色',dark:'深色'},'zh-CN':{hint:'滑过预览 · 点一下套用',light:'浅色',dark:'深色'}}[locale]);
   let previewing=null;
+  // No festival skin means no data-fskin attribute at all (an empty one would still match :root[data-fskin]).
+  function setSkinAttr(id) { if (id) document.documentElement.dataset.fskin = id; else delete document.documentElement.dataset.fskin; }
   function previewTheme(name) {
     if (!themes.includes(name)) return;
     const html=document.documentElement;
     if (previewing===null) previewing={fskin:html.dataset.fskin||''};
-    html.dataset.fskin=''; html.dataset.theme=name;
+    setSkinAttr(''); html.dataset.theme=name;
     root.querySelectorAll('[data-theme-pick]').forEach(el=>el.classList.toggle('is-previewing',el.dataset.themePick===name&&name!==theme));
   }
   function endPreview() {
     if (previewing===null) return;
     const html=document.documentElement;
-    html.dataset.theme=theme; html.dataset.fskin=previewing.fskin; previewing=null;
+    html.dataset.theme=theme; setSkinAttr(previewing.fskin); previewing=null;
     root.querySelectorAll('.is-previewing').forEach(el=>el.classList.remove('is-previewing'));
   }
   /* Choosing a style (picker, palette or Yuki): keep the preview, and step out of a festival skin so the style shows. */
   function pickTheme(name, origin) {
-    if (previewing) { document.documentElement.dataset.fskin=previewing.fskin; previewing=null; }
+    if (previewing) { setSkinAttr(previewing.fskin); previewing=null; }
     root.querySelectorAll('.is-previewing').forEach(el=>el.classList.remove('is-previewing'));
     const f=window.NIANSIA_FESTIVAL?.active();
     if (f&&festSkinOn(f)) { store.set('fest-skin',`off:${f.primary.id}`); applyFestival(); }
@@ -256,7 +258,7 @@
     const fest = window.NIANSIA_FESTIVAL?.active();
     const skin = fest && festSkinOn(fest);
     document.documentElement.dataset.festival = fest ? fest.primary.id : '';
-    document.documentElement.dataset.fskin = skin ? fest.primary.id : '';
+    setSkinAttr(skin ? fest.primary.id : '');
     const tone = skin && getComputedStyle(document.documentElement).getPropertyValue('--desk').trim();
     document.querySelector('meta[name="theme-color"]')?.setAttribute('content', tone || themeColors[theme]);
     paintFestivalChrome(fest);

@@ -1064,16 +1064,12 @@ button.brain-badge:disabled{cursor:default;transform:none;border-color:var(--lin
 :root[data-fskin] .terminal-window{background:var(--surface);}
 :root[data-fskin] .explorer{background:var(--rail);}
 :root[data-fskin] .window-bar,:root[data-fskin] .terminal-status{background:var(--bar-bg,var(--rail));}
-:root[data-fskin] .desktop-bar .brand,:root[data-fskin] .desktop-motto,:root[data-fskin] .desktop-footer{color:color-mix(in srgb,var(--surface) 88%,var(--desk));}
-:root[data-fskin='valentine'] .desktop-bar .brand,:root[data-fskin='valentine'] .desktop-motto,:root[data-fskin='valentine'] .desktop-footer,
-:root[data-fskin='peace'] .desktop-bar .brand,:root[data-fskin='peace'] .desktop-motto,:root[data-fskin='peace'] .desktop-footer,
-:root[data-fskin='children'] .desktop-bar .brand,:root[data-fskin='children'] .desktop-motto,:root[data-fskin='children'] .desktop-footer,
-:root[data-fskin='labor'] .desktop-bar .brand,:root[data-fskin='labor'] .desktop-motto,:root[data-fskin='labor'] .desktop-footer,
-:root[data-fskin='dragonboat'] .desktop-bar .brand,:root[data-fskin='dragonboat'] .desktop-motto,:root[data-fskin='dragonboat'] .desktop-footer,
-:root[data-fskin='retrocession'] .desktop-bar .brand,:root[data-fskin='retrocession'] .desktop-motto,:root[data-fskin='retrocession'] .desktop-footer{color:var(--ink);}
+/* Text straight on the festival desk: light on the dark desks, the skin's ink on the pale ones. */
+:root[data-fskin]{--bar-ink:#f6f1ea;}
+:root:is([data-fskin='valentine'],[data-fskin='peace'],[data-fskin='children'],[data-fskin='labor'],[data-fskin='dragonboat'],[data-fskin='retrocession']){--bar-ink:var(--ink);}
+:root[data-fskin] .desktop-bar .brand,:root[data-fskin] .desktop-motto,:root[data-fskin] .desktop-footer{color:var(--bar-ink);}
 :root[data-fskin] .desktop-bar .brand span{color:inherit;opacity:.75;}
-:root[data-fskin] .desktop-controls .icon-button{color:color-mix(in srgb,var(--surface) 88%,var(--desk));}
-:root[data-fskin='valentine'] .desktop-controls .icon-button,:root[data-fskin='peace'] .desktop-controls .icon-button,:root[data-fskin='children'] .desktop-controls .icon-button,:root[data-fskin='labor'] .desktop-controls .icon-button,:root[data-fskin='dragonboat'] .desktop-controls .icon-button,:root[data-fskin='retrocession'] .desktop-controls .icon-button{color:var(--ink);}
+:root[data-fskin] .desktop-controls .icon-button{color:var(--bar-ink);}
 :root[data-fskin] .desktop-controls .icon-button:hover{color:var(--accent);background:var(--surface);}
 /* hanging garland in the empty middle of the title bar */
 .window-bar{position:relative;}
