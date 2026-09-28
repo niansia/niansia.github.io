@@ -855,7 +855,7 @@ def og_jobs(projects: dict, notes: dict, pubs: dict | None = None) -> list[tuple
                                                   img=uri(teaser) if teaser and not hidden else None, cover=True)))
     jobs.append(("lumigrid-demo", og_page("demo", img=uri("/assets/work/cards/lumigrid.jpg"), title="Try LumiGrid in your browser", sub="low-light enhancement · runs on your device")))
     jobs.append(("film-lumigrid", og_page("film", img=uri("/assets/lumigrid/teaser-poster.jpg"), title="LumiGrid · one continuous take", sub="computer vision film")))
-    jobs.append(("film-taiwan-exam", og_page("film", img=uri("/assets/taiwan-exam/teaser-poster.jpg"), title="Taiwan Exam · trailer", sub="an Agent Skill for GSAT practice exams")))
+    jobs.append(("film-taiwan-exam", og_page("film", img=uri("/assets/taiwan-exam/teaser-poster.jpg"), title="Taiwan Exam · the film", sub="an Agent Skill for GSAT practice exams")))
     jobs.append(("film-capstone", og_page("film", img=uri("/assets/film/teaser-poster.jpg"), title="Detecting propaganda with generative AI", sub="undergraduate capstone film")))
     return jobs
 

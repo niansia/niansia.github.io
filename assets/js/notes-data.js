@@ -86,7 +86,7 @@ window.NIANSIA_LOG = {
    "date": "2026-09-28",
    "url": "/log/en/#2026-09-28-taiwan-exam-launch",
    "thumb": "/assets/media/e668ca4a24f2abed-t.webp",
-   "alt": "The last frame of the trailer"
+   "alt": "The last frame of the film"
   },
   {
    "slug": "2026-09-28-lumigrid-in-browser",
@@ -104,7 +104,7 @@ window.NIANSIA_LOG = {
    "date": "2026-09-28",
    "url": "/log/zh-tw/#2026-09-28-taiwan-exam-launch",
    "thumb": "/assets/media/e668ca4a24f2abed-t.webp",
-   "alt": "前導片的結尾畫面"
+   "alt": "影片的結尾畫面"
   },
   {
    "slug": "2026-09-28-lumigrid-in-browser",
@@ -122,7 +122,7 @@ window.NIANSIA_LOG = {
    "date": "2026-09-28",
    "url": "/log/zh-cn/#2026-09-28-taiwan-exam-launch",
    "thumb": "/assets/media/e668ca4a24f2abed-t.webp",
-   "alt": "前导片的结尾画面"
+   "alt": "视频的结尾画面"
   },
   {
    "slug": "2026-09-28-lumigrid-in-browser",

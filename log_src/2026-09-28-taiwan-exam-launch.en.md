@@ -4,9 +4,9 @@ date: 2026-09-28
 tags: [Taiwan Exam, Agent Skill]
 ---
 
-The Agent Skill that has an AI write original GSAT practice exams went public on 28 September at 21:28, together with an 80-second trailer.
+The Agent Skill that has an AI write original GSAT practice exams went public on 28 September at 21:28, together with an 80-second film.
 
-![The last frame of the trailer](img/taiwan-exam-trailer-title.png)
+![The last frame of the film](img/taiwan-exam-trailer-title.png)
 
 The pipeline is split into nine stages, each backed by a script: the model writes the questions, and the scripts only check, lock and stamp the pages.
 

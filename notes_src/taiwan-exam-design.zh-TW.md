@@ -42,6 +42,6 @@ LLM 很會寫題目，但它也很會「說自己寫得很好」。如果讓同�
 
 - **機器檢查不等於好題目。** 所有自動檢查都只能擋掉「明顯錯」的東西；題目是否有教學價值，仍然需要人看。
 - **模型差異很大。** 目前 4 種模型 × 7 科、共 28 份的實測只完成 14 份，其餘仍在測。
-- 整個專案有 112 支腳本、679 項測試，但測試驗證的是工具本身，不是模型出的每一題。
+- 整個專案有 112 支腳本、1,089 項測試，但測試驗證的是工具本身，不是模型出的每一題。
 
-原始碼與安裝方式：[github.com/niansia/taiwan-exam](https://github.com/niansia/taiwan-exam)。也可以看 80 秒的[前導片](/assets/film/taiwan-exam.html?lang=zh-TW)。
+原始碼與安裝方式：[github.com/niansia/taiwan-exam](https://github.com/niansia/taiwan-exam)。也可以看 80 秒的[影片](/assets/film/taiwan-exam.html?lang=zh-TW)。

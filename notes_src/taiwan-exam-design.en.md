@@ -42,6 +42,6 @@ Teachers and students rarely use a terminal, so the same rules ship three ways: 
 
 - **Passing machine checks is not the same as being a good question.** Automated checks only stop things that are obviously wrong; whether a question teaches anything still needs a human.
 - **Models differ a lot.** Of the planned 28 test papers (4 models × 7 subjects), 14 are done; the rest are still being tested.
-- The project has 112 scripts and 679 tests, but the tests verify the tooling, not every question a model writes.
+- The project has 112 scripts and 1,089 tests, but the tests verify the tooling, not every question a model writes.
 
-Source and installation: [github.com/niansia/taiwan-exam](https://github.com/niansia/taiwan-exam). There is also an 80-second [trailer](/assets/film/taiwan-exam.html?lang=en).
+Source and installation: [github.com/niansia/taiwan-exam](https://github.com/niansia/taiwan-exam). There is also an 80-second [film](/assets/film/taiwan-exam.html?lang=en).

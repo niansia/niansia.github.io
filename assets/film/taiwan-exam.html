@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Taiwan Exam · 前導片</title>
-<meta name="description" content="Taiwan Exam trailer: how an Agent Skill turns one paragraph into an original GSAT practice exam, from knowledge loading and planning to blind re-solving, template stamping and page checks.">
+<title>Taiwan Exam · 影片</title>
+<meta name="description" content="Taiwan Exam film: how an Agent Skill turns one paragraph into an original GSAT practice exam, from knowledge loading and planning to blind re-solving, template stamping and page checks.">
 <meta name="theme-color" content="#FFFCF8">
 <link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -157,7 +157,7 @@ const ASSET = '/assets/taiwan-exam/film/';
 
 /* ---------------- copy ---------------- */
 const COPY = {
-  'zh-TW': {brand: '前導片', go: '播放前導片', goSub: '約 80 秒 · 一段話如何變成一份學測模擬考', v1: '一段話，', v2: '一份考卷。',
+  'zh-TW': {brand: RELEASED ? '正式影片' : '前導片', go: RELEASED ? '播放影片' : '播放前導片', goSub: '約 80 秒 · 一段話如何變成一份學測模擬考', v1: '一段話，', v2: '一份考卷。',
     you: '你', prompt: '請依 Taiwan Exam Skill 出一份 116 學測數 A 完整模擬考。',
     assets: [['9 包 · 1,124 份', '歷屆來源語料'], ['111–115', '官方答對率校準'], ['30 份', '大考中心原始模板'], ['7 · 13 · 4', '題型 · 圖像 · 難度帶']],
     checks: [['PyMuPDF 1.26.0', '釘選版本'], ['模板雜湊驗證', '30 份'], ['答對率校準快照', '111–115'], ['字型', 'TW-Sung / TW-Kai'], ['圖片下載測試', '社會 · 自然 · 英文']],
@@ -171,7 +171,7 @@ const COPY = {
     subs: [[6.4, 12.4, '先讀完需要的資料：歷屆來源、官方答對率、原始模板。'], [13.4, 18.6, '開工前先檢查環境：版本、模板、字型、圖片。'], [19.6, 26.6, '先排出整份考卷的藍圖，難度照官方答對率分配。'],
       [27.4, 35.6, '每寫 2～4 題就存檔一次，格式不對直接拒收。'], [36.4, 43.6, '不看答案，從印出來的題目重新解一次，再估難度。'], [44.4, 47.6, '內容鎖定，之後只排版、不再改題。'],
       [48.6, 55.6, '題目疊印在大考中心的原始模板上，頁首頁尾一個像素都不動。'], [56.4, 61.6, '每一頁都要檢查，機器不替人判斷教學品質。'], [62.4, 65.8, '最後交給你兩份 PDF：題本和詳解。'], [66.6, 71.6, '學測七科，都能出。']]},
-  en: {brand: 'trailer', go: 'Play trailer', goSub: '≈ 80 s · how one paragraph becomes a GSAT practice exam', v1: '一段話，', v2: '一份考卷。',
+  en: {brand: RELEASED ? 'official film' : 'trailer', go: RELEASED ? 'Play the film' : 'Play trailer', goSub: '≈ 80 s · how one paragraph becomes a GSAT practice exam', v1: '一段話，', v2: '一份考卷。',
     you: 'you', prompt: 'Please use the Taiwan Exam Skill to write a complete GSAT Math A practice exam for 2027.',
     assets: [['9 packs · 1,124', 'past-exam source corpus'], ['2022–2026', 'official answer-rate calibration'], ['30', 'original CEEC template PDFs'], ['7 · 13 · 4', 'item types · visuals · difficulty bands']],
     checks: [['PyMuPDF 1.26.0', 'pinned'], ['template hashes', '30 PDFs'], ['calibration snapshot', '2022–2026'], ['fonts', 'TW-Sung / TW-Kai'], ['image download test', 'social · science · English']],
@@ -186,7 +186,7 @@ const COPY = {
       [27.4, 35.6, 'Items are written 2–4 at a time and checkpointed; bad formats are refused.'], [36.4, 43.6, 'Each item is re-solved from the printed page without the answer, then difficulty is estimated.'], [44.4, 47.6, 'The content is locked; from here on only layout changes.'],
       [48.6, 55.6, 'The body is stamped onto the original CEEC template; not one header pixel moves.'], [56.4, 61.6, 'Every page is checked; the machine never signs off on teaching quality.'], [62.4, 65.8, 'You get two PDFs: the questions and the worked solutions.'], [66.6, 71.6, 'All seven GSAT subjects.']]},
 };
-COPY['zh-CN'] = Object.assign({}, COPY['zh-TW'], {brand: '先导片', go: '播放先导片', goSub: '约 80 秒 · 一段话如何变成一份学测模拟考', v1: '一段话，', v2: '一份考卷。',
+COPY['zh-CN'] = Object.assign({}, COPY['zh-TW'], {brand: RELEASED ? '正式影片' : '先导片', go: RELEASED ? '播放影片' : '播放先导片', goSub: '约 80 秒 · 一段话如何变成一份学测模拟考', v1: '一段话，', v2: '一份考卷。',
   prompt: '请依 Taiwan Exam Skill 出一份 116 学测数 A 完整模拟考。',
   assets: [['9 包 · 1,124 份', '历届来源语料'], ['111–115', '官方答对率校准'], ['30 份', '大考中心原始模板'], ['7 · 13 · 4', '题型 · 图像 · 难度带']],
   checks: [['PyMuPDF 1.26.0', '锁定版本'], ['模板哈希验证', '30 份'], ['答对率校准快照', '111–115'], ['字体', 'TW-Sung / TW-Kai'], ['图片下载测试', '社会 · 自然 · 英文']],

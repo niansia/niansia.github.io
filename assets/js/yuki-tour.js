@@ -54,7 +54,7 @@
         {view: 'projects', id: 'lumigrid', target: '.lg-try', title: {en: 'Runs in your browser', 'zh-TW': '直接在瀏覽器執行', 'zh-CN': '直接在浏览器运行'},
           body: {en: 'Drop in your own dark photo: both networks run on your device with WebGPU or WebAssembly, and nothing is uploaded.', 'zh-TW': '丟一張自己的暗照片進去：兩個網路都用 WebGPU 或 WebAssembly 在你的裝置上跑，不會上傳。', 'zh-CN': '丢一张自己的暗照片进去：两个网络都用 WebGPU 或 WebAssembly 在你的设备上跑，不会上传。'}},
         {view: 'projects', id: 'taiwan-exam', target: '.te-film', title: {en: 'An Agent Skill, end to end', 'zh-TW': '從頭到尾的 Agent Skill', 'zh-CN': '从头到尾的 Agent Skill'},
-          body: {en: 'Taiwan Exam has a model write an original GSAT exam, re-solve it blind, and stamp it onto the official templates. The trailer shows the whole pipeline.', 'zh-TW': 'Taiwan Exam 讓模型原創學測試題、不看答案重新解題，再套到官方模板上。前導片把整條流程演一遍。', 'zh-CN': 'Taiwan Exam 让模型原创学测试题、不看答案重新解题，再套到官方模板上。先导片把整条流程演一遍。'}},
+          body: {en: 'Taiwan Exam has a model write an original GSAT exam, re-solve it blind, and stamp it onto the official templates. The film shows the whole pipeline.', 'zh-TW': 'Taiwan Exam 讓模型原創學測試題、不看答案重新解題，再套到官方模板上。影片把整條流程演一遍。', 'zh-CN': 'Taiwan Exam 让模型原创学测试题、不看答案重新解题，再套到官方模板上。影片把整条流程演一遍。'}},
         {view: 'projects', id: 'kcrashlab', target: '.project-detail h2', title: {en: 'Evidence and scope', 'zh-TW': '證據與範圍', 'zh-CN': '证据与范围'},
           body: {en: 'Every project page ends with what was actually checked and where to verify it, not just what the tool promises.', 'zh-TW': '每個作品頁最後都寫著實際檢查了什麼、去哪裡驗證，而不只是工具的承諾。', 'zh-CN': '每个作品页最后都写着实际检查了什么、去哪里验证，而不只是工具的承诺。'}},
         {view: 'home', target: '.inline-command-form', title: {en: 'It really is a terminal', 'zh-TW': '真的是一個終端機', 'zh-CN': '真的是一个终端'},

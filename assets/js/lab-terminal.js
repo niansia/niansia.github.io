@@ -266,12 +266,13 @@
       <div class="cap-charts"><div><h3>${esc(C.distTitle)}</h3><div class="cap-dist">${dist}</div></div><div><h3>${esc(C.mediaTitle)}</h3><div class="cap-media">${media}</div><p class="cap-legend">${legend}</p><small class="cap-note">${esc(C.mediaNote)}</small></div></div>
       <p class="comment-line">${esc(C.footnote)}</p></section>`;
   }
+  const teLive=()=>Date.now()>=Date.parse('2026-09-28T21:28:00+08:00'); // public release: trailer → official film
   const teCopy=()=>({
-    en:{kicker:'Agent Skill · trailer',title:'Taiwan Exam: one paragraph in, a GSAT practice exam out',lede:'An Agent Skill that has the AI write original GSAT items to the current curriculum, calibrated to five years of official answer rates, re-solve every item without the answer, and stamp the result onto the original CEEC templates as a question PDF and a worked-solution PDF. The model writes the questions; the scripts only lay out, check and stamp pages, and never sign off on quality.',film:'Watch the Taiwan Exam trailer',filmSub:'About 80 s: knowledge loading, the paper plan, blind re-solving, template stamping and page-by-page checks.',flowTitle:'Architecture',tags:['7 GSAT subjects','Claude · ChatGPT · Gemini','112 scripts · 679 tests'],repo:'Open the repository',
+    en:{kicker:`Agent Skill · ${teLive()?'official film':'trailer'}`,title:'Taiwan Exam: one paragraph in, a GSAT practice exam out',lede:'An Agent Skill that has the AI write original GSAT items to the current curriculum, calibrated to five years of official answer rates, re-solve every item without the answer, and stamp the result onto the original CEEC templates as a question PDF and a worked-solution PDF. The model writes the questions; the scripts only lay out, check and stamp pages, and never sign off on quality.',film:teLive()?'Watch the Taiwan Exam film':'Watch the Taiwan Exam trailer',filmSub:'About 80 s: knowledge loading, the paper plan, blind re-solving, template stamping and page-by-page checks.',flowTitle:'Architecture',tags:['7 GSAT subjects','Claude · ChatGPT · Gemini','112 scripts · 1,089 tests'],repo:'Open the repository',
       flow:[['Load knowledge','read_web_knowledge.py'],['Preflight','prepare_hosted_run.py'],['Paper plan','check_paper_plan.py'],['Write in batches · checkpoint','append_items.py'],['Blind re-solve · difficulty','hosted_blind_review.py'],['Content lock','lock-content'],['Stamp onto templates','compose_hosted_pdf.py'],['Page checks','inspect_hosted_pdf.py'],['Deliver two PDFs','finalize']]},
-    'zh-TW':{kicker:'Agent Skill · 前導片',title:'Taiwan Exam：一段話，出一份學測模擬考',lede:'讓 AI 依 108 課綱與近五年官方答對率原創命題，不看答案重新解題驗算，再疊印到大考中心原始模板上，交付題本與詳解兩份 PDF。模型負責出題；程式只負責排版、檢查與套版，不替題目品質背書。',film:'觀看 Taiwan Exam 前導片',filmSub:'約 80 秒：知識載入、命題藍圖、盲審解題、原始模板套版與逐頁檢查。',flowTitle:'架構',tags:['學測七科','Claude · ChatGPT · Gemini','112 支腳本 · 679 項測試'],repo:'打開 GitHub',
+    'zh-TW':{kicker:`Agent Skill · ${teLive()?'正式影片':'前導片'}`,title:'Taiwan Exam：一段話，出一份學測模擬考',lede:'讓 AI 依 108 課綱與近五年官方答對率原創命題，不看答案重新解題驗算，再疊印到大考中心原始模板上，交付題本與詳解兩份 PDF。模型負責出題；程式只負責排版、檢查與套版，不替題目品質背書。',film:teLive()?'觀看 Taiwan Exam 正式影片':'觀看 Taiwan Exam 前導片',filmSub:'約 80 秒：知識載入、命題藍圖、盲審解題、原始模板套版與逐頁檢查。',flowTitle:'架構',tags:['學測七科','Claude · ChatGPT · Gemini','112 支腳本 · 1,089 項測試'],repo:'打開 GitHub',
       flow:[['讀取知識','read_web_knowledge.py'],['預檢','prepare_hosted_run.py'],['命題藍圖','check_paper_plan.py'],['分批命題 · 存檔','append_items.py'],['盲審解題 · 難度','hosted_blind_review.py'],['內容鎖定','lock-content'],['套用原始模板','compose_hosted_pdf.py'],['逐頁檢查','inspect_hosted_pdf.py'],['交付兩份 PDF','finalize']]},
-    'zh-CN':{kicker:'Agent Skill · 先导片',title:'Taiwan Exam：一段话，出一份学测模拟考',lede:'让 AI 依 108 课纲与近五年官方答对率原创命题，不看答案重新解题验算，再叠印到大考中心原始模板上，交付题本与详解两份 PDF。模型负责出题；程序只负责排版、检查与套版，不替题目质量背书。',film:'观看 Taiwan Exam 先导片',filmSub:'约 80 秒：知识载入、命题蓝图、盲审解题、原始模板套版与逐页检查。',flowTitle:'架构',tags:['学测七科','Claude · ChatGPT · Gemini','112 个脚本 · 679 项测试'],repo:'打开 GitHub',
+    'zh-CN':{kicker:`Agent Skill · ${teLive()?'正式影片':'先导片'}`,title:'Taiwan Exam：一段话，出一份学测模拟考',lede:'让 AI 依 108 课纲与近五年官方答对率原创命题，不看答案重新解题验算，再叠印到大考中心原始模板上，交付题本与详解两份 PDF。模型负责出题；程序只负责排版、检查与套版，不替题目质量背书。',film:teLive()?'观看 Taiwan Exam 正式影片':'观看 Taiwan Exam 先导片',filmSub:'约 80 秒：知识载入、命题蓝图、盲审解题、原始模板套版与逐页检查。',flowTitle:'架构',tags:['学测七科','Claude · ChatGPT · Gemini','112 个脚本 · 1,089 项测试'],repo:'打开 GitHub',
       flow:[['读取知识','read_web_knowledge.py'],['预检','prepare_hosted_run.py'],['命题蓝图','check_paper_plan.py'],['分批命题 · 存档','append_items.py'],['盲审解题 · 难度','hosted_blind_review.py'],['内容锁定','lock-content'],['套用原始模板','compose_hosted_pdf.py'],['逐页检查','inspect_hosted_pdf.py'],['交付两份 PDF','finalize']]}}[locale]);
   const cvCopy=()=>({
     en:{lockedTag:'not public yet',denied:'Permission denied',title:'CV and LinkedIn are on the way',body:'I am still putting these together. When they are ready, this is where they will live:',soon:['A downloadable PDF CV','My LinkedIn profile','A one-page timeline of education, research and projects'],mail:'Email me in the meantime',notes:'Read my research notes',
@@ -885,4 +886,12 @@
   document.documentElement.dataset.theme = theme;
   document.querySelector('meta[name="theme-color"]')?.setAttribute('content', themeColors[theme]);
   readLocation();shell();applyFestival();
+  /* Boot screen (markup in the page): fade it out once the shell is drawn. The first visit of a session keeps it
+     up for ~0.6 s so it reads as an intro rather than a flash; later page loads skip the wait. */
+  (() => {
+    const boot = document.getElementById('boot'); if (!boot) return;
+    let seen = false; try { seen = sessionStorage.getItem('niansia-booted') === '1'; sessionStorage.setItem('niansia-booted', '1'); } catch {}
+    const wait = seen || !motion() ? 0 : Math.max(0, 650 - performance.now());
+    setTimeout(() => { boot.classList.add('is-done'); setTimeout(() => boot.remove(), 520); }, wait);
+  })();
 })();
