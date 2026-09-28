@@ -1268,7 +1268,7 @@ button.brain-badge:disabled{cursor:default;transform:none;border-color:var(--lin
 @media(max-width:720px){.adv-eq{display:none;}}
 
 /* ============ Boot screen (index pages; progress in assets/js/boot.js) ============ */
-.boot{position:fixed;inset:0;z-index:3000;display:grid;place-items:center;background:radial-gradient(700px 420px at 50% 42%,var(--blob-1),transparent 70%),radial-gradient(600px 400px at 80% 90%,var(--blob-2),transparent 70%),var(--desk);transition:opacity .5s var(--ease),visibility .5s;animation:boot-giveup .4s ease 10s forwards;}
+.boot{position:fixed;inset:0;z-index:3000;display:grid;place-items:center;background:radial-gradient(700px 420px at 50% 42%,var(--blob-1),transparent 70%),radial-gradient(600px 400px at 80% 90%,var(--blob-2),transparent 70%),var(--desk);transition:opacity .5s var(--ease),visibility .5s;animation:boot-giveup .4s ease 12s forwards;}
 .boot.is-done{opacity:0;visibility:hidden;}
 .boot.is-done .boot-card{transform:translateY(-10px) scale(.97);}
 @keyframes boot-giveup{to{opacity:0;visibility:hidden;}}
@@ -1294,4 +1294,4 @@ button.brain-badge:disabled{cursor:default;transform:none;border-color:var(--lin
 .boot-dots svg:nth-child(2){animation-delay:.2s}.boot-dots svg:nth-child(3){animation-delay:.4s}
 @keyframes boot-dot{0%,15%{opacity:0;transform:translateY(3px) scale(.6);}35%,70%{opacity:1;transform:none;}100%{opacity:0;}}
 .boot-sub{font:11.5px var(--sans);color:var(--muted);opacity:.85;}
-@media(prefers-reduced-motion:reduce){.boot-head,.boot-shadow,.boot-z,.boot-dots svg{animation:none!important;}.boot-dots svg{opacity:1;}.boot{animation:boot-giveup .01s linear 10s forwards!important;}}
+@media(prefers-reduced-motion:reduce){.boot-head,.boot-shadow,.boot-z,.boot-dots svg{animation:none!important;}.boot-dots svg{opacity:1;}.boot{animation:boot-giveup .01s linear 12s forwards!important;}}
