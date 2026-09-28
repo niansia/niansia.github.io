@@ -30,6 +30,11 @@
     badge:'M6 3h12v18H6zM9 8h6M9 12h6M9 16h3', paper:'M6 2h9l4 4v16H6zM14 2v5h5M9 11h7M9 15h7M9 19h4', bolt:'M13 2 4 14h7l-1 8 9-12h-7z',
     search:'M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zm9 16-4.2-4.2', compass:'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zm3.5 5.5-2 5-5 2 2-5z', book:'M4 5q4-2 8 0v15q-4-2-8 0zM12 5q4-2 8 0v15q-4-2-8 0z', lock:'M6 11h12v10H6zM8.5 11V8a3.5 3.5 0 0 1 7 0v3M12 15v2', clock:'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zm0 4.5V12l3 2', download:'M12 3v12m-5-5 5 5 5-5M4 20h16'
   };
+  Object.assign(icons, {instagram:'M4 8a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v8a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4zM12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zM16.8 7.2h.01',
+    threads:'M15.4 11.4c0 2.7-1.3 4.2-3.1 4.2-1.3 0-2.2-.8-2.2-1.9 0-1.3 1.2-2.1 3.1-2.1 3 0 4.6 1.5 4.6 3.5 0 2.4-2.1 4-4.9 4-3.8 0-6.2-2.8-6.2-7.1S9.1 4.9 12.6 4.9c2.5 0 4.1 1.2 4.8 3.3',
+    discord:'M7.2 7q4.8-1.8 9.6 0 2.4 3.4 2.7 9-2 1.6-4.4 2l-1-1.7q-2.1.5-4.2 0l-1 1.7q-2.4-.4-4.4-2 .3-5.6 2.7-9zM9.6 12.6h.01M14.4 12.6h.01'});
+  // The GitHub mark (Octicons mark-github, MIT), filled rather than stroked like the rest of the set.
+  const ghMark = '<svg class="icon gh-mark" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>';
   const icon = (name, cls='') => `<svg class="icon ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${icons[name] || icons.file}"/></svg>`;
   let locale = root.dataset.locale || 'en';
   let view = root.dataset.initial || 'home', projectId = '', selectedNav = 0, selectedProject = 0;
@@ -206,6 +211,18 @@
     return `<p class="comment-line">${n(t().commandHelp)}</p><div class="command-catalogue">${catalogue.map(c=>`<button data-command-fill="${esc(c.example)}"><code>${esc(c.usage)}</code><span>${esc(c.description[locale])}</span></button>`).join('')}</div>`;
   }
   function button(path,label,primary=false) { return `<button class="action-button ${primary?'primary':''}" data-view="${path}"><span>${label}</span>${icon('arrow')}</button>`; }
+  /* Where to find me, right under the intro: GitHub first and largest, then e-mail, then the off-the-clock accounts
+     (their links come from hobbies-data.js, so they are kept in one place). Each chip names the account on hover or focus. */
+  const socialCopy=()=>({en:{label:'Find me',gh:'Open-source projects and research code',mail:'Email',hobby:'Off the clock'},
+    'zh-TW':{label:'在這裡找到我',gh:'開源作品與研究程式碼',mail:'Email',hobby:'下班後的我'},
+    'zh-CN':{label:'在这里找到我',gh:'开源作品与研究代码',mail:'Email',hobby:'下班后的我'}}[locale]);
+  function socialDock() {
+    const S=socialCopy(), mail='niansia930202@gmail.com';
+    const hobby=(window.NIANSIA_HOBBIES?.links||[]).filter(l=>icons[l.id]);
+    const chip=(href,ico,label,tip,ext=true)=>`<a class="sd-chip" href="${esc(href)}"${ext?' target="_blank" rel="noopener noreferrer"':''} data-tip="${esc(tip)}" aria-label="${esc(label)} · ${esc(tip)}">${icon(ico)}<span>${esc(label)}</span></a>`;
+    return `<nav class="social-dock" aria-label="${esc(S.label)}"><a class="sd-github" href="https://github.com/niansia" target="_blank" rel="noopener noreferrer">${ghMark}<span class="sd-gh-text"><b translate="no">github.com/<em>niansia</em></b><small>${esc(S.gh)}</small></span><span class="sd-gh-arrow" aria-hidden="true">↗</span></a>
+      <div class="sd-chips">${chip('mailto:'+mail,'mail',S.mail,mail,false)}${hobby.length?`<span class="sd-sep" title="${esc(S.hobby)}" aria-hidden="true"></span>${hobby.map(l=>chip(l.url,l.id,l.label,l.handle||l.label)).join('')}`:''}</div></nav>`;
+  }
   function homeScreen(c) {
     const featured = [
       {id:'adversarial-lab',ext:'.lab',copy:c.newestAdv,media:'<img src="/assets/og/adversarial-demo.jpg" alt="" loading="lazy" width="1200" height="630">'},
@@ -217,7 +234,7 @@
     const name = c.name.replace('Niansia', '<span class="name-glow" translate="no">Niansia</span>');
     const quick = ['projects','theme sakura','neofetch','trick','trail paws','help'];
     return `${commandTitle('./start.sh')}${festivalBanner(c)}<div class="${boot}"><span><b>✓</b> profile loaded</span><span><b>✓</b> ${projects().length} projects mounted</span><span><b>✓</b> yuki.exe is awake</span><span><b>✓</b> brain.nn ready</span></div>
-      <div class="welcome-copy"><p class="hello-world" translate="no">${c.welcome}<i class="text-cursor" aria-hidden="true"></i></p><h1>${name}</h1><p class="welcome-tagline">${c.tagline}</p><p>${c.intro}</p></div>
+      <div class="welcome-copy"><p class="hello-world" translate="no">${c.welcome}<i class="text-cursor" aria-hidden="true"></i></p><h1>${name}</h1><p class="welcome-tagline">${c.tagline}</p><p>${c.intro}</p></div>${socialDock()}
       <a class="brief-chip" href="/brief/${pubSeg()}">${icon('bolt')}<span>${esc(briefCopy().chip)}</span><em aria-hidden="true">→</em></a><div class="profile-facts"><span>${c.role}</span><span>${c.leave}</span>${subCopy()?`<button type="button" class="sub-chip" data-view="research">✍ ${subCopy().chip}${nextDeadline()?` · <b data-deadline="${nextDeadline().deadline}">${countdown(nextDeadline().deadline)}</b>`:''}</button>`:''}</div>
       <div class="output-actions">${button('projects',c.start,true)}${button('about',c.more)}</div>
       <div class="home-cards">
