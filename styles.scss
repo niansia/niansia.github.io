@@ -623,7 +623,7 @@ html.film-open .yuki,html.film-open .yuki-chat{visibility:hidden;}
 @keyframes vt-out-r{to{opacity:0;transform:translateX(26px);filter:blur(2px);}}
 @keyframes vt-in-r{from{opacity:0;transform:translateX(34px);}}
 @keyframes vt-in-l{from{opacity:0;transform:translateX(-34px);}}
-/* Moving between pages is a book-style page turn, done in assets/js/page-turn.js. */
+/* Moving between pages is a card zoom, done in assets/js/page-transition.js. */
 /* ============ Pointer companion & particles ============ */
 .fx-layer{position:fixed;inset:0;pointer-events:none;z-index:70;overflow:hidden;}
 .fx-p{position:absolute;left:0;top:0;pointer-events:none;will-change:transform,opacity;}
