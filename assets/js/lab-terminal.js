@@ -664,7 +664,7 @@
   function complete(value) {
     const split=value.indexOf(' '),head=split<0?value:value.slice(0,split),tail=split<0?'':value.slice(split+1).toLowerCase();
     if(split<0)return catalogue.map(c=>c.name).filter(name=>name.startsWith(head.toLowerCase()));
-    const values={festival:['list','auto','off',...(window.NIANSIA_FESTIVAL?.list||[]).map(f=>f.id)],accessory:['list','auto','none',...Object.keys(window.YukiWardrobe?.accessories||{})],outfit:['list','auto',...(window.YukiWardrobe?.outfits()||[]).map(o=>o.id)],theme:themes,style:themes,lang:['en','zh-tw','zh-cn'],tour:['research','builder','fun'],projects:PROJECT_FILTERS.map(([k])=>k),motion:['on','off'],follow:['on','off'],trail:['hearts','paws','stars','petals','off'],cursor:['s','m','l'],help:catalogue.map(c=>c.name)};
+    const values={festival:['list','auto','off',...(window.NIANSIA_FESTIVAL?.list||[]).map(f=>f.id)],accessory:['list','auto','none',...Object.keys(window.YukiWardrobe?.accessories||{})],outfit:['list','auto',...(window.YukiWardrobe?.outfits()||[]).map(o=>o.id)],theme:themes,style:themes,lang:['en','zh-tw','zh-cn'],tour:['research','builder','fun'],trick:['spin','dance','piano','violin','encore'],play:['yarn','wand','chase'],feed:['fish','taiyaki','cake'],projects:PROJECT_FILTERS.map(([k])=>k),motion:['on','off'],follow:['on','off'],trail:['hearts','paws','stars','petals','off'],cursor:['s','m','l'],help:catalogue.map(c=>c.name)};
     const destinations=['home','about.md','research.md','papers.bib','contact.txt','hobbies.md','projects/',...projects().map(p=>p.id),...projects().map(p=>'projects/'+p.id+'/README.md')];
     return (values[head]||(['cd','cat','open','github'].includes(head)?destinations:[])).filter(item=>item.startsWith(tail)).map(item=>head+' '+item);
   }
@@ -790,7 +790,7 @@
         const codes={en:'en','zh-tw':'zh-TW','zh-cn':'zh-CN'};
         if(!codes[lower]){usage();break;}changeLanguage(codes[lower]);setTimeout(()=>record(value,`language: ${codes[lower]}`),60);break;
       }
-      case 'pet':case 'feed':case 'play':case 'sleep':case 'wake':case 'lie':case 'trick':case 'hide':petCommand(name,value);break;
+      case 'pet':case 'feed':case 'play':case 'sleep':case 'wake':case 'lie':case 'trick':case 'hide':petCommand(['feed','play','trick'].includes(name)&&lower?`${name}:${lower}`:name,value);break;
       case 'yuki':finish(yuki()?.report()||'-');break;
       case 'cv':if(cvState()==='hidden'){finish(t().unknown);break;}navigate('cv');break;
       case 'log':location.href=`/log/${locale==='en'?'en':locale.toLowerCase()}/`;finish('/log/');break;

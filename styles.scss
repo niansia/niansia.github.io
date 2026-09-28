@@ -705,23 +705,21 @@ html.film-open .yuki,html.film-open .yuki-chat{visibility:hidden;}
 .bed-front-top{stop-color:color-mix(in srgb,var(--accent) 34%,var(--surface));}
 .bed-front-bottom{stop-color:color-mix(in srgb,var(--accent) 56%,var(--surface));}
 .bed-stitch{fill:none;stroke:#fff;stroke-opacity:.6;stroke-width:1.6;stroke-dasharray:4 4;}
-.yuki[data-pose='lie'] .bed-back,.yuki[data-pose='lie'] .bed-front,.yuki[data-pose='sleep'] .bed-back,.yuki[data-pose='sleep'] .bed-front,.yuki[data-pose='eat'] .bed-back,.yuki[data-pose='eat'] .bed-front{opacity:1;transform:scale(1);}
+.yuki[data-pose='sleep'] .bed-back,.yuki[data-pose='sleep'] .bed-front{opacity:1;transform:scale(1);}
 .yuki-bed{z-index:1;}
-.yuki[data-pose='lie'] .yuki-bed,.yuki[data-pose='sleep'] .yuki-bed,.yuki[data-pose='eat'] .yuki-bed{z-index:auto;}
-.yuki[data-pose='lie'] .yuki-hit,.yuki[data-pose='sleep'] .yuki-hit,.yuki[data-pose='eat'] .yuki-hit{top:44%;border-radius:40% 40% 20px 20px;}
-.yuki[data-pose='lie'] .yuki-figure,.yuki[data-pose='sleep'] .yuki-figure,.yuki[data-pose='eat'] .yuki-figure{height:calc(var(--h) * .44);bottom:calc(var(--h) * .045);clip-path:inset(-80% -60% 0 -60%);animation:settle .5s var(--spring);}
-.yuki[data-pose='lie'] .yuki-figure{animation:settle .5s var(--spring),lie-sway 3.2s ease-in-out .5s infinite;}
+.yuki[data-pose='sleep'] .yuki-bed{z-index:auto;}
+.yuki[data-pose='sleep'] .yuki-hit{top:44%;border-radius:40% 40% 20px 20px;}
+.yuki[data-pose='sleep'] .yuki-figure{height:calc(var(--h) * .44);bottom:calc(var(--h) * .045);clip-path:inset(-80% -60% 0 -60%);animation:settle .5s var(--spring);}
 .yuki[data-pose='sleep'] .yuki-figure{bottom:calc(var(--h) * .065);transform:scaleX(var(--dir)) rotate(-7deg);animation:settle .5s var(--spring),sleep-breathe 3.6s ease-in-out .5s infinite;}
-.yuki[data-pose='eat'] .yuki-figure{animation:munch .48s ease-in-out infinite;}
-.yuki[data-pose='lie'] .yuki-tail,.yuki[data-pose='sleep'] .yuki-tail,.yuki[data-pose='eat'] .yuki-tail{display:block;left:94.7%;top:82.6%;rotate:175deg;animation:tail-wag .8s ease-in-out infinite;}
+.yuki[data-pose='sleep'] .yuki-tail{display:block;left:94.7%;top:82.6%;rotate:175deg;animation:tail-wag .8s ease-in-out infinite;}
 .yuki[data-pose='sleep'] .yuki-tail{animation:tail-sway 4s ease-in-out infinite;}
-.yuki[data-pose='lie'] .yuki-shadow,.yuki[data-pose='sleep'] .yuki-shadow,.yuki[data-pose='eat'] .yuki-shadow{width:calc(var(--w) * 2.1);}
+.yuki[data-pose='lie'] .yuki-shadow,.yuki[data-pose='sleep'] .yuki-shadow{width:calc(var(--w) * 2.1);}
 .yuki-blanket{position:absolute;z-index:4;left:calc(var(--w) * -.12);bottom:calc(var(--h) * .035);width:calc(var(--w) * 1.24);height:calc(var(--h) * .255);border-radius:46% 46% 22px 22px / 42% 42% 22px 22px;
   background:radial-gradient(circle,#fff6 1.2px,transparent 1.8px) 0 0/9px 9px,linear-gradient(color-mix(in srgb,var(--accent-2) 42%,var(--surface)),color-mix(in srgb,var(--accent-2) 62%,var(--surface)));box-shadow:0 -1px 4px #0001;opacity:0;transform:translateY(40%);transition:opacity .35s,transform .5s var(--spring);pointer-events:none;}
 .yuki-blanket:before{content:'';position:absolute;left:-2%;right:-2%;top:0;height:28%;border-radius:50% 50% 40% 40% / 70% 70% 30% 30%;background:color-mix(in srgb,var(--accent-2) 22%,var(--surface));box-shadow:0 2px 3px #0001;}
 .yuki[data-pose='sleep'] .yuki-blanket{opacity:1;transform:none;}
 .yuki-bowl{position:absolute;z-index:4;left:calc(var(--w) * -.04);bottom:0;width:calc(var(--w) * 1.08);height:calc(var(--h) * .17);opacity:0;transform:translateY(40%) scale(.7);transition:opacity .3s,transform .45s var(--spring);pointer-events:none;}
-.yuki[data-pose='eat'] .yuki-bowl{opacity:1;transform:none;}
+
 .bowl-dish{position:absolute;left:0;right:0;bottom:0;height:62%;border-radius:12% 12% 50% 50% / 20% 20% 80% 80%;background:linear-gradient(var(--accent-2),color-mix(in srgb,var(--accent-2) 70%,#000));box-shadow:inset 0 3px 0 #fff5;}
 .bowl-fish{position:absolute;left:14%;right:14%;top:0;height:58%;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 20'%3E%3Cpath fill='%23f0a35e' d='M2 10c6-8 18-9 26-2l8-6v16l-8-6c-8 7-20 6-26-2z'/%3E%3Ccircle cx='10' cy='9' r='1.6' fill='%23473b3b'/%3E%3C/svg%3E") center/contain no-repeat;filter:drop-shadow(0 1px 1px #0002);}
 .yuki[data-pose='eat'] .bowl-fish{animation:fish-shrink 3.2s linear forwards;}
@@ -1307,3 +1305,95 @@ button.brain-badge:disabled{cursor:default;transform:none;border-color:var(--lin
 .pf-chip.is-demo:not([aria-pressed='true']){color:var(--accent);border-style:dashed;}
 .project-directory.is-filtering .project-row{animation:rise-in .42s var(--ease) calc(var(--i,0)*38ms) backwards;}
 @media(max-width:720px){.project-filters{flex-wrap:nowrap;overflow-x:auto;margin-right:-14px;padding:2px 14px 6px 0;scrollbar-width:none;}.project-filters::-webkit-scrollbar{display:none;}.pf-chip{flex:none;}}
+
+/* ============ Yuki: props for actions (assets/js/yuki-props.js) ============ */
+.yuki-props,.yuki-headprops{position:absolute;inset:0;pointer-events:none;}
+.yuki-props{z-index:3;}
+.yuki-props>*,.yuki-headprops>*{position:absolute;display:block;overflow:visible;}
+/* pat: a hand strokes her head */
+.yp-hand{width:calc(var(--aw,.37) * var(--w) * 1.5);left:calc(var(--ax,.5) * var(--w) - var(--aw,.37) * var(--w) * .5);top:calc(var(--ay,.02) * var(--h) - var(--aw,.37) * var(--w) * .36);transform-origin:15% 70%;animation:pat-hand 1.6s ease-in-out forwards;filter:drop-shadow(0 2px 2px #0002);}
+@keyframes pat-hand{0%{opacity:0;transform:translate(12px,-16px) rotate(-10deg);}14%{opacity:1;transform:translate(0,2px) rotate(-3deg);}28%{transform:translate(-5px,3px) rotate(-9deg);}42%{transform:translate(4px,1px) rotate(-2deg);}56%{transform:translate(-5px,3px) rotate(-9deg);}70%{transform:translate(4px,1px) rotate(-2deg);}86%{opacity:1;transform:translate(0,0) rotate(-5deg);}100%{opacity:0;transform:translate(10px,-16px) rotate(-12deg);}}
+.yuki.is-patted :is(.ys-head,.yuki-headbox){animation:head-pat .38s ease-in-out 4;}
+@keyframes head-pat{50%{transform:translateY(1.6px) rotate(-3deg) scaleY(.97);}}
+/* feed: a snack held in front of her mouth, bitten three times */
+.yp-food{width:calc(var(--aw,.37) * var(--w) * 1.35);left:calc(var(--ax,.5) * var(--w) - var(--aw,.37) * var(--w) * .12);top:calc((var(--ay,.02) + .105) * var(--h));animation:food-in .4s var(--spring) both,food-bob 1.6s ease-in-out .4s infinite;filter:drop-shadow(0 2px 2px #0003);}
+@keyframes food-in{from{opacity:0;transform:translate(14px,10px) scale(.4) rotate(20deg);}}
+@keyframes food-bob{50%{transform:translateY(-1.5px) rotate(-3deg);}}
+.yuki.is-chewing :is(.ys-head,.yuki-headbox){animation:chew .5s ease-in-out infinite;}
+.yuki.is-biting :is(.ys-head,.yuki-headbox){animation:bite-dip .34s ease-out;}
+@keyframes chew{50%{transform:translateY(.8px) scaleY(.985);}}
+@keyframes bite-dip{45%{transform:translate(1px,2.5px) rotate(5deg);}}
+/* lie: head down on a school desk */
+.yp-desk{width:calc(var(--w) * 1.96);left:calc(var(--w) * -.48);bottom:-2px;animation:prop-rise .45s var(--spring) both;}
+@keyframes prop-rise{from{opacity:0;transform:translateY(16px) scale(.9);}}
+.yuki[data-pose='lie'] .yuki-sprite{transform:translateY(calc(var(--h) * .4)) rotate(3deg);clip-path:inset(-30% -60% 69% -60%);transition:transform .5s var(--ease);animation:none;}
+.yuki[data-pose='lie'] :is(.ys-head,.yuki-headbox){rotate:-18deg;animation:desk-doze 3.6s ease-in-out infinite;}
+.yuki[data-pose='lie'] .yuki-headbox{translate:0 calc(var(--h) * .4);}
+.yuki[data-pose='lie'] .yuki-tailbox{opacity:0;}
+@keyframes desk-doze{50%{transform:translateY(1px) rotate(-2deg);}}
+/* play: juggling a yarn ball in place */
+.yp-juggle{width:calc(var(--aw,.37) * var(--w) * .78);left:calc(var(--ax,.5) * var(--w) - var(--aw,.37) * var(--w) * .39);top:calc((var(--ay,.02) + .3) * var(--h));}
+.yp-juggle svg{display:block;width:100%;height:auto;}
+.yuki.is-juggling .yp-juggle{animation:juggle .7s 5 both;}
+.yp-juggle.is-caught{transition:transform .3s var(--spring);transform:translateY(calc(var(--h) * .06)) scale(1.1);}
+@keyframes juggle{0%{transform:translateY(0) rotate(0);animation-timing-function:cubic-bezier(.2,.7,.4,1);}50%{transform:translateY(calc(var(--h) * -.46)) rotate(200deg);animation-timing-function:cubic-bezier(.6,0,.8,.3);}100%{transform:translateY(0) rotate(360deg);}}
+/* play: the feather wand (drawn in page coordinates, not flipped with her) */
+.yuki-wand{position:absolute;left:0;top:0;width:1px;height:1px;overflow:visible;z-index:6;pointer-events:none;}
+.yuki-wand[hidden]{display:none;}
+.wand-rod{stroke:#b98044;stroke-width:3.5;stroke-linecap:round;fill:none;}
+.wand-string{stroke:color-mix(in srgb,var(--ink) 45%,transparent);stroke-width:1.2;fill:none;}
+.yuki.is-swipe .yuki-figure{animation:swipe .45s var(--spring);}
+@keyframes swipe{40%{transform:scaleX(var(--dir)) translateY(-14px) rotate(-7deg) scale(1.03,.97);}}
+/* perform: dance floor, toy piano, violin */
+.yuki.is-disco .yuki-shadow{width:calc(var(--w) * 2.2);height:18px;bottom:-8px;background:radial-gradient(closest-side,#ff9ec4aa,transparent);animation:disco 1.2s linear infinite;}
+@keyframes disco{0%{filter:hue-rotate(0);}100%{filter:hue-rotate(360deg);}}
+.yp-piano{width:calc(var(--w) * 1.62);left:calc(var(--w) * -.31);bottom:-2px;animation:prop-rise .45s var(--spring) both;}
+.yp-key{transition:fill .12s;}.yp-key.on{fill:var(--accent-2,#c9578b);}
+.yuki.is-piano .yuki-sprite{animation:piano-sway .68s ease-in-out infinite;}
+.yuki.is-piano :is(.ys-head,.yuki-headbox){animation:head-bob .68s ease-in-out infinite;}
+@keyframes piano-sway{50%{transform:rotate(2deg) translateY(1px);}}
+.yp-violin{width:calc(var(--aw,.37) * var(--w) * .9);left:calc(var(--ax,.5) * var(--w) - var(--aw,.37) * var(--w) * .95);top:calc((var(--ay,.02) + .135) * var(--h));transform:rotate(-56deg);transform-origin:50% 22%;animation:prop-rise .4s var(--spring) both;}
+.yp-bowbox{width:calc(var(--aw,.37) * var(--w) * 2.5);left:calc(var(--ax,.5) * var(--w) - var(--aw,.37) * var(--w) * 1.35);top:calc((var(--ay,.02) + .3) * var(--h));transform:rotate(22deg);transition:translate .34s ease-in-out;translate:12% 0;}
+.yp-bowbox svg{display:block;width:100%;height:auto;}
+.yuki.bow-up .yp-bowbox{translate:-22% 0;}
+.yuki.is-violin :is(.ys-head,.yuki-headbox){rotate:12deg;animation:head-sway 2.2s ease-in-out infinite;}
+.yuki.is-violin .yuki-sprite{animation:piano-sway 1.4s ease-in-out infinite;}
+:root[data-motion='off'] :is(.yuki-props,.yuki-headprops,.yuki-wand){display:none;}
+/* menu: level badge, xp bar, rewards */
+.menu-level{cursor:pointer;border:0;font:inherit;}
+.menu-level.tier-2{background:linear-gradient(135deg,#e6e9f2,#cfd6e6);color:#44506a;}
+.menu-level.tier-3{background:linear-gradient(135deg,#fde7c2,#f5c46b);color:#6b4410;}
+.menu-level.tier-gold{background:linear-gradient(135deg,#fff1b8,#f5c542 45%,#e89b2a);color:#5a3a06;box-shadow:0 0 0 1.5px #fff8,0 4px 14px -4px #e89b2a;animation:gold-shine 3s ease-in-out infinite;}
+@keyframes gold-shine{50%{filter:brightness(1.12);}}
+.menu-title{margin-left:6px;padding:1px 7px;border-radius:99px;font:600 10px var(--sans);font-style:normal;color:#5a3a06;background:linear-gradient(135deg,#fff1b8,#f5c542);vertical-align:2px;}
+.menu-xp{display:grid;grid-template-columns:1fr auto;gap:3px 8px;width:100%;margin-top:8px;padding:6px 0 0;border:0;border-top:1px dashed var(--line);background:none;text-align:left;cursor:pointer;color:var(--muted);font:500 10.5px var(--mono);}
+.xp-bar{grid-column:1/-1;height:6px;border-radius:99px;background:color-mix(in srgb,var(--accent) 12%,transparent);overflow:hidden;}
+.xp-bar b{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--accent-2),var(--accent));transition:width .5s var(--ease);}
+.xp-next{text-align:right;color:var(--accent);font-family:var(--sans);}
+.menu-rewards{display:grid;gap:4px;margin:8px 0 2px;max-height:220px;overflow:auto;padding-right:2px;scrollbar-width:thin;}
+.reward{display:grid;grid-template-columns:26px 1fr auto;gap:8px;align-items:center;padding:6px 8px;border-radius:10px;background:var(--rail);opacity:.55;}
+.reward.is-on{opacity:1;background:var(--wash);}
+.reward-icon{font-size:16px;text-align:center;}
+.reward b{display:block;font-size:12px;}.reward small{display:block;font-size:10.5px;color:var(--muted);line-height:1.35;}
+.reward em{font:600 10px var(--mono);font-style:normal;color:var(--muted);}
+.reward.is-on em{color:var(--accent);}
+
+/* ============ Yuki menu: tabs keep it one compact height ============ */
+.menu-tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;margin:10px 0 8px;padding:3px;border-radius:12px;background:var(--rail);}
+.menu-tabs button{position:relative;padding:6px 0;border-radius:9px;font:600 11.5px var(--sans);color:var(--muted);transition:background .2s,color .2s;}
+.menu-tabs button:hover{color:var(--ink);}
+.menu-tabs button[aria-selected='true']{background:var(--surface);color:var(--accent);box-shadow:0 1px 4px #0001;}
+.menu-tabs button i{position:absolute;top:4px;right:8px;width:6px;height:6px;border-radius:50%;background:var(--accent-2);}
+.menu-body{height:318px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;margin-right:-4px;padding-right:4px;animation:msg-in .25s var(--spring);}
+.menu-body .menu-say{margin-top:0;}
+.menu-body .wardrobe{margin-top:0;max-height:none;}
+.menu-rewards{max-height:none;margin-top:8px;}
+.reward.is-next{opacity:.9;outline:1.5px dashed color-mix(in srgb,var(--accent) 55%,transparent);outline-offset:-1.5px;}
+.menu-lvbox{display:grid;gap:4px;}
+.lv-big{display:flex;align-items:baseline;justify-content:space-between;}
+.lv-big b{font:700 24px var(--mono);color:var(--accent);}
+.lv-big span{font-size:11px;color:var(--muted);}
+.menu-lvbox .menu-xp{margin-top:0;border-top:0;padding-top:0;}
+.menu-settings .menu-wardrobe:first-child{margin-top:0;}
+@media(max-height:640px){.menu-body{height:min(318px,calc(100dvh - 190px));}}
+.menu-body .wardrobe-outfits,.menu-body .wardrobe-accs{max-height:none;overflow:visible;}

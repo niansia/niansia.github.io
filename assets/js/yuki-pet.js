@@ -23,7 +23,7 @@
     sun:'M12 4v2m0 12v2M4 12h2m12 0h2M7 7l1 1m8 8 1 1M7 17l1-1m8-8 1-1M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0',
     star:'m12 3 2.6 5.8 6.4.6-4.8 4.2 1.4 6.3L12 16.7 6.4 19.9l1.4-6.3L3 9.4l6.4-.6z', chat:'M4 4h16v13H9l-5 4z',
     hide:'M3 3l18 18M10.6 6.1Q11.3 6 12 6c5 0 9 6 9 6a15 15 0 0 1-3 3.4M6.5 7.6C4.3 9.1 3 12 3 12s4 6 9 6q2 0 3.6-.8',
-    close:'m6 6 12 12M6 18 18 6', send:'M4 12h15m-6-6 6 6-6 6', brain:'M6 6h12v12H6zM9.5 9.5h5v5h-5zM9 3v3M15 3v3M9 18v3M15 18v3M3 9h3M3 15h3M18 9h3M18 15h3'
+    close:'m6 6 12 12M6 18 18 6', send:'M4 12h15m-6-6 6 6-6 6', note:'M9 18V5l11-2v13M9 18a3 3 0 1 1-3-3 3 3 0 0 1 3 3zM20 16a3 3 0 1 1-3-3 3 3 0 0 1 3 3z', brain:'M6 6h12v12H6zM9.5 9.5h5v5h-5zM9 3v3M15 3v3M9 18v3M15 18v3M3 9h3M3 15h3M18 9h3M18 15h3'
   };
   const svg = (name, cls = '') => `<svg class="yicon ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${ICON[name]}"/></svg>`;
   const LANG_NAMES = {en: 'English', 'zh-TW': '繁體中文', 'zh-CN': '简体中文'};
@@ -40,7 +40,14 @@
     const before = level();
     S.food = clamp(S.food + food, 0, 100); S.mood = clamp(S.mood + mood, 0, 100); S.energy = clamp(S.energy + energy, 0, 100); S.xp += xp;
     save(); paintState();
-    if (level() > before) setTimeout(() => notify(line('levelUp', {level: level()}), {pose: 'happy'}), 900);
+    if (level() > before) {
+      const now_ = level(), got = REWARDS.filter(r => r.lv > before && r.lv <= now_);
+      setTimeout(() => {
+        notify(got.length ? rc().up(now_, got.map(r => `${r.icon} ${rc().name[r.id]}`).join('、')) : line('levelUp', {level: now_}), {pose: 'happy'});
+        puff('star', 5, 1.2); puff('heart', 2);
+        if (!menu.hidden) { renderMenu(); placeMenu(); }
+      }, 900);
+    }
   }
   function moodKey() {
     if (asleep) return 'asleep';
@@ -50,6 +57,37 @@
     return S.mood > 70 ? 'happy' : 'ok';
   }
 
+  /* ---------- levels: every level from 2 to 10 unlocks something ---------- */
+  const REWARDS = [
+    {lv: 2, id: 'dance', kind: 'perform', icon: '💃'}, {lv: 3, id: 'wand', kind: 'play', icon: '🪶'}, {lv: 4, id: 'piano', kind: 'perform', icon: '🎹'},
+    {lv: 5, id: 'taiyaki', kind: 'food', icon: '🐟'}, {lv: 6, id: 'violin', kind: 'perform', icon: '🎻'}, {lv: 7, id: 'aura', kind: 'effect', icon: '✨'},
+    {lv: 8, id: 'cake', kind: 'food', icon: '🍰'}, {lv: 9, id: 'encore', kind: 'perform', icon: '🎶'}, {lv: 10, id: 'gold', kind: 'effect', icon: '👑'}];
+  const RC = {
+    en: {title: 'Level rewards', next: 'Next', all: 'Everything unlocked!', at: n => `Lv ${n}`, xp: (a, b) => `${a} / ${b} xp`, sound: 'Performance music', up: (n, list) => `Level ${n}! Unlocked: ${list}`,
+      name: {dance: 'Dance', wand: 'Feather wand', piano: 'Piano', taiyaki: 'Taiyaki', violin: 'Violin', aura: 'Happy sparkles', cake: 'Strawberry cake', encore: 'Encore medley', gold: 'Golden badge'},
+      desc: {dance: 'Performances may turn into a dance', wand: 'Play: a feather wand you can steer with the pointer', piano: 'Performances: a toy piano tune', taiyaki: 'A new snack', violin: 'Performances: a violin piece', aura: 'Sparkles when she is very happy', cake: 'A new snack', encore: 'Sometimes plays two pieces in a row', gold: 'A golden name badge'},
+      best: 'best friend'},
+    'zh-TW': {title: '等級獎勵', next: '下一個', all: '全部解鎖了！', at: n => `Lv ${n}`, xp: (a, b) => `${a} / ${b} 經驗`, sound: '表演音樂', up: (n, list) => `升到 Lv ${n} 了！解鎖：${list}`,
+      name: {dance: '跳舞', wand: '逗貓棒', piano: '彈鋼琴', taiyaki: '鯛魚燒', violin: '拉小提琴', aura: '開心光點', cake: '草莓蛋糕', encore: '安可連演', gold: '金色名牌'},
+      desc: {dance: '表演時可能會跳舞', wand: '玩耍：可以用滑鼠操控的逗貓棒', piano: '表演：彈一首玩具鋼琴', taiyaki: '新的點心', violin: '表演：拉一段小提琴', aura: '很開心的時候身邊會冒光點', cake: '新的點心', encore: '有時會連演兩首', gold: '金色的名牌'},
+      best: '摯友'},
+    'zh-CN': {title: '等级奖励', next: '下一个', all: '全部解锁了！', at: n => `Lv ${n}`, xp: (a, b) => `${a} / ${b} 经验`, sound: '表演音乐', up: (n, list) => `升到 Lv ${n} 了！解锁：${list}`,
+      name: {dance: '跳舞', wand: '逗猫棒', piano: '弹钢琴', taiyaki: '鲷鱼烧', violin: '拉小提琴', aura: '开心光点', cake: '草莓蛋糕', encore: '安可连演', gold: '金色名牌'},
+      desc: {dance: '表演时可能会跳舞', wand: '玩耍：可以用鼠标操控的逗猫棒', piano: '表演：弹一首玩具钢琴', taiyaki: '新的点心', violin: '表演：拉一段小提琴', aura: '很开心的时候身边会冒光点', cake: '新的点心', encore: '有时会连演两首', gold: '金色的名牌'},
+      best: '挚友'}};
+  const rc = () => RC[app.locale()] || RC.en;
+  const xpFor = n => 12 * (n - 1) * (n - 1);   // inverse of level()
+  const unlocked = id => { const r = REWARDS.find(x => x.id === id); return !r || level() >= r.lv; };
+  const soundOn = () => app.store.get('yuki-sound', '1') === '1';
+  /* Lines for the new actions (the trained dialogue lives in yuki-lines.js; these are only for props). */
+  const AL = {
+    en: {fish: 'A fish snack! Nom nom…', taiyaki: 'Taiyaki! Still warm, with red bean inside ♡', cake: 'Strawberry cake?! Today is a good day.', yarn: 'Up, up… and catch!', wand: 'The feather! I’ll get it this time!', wandHint: 'Move your pointer near me to wave the feather.', desk: 'Just resting my head on the desk for a bit…', spin: 'Ta-da! A little spin.', dance: 'Music on! Let’s dance ♪', piano: 'A little tune on my toy piano ♪', violin: 'Listen… this one is Ode to Joy.', encore: 'Encore? Okay, one more!', caught: 'Got it! Hehe.', locked: (n, lv) => `${n} unlocks at Lv ${lv}. Keep me company a little longer!`},
+    'zh-TW': {fish: '小魚乾！嚼嚼嚼……', taiyaki: '鯛魚燒！還熱熱的，紅豆餡的 ♡', cake: '草莓蛋糕？！今天是好日子。', yarn: '拋高高……接住！', wand: '羽毛！這次一定抓到！', wandHint: '把滑鼠移到我旁邊，就能揮動羽毛喔。', desk: '在課桌上趴一下下……', spin: '噹噹～轉個圈！', dance: '音樂下！一起跳舞 ♪', piano: '用玩具鋼琴彈一首小曲 ♪', violin: '聽好喔……這首是〈歡樂頌〉。', encore: '安可？好，再一首！', caught: '抓到了！嘿嘿。', locked: (n, lv) => `${n}要到 Lv ${lv} 才會喔！再多陪我一下吧～`},
+    'zh-CN': {fish: '小鱼干！嚼嚼嚼……', taiyaki: '鲷鱼烧！还热热的，红豆馅的 ♡', cake: '草莓蛋糕？！今天是好日子。', yarn: '抛高高……接住！', wand: '羽毛！这次一定抓到！', wandHint: '把鼠标移到我旁边，就能挥动羽毛哦。', desk: '在课桌上趴一下下……', spin: '当当～转个圈！', dance: '音乐起！一起跳舞 ♪', piano: '用玩具钢琴弹一首小曲 ♪', violin: '听好哦……这首是《欢乐颂》。', encore: '安可？好，再一首！', caught: '抓到了！嘿嘿。', locked: (n, lv) => `${n}要到 Lv ${lv} 才会哦！再多陪我一下吧～`}};
+  const al = key => (AL[app.locale()] || AL.en)[key];
+  // Asked for something still locked: say which level unlocks it instead of silently doing something else.
+  const lockedLine = id => { const r = REWARDS.find(x => x.id === id); return r && !unlocked(id) ? (AL[app.locale()] || AL.en).locked(`${r.icon} ${rc().name[id]}`, r.lv) : ''; };
+
   /* ---------- DOM ---------- */
   const pet = document.createElement('div');
   pet.className = 'yuki';
@@ -57,9 +95,9 @@
       <svg class="bed-back" viewBox="0 0 200 62" preserveAspectRatio="none"><ellipse class="bed-rim" cx="100" cy="27" rx="98" ry="25"/><ellipse class="bed-hole" cx="100" cy="27" rx="84" ry="15"/></svg>
       <svg class="bed-front" viewBox="0 0 200 62" preserveAspectRatio="none"><defs><linearGradient id="yuki-bed-front" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="bed-front-top"/><stop offset="1" class="bed-front-bottom"/></linearGradient></defs><path fill="url(#yuki-bed-front)" d="M2 27A98 34 0 0 0 198 27L186 27A86 16 0 0 1 14 27Z"/><path class="bed-stitch" d="M22 40Q100 64 178 40"/></svg></div>
     <div class="yuki-tailbox" aria-hidden="true"><i class="yuki-tail"></i></div>
-    <button type="button" class="yuki-hit" aria-haspopup="true" aria-expanded="false"><span class="yuki-figure"><span class="yuki-sprite"><i class="ys-body"></i><i class="ys-head"></i></span><span class="yuki-headbox"><span class="yuki-acc" aria-hidden="true" hidden></span></span></span></button>
+    <button type="button" class="yuki-hit" aria-haspopup="true" aria-expanded="false"><span class="yuki-figure"><span class="yuki-sprite"><i class="ys-body"></i><i class="ys-head"></i></span><span class="yuki-headbox"><span class="yuki-acc" aria-hidden="true" hidden></span><span class="yuki-headprops" aria-hidden="true"></span></span><span class="yuki-props" aria-hidden="true"></span></span></button>
     <div class="yuki-blanket" aria-hidden="true"></div><div class="yuki-bowl" aria-hidden="true"><i class="bowl-fish"></i><i class="bowl-dish"></i></div>
-    <div class="yuki-fx" aria-hidden="true"></div>
+    <div class="yuki-fx" aria-hidden="true"></div><svg class="yuki-wand" aria-hidden="true" hidden><path class="wand-rod"/><path class="wand-string"/><g class="wand-tip"></g></svg>
     <div class="yuki-bubble" role="status" aria-live="polite" hidden><p></p><div class="bubble-actions"></div></div>
     <span class="yuki-badge" aria-hidden="true" hidden></span>`;
   const menu = document.createElement('div');
@@ -78,7 +116,7 @@
   const accEl = $('.yuki-acc');
   let outfitToken = 0, cellRatio = 191 / 444, stride = 160;
   let anchors = [], outfitChoice = app.store.get('yuki-outfit', 'auto'), outfit = 'hoodie', accChoice = app.store.get('yuki-acc', 'auto'), wardrobeOpen = false;
-  let stay = app.store.get('yuki-stay', '0') === '1';   // stay put: no wandering while the visitor reads
+  let stay = app.store.get('yuki-stay', '0') === '1', menuTab = 'act';   // stay put: no wandering while the visitor reads
   const festival = () => window.NIANSIA_FESTIVAL?.active() || null;
   const wardrobe = () => window.YukiWardrobe;
   function loadOutfit(choice) {
@@ -221,10 +259,24 @@
     }
   }
 
+  /* ---------- props (assets/js/yuki-props.js): hand, snacks, desk, instruments, toys ---------- */
+  const Props = window.YukiProps;
+  const propsEl = $('.yuki-props'), headProps = $('.yuki-headprops'), wandSvg = $('.yuki-wand');
+  let propTimers = [], song = null, wandState = null, handTimer = 0;
+  const PROP_CLASSES = ['is-biting', 'is-chewing', 'is-swipe', 'is-piano', 'is-violin', 'is-disco', 'is-juggling', 'bow-up'];
+  const later = (ms, fn) => { const id = setTimeout(fn, motion() ? ms : 0); propTimers.push(id); return id; };
+  function clearProps() {
+    propTimers.forEach(clearTimeout); propTimers = []; song?.stop(); song = null;
+    if (propsEl) propsEl.innerHTML = '';
+    pet.classList.remove(...PROP_CLASSES);
+    if (wandState) endWand(false);
+  }
+  const retrigger = cls => { pet.classList.remove(cls); void pet.offsetWidth; pet.classList.add(cls); };
+
   /* ---------- speech bubble ---------- */
   function placeBubble() {
     const box = pet.getBoundingClientRect(), bw = bubble.offsetWidth, bh = bubble.offsetHeight;
-    const top = tucked ? box.top + H * .2 : pose === 'lie' || pose === 'sleep' || pose === 'eat' ? box.top + H * .38 : box.top - 6;
+    const top = tucked ? box.top + H * .2 : pose === 'sleep' ? box.top + H * .38 : pose === 'lie' ? box.top + H * .3 : box.top - 6;
     let left = box.left + box.width / 2 - bw / 2;
     left = clamp(left, 8, innerWidth - bw - 8);
     bubble.style.setProperty('--bx', `${left - box.left}px`);
@@ -277,6 +329,7 @@
       }
     }
     if (ballState) active = stepBall(dt) || active;
+    if (wandState) active = stepWand(dt) || active;
     if (bf) active = stepButterfly(dt) || active;
     place();
     raf = active ? requestAnimationFrame(loop) : 0;
@@ -480,20 +533,27 @@
     gain(0, fromRub ? 2 : 6, 0, fromRub ? 1 : 2);
     puff('heart', fromRub ? 1 : 3);
     window.NIANSIA_FX?.react('happy');
-    if (busy === 'lie') { setFrame(4); clearTimeout(poseTimer); poseTimer = setTimeout(() => pose === 'lie' && setFrame(0), 900); }
-    else setPose(fromRub ? 'pet' : 'happy', fromRub ? 4 : 2, fromRub ? 1100 : 1000);
+    if (!fromRub && motion() && headProps) {
+      clearTimeout(handTimer); headProps.innerHTML = Props.hand(); retrigger('is-patted');
+      handTimer = setTimeout(() => { headProps.innerHTML = ''; pet.classList.remove('is-patted'); }, 1650);
+    }
+    const quiet = busy && busy !== 'lie';   // mid-performance: a pat should not reset her pose
+    if (busy === 'lie') { setFrame(4); clearTimeout(poseTimer); poseTimer = setTimeout(() => pose === 'lie' && setFrame(0), 1400); }
+    else if (!quiet) setPose(fromRub ? 'pet' : 'pet', 4, fromRub ? 1100 : 1600);
     return line(fromRub ? 'patRub' : 'pet_pat');
   }
   function lieDown(ms = 26000) {
     if (asleep) wake(true);
+    stopPlay(); clearProps();
     busy = 'lie'; setPose('lie');
-    clearTimeout(lieTimer); lieTimer = setTimeout(() => { if (busy === 'lie') { busy = ''; restPose(); } }, ms);
-    return line('pet_lie');
+    if (propsEl) propsEl.innerHTML = Props.desk();
+    clearTimeout(lieTimer); lieTimer = setTimeout(() => { if (busy === 'lie') { busy = ''; clearProps(); restPose(); } }, ms);
+    return al('desk');
   }
   function sleep() {
     interact(); clearTimeout(lieTimer); stopPlay();
     if (asleep) return line('pet_sleep');
-    busy = ''; setPose('yawn', 3);
+    busy = ''; clearProps(); setPose('yawn', 3);
     setTimeout(() => { asleep = true; sleptAt = now(); setPose('sleep'); zzz(); paintState(); }, motion() ? 1100 : 0);
     return line('pet_sleep');
   }
@@ -505,29 +565,78 @@
     setPose('happy', 2, 1200); paintState();
     if (!quiet) say(line('pet_wake'));
   }
-  function feed() {
+  function feed(want) {
     interact();
+    if (lockedLine(want)) { setPose('annoyed', 0, 900); return lockedLine(want); }
     if (asleep) wake(true);
     if (S.food > 92) { setPose('annoyed', 0, 1200); return line('full'); }
-    stopPlay(); clearTimeout(lieTimer);
+    stopPlay(); clearTimeout(lieTimer); clearProps(); clearInterval(munchTimer);
+    const menu_ = ['fish', ...['taiyaki', 'cake'].filter(unlocked)];
+    const kind = menu_.includes(want) ? want : pick(menu_);
     busy = 'eat'; setPose('eat', 0);
-    let n = 0;
-    clearInterval(munchTimer);
-    munchTimer = setInterval(() => {
-      setFrame(n++ % 2 ? 4 : 0);
-      if (n % 3 === 0) puff('crumb', 1, .4);
-      if (n > 12) { clearInterval(munchTimer); busy = ''; gain(35, 4, 2, 3); setPose('happy', 2, 1200); puff('heart', 2); }
-    }, motion() ? 240 : 30);
-    return line('pet_feed');
+    if (!motion() || !propsEl) { busy = ''; gain(35, 4, 2, 3); setPose('happy', 2, 900); return al(kind); }
+    propsEl.innerHTML = Props.food(kind);
+    const food = propsEl.querySelector('.yp-food');
+    pet.classList.add('is-chewing');
+    [650, 1450, 2250].forEach((ms, i) => later(ms, () => {
+      retrigger('is-biting'); setFrame(4); Props.bite(food, i); puff('crumb', 2, .3);
+      later(300, () => { if (busy === 'eat') setFrame(0); });
+    }));
+    later(2750, () => {
+      if (propsEl) propsEl.innerHTML = ''; pet.classList.remove('is-chewing', 'is-biting'); busy = '';
+      const big = kind === 'cake' ? 1.4 : kind === 'taiyaki' ? 1.2 : 1;
+      gain(35 * big, 4 * big, 2, 3); setPose('happy', 2, 1300); puff('heart', kind === 'fish' ? 2 : 4);
+    });
+    return al(kind);
   }
-  function trick() {
+  function trick(want) {
     interact();
+    if (lockedLine(want)) { setPose('annoyed', 0, 900); return lockedLine(want); }
     if (asleep) wake(true);
-    if (busy === 'lie') busy = '';
-    setPose('trick', 2, 1300);
-    pet.classList.remove('is-spinning'); void pet.offsetWidth; pet.classList.add('is-spinning');
-    puff('note', 3); gain(0, 5, -3, 2);
-    return line('pet_trick');
+    if (busy === 'lie') { busy = ''; clearTimeout(lieTimer); }
+    stopPlay(); clearProps(); clearInterval(danceTimer);
+    const list = ['spin', ...['dance', 'piano', 'violin'].filter(unlocked)];
+    const kind = list.includes(want) ? want : list.length > 1 ? pick(list.filter(k => k !== 'spin' || Math.random() < .3)) : 'spin';
+    const encore = unlocked('encore') && kind !== 'spin' && list.length > 2 && (want === 'encore' || (!want && Math.random() < .3));
+    performAct(kind, encore ? () => { say(al('encore')); later(600, () => performAct(pick(list.filter(k => k !== kind && k !== 'spin')))); } : null);
+    return al(kind);
+  }
+  function performAct(kind, then) {
+    const done = () => {
+      clearProps(); busy = ''; gain(0, 6, -3, 3); setPose('happy', 2, 1100); puff('heart', 2);
+      then?.();
+    };
+    if (kind === 'spin' || !motion() || !propsEl) {
+      setPose('trick', 2, 1300); retrigger('is-spinning'); puff('note', 3);
+      gain(0, 5, -3, 2); if (then) later(1400, then);
+      return;
+    }
+    busy = 'perform';
+    if (kind === 'dance') {
+      setPose('dance', 0); pet.classList.add('is-disco');
+      song = Props.sound.play('dance', {sound: soundOn(), onNote: (m, i) => {
+        if (busy !== 'perform') return;
+        if (i % 2 === 0) setFrame(frame === 2 ? 0 : 2);
+        if (i % 3 === 0) puff('note', 1);
+        if (i % 5 === 0) puff('star', 1, 1.2);
+      }});
+    } else if (kind === 'piano') {
+      setPose('idle', 0); propsEl.innerHTML = Props.piano(); pet.classList.add('is-piano');
+      const keys = [...propsEl.querySelectorAll('.yp-key')];
+      song = Props.sound.play('piano', {sound: soundOn(), onNote: m => {
+        if (busy !== 'perform') return;
+        const k = keys[Props.sound.pianoKey(m)]; keys.forEach(el => el.classList.remove('on')); k?.classList.add('on');
+        setFrame(frame === 4 ? 0 : 4); puff('note', 1);
+      }});
+    } else if (kind === 'violin') {
+      setPose('idle', 0); propsEl.innerHTML = Props.violin() + `<span class="yp-bowbox">${Props.bow()}</span>`; pet.classList.add('is-violin');
+      song = Props.sound.play('violin', {sound: soundOn(), onNote: (m, i) => {
+        if (busy !== 'perform') return;
+        pet.classList.toggle('bow-up', i % 2 === 0); if (i % 2) puff('note', 1);
+        if (i % 4 === 0) setFrame(4); else if (frame === 4) setFrame(0);
+      }});
+    }
+    later(Math.max(1500, (song?.duration || 2) * 1000 + 450), done);
   }
   function poke() {
     interact();
@@ -541,17 +650,89 @@
     tucked = force ?? !tucked;
     pet.classList.toggle('is-tucked', tucked);
     closeMenu();
-    if (tucked) { busy = ''; stopPlay(); setPose('idle'); } else setPose('happy', 2, 900);
+    if (tucked) { busy = ''; stopPlay(); clearProps(); setPose('idle'); } else setPose('happy', 2, 900);
     app.store.set('yuki-tucked', tucked ? '1' : '0');
     place();
     return line(tucked ? 'hide' : 'show');
   }
 
-  /* play: a yarn ball Yuki chases and kicks */
-  function startPlay() {
+  /* play: juggling a yarn ball in place, a feather wand (Lv 3), or, when she may wander, chasing a ball across the floor */
+  function startPlay(want) {
     interact();
+    if (lockedLine(want)) { setPose('annoyed', 0, 900); return lockedLine(want); }
     if (asleep) wake(true);
     if (S.energy < 15) { setPose('yawn', 3, 1200); return line('tooSleepy'); }
+    if (busy === 'lie') { busy = ''; clearTimeout(lieTimer); }
+    stopPlay(); clearProps(); endButterfly();
+    const modes = ['yarn', ...(unlocked('wand') ? ['wand'] : []), ...(!stay && innerWidth > 720 && motion() ? ['chase'] : [])];
+    const kind = modes.includes(want) ? want : pick(modes);
+    if (kind === 'chase') return startChase();
+    if (!motion() || !propsEl) { gain(-4, 12, -8, 4); setPose('happy', 2, 900); return al(kind); }
+    return kind === 'wand' ? startWand() : juggle();
+  }
+  function juggle() {
+    busy = 'play'; walkTo = null; setPose('happy', 2);
+    propsEl.innerHTML = `<span class="yp-juggle">${Props.yarn()}</span>`; pet.classList.add('is-juggling');
+    const period = 700;
+    for (let i = 0; i < 5; i++) later(i * period, () => { if (busy !== 'play') return; retrigger('is-hop'); setFrame(i % 2 ? 2 : 0); if (i % 2) puff('note', 1); });
+    later(5 * period, () => {
+      pet.classList.remove('is-juggling'); propsEl.querySelector('.yp-juggle')?.classList.add('is-caught');
+      setPose('pet', 4, 1400); puff('heart', 3); say(al('caught'), {ms: 1800});
+      gain(-4, 12, -8, 4);
+      later(1500, () => { clearProps(); busy = ''; restPose(); });
+    });
+    return al('yarn');
+  }
+  /* The feather wand: it swings by itself, or follows the pointer when it comes close. She swats at it and
+     catches it on the third or fourth try. */
+  function startWand() {
+    busy = 'play'; walkTo = null; setPose('idle', 0);
+    wandSvg.removeAttribute('hidden'); wandSvg.querySelector('.wand-tip').innerHTML = Props.feather();
+    wandState = {t: 0, swipes: 0, cool: 1, until: now() + 9000, caught: 0, tip: {x: W * 1.4, y: -H * .45}, steered: false};
+    kick();
+    setTimeout(() => { if (wandState && !wandState.steered && pointer.t < now() - 2000) say(al('wandHint'), {ms: 3200}); }, 2600);
+    return al('wand');
+  }
+  function stepWand(dt) {
+    const s = wandState; if (!s) return false;
+    s.t += dt; s.cool -= dt;
+    const box = pet.getBoundingClientRect(), head = {x: W * .5, y: H * .12};
+    const px = pointer.x - box.left, py = pointer.y - box.top;
+    const steer = !s.caught && pointer.t > now() - 1200 && Math.hypot(px - head.x, py - head.y) < 280;
+    if (steer) s.steered = true;
+    let tx, ty;
+    if (s.caught) { tx = head.x + W * .05; ty = H * .42; }
+    else if (steer) { tx = px; ty = py; }
+    else { tx = head.x + Math.sin(s.t * 1.6) * W * .95; ty = head.y - H * .16 + Math.sin(s.t * 3.2) * H * .13; }
+    const k = Math.min(1, dt * (s.caught ? 10 : 5));
+    s.tip.x += (tx - s.tip.x) * k; s.tip.y += (ty - s.tip.y) * k;
+    const base = {x: W * 2.2, y: -H * .62}, rod = {x: base.x + (s.tip.x - base.x) * .5, y: base.y + (s.tip.y - base.y) * .45 - H * .08};
+    wandSvg.querySelector('.wand-rod').setAttribute('d', `M${base.x},${base.y}L${rod.x},${rod.y}`);
+    wandSvg.querySelector('.wand-string').setAttribute('d', `M${rod.x},${rod.y}Q${(rod.x + s.tip.x) / 2},${Math.max(rod.y, s.tip.y) + 14} ${s.tip.x},${s.tip.y}`);
+    wandSvg.querySelector('.wand-tip').setAttribute('transform', `translate(${s.tip.x},${s.tip.y}) rotate(${clamp((s.tip.x - rod.x) * .4, -40, 40)})`);
+    if (!s.caught) {
+      setLook(clamp((s.tip.x - head.x) / 10, -10, 10));
+      const d = Math.hypot(s.tip.x - head.x, s.tip.y - (head.y - H * .06));
+      if (s.cool <= 0 && d < H * .36 && !dragging) {
+        s.cool = .9; s.swipes++; retrigger('is-swipe'); setPose('happy', 2, 420); puff('star', 1, .6);
+        if ((s.swipes >= 3 && Math.random() < .6) || s.swipes >= 4) catchWand();
+      }
+      if (now() > s.until) catchWand();
+    }
+    return true;
+  }
+  function catchWand() {
+    const s = wandState; if (!s || s.caught) return;
+    s.caught = now(); setLook(0); setPose('pet', 4, 1500); puff('heart', 3); say(al('caught'), {ms: 1800});
+    gain(-5, 14, -8, 5);
+    later(1500, () => endWand(true));
+  }
+  function endWand() {
+    if (!wandState) return;
+    wandState = null; wandSvg.setAttribute('hidden', '');
+    if (busy === 'play') { busy = ''; setLook(0); restPose(); }
+  }
+  function startChase() {
     const f = floorOf(floorKind), [a, b] = bounds(f);
     busy = 'play';
     ballState = {x: clamp(x + (x > (a + b) / 2 ? -1 : 1) * rand(120, 200), a, b), y: f.y - 200, vx: 0, vy: 0, r: 11, kicks: 0, spin: 0, until: now() + 16000};
@@ -593,7 +774,7 @@
     if (won) { gain(-6, 15, -12, 5); setPose('happy', 2, 1300); puff('heart', 3); say(line('caught')); }
     else restPose();
   }
-  function stopPlay() { if (ballState) endPlay(false); }
+  function stopPlay() { if (ballState) endPlay(false); if (wandState) endWand(); }
   ball.addEventListener('pointerdown', event => {
     if (!ballState) return;
     event.preventDefault(); ball.setPointerCapture(event.pointerId);
@@ -621,7 +802,7 @@
         down.moved = true; dragging = true; grounded = false; walkTo = null; stopPlay(); endButterfly();
         leaping = false; afterLand = null; setGait('walk'); setLook(0); pet.classList.remove('is-wiggling');
         if (asleep) wake(true);
-        busy = ''; clearInterval(munchTimer);
+        busy = ''; clearInterval(munchTimer); clearProps(); clearTimeout(lieTimer);
         closeMenu(); setPose('drag'); pet.classList.add('is-dragging');
         say(line('drag'), {ms: 1600}); interact();
       }
@@ -639,7 +820,7 @@
     }
     // Rubbing her head (hover without pressing) counts as gentle pats.
     if (event.pointerType === 'mouse' && !tucked) {
-      const box = hit.getBoundingClientRect(), headZone = event.clientY < box.top + box.height * (pose === 'lie' || pose === 'sleep' ? .75 : .32);
+      const box = hit.getBoundingClientRect(), headZone = event.clientY < box.top + box.height * (pose === 'sleep' ? .75 : pose === 'lie' ? .6 : .32);
       if (headZone) {
         rub += Math.abs(event.movementX) + Math.abs(event.movementY) * .5;
         if (rub > 110) {
@@ -680,16 +861,28 @@
   function statBar(key, value, cls) {
     return `<div class="stat ${cls}"><span>${t().stats[key]}</span><i><b style="width:${Math.round(value)}%"></b></i><em>${Math.round(value)}</em></div>`;
   }
+  /* The menu keeps one compact height: four tabs instead of sections that expand downwards. */
+  const TABS = {en: {act: 'Play', lv: 'Levels', wear: 'Outfits', set: 'Settings'}, 'zh-TW': {act: '互動', lv: '等級', wear: '換裝', set: '設定'}, 'zh-CN': {act: '互动', lv: '等级', wear: '换装', set: '设置'}};
   function renderMenu() {
-    const a = t().petActions;
+    const a = t().petActions, tabs = TABS[app.locale()] || TABS.en;
     const acts = [['pat', 'heart', a.pat], ['feed', 'fish', a.feed], ['play', 'yarn', a.play], ['lie', 'bed', a.lie],
       [asleep ? 'wake' : 'sleep', asleep ? 'sun' : 'moon', asleep ? a.wake : a.sleep], ['trick', 'star', a.trick], ['chat', 'chat', a.chat], ['hide', 'hide', a.hide]];
-    menu.innerHTML = `<div class="menu-head"><span class="menu-avatar" data-face="${asleep ? 2 : S.mood > 70 ? 1 : 0}"></span><div><strong>Yuki</strong><small>${t().moodWords[moodKey()]}</small></div><span class="menu-level">♡ ${t().stats.level} ${level()}</span></div><p class="menu-say" aria-live="polite">${esc(bubble.hidden ? line('pet_pat') : bubble.querySelector('p').textContent)}</p>
-      <div class="menu-stats">${statBar('food', S.food, 'is-food')}${statBar('mood', S.mood, 'is-mood')}${statBar('energy', S.energy, 'is-energy')}</div>
-      <div class="menu-actions">${acts.map(([key, ic, label]) => `<button type="button" role="menuitem" data-pet-act="${key}">${svg(ic)}<span>${label}</span>${key === 'chat' && unread ? `<em>${unread}</em>` : ''}</button>`).join('')}</div>
-      <button type="button" class="menu-wardrobe menu-stay" data-stay aria-pressed="${stay}">${svg('pin')}<span>${a.stay}</span><b class="stay-switch" aria-hidden="true"><i></i></b></button>
-      <button type="button" class="menu-wardrobe" data-wardrobe aria-expanded="${wardrobeOpen}">${svg('star')}<span>${t().wardrobe}</span><b>${wardrobeOpen ? '−' : '+'}</b></button>
-      ${wardrobeOpen ? renderWardrobe() : ''}`;
+    const lv = level(), r = rc(), next = REWARDS.find(x => x.lv > lv), tier = lv >= 10 ? 'gold' : lv >= 7 ? 3 : lv >= 4 ? 2 : 1;
+    const span = xpFor(lv + 1) - xpFor(lv), into = clamp(S.xp - xpFor(lv), 0, span);
+    const xp = `<button type="button" class="menu-xp" data-tab="lv"><span class="xp-bar"><b style="width:${(into / span * 100).toFixed(1)}%"></b></span><span class="xp-text">${esc(r.xp(Math.round(into), span))}</span><span class="xp-next">${next ? `${esc(r.next)} ${next.icon} ${esc(r.name[next.id])} · ${r.at(next.lv)}` : esc(r.all)}</span></button>`;
+    const sw = (attr, on, ic, label) => `<button type="button" class="menu-wardrobe menu-stay" ${attr} aria-pressed="${on}">${svg(ic)}<span>${label}</span><b class="stay-switch" aria-hidden="true"><i></i></b></button>`;
+    const body = {
+      act: `<p class="menu-say" aria-live="polite">${esc(bubble.hidden ? line('pet_pat') : bubble.querySelector('p').textContent)}</p>
+        <div class="menu-stats">${statBar('food', S.food, 'is-food')}${statBar('mood', S.mood, 'is-mood')}${statBar('energy', S.energy, 'is-energy')}${xp}</div>
+        <div class="menu-actions">${acts.map(([key, ic, label]) => `<button type="button" role="menuitem" data-pet-act="${key}">${svg(ic)}<span>${label}</span>${key === 'chat' && unread ? `<em>${unread}</em>` : ''}</button>`).join('')}</div>`,
+      lv: `<div class="menu-stats menu-lvbox"><div class="lv-big"><b>Lv ${lv}</b><span>${esc(r.title)}</span></div>${xp}</div>
+        <div class="menu-rewards">${REWARDS.map(x => `<div class="reward${lv >= x.lv ? ' is-on' : ''}${next === x ? ' is-next' : ''}"><span class="reward-icon">${lv >= x.lv ? x.icon : '🔒'}</span><span><b>${esc(r.name[x.id])}</b><small>${esc(r.desc[x.id])}</small></span><em>${r.at(x.lv)}</em></div>`).join('')}</div>`,
+      wear: renderWardrobe(),
+      set: `<div class="menu-settings">${sw('data-stay', stay, 'pin', a.stay)}${sw('data-sound', soundOn(), 'note', esc(r.sound))}</div>`,
+    }[menuTab];
+    menu.innerHTML = `<div class="menu-head"><span class="menu-avatar" data-face="${asleep ? 2 : S.mood > 70 ? 1 : 0}"></span><div><strong>Yuki${unlocked('gold') ? `<i class="menu-title">${esc(r.best)}</i>` : ''}</strong><small>${t().moodWords[moodKey()]}</small></div><button type="button" class="menu-level tier-${tier}" data-tab="lv" title="${esc(r.title)}">♡ ${t().stats.level} ${lv}</button></div>
+      <div class="menu-tabs" role="tablist">${Object.entries(tabs).map(([k, label]) => `<button type="button" role="tab" data-tab="${k}" aria-selected="${k === menuTab}">${esc(label)}${k === 'act' && unread ? '<i></i>' : ''}</button>`).join('')}</div>
+      <div class="menu-body" data-body="${menuTab}">${body}</div>`;
   }
   function renderWardrobe() {
     const c = t(), L = app.locale(), list = wardrobe()?.outfits() || [], accs = wardrobe()?.accessories || {};
@@ -714,15 +907,17 @@
   function toggleMenu(force) {
     const open = force ?? menu.hidden;
     if (!open) { closeMenu(); return; }
-    renderMenu(); menu.hidden = false; bubble.hidden = true; hit.setAttribute('aria-expanded', 'true');
+    menuTab = 'act'; renderMenu(); menu.hidden = false; bubble.hidden = true; hit.setAttribute('aria-expanded', 'true');
     menu.classList.remove('is-in'); void menu.offsetWidth; menu.classList.add('is-in');
     placeMenu();
     menu.querySelector('button')?.focus({preventScroll: true});
   }
   function closeMenu(refocus) { if (menu.hidden) return; menu.hidden = true; hit.setAttribute('aria-expanded', 'false'); if (refocus) hit.focus({preventScroll: true}); }
   menu.addEventListener('click', event => {
+    const tab = event.target.closest('[data-tab]');
+    if (tab) { menuTab = tab.dataset.tab; renderMenu(); placeMenu(); menu.querySelector(`.menu-tabs [data-tab="${menuTab}"]`)?.focus({preventScroll: true}); return; }
+    if (event.target.closest('[data-sound]')) { app.store.set('yuki-sound', soundOn() ? '0' : '1'); if (!soundOn()) song?.stop(); renderMenu(); placeMenu(); menu.querySelector('[data-sound]')?.focus({preventScroll: true}); return; }
     if (event.target.closest('[data-stay]')) { const text = setStay(!stay); renderMenu(); placeMenu(); say(text); menu.querySelector('[data-stay]')?.focus({preventScroll: true}); return; }
-    if (event.target.closest('[data-wardrobe]')) { wardrobeOpen = !wardrobeOpen; renderMenu(); placeMenu(); menu.querySelector('[data-wardrobe]')?.focus({preventScroll: true}); return; }
     const o = event.target.closest('[data-outfit]');
     if (o) { setOutfit(o.dataset.outfit); renderMenu(); say(t().outfitChanged); return; }
     const a = event.target.closest('[data-acc]');
@@ -748,16 +943,17 @@
     accChoice = id; app.store.set('yuki-acc', id); paintAccessory();
     if (accessoryId()) { setPose('happy', 2, 900); puff('heart', 2); }
   }
-  function act(name) {
+  function act(full) {
     interact();
+    const [name, arg] = String(full).split(':');
     switch (name) {
       case 'pat': return patReact(false);
-      case 'feed': return feed();
-      case 'play': return startPlay();
+      case 'feed': return feed(arg);
+      case 'play': return startPlay(arg);
       case 'lie': return lieDown();
       case 'sleep': return sleep();
       case 'wake': if (asleep) { wake(true); return line('pet_wake'); } setPose('happy', 2, 900); return line('pet_wake');
-      case 'trick': return trick();
+      case 'trick': return trick(arg);
       case 'hide': return tuck();
       case 'show': return tuck(false);
       case 'poke': return poke();
@@ -1127,6 +1323,7 @@
     const gap = 300000 * Math.pow(1.6, nudges);
     if (!asleep && !tucked && chat.hidden && stamp - lastInteract > gap && stamp - lastActive < 60000) nudge();
   }, 15000);
+  setInterval(() => { if (unlocked('aura') && S.mood > 80 && !asleep && !tucked && !dragging && !document.hidden && motion()) puff('star', 1, 1.3); }, 6500);
   ['pointermove', 'keydown', 'scroll', 'wheel', 'touchstart'].forEach(type => window.addEventListener(type, () => { lastActive = now(); }, {passive: true, capture: true}));
   let titleTimer;
   document.addEventListener('visibilitychange', () => {
@@ -1201,6 +1398,7 @@
       return true;
     },
     setOutfit, setAccessory, festivalLine, outfit: () => outfitChoice, accessory: () => accChoice,
+    level, rewards: () => REWARDS.map(r => ({...r, unlocked: level() >= r.lv, name: rc().name[r.id]})),
     offer: (text, actions) => { if (tucked || asleep) { pushMessage({who: 'yuki', text, links: actions}); return; } say(text, {ms: 12000, actions}); pushMessage({who: 'yuki', text, links: actions}); },
     act, ask, say: (text, kind) => { if (kind === 'poke') poke(); say(text); pushMessage({who: 'yuki', text}); }, openChat, closeChat,
     asleep: () => asleep, dragging: () => dragging,
