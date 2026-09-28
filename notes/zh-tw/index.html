@@ -17,6 +17,7 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://*.firebasedatabase.app; connect-src 'self' https://*.firebasedatabase.app wss://*.firebasedatabase.app; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; frame-src https://*.firebasedatabase.app; object-src 'none'; base-uri 'self'; form-action 'none'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml">
+<script src="/assets/js/page-turn.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap">
 <style>
 :root{--bg:#fbf6ee;--paper:#fffdf9;--ink:#2a2230;--muted:#766b73;--line:#2a22301a;--accent:#c0673a;--accent2:#8f6bb3;--code:#f3ece2;}
@@ -70,11 +71,6 @@ figure.fig figcaption{margin-top:8px;font-size:13.5px;color:var(--muted);line-he
 .log-entry h2 a{color:var(--ink);text-decoration:none;}
 .statement-link{display:flex;justify-content:space-between;align-items:center;}
 footer{max-width:760px;margin:0 auto;padding:26px 20px 50px;border-top:1px solid var(--line);font-size:14px;color:var(--muted);}
-@view-transition{navigation:auto;}
-::view-transition-old(root){animation:vt-out .18s ease-in both;}::view-transition-new(root){animation:vt-in .34s cubic-bezier(.22,1,.36,1) both;}
-@keyframes vt-out{to{opacity:0;}}@keyframes vt-in{from{opacity:0;transform:translateY(8px);}}
-::view-transition-group(*){animation-duration:.42s;animation-timing-function:cubic-bezier(.22,1,.36,1);}
-@media(prefers-reduced-motion:reduce){@view-transition{navigation:none;}}
 </style>
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "Blog", "name": "Niansia · 研究筆記", "url": "https://niansia.github.io/notes/zh-tw/", "author": {"@type": "Person", "name": "Niansia", "url": "https://niansia.github.io/", "email": "mailto:niansia930202@gmail.com", "sameAs": ["https://github.com/niansia"]}, "inLanguage": "zh-Hant"}</script>
 <script defer src="/assets/js/site-stats.js"></script>
@@ -83,7 +79,7 @@ footer{max-width:760px;margin:0 auto;padding:26px 20px 50px;border-top:1px solid
 </head>
 <body>
 <header class="top"><a href="/zh-tw/"><b>~/niansia</b></a> / notes<span class="sp"></span><span class="langs"><a href="/notes/en/" hreflang="en">EN</a><a href="/notes/zh-tw/" aria-current="page" hreflang="zh-Hant">繁</a><a href="/notes/zh-cn/" hreflang="zh-Hans">简</a></span></header>
-<main><p class="kicker">~/niansia/notes</p><h1>研究筆記</h1><p class="lede">把做過的東西、有效的方法，還有沒成功的地方，誠實地寫下來。</p><a class="card" href="/notes/zh-tw/lumigrid-notes/"><b style="view-transition-name:n-lumigrid-notes">LumiGrid 研究筆記：一個亮度曲線網格，實際上學到了什麼</b><small>從 16.48 dB 的課堂作法到 24.57 dB：LumiGrid 的設計、消融實驗、兩個失敗案例，以及一個對自己方法不太有利的發現。</small><i>2026-09-28 · 3 分鐘閱讀</i></a><a class="card" href="/notes/zh-tw/lumigrid-in-the-browser/"><b style="view-transition-name:n-lumigrid-in-the-browser">把 LumiGrid 搬進瀏覽器：一個只在 WebGPU 出錯的 6 通道卷積</b><small>兩個神經網路加上一段自己寫的 WebGL 著色器，逐像素對照 PyTorch 驗證；以及一個讓 WebGPU 版本只剩 28.75 dB 的錯，是怎麼一步步二分找出來的。</small><i>2026-09-28 · 2 分鐘閱讀</i></a><a class="card" href="/notes/zh-tw/taiwan-exam-design/"><b style="view-transition-name:n-taiwan-exam-design">Taiwan Exam 設計筆記：讓模型出題，讓程式只負責檢查</b><small>一個讓 AI 出原創學測模擬考的 Agent Skill，為什麼刻意不讓程式替題目品質背書，以及那些檢查、鎖定與套版是怎麼設計的。</small><i>2026-09-28 · 2 分鐘閱讀</i></a><div class="btns"><a class="btn primary" href="/zh-tw/#research">回到作品集</a></div></main>
+<main><p class="kicker">~/niansia/notes</p><h1>研究筆記</h1><p class="lede">把做過的東西、有效的方法，還有沒成功的地方，誠實地寫下來。</p><a class="card" href="/notes/zh-tw/lumigrid-notes/"><b>LumiGrid 研究筆記：一個亮度曲線網格，實際上學到了什麼</b><small>從 16.48 dB 的課堂作法到 24.57 dB：LumiGrid 的設計、消融實驗、兩個失敗案例，以及一個對自己方法不太有利的發現。</small><i>2026-09-28 · 3 分鐘閱讀</i></a><a class="card" href="/notes/zh-tw/lumigrid-in-the-browser/"><b>把 LumiGrid 搬進瀏覽器：一個只在 WebGPU 出錯的 6 通道卷積</b><small>兩個神經網路加上一段自己寫的 WebGL 著色器，逐像素對照 PyTorch 驗證；以及一個讓 WebGPU 版本只剩 28.75 dB 的錯，是怎麼一步步二分找出來的。</small><i>2026-09-28 · 2 分鐘閱讀</i></a><a class="card" href="/notes/zh-tw/taiwan-exam-design/"><b>Taiwan Exam 設計筆記：讓模型出題，讓程式只負責檢查</b><small>一個讓 AI 出原創學測模擬考的 Agent Skill，為什麼刻意不讓程式替題目品質背書，以及那些檢查、鎖定與套版是怎麼設計的。</small><i>2026-09-28 · 2 分鐘閱讀</i></a><div class="btns"><a class="btn primary" href="/zh-tw/#research">回到作品集</a></div></main>
 <footer>有問題或想法？寫信到 <a href="mailto:niansia930202@gmail.com">niansia930202@gmail.com</a> · <a href="/zh-tw/">niansia.github.io</a> · <a href="https://github.com/niansia">github.com/niansia</a><span class="stats" data-stats hidden> · <i class="live-dot"></i> <b data-stat="online">–</b> 人在線 · <b data-stat="total">–</b> 次造訪</span></footer>
 </body>
 </html>

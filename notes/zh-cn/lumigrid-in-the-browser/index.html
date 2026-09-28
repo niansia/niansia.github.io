@@ -17,6 +17,7 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://*.firebasedatabase.app; connect-src 'self' https://*.firebasedatabase.app wss://*.firebasedatabase.app; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; frame-src https://*.firebasedatabase.app; object-src 'none'; base-uri 'self'; form-action 'none'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml">
+<script src="/assets/js/page-turn.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap">
 <style>
 :root{--bg:#fbf6ee;--paper:#fffdf9;--ink:#2a2230;--muted:#766b73;--line:#2a22301a;--accent:#c0673a;--accent2:#8f6bb3;--code:#f3ece2;}
@@ -70,11 +71,6 @@ figure.fig figcaption{margin-top:8px;font-size:13.5px;color:var(--muted);line-he
 .log-entry h2 a{color:var(--ink);text-decoration:none;}
 .statement-link{display:flex;justify-content:space-between;align-items:center;}
 footer{max-width:760px;margin:0 auto;padding:26px 20px 50px;border-top:1px solid var(--line);font-size:14px;color:var(--muted);}
-@view-transition{navigation:auto;}
-::view-transition-old(root){animation:vt-out .18s ease-in both;}::view-transition-new(root){animation:vt-in .34s cubic-bezier(.22,1,.36,1) both;}
-@keyframes vt-out{to{opacity:0;}}@keyframes vt-in{from{opacity:0;transform:translateY(8px);}}
-::view-transition-group(*){animation-duration:.42s;animation-timing-function:cubic-bezier(.22,1,.36,1);}
-@media(prefers-reduced-motion:reduce){@view-transition{navigation:none;}}
 </style>
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "BlogPosting", "headline": "把 LumiGrid 搬进浏览器：一个只在 WebGPU 出错的 6 信道卷积", "description": "两个神经网络加上一段自己写的 WebGL 着色器，逐像素对照 PyTorch 验证；以及一个让 WebGPU 版本只剩 28.75 dB 的错，是怎么一步步二分找出来的。", "datePublished": "2026-09-28", "dateModified": "2026-09-28", "inLanguage": "zh-Hans", "author": {"@type": "Person", "name": "Niansia", "url": "https://niansia.github.io/", "email": "mailto:niansia930202@gmail.com", "sameAs": ["https://github.com/niansia"]}, "mainEntityOfPage": "https://niansia.github.io/notes/zh-cn/lumigrid-in-the-browser/", "image": "https://niansia.github.io/assets/og/note-lumigrid-in-the-browser-zh-cn.jpg", "keywords": "WebGPU, ONNX Runtime Web, 调试"}</script>
 <script defer src="/assets/js/site-stats.js"></script>
@@ -83,7 +79,7 @@ footer{max-width:760px;margin:0 auto;padding:26px 20px 50px;border-top:1px solid
 </head>
 <body>
 <header class="top"><a href="/zh-cn/"><b>~/niansia</b></a> / <a href="/notes/zh-cn/">notes</a><span class="sp"></span><span class="langs"><a href="/notes/en/lumigrid-in-the-browser/" hreflang="en">EN</a><a href="/notes/zh-tw/lumigrid-in-the-browser/" hreflang="zh-Hant">繁</a><a href="/notes/zh-cn/lumigrid-in-the-browser/" aria-current="page" hreflang="zh-Hans">简</a></span></header>
-<main><p class="kicker">研究笔记</p><h1 style="view-transition-name:n-lumigrid-in-the-browser">把 LumiGrid 搬进浏览器：一个只在 WebGPU 出错的 6 信道卷积</h1><p class="lede">两个神经网络加上一段自己写的 WebGL 着色器，逐像素对照 PyTorch 验证；以及一个让 WebGPU 版本只剩 28.75 dB 的错，是怎么一步步二分找出来的。</p><div class="meta"><time datetime="2026-09-28">2026-09-28</time><span>2 分钟阅读</span><span class="tag">WebGPU</span><span class="tag">ONNX Runtime Web</span><span class="tag">调试</span></div><article><p>我想让看网站的人直接用自己的照片试 <a href="/notes/zh-cn/lumigrid-notes/">LumiGrid</a>，而且<strong>照片不能离开他们的设备</strong>。所以整个模型要在浏览器里跑。这篇记录怎么拆、怎么验证，以及一个花了我最多时间的错。</p>
+<main><p class="kicker">研究笔记</p><h1>把 LumiGrid 搬进浏览器：一个只在 WebGPU 出错的 6 信道卷积</h1><p class="lede">两个神经网络加上一段自己写的 WebGL 着色器，逐像素对照 PyTorch 验证；以及一个让 WebGPU 版本只剩 28.75 dB 的错，是怎么一步步二分找出来的。</p><div class="meta"><time datetime="2026-09-28">2026-09-28</time><span>2 分钟阅读</span><span class="tag">WebGPU</span><span class="tag">ONNX Runtime Web</span><span class="tag">调试</span></div><article><p>我想让看网站的人直接用自己的照片试 <a href="/notes/zh-cn/lumigrid-notes/">LumiGrid</a>，而且<strong>照片不能离开他们的设备</strong>。所以整个模型要在浏览器里跑。这篇记录怎么拆、怎么验证，以及一个花了我最多时间的错。</p>
 <h2>怎么拆</h2>
 <p>LumiGrid 有三个部分，我分别用最适合的方式实作：</p>
 <table>
@@ -160,7 +156,7 @@ footer{max-width:760px;margin:0 auto;padding:26px 20px 50px;border-top:1px solid
 <li><strong>把中间层拉出来比，比猜测快很多。</strong> 我猜了三次，二分只做两轮就找到。</li>
 <li>我还没有把它缩成最小重现回报给 ONNX Runtime，这是下一件要做的事。</li>
 </ul>
-<p>自己试试看：<a href="/lab/lumigrid/?lang=zh-CN">在浏览器运行的 LumiGrid</a>。</p></article><h2 style="margin-top:48px">其他笔记</h2><a class="card" href="/notes/zh-cn/lumigrid-notes/"><b style="view-transition-name:n-lumigrid-notes">LumiGrid 研究笔记：一个亮度曲线网格，实际上学到了什么</b><small>从 16.48 dB 的课堂作法到 24.57 dB：LumiGrid 的设计、消融实验、两个失败案例，以及一个对自己方法不太有利的发现。</small></a><a class="card" href="/notes/zh-cn/taiwan-exam-design/"><b style="view-transition-name:n-taiwan-exam-design">Taiwan Exam 设计笔记：让模型出题，让程序只负责检查</b><small>一个让 AI 出原创学测仿真考的 Agent Skill，为什么刻意不让程序替题目品质背书，以及那些检查、锁定与套版是怎么设计的。</small></a><div class="btns"><a class="btn" href="/notes/zh-cn/">研究笔记</a><a class="btn primary" href="/zh-cn/#research">回到作品集</a></div></main>
+<p>自己试试看：<a href="/lab/lumigrid/?lang=zh-CN">在浏览器运行的 LumiGrid</a>。</p></article><h2 style="margin-top:48px">其他笔记</h2><a class="card" href="/notes/zh-cn/lumigrid-notes/"><b>LumiGrid 研究笔记：一个亮度曲线网格，实际上学到了什么</b><small>从 16.48 dB 的课堂作法到 24.57 dB：LumiGrid 的设计、消融实验、两个失败案例，以及一个对自己方法不太有利的发现。</small></a><a class="card" href="/notes/zh-cn/taiwan-exam-design/"><b>Taiwan Exam 设计笔记：让模型出题，让程序只负责检查</b><small>一个让 AI 出原创学测仿真考的 Agent Skill，为什么刻意不让程序替题目品质背书，以及那些检查、锁定与套版是怎么设计的。</small></a><div class="btns"><a class="btn" href="/notes/zh-cn/">研究笔记</a><a class="btn primary" href="/zh-cn/#research">回到作品集</a></div></main>
 <footer>有问题或想法？写信到 <a href="mailto:niansia930202@gmail.com">niansia930202@gmail.com</a> · <a href="/zh-cn/">niansia.github.io</a> · <a href="https://github.com/niansia">github.com/niansia</a><span class="stats" data-stats hidden> · <i class="live-dot"></i> <b data-stat="online">–</b> 人在线 · <b data-stat="total">–</b> 次造访</span></footer>
 </body>
 </html>

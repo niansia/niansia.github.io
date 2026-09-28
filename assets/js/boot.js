@@ -1,8 +1,8 @@
 /* Boot screen progress (runs right after the #boot markup, before the deferred scripts execute).
    The percentage follows real milestones: the page's scripts and stylesheets finishing their download (60%),
    web fonts (10%), the terminal drawing itself ('niansia:shell', 20%) and every image being loaded (10%).
-   It never runs faster than a minimum time (about 4.1 s on the first page of a visit, so the whole intro lasts about
-   5 s with the fade; 1.5 s afterwards), then fades out. If something stalls, it still finishes after 9 s. */
+   It never runs faster than a minimum time (about 4.1 s, so the whole intro lasts about 5 s with the fade), then fades
+   out. Only the first page of a visit shows it. If something stalls, it still finishes after 9 s. */
 (() => {
   'use strict';
   const boot = document.getElementById('boot');
@@ -11,7 +11,10 @@
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   let first = true;
   try { first = sessionStorage.getItem('niansia-booted') !== '1'; sessionStorage.setItem('niansia-booted', '1'); } catch {}
-  const MIN = reduce ? 0 : first ? 4100 : 1500, GIVE_UP = 9000, t0 = performance.now();
+  // Only the first page of a visit gets the intro; coming back from a note or the brief goes straight in
+  // (the terminal draws itself underneath the page turn instead).
+  if (!first) { boot.remove(); return; }
+  const MIN = reduce ? 0 : 4100, GIVE_UP = 9000, t0 = performance.now();
 
   const want = new Set([...document.querySelectorAll('script[src], link[rel="stylesheet"]')].map(el => el.src || el.href));
   const got = new Set();

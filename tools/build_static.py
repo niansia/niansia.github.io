@@ -168,11 +168,6 @@ figure.fig figcaption{margin-top:8px;font-size:13.5px;color:var(--muted);line-he
 .log-entry h2 a{color:var(--ink);text-decoration:none;}
 .statement-link{display:flex;justify-content:space-between;align-items:center;}
 footer{max-width:760px;margin:0 auto;padding:26px 20px 50px;border-top:1px solid var(--line);font-size:14px;color:var(--muted);}
-@view-transition{navigation:auto;}
-::view-transition-old(root){animation:vt-out .18s ease-in both;}::view-transition-new(root){animation:vt-in .34s cubic-bezier(.22,1,.36,1) both;}
-@keyframes vt-out{to{opacity:0;}}@keyframes vt-in{from{opacity:0;transform:translateY(8px);}}
-::view-transition-group(*){animation-duration:.42s;animation-timing-function:cubic-bezier(.22,1,.36,1);}
-@media(prefers-reduced-motion:reduce){@view-transition{navigation:none;}}
 """
 FONTS = ('<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
          '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500'
@@ -207,6 +202,7 @@ def shell(*, loc: str, title: str, desc: str, url: str, og: str, alternates: dic
 <meta http-equiv="Content-Security-Policy" content="{CSP}">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml">
+<script src="/assets/js/page-turn.js"></script>
 {FONTS}
 <style>{CSS}{extra_css}</style>
 {ld}
@@ -237,9 +233,9 @@ def build_notes(notes: dict) -> list[str]:
             url = f"/notes/{seg}/{slug}/"
             alts = {l: f"/notes/{s}/{slug}/" for s, l in LANGS.items()}
             mins = read_minutes(n["body"], loc)
-            others = "".join(f'<a class="card" href="/notes/{seg}/{s}/"><b style="view-transition-name:n-{s}">{e(b[loc]["title"])}</b><small>{e(b[loc]["description"])}</small></a>'
+            others = "".join(f'<a class="card" href="/notes/{seg}/{s}/"><b>{e(b[loc]["title"])}</b><small>{e(b[loc]["description"])}</small></a>'
                              for s, b in notes.items() if s != slug)
-            body = (f'<main><p class="kicker">{e(UI[loc]["notes"])}</p><h1 style="view-transition-name:n-{slug}">{e(n["title"])}</h1><p class="lede">{e(n["description"])}</p>'
+            body = (f'<main><p class="kicker">{e(UI[loc]["notes"])}</p><h1>{e(n["title"])}</h1><p class="lede">{e(n["description"])}</p>'
                     f'<div class="meta"><time datetime="{n["date"]}">{n["date"]}</time><span>{mins} {e(UI[loc]["min"])}</span>'
                     + "".join(f'<span class="tag">{e(t)}</span>' for t in n.get("tags", [])) +
                     f'</div><article>{md(n["body"])}</article>'
@@ -254,7 +250,7 @@ def build_notes(notes: dict) -> list[str]:
             out.write_text(shell(loc=loc, title=f'{n["title"]} · Niansia', desc=n["description"], url=url, og=f"/assets/og/note-{slug}-{seg}.jpg",
                                  alternates=alts, body=body, jsonld=ld, crumbs=crumbs), encoding="utf-8")
             urls.append(url)
-            cards.append(f'<a class="card" href="{url}"><b style="view-transition-name:n-{slug}">{e(n["title"])}</b><small>{e(n["description"])}</small><i>{n["date"]} · {mins} {e(UI[loc]["min"])}</i></a>')
+            cards.append(f'<a class="card" href="{url}"><b>{e(n["title"])}</b><small>{e(n["description"])}</small><i>{n["date"]} · {mins} {e(UI[loc]["min"])}</i></a>')
         idx = f'<main><p class="kicker">~/niansia/notes</p><h1>{e(UI[loc]["notes"])}</h1><p class="lede">{e(UI[loc]["notes_lede"])}</p>{"".join(cards)}' \
               f'<div class="btns"><a class="btn primary" href="{HOME[loc]}#research">{e(UI[loc]["back"])}</a></div></main>'
         ld = {"@context": "https://schema.org", "@type": "Blog", "name": f'Niansia · {UI[loc]["notes"]}', "url": f"{SITE}/notes/{seg}/", "author": PERSON, "inLanguage": HTML_LANG[loc]}
