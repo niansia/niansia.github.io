@@ -886,12 +886,4 @@
   document.documentElement.dataset.theme = theme;
   document.querySelector('meta[name="theme-color"]')?.setAttribute('content', themeColors[theme]);
   readLocation();shell();applyFestival();
-  /* Boot screen (markup in the page): fade it out once the shell is drawn. The first visit of a session keeps it
-     up for ~0.6 s so it reads as an intro rather than a flash; later page loads skip the wait. */
-  (() => {
-    const boot = document.getElementById('boot'); if (!boot) return;
-    let seen = false; try { seen = sessionStorage.getItem('niansia-booted') === '1'; sessionStorage.setItem('niansia-booted', '1'); } catch {}
-    const wait = seen || !motion() ? 0 : Math.max(0, 650 - performance.now());
-    setTimeout(() => { boot.classList.add('is-done'); setTimeout(() => boot.remove(), 520); }, wait);
-  })();
 })();

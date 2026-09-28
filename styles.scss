@@ -1267,14 +1267,14 @@ button.brain-badge:disabled{cursor:default;transform:none;border-color:var(--lin
 @keyframes adv-shift{to{background-position:3px 3px,0 0;}}
 @media(max-width:720px){.adv-eq{display:none;}}
 
-/* ============ Boot screen (index pages) ============ */
-.boot{position:fixed;inset:0;z-index:3000;display:grid;place-items:center;background:radial-gradient(700px 420px at 50% 42%,var(--blob-1),transparent 70%),radial-gradient(600px 400px at 80% 90%,var(--blob-2),transparent 70%),var(--desk);transition:opacity .45s var(--ease),visibility .45s;animation:boot-giveup .4s ease 8s forwards;}
+/* ============ Boot screen (index pages; progress in assets/js/boot.js) ============ */
+.boot{position:fixed;inset:0;z-index:3000;display:grid;place-items:center;background:radial-gradient(700px 420px at 50% 42%,var(--blob-1),transparent 70%),radial-gradient(600px 400px at 80% 90%,var(--blob-2),transparent 70%),var(--desk);transition:opacity .5s var(--ease),visibility .5s;animation:boot-giveup .4s ease 10s forwards;}
 .boot.is-done{opacity:0;visibility:hidden;}
-.boot.is-done .boot-card{transform:translateY(-8px) scale(.98);}
+.boot.is-done .boot-card{transform:translateY(-10px) scale(.97);}
 @keyframes boot-giveup{to{opacity:0;visibility:hidden;}}
-.boot-card{display:flex;flex-direction:column;align-items:center;gap:14px;padding:26px 34px 22px;border-radius:24px;background:color-mix(in srgb,var(--surface) 82%,transparent);border:1px solid var(--line);box-shadow:var(--shadow-lg);transition:transform .45s var(--ease);animation:boot-in .5s var(--spring) both;}
-@keyframes boot-in{from{opacity:0;transform:translateY(10px) scale(.96);}}
-.boot-yuki{position:relative;width:84px;height:84px;}
+.boot-card{display:flex;flex-direction:column;align-items:center;gap:10px;min-width:250px;padding:28px 34px 22px;border-radius:26px;background:color-mix(in srgb,var(--surface) 84%,transparent);border:1px solid var(--line);box-shadow:var(--shadow-lg);transition:transform .5s var(--ease);animation:boot-in .55s var(--spring) both;}
+@keyframes boot-in{from{opacity:0;transform:translateY(12px) scale(.95);}}
+.boot-yuki{position:relative;width:84px;height:84px;margin-bottom:6px;}
 .boot-head{position:absolute;inset:0;border-radius:50%;background:url('/assets/lab/yuki/heads.webp') 0 0/300% 100% no-repeat,radial-gradient(circle at 35% 30%,var(--surface),var(--wash));box-shadow:0 0 0 3px var(--surface),0 0 0 5px color-mix(in srgb,var(--accent) 35%,transparent);animation:boot-hop 1.1s var(--ease) infinite,boot-blink 3.2s steps(1) infinite;}
 @keyframes boot-hop{0%,100%{transform:translateY(0) scale(1,1);}35%{transform:translateY(-12px) scale(.97,1.03);}55%{transform:translateY(0) scale(1.05,.95);}70%{transform:translateY(-3px);}}
 @keyframes boot-blink{0%,88%{background-position:0 0,0 0;}90%,94%{background-position:100% 0,0 0;}96%,100%{background-position:50% 0,0 0;}}
@@ -1282,14 +1282,16 @@ button.brain-badge:disabled{cursor:default;transform:none;border-color:var(--lin
 @keyframes boot-shadow{35%{transform:scaleX(.72);opacity:.5;}55%{transform:scaleX(1.06);}}
 .boot-z{position:absolute;right:-12px;top:-6px;font:700 14px var(--mono);color:var(--accent);opacity:0;animation:boot-z 2.4s ease-in-out infinite;}
 @keyframes boot-z{0%,40%{opacity:0;transform:translate(0,4px) scale(.7);}60%{opacity:1;}100%{opacity:0;transform:translate(8px,-14px) scale(1.1);}}
-.boot-line{margin:4px 0 0;font:500 13px var(--mono);color:var(--ink);white-space:nowrap;}
-.boot-line b{color:var(--accent);font-weight:600;margin-right:6px;}
-.boot-caret{display:inline-block;width:7px;height:14px;margin-left:3px;vertical-align:-2px;background:var(--accent);animation:boot-caret 1s steps(1) infinite;}
-@keyframes boot-caret{50%{opacity:0;}}
-.boot-paws{display:flex;gap:8px;height:22px;align-items:center;}
-.boot-paws svg{width:16px;height:16px;fill:var(--accent);opacity:.15;animation:boot-paw 1.6s ease-in-out infinite;}
-.boot-paws svg:nth-child(odd){transform:translateY(-3px) rotate(-12deg);}.boot-paws svg:nth-child(even){transform:translateY(3px) rotate(12deg);}
-.boot-paws svg:nth-child(2){animation-delay:.16s}.boot-paws svg:nth-child(3){animation-delay:.32s}.boot-paws svg:nth-child(4){animation-delay:.48s}.boot-paws svg:nth-child(5){animation-delay:.64s}
-@keyframes boot-paw{0%,100%{opacity:.15;}30%,55%{opacity:1;}}
-.boot-sub{font:12px var(--sans);color:var(--muted);}
-@media(prefers-reduced-motion:reduce){.boot-head,.boot-shadow,.boot-z,.boot-caret,.boot-paws svg{animation:none!important;}.boot-paws svg{opacity:.6;}.boot{animation:boot-giveup .01s linear 8s forwards!important;}}
+.boot-pct{font:700 38px/1 var(--mono);color:var(--ink);font-variant-numeric:tabular-nums;letter-spacing:-.02em;min-width:3.4ch;text-align:center;}
+.boot-bar{display:flex;gap:5px;align-items:center;height:26px;}
+.boot-bar svg{width:15px;height:15px;fill:var(--accent);opacity:.14;transition:opacity .25s,transform .35s var(--spring);}
+.boot-bar svg:nth-child(odd){transform:translateY(-4px) rotate(-14deg);}.boot-bar svg:nth-child(even){transform:translateY(4px) rotate(14deg);}
+.boot-bar svg.on{opacity:1;}
+.boot-bar svg.on:nth-child(odd){transform:translateY(-4px) rotate(-14deg) scale(1.12);}.boot-bar svg.on:nth-child(even){transform:translateY(4px) rotate(14deg) scale(1.12);}
+.boot-line{display:flex;align-items:flex-end;gap:2px;margin:4px 0 0;font:600 12.5px var(--mono);letter-spacing:.06em;color:var(--muted);text-transform:uppercase;}
+.boot-dots{display:inline-flex;gap:2px;margin-left:3px;padding-bottom:1px;}
+.boot-dots svg{width:10px;height:10px;fill:var(--accent);opacity:0;animation:boot-dot 1.2s ease-in-out infinite;}
+.boot-dots svg:nth-child(2){animation-delay:.2s}.boot-dots svg:nth-child(3){animation-delay:.4s}
+@keyframes boot-dot{0%,15%{opacity:0;transform:translateY(3px) scale(.6);}35%,70%{opacity:1;transform:none;}100%{opacity:0;}}
+.boot-sub{font:11.5px var(--sans);color:var(--muted);opacity:.85;}
+@media(prefers-reduced-motion:reduce){.boot-head,.boot-shadow,.boot-z,.boot-dots svg{animation:none!important;}.boot-dots svg{opacity:1;}.boot{animation:boot-giveup .01s linear 10s forwards!important;}}
