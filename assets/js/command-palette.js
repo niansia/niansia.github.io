@@ -14,6 +14,7 @@
       askYuki: q => `Ask Yuki: “${q}”`, run: q => `Run in the terminal: ${q}`, modeCmd: 'commands', modeAsk: 'ask Yuki',
       brief: 'One-page brief', briefSub: 'For professors and interviewers · printable', tour: 'Guided tour with Yuki', tours: {research: 'Research track · for professors', builder: 'Builder track · for engineers', fun: 'Just for fun · the playful bits'},
       chat: 'Chat with Yuki', copyEmail: 'Copy email address', copied: 'Email address copied.', toggleDark: 'Toggle light / dark', motionOff: 'Pause animation', motionOn: 'Resume animation',
+      adv: 'Adversarial Lab: fool a neural network', advSub: 'FGSM / PGD attacks and a robust model, on your CPU',
       demo: 'Try LumiGrid in your browser', demoSub: 'Low-light enhancement on your own photo, on-device', github: 'GitHub profile', bib: 'Download papers as .bib', styleMenu: 'Open the style picker',
       lang: {en: 'Switch to English', 'zh-TW': '切換成繁體中文', 'zh-CN': '切换成简体中文'}, light: 'light', dark: 'dark', current: 'current', page: 'page', note: 'note', log: 'log',
       statement: 'Research statement', notes: 'Research notes', logAll: 'Research log', deadline: 'in preparation'},
@@ -23,6 +24,7 @@
       askYuki: q => `問 Yuki：「${q}」`, run: q => `在終端執行：${q}`, modeCmd: '指令', modeAsk: '問 Yuki',
       brief: '一頁式簡介', briefSub: '給教授與面試官 · 可列印', tour: '讓 Yuki 帶你導覽', tours: {research: '研究路線 · 給教授', builder: '實作路線 · 給工程師', fun: '輕鬆逛逛 · 好玩的地方'},
       chat: '和 Yuki 聊天', copyEmail: '複製電子郵件', copied: '已複製電子郵件。', toggleDark: '切換淺色／深色', motionOff: '暫停動畫', motionOn: '恢復動畫',
+      adv: '對抗樣本實驗室：騙過神經網路', advSub: 'FGSM／PGD 攻擊與穩健模型，在你的 CPU 上執行',
       demo: '在瀏覽器試玩 LumiGrid', demoSub: '用自己的照片做低光增強，在裝置上執行', github: 'GitHub 個人頁', bib: '下載論文 .bib', styleMenu: '打開網頁風格選單',
       lang: {en: 'Switch to English', 'zh-TW': '切換成繁體中文', 'zh-CN': '切换成简体中文'}, light: '淺色', dark: '深色', current: '使用中', page: '頁面', note: '筆記', log: '日誌',
       statement: '研究方向說明', notes: '研究筆記', logAll: '研究日誌', deadline: '準備中'},
@@ -32,6 +34,7 @@
       askYuki: q => `问 Yuki：「${q}」`, run: q => `在终端执行：${q}`, modeCmd: '命令', modeAsk: '问 Yuki',
       brief: '一页式简介', briefSub: '给教授与面试官 · 可打印', tour: '让 Yuki 带你导览', tours: {research: '研究路线 · 给教授', builder: '实作路线 · 给工程师', fun: '轻松逛逛 · 好玩的地方'},
       chat: '和 Yuki 聊天', copyEmail: '复制电子邮件', copied: '已复制电子邮件。', toggleDark: '切换浅色／深色', motionOff: '暂停动画', motionOn: '恢复动画',
+      adv: '对抗样本实验室：骗过神经网络', advSub: 'FGSM／PGD 攻击与稳健模型，在你的 CPU 上运行',
       demo: '在浏览器试玩 LumiGrid', demoSub: '用自己的照片做低光增强，在设备上运行', github: 'GitHub 个人页', bib: '下载论文 .bib', styleMenu: '打开网页风格菜单',
       lang: {en: 'Switch to English', 'zh-TW': '切換成繁體中文', 'zh-CN': '切换成简体中文'}, light: '浅色', dark: '深色', current: '使用中', page: '页面', note: '笔记', log: '日志',
       statement: '研究方向说明', notes: '研究笔记', logAll: '研究日志', deadline: '准备中'}
@@ -63,6 +66,7 @@
       add('actions', {id: 'tour', title: c.tour, sub: c.tours.research, icon: 'compass', words: 'tour guide 導覽 导览 介紹', run: () => window.YUKI_TOUR.start(), star: true});
       ['research', 'builder', 'fun'].forEach(k => add('actions', {id: 'tour-' + k, title: `${c.tour} · ${k}`, sub: c.tours[k], icon: 'compass', words: `tour ${k}`, run: () => window.YUKI_TOUR.start(k)}));
     }
+    add('actions', {id: 'adversarial', title: c.adv, sub: c.advSub, icon: 'lock', words: 'adversarial attack fgsm pgd robust security 對抗 对抗 攻擊 攻击 安全', run: () => go(`/lab/adversarial/?lang=${L()}`), star: true});
     add('actions', {id: 'demo', title: c.demo, sub: c.demoSub, icon: 'spark', words: 'demo lumigrid webgpu 試玩', run: () => go(`/lab/lumigrid/?lang=${L()}`), star: true});
     if (window.YUKI) add('actions', {id: 'chat', title: c.chat, sub: 'yuki.exe', icon: 'chat', words: 'yuki chat talk 聊天', run: () => window.YUKI.openChat()});
     add('actions', {id: 'email', title: c.copyEmail, sub: EMAIL, icon: 'mail', words: 'email mail contact 信箱 邮箱 聯絡', run: async () => { try { await navigator.clipboard.writeText(EMAIL); app.toast(c.copied); } catch { app.toast(EMAIL); } }});
@@ -170,7 +174,7 @@
     else if (!q) {
       const byKey = new Map(catalogue.map(i => [i.key, i]));
       const rec = recent().map(k => byKey.get(k)).filter(Boolean);
-      const sugg = ['actions:brief', 'actions:tour', 'pages:papers', 'projects:lumigrid', 'actions:demo'].map(k => byKey.get(k)).filter(i => i && !rec.includes(i));
+      const sugg = ['actions:brief', 'actions:tour', 'actions:adversarial', 'pages:papers', 'actions:demo'].map(k => byKey.get(k)).filter(i => i && !rec.includes(i));
       groups = [['recent', rec], ['suggested', sugg], ['pages', catalogue.filter(i => i.group === 'pages' && !rec.includes(i) && !sugg.includes(i))]];
     } else {
       const ranked = rank(q, catalogue);

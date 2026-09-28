@@ -41,6 +41,7 @@ window.NIANSIA_TERMINAL = {
     ['log','log','log','Open the research log (dated snapshots with images)','打開研究日誌（附圖的工作紀錄）','打开研究日志（附图的工作记录）'],
     ['statement','statement','statement','Read my research statement','閱讀研究方向說明','阅读研究方向说明'],
     ['notes','notes','notes','Open my research notes','打開研究筆記','打开研究笔记'],
+    ['attack','attack','attack','Open the Adversarial Lab: fool a digit classifier with FGSM / PGD, then try a robust model','開啟對抗樣本實驗室：用 FGSM／PGD 騙過數字分類器，再試試穩健模型','打开对抗样本实验室：用 FGSM／PGD 骗过数字分类器，再试试稳健模型'],
     ['demo','demo','demo','Open the in-browser LumiGrid demo (low-light enhancement on your own photo)','開啟 LumiGrid 瀏覽器試玩（用你自己的照片做低光增強）','打开 LumiGrid 浏览器试用（用你自己的照片做低光增强）'],
     ['stay','stay [on|off]','stay on','Keep Yuki in one place, or let her roam','讓 Yuki 待在原地不亂走，或恢復自由走動','让 Yuki 待在原地不乱走，或恢复自由走动'],
     ['hide','hide','hide','Tuck Yuki away at the edge, or bring her back','讓 Yuki 躲到邊邊，或叫她回來','让 Yuki 躲到边边，或叫她回来'],

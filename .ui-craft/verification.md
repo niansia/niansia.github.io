@@ -64,3 +64,12 @@ Checked against a local Quarto render (Quarto 1.10.18) plus `tools/build_static.
 - Brief (`/brief/`, zh-tw, zh-cn) and paper template page (`/paper/example/`, noindex, not in the sitemap) render; zh first-sentence extraction fixed for sentences without a trailing space.
 - In-page view transitions could not be observed visually because the preview pane was hidden (browsers skip view transitions in hidden documents); the naming and cleanup logic was checked by script.
 - Scripted commands (papers, tree, help tour, ls, find vision, theme, status, palette, tour) returned results with no console errors.
+
+
+## Follow-up: Adversarial Lab (2026-09-28)
+
+- Models trained on the CPU only (GPU hidden, 4 threads, idle priority), 15.1 minutes: standard 98.95% clean; PGD-AT (ε = 0.3, 7 steps, 6 epochs) 97.92% clean. PGD-40 on 2,000 test images at ε = 0.1 / 0.2 / 0.3: standard 53.3% / 0.2% / 0.0%, robust 95.1% / 92.2% / 85.3%.
+- `tools/advlab/gradcheck.py`: JavaScript logits and input gradients match PyTorch (max error 1.5e-8 / 1.9e-9). The shipped float16 weights under the JS engine: 99.4% / 97.5% clean on 1,000 test images; JS PGD-20 at ε = 0.3 on 100 images leaves the standard model at 0% and the robust one at 92%.
+- Headless Chrome: one PGD-40 attack about 0.3 s; both decision maps (24×24, one worker per model) about 5 s. The earlier yielding worker took 11–18 s; cancelling now terminates the worker instead.
+- Fixed while testing: the map placeholder covered finished maps (`[hidden]` lost to `display:grid`), 3 and 7 had similar colours, the curve legend overlapped the 100% line, and the mobile layout was widened by the sample strip (grid tracks now `minmax(0, 1fr)`).
+- Terminal: research card, `attack` command, palette entry and research-tour stop checked; no failing resources.

@@ -35,6 +35,8 @@
           body: {en: 'This one-page brief has the research, papers, selected projects and contact on a single printable page.', 'zh-TW': '這份一頁式簡介把研究方向、論文、代表作品和聯絡方式放在同一頁，也能直接列印。', 'zh-CN': '这份一页式简介把研究方向、论文、代表作品和联系方式放在同一页，也能直接打印。'}},
         {view: 'research', target: '.research-entry', title: {en: 'Two connected questions', 'zh-TW': '兩個相連的問題', 'zh-CN': '两个相连的问题'},
           body: {en: 'How multimodal AI stays secure and auditable under adversarial inputs, and how vision-language models keep to the visual evidence.', 'zh-TW': '多模態 AI 如何在對抗輸入下維持安全、可稽核；以及視覺語言模型如何忠於視覺證據。', 'zh-CN': '多模态 AI 如何在对抗输入下保持安全、可审计；以及视觉语言模型如何忠于视觉证据。'}},
+        {view: 'research', target: '.adv-try', title: {en: 'Break a model yourself', 'zh-TW': '親手攻破一個模型', 'zh-CN': '亲手攻破一个模型'},
+          body: {en: 'The Adversarial Lab runs FGSM and PGD attacks in your browser, maps the decision boundary, and compares a normal model with an adversarially trained one.', 'zh-TW': '對抗樣本實驗室在你的瀏覽器裡執行 FGSM 與 PGD 攻擊、畫出決策邊界，並比較一般模型與對抗訓練過的模型。', 'zh-CN': '对抗样本实验室在你的浏览器里运行 FGSM 与 PGD 攻击、画出决策边界，并比较普通模型与对抗训练过的模型。'}},
         {view: 'research', target: '.statement-card', title: {en: 'The why, in writing', 'zh-TW': '寫下來的「為什麼」', 'zh-CN': '写下来的“为什么”'},
           body: {en: 'The research statement explains what Niansia studies, why it matters, and what comes next.', 'zh-TW': '研究方向說明解釋了 Niansia 研究什麼、為什麼重要，以及接下來想做什麼。', 'zh-CN': '研究方向说明解释了 Niansia 研究什么、为什么重要，以及接下来想做什么。'}},
         {view: 'papers', target: '.prep-grid', title: {en: 'Papers in preparation', 'zh-TW': '準備中的論文', 'zh-CN': '准备中的论文'},

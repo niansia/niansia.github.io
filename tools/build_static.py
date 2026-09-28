@@ -385,6 +385,7 @@ BRIEF_UI = {
            "focus": "Focus: security, robustness and grounding of visual and multimodal AI (AI security × computer vision × vision-language models).",
            "bg": "Background: B.S. in Computer Science, Yuan Ze University; M.S. studies at NYCU, currently on a one-year leave.",
            "reach": "Open to research conversations and collaboration: reading groups, reproductions, benchmarks and prototypes.",
+           "demos": "Try it in the browser:", "adv": "Adversarial Lab (FGSM / PGD, robust training)", "lumi": "LumiGrid low-light enhancement",
            "statement": "Research statement", "notes": "Research notes", "log": "Research log", "footer": "This brief is generated from the same data as the interactive site."},
     "zh-TW": {"title": "一頁式簡介", "desc": "一頁看完 Niansia：研究問題、論文、代表作品、學歷與聯絡方式。可直接列印。",
               "glance": "30 秒速覽", "interests": "研究問題", "papers": "論文與投稿", "none": "目前還沒有同儕審查論文；第一批稿件正在準備中。",
@@ -395,6 +396,7 @@ BRIEF_UI = {
               "focus": "方向：視覺與多模態 AI 的安全性、穩健性與證據對齊（AI 安全 × 電腦視覺 × 視覺語言模型）。",
               "bg": "背景：元智大學資訊工程學士；陽明交通大學資訊工程碩士班，目前休學一年。",
               "reach": "歡迎研究交流與合作：一起讀論文、重現結果、設計評測基準或做原型。",
+              "demos": "在瀏覽器試玩：", "adv": "對抗樣本實驗室（FGSM／PGD、對抗訓練）", "lumi": "LumiGrid 低光增強",
               "statement": "研究方向說明", "notes": "研究筆記", "log": "研究日誌", "footer": "這份簡介與互動版網站使用同一份資料產生。"},
 }
 BRIEF_UI["zh-CN"] = {k: ([s_fix(x) for x in v] if isinstance(v, list) else s_fix(v)) for k, v in BRIEF_UI["zh-TW"].items()}
@@ -424,6 +426,7 @@ main.brief{max-width:900px;}
 .b-two{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 .b-q{padding:16px 18px;border-radius:16px;background:var(--paper);border:1px solid var(--line);}
 .b-q b{display:block;margin-bottom:4px;}.b-q p{margin:0;color:var(--muted);font-size:14.5px;line-height:1.7;}
+.b-demos{margin:12px 0 0;font-size:14px;color:var(--muted);}.b-demos a{font-weight:600;}
 .b-pub{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;padding:12px 0;border-bottom:1px dashed var(--line);}
 .b-pub:last-child{border-bottom:0;}
 .b-venue{font:600 12.5px 'JetBrains Mono',monospace;padding:2px 9px;border-radius:8px;background:var(--code);align-self:start;white-space:nowrap;}
@@ -542,6 +545,7 @@ def build_brief(projects: dict, notes: dict, copy: dict, cv: dict, subs: dict, p
 <div class="b-stats">{"".join(f"<div><b>{n}</b><span>{e(label)}</span></div>" for n, label in stats)}</div></section>
 <h2>{e(U["glance"])}</h2><ul class="b-glance">{"".join(f"<li>{e(x)}</li>" for x in glance)}</ul>
 <h2>{e(U["interests"])}</h2><div class="b-two">{"".join(f'<div class="b-q"><b>{e(a)}</b><p>{e(b)}</p></div>' for a, b in interests)}</div>
+<p class="b-demos">{e(U["demos"])} <a href="/lab/adversarial/?lang={loc}">{e(U["adv"])}</a> · <a href="/lab/lumigrid/?lang={loc}">{e(U["lumi"])}</a></p>
 <h2>{e(U["papers"])}</h2><div>{"".join(rows)}</div>
 <h2>{e(U["selected"])}</h2><div class="b-proj">{"".join(cards)}</div>
 {f'<h2>{e(U["more"])}</h2><ul class="b-more">{more}</ul>' if more else ""}
@@ -858,7 +862,7 @@ def og_jobs(projects: dict, notes: dict, pubs: dict | None = None) -> list[tuple
 # ------------------------------------------------------------------------------------------------ sitemap / robots
 def write_sitemap(urls: list[str]) -> None:
     today = date.today().isoformat()
-    body = "".join(f"<url><loc>{SITE}{u}</loc><lastmod>{today}</lastmod></url>\n" for u in ["/lab/lumigrid/", *urls])
+    body = "".join(f"<url><loc>{SITE}{u}</loc><lastmod>{today}</lastmod></url>\n" for u in ["/lab/lumigrid/", "/lab/adversarial/", *urls])
     (ROOT / "sitemap-extra.xml").write_text(f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n{body}</urlset>\n', encoding="utf-8")
     (ROOT / "robots.txt").write_text(f"User-agent: *\nAllow: /\n\nSitemap: {SITE}/sitemap.xml\nSitemap: {SITE}/sitemap-extra.xml\n", encoding="utf-8")
 

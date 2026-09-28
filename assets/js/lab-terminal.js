@@ -529,6 +529,11 @@
     'zh-TW':{chip:'時間不多？一頁式簡介',sub:'研究方向、論文、代表作品與聯絡方式，一頁看完，也能列印。',label:'快速瀏覽',search:'搜尋'},
     'zh-CN':{chip:'时间不多？一页式简介',sub:'研究方向、论文、代表作品与联系方式，一页看完，也能打印。',label:'快速浏览',search:'搜索'}}[locale]);
   const tourCta=()=>({en:'Take a one-minute tour with Yuki','zh-TW':'讓 Yuki 帶你導覽一分鐘','zh-CN':'让 Yuki 带你导览一分钟'}[locale]);
+  /* Adversarial Lab: an in-browser attack playground that sits under the AI-security research direction. */
+  const advCopy=()=>({en:{t:'Try it: fool a neural network',s:'Adversarial Lab · FGSM and PGD attacks, decision maps and an adversarially trained model, all running on your CPU.'},
+    'zh-TW':{t:'動手試試：騙過神經網路',s:'對抗樣本實驗室 · FGSM／PGD 攻擊、決策地圖與對抗訓練模型，全部在你的 CPU 上執行。'},
+    'zh-CN':{t:'动手试试：骗过神经网络',s:'对抗样本实验室 · FGSM／PGD 攻击、决策地图与对抗训练模型，全部在你的 CPU 上运行。'}}[locale]);
+  function advCard() { const c=advCopy(); return `<a class="lg-try adv-try" href="/lab/adversarial/?lang=${locale}"><span class="adv-eq" aria-hidden="true"><i>7</i><b>+</b><i class="adv-noise"></i><b>=</b><i class="adv-fooled">3</i></span><span><b>${esc(c.t)}</b><small>${esc(c.s)}</small></span><em aria-hidden="true">↗</em></a>`; }
   function bibtexAll() { return pubList().filter(p=>p.bibtex&&!pubHidden(p)).map(p=>p.bibtex).join('\n\n')+'\n'; }
   function screen(animate=true) {
     const c=t(), items=projects(), item=items.find(p=>p.id===projectId);
@@ -537,7 +542,7 @@
     document.title = `${item?.name || navLabel(view,c)} | Niansia terminal`;
     if (view==='home') html=homeScreen(c);
     if (view==='about') html=`${commandTitle('cat about.md')}<h1>${c.aboutTitle}</h1><div class="reading"><p>${c.bio}</p><p>${c.bio2}</p><p>${c.bio3}</p><h2>${c.education}</h2><ul class="education-list"><li><span class="edu-dot" aria-hidden="true"></span>${c.undergrad}</li><li><span class="edu-dot is-now" aria-hidden="true"></span>${c.graduate}<small>${c.leave}</small></li></ul><div class="interest-tags">${c.interests.split(' / ').map(tag=>`<span>${tag}</span>`).join('')}</div></div>${button('research',c.nav[3],true)}`;
-    if (view==='research') html=`${commandTitle('cat research.md')}<h1>${c.researchTitle}</h1><p class="screen-intro">${c.researchIntro}</p>${capCopy()?`<button type="button" class="cap-jump" data-cap-jump>✦ ${esc(capCopy().open)} ↓</button>`:''}<div class="research-entry"><span>01</span><div><h2>${c.researchA}</h2><p>${c.researchABody}</p><small>security / robustness / evaluation</small></div></div><div class="research-entry"><span>02</span><div><h2>${c.researchB}</h2><p>${c.researchBBody}</p><small>vision / reasoning / grounding</small></div></div>${statementLink()}${notesBlock()}${logBlock()}${capstoneBlock()}${teBlock()}${submissionsBlock()}<p class="comment-line">${c.researchNote}</p>`;
+    if (view==='research') html=`${commandTitle('cat research.md')}<h1>${c.researchTitle}</h1><p class="screen-intro">${c.researchIntro}</p>${capCopy()?`<button type="button" class="cap-jump" data-cap-jump>✦ ${esc(capCopy().open)} ↓</button>`:''}<div class="research-entry"><span>01</span><div><h2>${c.researchA}</h2><p>${c.researchABody}</p><small>security / robustness / evaluation</small></div></div>${advCard()}<div class="research-entry"><span>02</span><div><h2>${c.researchB}</h2><p>${c.researchBBody}</p><small>vision / reasoning / grounding</small></div></div>${statementLink()}${notesBlock()}${logBlock()}${capstoneBlock()}${teBlock()}${submissionsBlock()}<p class="comment-line">${c.researchNote}</p>`;
     if (view==='contact') html=`${commandTitle('cat contact.txt')}<h1>${c.contactTitle}</h1><div class="reading"><p>${c.contactBody}</p><div class="contact-address"><span translate="no">email:</span><a href="mailto:niansia930202@gmail.com" translate="no">niansia930202@gmail.com</a></div><div class="output-actions"><a class="action-button primary" href="mailto:niansia930202@gmail.com">${icon('mail')}<span>${c.send}</span></a><button class="action-button" data-action="copy">${icon('copy')}<span>${c.copy}</span></button></div><a class="github-link" href="https://github.com/niansia" target="_blank" rel="noopener noreferrer">github.com/niansia ${icon('link')}</a></div>`;
     if (view==='hobbies') html=hobbiesScreen();
     if (view==='cv') html=cvScreen();
@@ -673,7 +678,7 @@
     commandHistory.push(value);if(commandHistory.length>50)commandHistory.shift();historyIndex=commandHistory.length;
     const parsed=window.NIANSIA_TERMINAL.parse(value);
     if(parsed.error){record(value,t().quoteError);return;}
-    const aliases={'?':'help',resume:'cv',linkedin:'cv','cv.pdf':'cv','履歷':'cv','简历':'cv',work:'projects',portfolio:'projects',profile:'about','./start.sh':'home','start.sh':'home',meow:'pet',search:'find','作品':'projects','研究':'research','聯絡':'contact','联系':'contact',ddl:'deadlines',countdown:'deadlines',publications:'papers',pubs:'papers',bib:'papers','論文':'papers','论文':'papers',paper:'papers',quick:'brief','快速瀏覽':'brief','快速浏览':'brief','簡介':'brief','简介':'brief',guide:'tour','導覽':'tour','导览':'tour',cmdk:'palette','ctrl+k':'palette','專題':'capstone','专题':'capstone','投稿':'deadlines','截止':'deadlines',hobby:'hobbies',cosplay:'hobbies',cos:'hobbies',fun:'hobbies','興趣':'hobbies','兴趣':'hobbies','日常':'hobbies','關於':'about','关于':'about'};
+    const aliases={'?':'help',resume:'cv',linkedin:'cv','cv.pdf':'cv','履歷':'cv','简历':'cv',work:'projects',portfolio:'projects',profile:'about','./start.sh':'home','start.sh':'home',meow:'pet',search:'find','作品':'projects','研究':'research','聯絡':'contact','联系':'contact',ddl:'deadlines',countdown:'deadlines',publications:'papers',pubs:'papers',bib:'papers','論文':'papers','论文':'papers',paper:'papers',quick:'brief','快速瀏覽':'brief','快速浏览':'brief','簡介':'brief','简介':'brief',guide:'tour','導覽':'tour','导览':'tour',cmdk:'palette','ctrl+k':'palette',adversarial:'attack',adv:'attack',fgsm:'attack',pgd:'attack','對抗':'attack','对抗':'attack','專題':'capstone','专题':'capstone','投稿':'deadlines','截止':'deadlines',hobby:'hobbies',cosplay:'hobbies',cos:'hobbies',fun:'hobbies','興趣':'hobbies','兴趣':'hobbies','日常':'hobbies','關於':'about','关于':'about'};
     const name=aliases[parsed.name]||parsed.name,args=parsed.args,arg=args.join(' '),lower=arg.toLowerCase();
     const definition=catalogue.find(c=>c.name===name);
     const usage=()=>record(value,`${t().usage}: ${definition?.usage||'help'}\n${definition?.description[locale]||t().unknown}`);
@@ -747,6 +752,7 @@
       case 'log':location.href=`/log/${locale==='en'?'en':locale.toLowerCase()}/`;finish('/log/');break;
       case 'statement':location.href=`/statement/${locale==='en'?'en':locale.toLowerCase()}/`;finish('/statement/');break;
       case 'notes':finish(`/notes/${locale==='en'?'en':locale.toLowerCase()}/`);location.href=`/notes/${locale==='en'?'en':locale.toLowerCase()}/`;break;
+      case 'attack':finish('/lab/adversarial/');location.href=`/lab/adversarial/?lang=${locale}`;break;
       case 'demo':finish('/lab/lumigrid/');location.href=`/lab/lumigrid/?lang=${locale}`;break;
       case 'stay':{const Y=yuki();if(!Y){finish(t().unknown);break;}const on=arg?!/^(off|no|0|roam)$/i.test(arg):!Y.stay();finish(Y.stay(on));break;}
       case 'chat':yuki()?.openChat(arg);finish(t().chatTitle);break;

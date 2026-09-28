@@ -1252,3 +1252,17 @@ button.brain-badge:disabled{cursor:default;transform:none;border-color:var(--lin
 :root[data-motion='off'] .tour-ring,:root[data-motion='off'] .tour-card{transition:none;}
 @media(max-width:720px){.tour-keys{display:none;}.tour-card.is-center{width:calc(100vw - 20px);}}
 @media(max-width:720px){:root:has(.style-popover:not([hidden])) :is(.yuki,.yuki-bubble){visibility:hidden;}}
+
+/* ============ Adversarial Lab card (research.md) ============ */
+.adv-try{margin:-4px 0 18px;}
+.adv-try:hover{box-shadow:0 14px 30px -18px #b3264a;}
+.adv-eq{flex:none;display:flex;align-items:center;gap:4px;padding:6px 8px;border-radius:12px;background:#07080b;font:700 15px var(--mono);color:#eef1f5;}
+.adv-eq i{display:grid;place-items:center;width:26px;height:26px;border-radius:6px;background:#141821;font-style:normal;}
+.adv-eq b{font-weight:400;color:#8b93a1;font-size:12px;}
+.adv-noise{background:repeating-conic-gradient(#ff7a8a55 0 25%,#7cc4ff55 0 50%) 0 0/6px 6px,#141821!important;}
+.adv-fooled{color:#ff7a8a;text-shadow:0 0 10px #ff7a8a88;}
+.adv-try:hover .adv-fooled{animation:adv-glitch .45s steps(2) 2;}
+.adv-try:hover .adv-noise{animation:adv-shift .3s steps(3) infinite;}
+@keyframes adv-glitch{25%{transform:translate(2px,-1px);text-shadow:-2px 0 #2fd4ff,2px 0 #ff2f5b;}50%{transform:translate(-2px,1px) skewX(6deg);}75%{transform:none;text-shadow:2px 0 #2fd4ff,-2px 0 #ff2f5b;}}
+@keyframes adv-shift{to{background-position:3px 3px,0 0;}}
+@media(max-width:720px){.adv-eq{display:none;}}

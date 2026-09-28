@@ -17,6 +17,15 @@ The public site has three language editions:
 
 `python tools/build_static.py --og-missing` rebuilds the static pages (notes, log, statement, share pages, brief, papers) and renders only the Open Graph images that do not exist yet.
 
+## Adversarial Lab (`/lab/adversarial/`)
+
+An in-browser attack playground under the AI-security research direction: draw or pick an MNIST digit, attack it with FGSM, PGD or targeted PGD under an L∞ budget, watch the prediction flip step by step, and compare a standard model with one trained by PGD adversarial training (ε = 0.3). A worker maps a 2-D slice of input space (gradient-sign direction × random direction) for both models, and the robustness curves come from an offline evaluation.
+
+- `assets/advlab/advnet.js`: the CNN forward pass and input gradients in plain JavaScript (CPU only); `map-worker.js` for the decision maps.
+- `tools/advlab/train.py`: trains both models and writes `standard.bin`, `robust.bin` (float16) and `robustness.json`. It hides the GPU, uses 2 threads by default and runs at idle priority (`--threads 4` when the machine is free). MNIST is read from `D:\data\mnist` (or `MNIST_DIR`).
+- `tools/advlab/gradcheck.py`: checks the JavaScript logits and gradients against PyTorch. `export_samples.py` writes the sample digits.
+- Linked from `research.md`, the `attack` command, the palette, the research tour and the brief.
+
 ## Navigation and style
 
 - **Command palette**: Ctrl+K / ⌘K, the search pill in the top bar, or `palette [text]`. One fuzzy search over pages, projects, papers, notes, actions, styles and commands (`>` lists commands, `?` asks Yuki). Arrowing onto a style previews it; Enter keeps it. Recently used items come first (`assets/js/command-palette.js`).
