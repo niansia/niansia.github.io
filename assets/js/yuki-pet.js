@@ -78,7 +78,7 @@
   const rc = () => RC[app.locale()] || RC.en;
   const xpFor = n => 12 * (n - 1) * (n - 1);   // inverse of level()
   const unlocked = id => { const r = REWARDS.find(x => x.id === id); return !r || level() >= r.lv; };
-  const soundOn = () => app.store.get('yuki-sound', '1') === '1';
+  const soundOn = () => app.store.get('yuki-sound', '0') === '1';   // off until the visitor turns it on
   /* Lines for the new actions (the trained dialogue lives in yuki-lines.js; these are only for props). */
   const AL = {
     en: {fish: 'A fish snack! Nom nom…', taiyaki: 'Taiyaki! Still warm, with red bean inside ♡', cake: 'Strawberry cake?! Today is a good day.', yarn: 'Up, up… and catch!', wand: 'The feather! I’ll get it this time!', wandHint: 'Move your pointer near me to wave the feather.', desk: 'Just resting my head on the desk for a bit…', spin: 'Ta-da! A little spin.', dance: 'Music on! Let’s dance ♪', piano: 'A little tune on my toy piano ♪', violin: 'Listen… this one is Ode to Joy.', encore: 'Encore? Okay, one more!', caught: 'Got it! Hehe.', locked: (n, lv) => `${n} unlocks at Lv ${lv}. Keep me company a little longer!`},
