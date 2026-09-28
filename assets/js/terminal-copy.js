@@ -1,6 +1,6 @@
 window.NIANSIA_COPY = {
   en: {
-    desktop: 'A little terminal, a curious mind.', nav: ['Start','About me','Projects','Research','Contact','Hobbies','Key guide'],
+    desktop: 'A little terminal, a curious mind.', nav: ['Start','About me','Projects','Research','Contact','Hobbies','CV · LinkedIn','Key guide'],
     files: 'File explorer', selected: 'selected', open: 'open', back: 'back', command: 'Type a command', placeholder: 'Try help, projects, or chat… (Tab to browse)', run: 'Run',
     theme: 'Switch light / dark theme', motion: 'Pause / resume animation', companion: 'Companion', language: 'Language',
     welcome: 'Hello, world.', name: "I’m Niansia.", tagline: 'Computer science, a little curiosity, and a cat by the keyboard.',
@@ -39,7 +39,7 @@ window.NIANSIA_COPY = {
     motionOff: 'Animation paused.', motionOn: 'Animation resumed.', followOn: 'I’ll follow your pointer.', followOff: 'I’ll stay here beside the terminal.', stayOn: 'Okay, I’ll stay right here so you can read.', stayOff: 'Yay, I can wander around again!', loading: 'Opening terminal…'
   },
   'zh-TW': {
-    desktop:'一個小終端，裝著好奇心。', nav:['開始','關於我','全部作品','研究','聯絡','興趣日常','操作說明'],
+    desktop:'一個小終端，裝著好奇心。', nav:['開始','關於我','全部作品','研究','聯絡','興趣日常','履歷','操作說明'],
     files:'檔案總管',selected:'選擇',open:'開啟',back:'返回',command:'輸入指令',placeholder:'試試 help、projects 或 chat…（按 Tab 切換）',run:'執行',
     theme:'切換黑白主題',motion:'暫停／繼續動畫',companion:'陪伴角色',language:'語言',
     welcome:'Hello, world.',name:'我是 Niansia。',tagline:'寫程式、做研究，還有鍵盤旁的一點貓咪魔法。',
@@ -76,7 +76,7 @@ window.NIANSIA_COPY = {
     motionOff:'已暫停動畫。',motionOn:'已繼續動畫。',followOn:'我會跟著你的滑鼠走喔。',followOff:'那我留在終端旁陪你。',stayOn:'好，我乖乖待在這裡，不打擾你看。',stayOff:'耶，我又可以到處走走了！',loading:'正在開啟終端…'
   },
   'zh-CN': {
-    desktop:'一个小终端，装着好奇心。',nav:['开始','关于我','全部作品','研究','联系','兴趣日常','操作说明'],files:'文件管理器',selected:'选择',open:'打开',back:'返回',command:'输入指令',placeholder:'试试 help、projects 或 chat…（按 Tab 切换）',run:'执行',theme:'切换黑白主题',motion:'暂停／继续动画',companion:'陪伴角色',language:'语言',
+    desktop:'一个小终端，装着好奇心。',nav:['开始','关于我','全部作品','研究','联系','兴趣日常','简历','操作说明'],files:'文件管理器',selected:'选择',open:'打开',back:'返回',command:'输入指令',placeholder:'试试 help、projects 或 chat…（按 Tab 切换）',run:'执行',theme:'切换黑白主题',motion:'暂停／继续动画',companion:'陪伴角色',language:'语言',
     welcome:'Hello, world.',name:'我是 Niansia。',tagline:'写代码、做研究，还有键盘旁的一点猫咪魔法。',intro:'探索 AI 安全、计算机视觉与可信的多模态系统。把研究问题做成工具，也把过程留下来，让证据可以被看见、检查与复现。',role:'硕士生 · 阳明交通大学',leave:'目前休学一年',start:'打开作品文件夹',more:'认识我',latest:'最新加入',newest:'从原创命题到解题验算，一份完整的学测模拟考。',newestLumi:'学习曲线网格的低光图像增强，NTIRE 2025 保留测试图 24.57 dB。',ready:'终端准备好了。选个文件，或输入一行指令。',directory:'项公开作品',projectIntro:'打开作品，看看它解决什么问题、目前的状态，以及留下的证据。',all:'全部作品',evidence:'证据与范围',source:'查看源代码',prev:'上一个作品',next:'下一个作品',noProject:'找不到这个作品，已返回目录。',
     aboutTitle:'喜欢把问题做成工具的研究者。',bio:'我毕业于元智大学资讯工程学系，目前就读国立阳明交通大学硕士班，正在休学一年。',bio2:'研究方向位于 AI 安全、计算机视觉与视觉语言模型的交汇处，特别关注可靠的多模态推理与评估。',bio3:'我希望研究过程清楚可见：观察到了什么、检查了什么，以及其他人可以复现什么。',education:'学习经历',undergrad:'元智大学 · 资讯工程学士',graduate:'国立阳明交通大学 · 硕士班',interests:'AI 安全 / 计算机视觉 / 多模态推理 / 可复现研究',
     researchTitle:'一直想弄懂的那些问题。',researchIntro:'两条互相连接的方向，都从证据出发。',researchA:'AI 与多模态安全',researchABody:'当输入具有对抗性、证据薄弱，或现实世界充满不确定性时，视觉与多模态 AI 系统如何维持安全、稳健，而且能被审计？',researchB:'视觉与多模态智能',researchBBody:'视觉语言系统如何保留视觉证据、跨模态与时间推理，并以有据可依的程度，而不只是表达流畅度来评估？',researchNote:'也关注量化机器学习、交互系统与研究软件。部分研究仍在开发或审查阶段，会在适当时机公开代码、结果与可复现的材料。',

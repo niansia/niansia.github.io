@@ -33,6 +33,7 @@ window.NIANSIA_TERMINAL = {
     ['sleep','sleep','sleep','Let Yuki take a nap','讓 Yuki 休息','让 Yuki 休息'],
     ['lie','lie','lie','Yuki lies down in her bed and asks for pats','讓 Yuki 趴進小窩討摸摸','让 Yuki 趴进小窝讨摸摸'],
     ['trick','trick','trick','Yuki shows a little trick','Yuki 表演小才藝','Yuki 表演小才艺'],
+    ['cv','cv','cv','Open cv.pdf (CV and LinkedIn; not public yet)','打開 cv.pdf（履歷與 LinkedIn，尚未公開）','打开 cv.pdf（简历与 LinkedIn，尚未公开）'],
     ['notes','notes','notes','Open my research notes','打開研究筆記','打开研究笔记'],
     ['demo','demo','demo','Open the in-browser LumiGrid demo (low-light enhancement on your own photo)','開啟 LumiGrid 瀏覽器試玩（用你自己的照片做低光增強）','打开 LumiGrid 浏览器试用（用你自己的照片做低光增强）'],
     ['stay','stay [on|off]','stay on','Keep Yuki in one place, or let her roam','讓 Yuki 待在原地不亂走，或恢復自由走動','让 Yuki 待在原地不乱走，或恢复自由走动'],

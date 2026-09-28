@@ -5,8 +5,13 @@
   if (!root || !window.NIANSIA_COPY || !window.NIANSIA_PROJECTS || !window.NIANSIA_TERMINAL) return;
   const esc = value => String(value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
   const store = { get(key, fallback) { try { return localStorage.getItem(`niansia-${key}`) ?? fallback; } catch { return fallback; } }, set(key,value) { try { localStorage.setItem(`niansia-${key}`,value); } catch {} } };
-  const paths = ['home','about','projects','research','contact','hobbies','help'];
-  const files = ['start.sh','about.md','projects/','research.md','contact.txt','hobbies.md','help'];
+  const BASE_PATHS = ['home','about','projects','research','contact','hobbies','cv','help'];
+  const BASE_FILES = ['start.sh','about.md','projects/','research.md','contact.txt','hobbies.md','cv.pdf','help'];
+  const NAV_ICONS = {home:'terminal',about:'file',projects:'folder',research:'research',contact:'mail',hobbies:'heart',cv:'badge',help:'help'};
+  const cvState = () => { const s = window.NIANSIA_CV?.status || 'hidden'; return s === 'locked' && new URLSearchParams(location.search).get('cv') === 'preview' ? 'preview' : s; };
+  const paths = BASE_PATHS.filter(p => p !== 'cv' || cvState() !== 'hidden');
+  const files = paths.map(p => BASE_FILES[BASE_PATHS.indexOf(p)]);
+  const navLabel = (p, c = t()) => c.nav[BASE_PATHS.indexOf(p)];
   const themeGroups = [['classic',['sakura','light','dark','matcha','retro']],['wa',['fuji','aizome','momiji','yozakura','washi','asagi']],['glass',['glass','glass-night']]];
   const themes = themeGroups.flatMap(([, list]) => list);
   const darkThemes = ['dark','retro','yozakura','glass-night'];
@@ -21,7 +26,8 @@
     paw:'M8 14q4-5 8 0l2 4q0 4-6 1-6 3-6-1zM5 7v3M10 4v3M15 4v3M20 7v3',
     arrow:'M4 12h15m-6-6 6 6-6 6', close:'m6 6 12 12M6 18 18 6', chat:'M4 4h16v13H9l-5 4z', link:'M8 16 16 8M10 4h10v10M5 9H3v12h12v-2', copy:'M8 8h12v12H8zM4 16H2V2h14v2', heart:'M12 20 3 11C-2 3 8-1 12 6c4-7 14-3 9 5z',
     palette:'M12 3a9 9 0 1 0 0 18c1.5 0 2-1 1.4-2.2-.7-1.3.2-2.8 1.7-2.8H18a3 3 0 0 0 3-3c0-5.5-4-10-9-10zM7.5 11h.01M10 7h.01M15 7.5h.01',
-    spark:'M12 3v5m0 8v5M3 12h5m8 0h5M6 6l3 3m6 6 3 3M6 18l3-3m6-6 3-3'
+    spark:'M12 3v5m0 8v5M3 12h5m8 0h5M6 6l3 3m6 6 3 3M6 18l3-3m6-6 3-3',
+    badge:'M6 3h12v18H6zM9 8h6M9 12h6M9 16h3', lock:'M6 11h12v10H6zM8.5 11V8a3.5 3.5 0 0 1 7 0v3M12 15v2', download:'M12 3v12m-5-5 5 5 5-5M4 20h16'
   };
   const icon = (name, cls='') => `<svg class="icon ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${icons[name] || icons.file}"/></svg>`;
   let locale = root.dataset.locale || 'en';
@@ -100,7 +106,7 @@
         <div class="window-bar"><div class="fest-garland" aria-hidden="true"></div><div class="window-dots"><button type="button" data-action="win-close" aria-label="close"></button><button type="button" data-action="win-min" aria-label="${c.winMin}"></button><button type="button" data-action="win-max" aria-label="${c.winMax}"></button></div><span class="window-title" translate="no">niansia@home <span class="muted">: ~</span></span><span class="window-note"><span class="window-clock" translate="no"></span>${icon('terminal')} portfolio / v.03</span></div>
         <div class="window-body">
         <div class="workspace">
-          <div class="explorer"><div class="explorer-heading">${c.files}<span>~/</span></div><nav aria-label="${c.files}"><span class="nav-indicator" aria-hidden="true"></span>${paths.map((path,i)=>`<button class="file-item" data-view="${path}" data-nav-index="${i}" aria-label="${c.nav[i]} (${files[i]})"><span class="file-symbol">${icon(['terminal','file','folder','research','mail','heart','help'][i])}</span><span><b translate="no">${files[i]}</b><small>${c.nav[i]}</small></span>${i===2?`<em>${String(projects().length).padStart(2,'0')}</em>`:''}</button>`).join('')}</nav><div class="explorer-bottom"><span class="branch-mark" aria-hidden="true">⑂</span><span translate="no">main</span><a href="https://github.com/niansia" target="_blank" rel="noopener noreferrer">GitHub ${icon('link')}</a></div></div>
+          <div class="explorer"><div class="explorer-heading">${c.files}<span>~/</span></div><nav aria-label="${c.files}"><span class="nav-indicator" aria-hidden="true"></span>${paths.map((path,i)=>`<button class="file-item" data-view="${path}" data-nav-index="${i}" aria-label="${navLabel(path,c)} (${files[i]})"><span class="file-symbol">${icon(NAV_ICONS[path])}</span><span><b translate="no">${files[i]}</b><small>${navLabel(path,c)}</small></span>${path==='projects'?`<em>${String(projects().length).padStart(2,'0')}</em>`:path==='cv'&&cvState()==='locked'?`<em class="nav-lock" title="${esc(cvCopy().lockedTag)}">${icon('lock')}</em>`:''}</button>`).join('')}</nav><div class="explorer-bottom"><span class="branch-mark" aria-hidden="true">⑂</span><span translate="no">main</span><a href="https://github.com/niansia" target="_blank" rel="noopener noreferrer">GitHub ${icon('link')}</a></div></div>
           <div class="terminal-main"><div class="fest-watermark" aria-hidden="true"></div><div class="pane-bar"><span class="pane-path" translate="no"></span><span class="pane-shortcut"><kbd>Esc</kbd> ${c.back}</span></div><div class="terminal-output" id="terminal-content" tabindex="-1"></div></div>
         </div>
         <div class="command-area"><div class="command-message" role="status" aria-live="polite">${c.ready}</div><form class="command-form"><label for="terminal-command" class="prompt" translate="no"><span class="session-user">${esc(username)}</span><span>@home</span><b>:~$</b><span class="sr-only">${c.command}</span></label><input id="terminal-command" data-command-input maxlength="500" autocomplete="off" spellcheck="false" autocapitalize="none" placeholder="${c.placeholder}" aria-label="${c.command}"><button type="submit" aria-label="${c.run}">${icon('arrow')}<span>${c.run}</span></button></form></div>
@@ -221,6 +227,37 @@
       flow:[['讀取知識','read_web_knowledge.py'],['預檢','prepare_hosted_run.py'],['命題藍圖','check_paper_plan.py'],['分批命題 · 存檔','append_items.py'],['盲審解題 · 難度','hosted_blind_review.py'],['內容鎖定','lock-content'],['套用原始模板','compose_hosted_pdf.py'],['逐頁檢查','inspect_hosted_pdf.py'],['交付兩份 PDF','finalize']]},
     'zh-CN':{kicker:'Agent Skill · 先导片',title:'Taiwan Exam：一段话，出一份学测模拟考',lede:'让 AI 依 108 课纲与近五年官方答对率原创命题，不看答案重新解题验算，再叠印到大考中心原始模板上，交付题本与详解两份 PDF。模型负责出题；程序只负责排版、检查与套版，不替题目质量背书。',film:'观看 Taiwan Exam 先导片',filmSub:'约 80 秒：知识载入、命题蓝图、盲审解题、原始模板套版与逐页检查。',flowTitle:'架构',tags:['学测七科','Claude · ChatGPT · Gemini','112 个脚本 · 679 项测试'],repo:'打开 GitHub',
       flow:[['读取知识','read_web_knowledge.py'],['预检','prepare_hosted_run.py'],['命题蓝图','check_paper_plan.py'],['分批命题 · 存档','append_items.py'],['盲审解题 · 难度','hosted_blind_review.py'],['内容锁定','lock-content'],['套用原始模板','compose_hosted_pdf.py'],['逐页检查','inspect_hosted_pdf.py'],['交付两份 PDF','finalize']]}}[locale]);
+  const cvCopy=()=>({
+    en:{lockedTag:'not public yet',denied:'Permission denied',title:'CV and LinkedIn are on the way',body:'I am still putting these together. When they are ready, this is where they will live:',soon:['A downloadable PDF CV','My LinkedIn profile','A one-page timeline of education, research and projects'],mail:'Email me in the meantime',notes:'Read my research notes',
+      download:'Download CV (PDF)',linkedin:'LinkedIn',updated:'Updated',education:'Education',experience:'Experience',projects:'Research & projects',awards:'Awards',skills:'Skills',preview:'Preview: this page is not public yet.',pdfTitle:'CV preview'},
+    'zh-TW':{lockedTag:'尚未公開',denied:'權限不足',title:'履歷與 LinkedIn 整理中',body:'還在整理，準備好之後就會放在這裡：',soon:['可下載的 PDF 履歷','LinkedIn 個人檔案','一頁式的學經歷、研究與作品時間軸'],mail:'想先聯絡，歡迎寫信',notes:'先看看研究筆記',
+      download:'下載履歷（PDF）',linkedin:'LinkedIn',updated:'更新於',education:'學歷',experience:'經歷',projects:'研究與作品',awards:'獲獎',skills:'技能',preview:'預覽模式：這一頁還沒有公開。',pdfTitle:'履歷預覽'},
+    'zh-CN':{lockedTag:'尚未公开',denied:'权限不足',title:'简历与 LinkedIn 整理中',body:'还在整理，准备好之后就会放在这里：',soon:['可下载的 PDF 简历','LinkedIn 个人档案','一页式的学经历、研究与作品时间轴'],mail:'想先联系，欢迎写信',notes:'先看看研究笔记',
+      download:'下载简历（PDF）',linkedin:'LinkedIn',updated:'更新于',education:'学历',experience:'经历',projects:'研究与作品',awards:'获奖',skills:'技能',preview:'预览模式：这一页还没有公开。',pdfTitle:'简历预览'}}[locale]);
+  const cvText=v=>v&&typeof v==='object'?(v[locale]??v.en??''):(v||'');
+  function cvScreen() {
+    const c=cvCopy(), D=window.NIANSIA_CV||{}, state=cvState(), seg=locale==='en'?'en':locale.toLowerCase();
+    if (state==='locked') {
+      return `${commandTitle('cat cv.pdf')}<div class="cv-locked"><pre class="cv-denied" translate="no"><span class="cv-err">cat: cv.pdf: ${esc(c.denied)}</span>
+<span class="cv-prompt">$</span> ls -l ~/cv
+-rw-------  niansia  cv.pdf         <b>${esc(c.lockedTag)}</b>
+-rw-------  niansia  linkedin.url   <b>${esc(c.lockedTag)}</b></pre>
+        <div class="cv-lockcard"><div class="cv-paper" aria-hidden="true"><i class="w60"></i><i class="w35"></i><span></span><i></i><i class="w80"></i><i class="w70"></i><span></span><i class="w45"></i><i></i><i class="w85"></i><i class="w55"></i><span></span><i class="w65"></i><i class="w75"></i></div>
+          <div class="cv-lockbody"><span class="cv-lockicon" aria-hidden="true">${icon('lock')}</span><h1>${esc(c.title)}</h1><p>${esc(c.body)}</p><ul>${c.soon.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>
+          <div class="output-actions"><a class="action-button primary" href="mailto:niansia930202@gmail.com">${icon('mail')}<span>${esc(c.mail)}</span></a><a class="action-button" href="/notes/${seg}/">${icon('file')}<span>${esc(c.notes)}</span></a></div></div></div></div>`;
+    }
+    const line=x=>`<li class="cv-item${cvText(x.period)?'':' no-period'}">${cvText(x.period)?`<span class="cv-period">${esc(cvText(x.period))}</span>`:''}<div><b>${esc(cvText(x.title))}</b>${cvText(x.org)?`<span class="cv-org">${esc(cvText(x.org))}</span>`:''}${cvText(x.detail)?`<p>${esc(cvText(x.detail))}</p>`:''}</div></li>`;
+    const section=(key,list)=>list?.length?`<section class="cv-section"><h2>${esc(c[key])}</h2><ul class="cv-timeline">${list.map(line).join('')}</ul></section>`:'';
+    const projs=(D.projects||[]).map(id=>projects().find(p=>p.id===id)).filter(Boolean)
+      .map(p=>({title:p.name,org:`${p.category} · ${p.status}`,detail:p.description.split(/(?<=[.。])\s*/)[0]}));
+    const skills=(D.skills?.[locale]||D.skills?.en||[]);
+    const links=`<div class="cv-links">${D.pdf?`<a class="action-button primary" href="${esc(D.pdf)}" download>${icon('download')}<span>${esc(c.download)}</span></a>`:''}${D.linkedin?`<a class="action-button" href="${esc(D.linkedin)}" target="_blank" rel="noopener noreferrer">${icon('link')}<span>${esc(c.linkedin)}</span></a>`:''}<a class="action-button" href="https://github.com/niansia" target="_blank" rel="noopener noreferrer">${icon('link')}<span>GitHub</span></a><a class="action-button" href="mailto:niansia930202@gmail.com">${icon('mail')}<span>niansia930202@gmail.com</span></a></div>`;
+    return `${commandTitle('open cv.pdf')}${state==='preview'?`<p class="cv-preview-note">${icon('lock')} ${esc(c.preview)}</p>`:''}<article class="cv-page">
+      <header class="cv-head"><h1 translate="no">Niansia</h1><p>${esc(t().role)}</p>${links}${D.updated?`<small>${esc(c.updated)} ${esc(D.updated)}</small>`:''}</header>
+      ${section('education',D.education)}${section('experience',D.experience)}${section('projects',projs)}${section('awards',D.awards)}
+      ${skills.length?`<section class="cv-section"><h2>${esc(c.skills)}</h2><dl class="cv-skills">${skills.map(([k,v])=>`<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl></section>`:''}
+      ${D.pdf?`<details class="cv-pdf"><summary>${esc(c.pdfTitle)}</summary><object data="${esc(D.pdf)}#view=FitH" type="application/pdf" aria-label="${esc(c.pdfTitle)}"></object></details>`:''}</article>`;
+  }
   const statCopy=()=>({en:{online:'online',visits:'visits',totalL:'Total visits',todayL:'Today',onlineL:'Reading now',note:'Live counter · counts only, no personal data'},
     'zh-TW':{online:'人在線',visits:'次造訪',totalL:'累計造訪',todayL:'今日造訪',onlineL:'正在看',note:'即時統計 · 只記次數，不記個人資料'},
     'zh-CN':{online:'人在线',visits:'次访问',totalL:'累计访问',todayL:'今日访问',onlineL:'正在看',note:'实时统计 · 只记次数，不记个人资料'}}[locale]);
@@ -391,12 +428,13 @@
     const c=t(), items=projects(), item=items.find(p=>p.id===projectId);
     let html='';
     $('.pane-path').textContent=`~/ ${view === 'home'?'start.sh':view === 'projects'?'projects/'+(item ? item.id : ''):files[paths.indexOf(view)]}`;
-    document.title = `${item?.name || c.nav[paths.indexOf(view)]} | Niansia terminal`;
+    document.title = `${item?.name || navLabel(view,c)} | Niansia terminal`;
     if (view==='home') html=homeScreen(c);
     if (view==='about') html=`${commandTitle('cat about.md')}<h1>${c.aboutTitle}</h1><div class="reading"><p>${c.bio}</p><p>${c.bio2}</p><p>${c.bio3}</p><h2>${c.education}</h2><ul class="education-list"><li><span class="edu-dot" aria-hidden="true"></span>${c.undergrad}</li><li><span class="edu-dot is-now" aria-hidden="true"></span>${c.graduate}<small>${c.leave}</small></li></ul><div class="interest-tags">${c.interests.split(' / ').map(tag=>`<span>${tag}</span>`).join('')}</div></div>${button('research',c.nav[3],true)}`;
     if (view==='research') html=`${commandTitle('cat research.md')}<h1>${c.researchTitle}</h1><p class="screen-intro">${c.researchIntro}</p>${capCopy()?`<button type="button" class="cap-jump" data-cap-jump>✦ ${esc(capCopy().open)} ↓</button>`:''}<div class="research-entry"><span>01</span><div><h2>${c.researchA}</h2><p>${c.researchABody}</p><small>security / robustness / evaluation</small></div></div><div class="research-entry"><span>02</span><div><h2>${c.researchB}</h2><p>${c.researchBBody}</p><small>vision / reasoning / grounding</small></div></div>${notesBlock()}${capstoneBlock()}${teBlock()}${submissionsBlock()}<p class="comment-line">${c.researchNote}</p>`;
     if (view==='contact') html=`${commandTitle('cat contact.txt')}<h1>${c.contactTitle}</h1><div class="reading"><p>${c.contactBody}</p><div class="contact-address"><span translate="no">email:</span><a href="mailto:niansia930202@gmail.com" translate="no">niansia930202@gmail.com</a></div><div class="output-actions"><a class="action-button primary" href="mailto:niansia930202@gmail.com">${icon('mail')}<span>${c.send}</span></a><button class="action-button" data-action="copy">${icon('copy')}<span>${c.copy}</span></button></div><a class="github-link" href="https://github.com/niansia" target="_blank" rel="noopener noreferrer">github.com/niansia ${icon('link')}</a></div>`;
     if (view==='hobbies') html=hobbiesScreen();
+    if (view==='cv') html=cvScreen();
     if (view==='help') html=`${commandTitle('help')}<h1>${c.guideTitle}</h1><p>${c.guideIntro}</p><dl class="keyboard-guide">${c.keys.map(([key,description])=>`<div><dt><kbd>${key}</kbd></dt><dd>${description}</dd></div>`).join('')}</dl><h2>${c.commands}</h2>${commandCatalogue()}<p class="comment-line">${c.simulation}</p>`;
     if (view==='projects' && !item) html=`${commandTitle('ls ./projects/')}<div class="directory-heading"><h1>${c.all}</h1><span>${String(items.length).padStart(2,'0')} ${c.directory}</span></div><p class="screen-intro">${c.projectIntro}</p><div class="project-directory" aria-label="${c.all}">${items.map((p,i)=>`<button class="project-row ${i===selectedProject?'is-selected':''}" data-project="${p.id}" data-project-index="${i}" style="--i:${i}"><span class="row-index">${String(i+1).padStart(2,'0')}</span><span class="project-row-title"><strong translate="no">${p.name}</strong><small>${p.category}</small></span><span class="project-status">${p.status}</span><span class="row-arrow">↗</span></button>`).join('')}</div>`;
     if (view==='projects' && item) html=`${commandTitle('cat projects/'+esc(item.id)+'/README.md')}<button class="back-link" data-view="projects">← ${c.all}</button><div class="project-detail"><p class="detail-meta">${esc(item.category)}<span>${esc(item.status)}</span></p><h1 translate="no">${esc(item.name)}</h1><p class="project-description">${esc(item.description)}</p>${item.id==='taiwan-exam'?'<img class="project-art" src="/assets/work/taiwan-exam-social-preview.png" width="1280" height="640" alt="Taiwan Exam" loading="lazy">'+teFilmCard():''}${item.id==='lumigrid'?lumigridShowcase():''}<h2>${c.evidence}</h2><p>${esc(item.evidence)}</p><div class="output-actions"><a class="action-button primary" href="${esc(item.url)}" target="_blank" rel="noopener noreferrer"><span>${c.source}</span>${icon('link')}</a><a class="action-button" href="${esc(item.reference)}" target="_blank" rel="noopener noreferrer"><span>${esc(item.referenceLabel)}</span>${icon('link')}</a><button class="action-button" data-ask="${esc(item.name)}">${icon('chat')}<span>${c.askTitle}</span></button><button class="action-button" data-action="share" data-share="/p/${esc(item.id)}/${locale==='en'?'':locale.toLowerCase()+'/'}">${icon('link')}<span>${esc(noteCopy().share)}</span></button></div><div class="project-pagination"><button data-project-step="-1">← ${c.prev}</button><span>${items.indexOf(item)+1} / ${items.length}</span><button data-project-step="1">${c.next} →</button></div></div>`;
@@ -434,7 +472,7 @@
   function selectNav() {
     root.querySelectorAll('[data-nav-index]').forEach((el,i)=>el.classList.toggle('is-selected',i===selectedNav));
     const el=$(`[data-nav-index="${selectedNav}"]`);el.focus({preventScroll:true});el.scrollIntoView({block:'nearest',inline:'nearest'});
-    message(`${t().nav[selectedNav]} · Enter ${t().open}`);
+    message(`${navLabel(paths[selectedNav])} · Enter ${t().open}`);
   }
   function moveSelection(key) {
     const inDirectory=view==='projects'&&!projectId;
@@ -496,7 +534,7 @@
   }
   function resolveTarget(value) {
     const name=value.toLowerCase().replace(/^(~\/|\.\/|\/)/,'').replace(/\/readme\.md$/,'').replace(/\/$/,'');
-    const aliases={'':'home','~':'home','start.sh':'home','about.md':'about','profile':'about','research.md':'research','contact.txt':'contact','hobbies.md':'hobbies','hobby':'hobbies','cosplay':'hobbies','work':'projects','portfolio':'projects'};
+    const aliases={'':'home','~':'home','start.sh':'home','about.md':'about','profile':'about','research.md':'research','contact.txt':'contact','hobbies.md':'hobbies','cv.pdf':'cv','hobby':'hobbies','cosplay':'hobbies','work':'projects','portfolio':'projects'};
     const path=aliases[name]||name;
     if(paths.includes(path))return {view:path};
     const item=projects().find(p=>p.id===name.replace(/^projects\//,'')||p.name.toLowerCase()===name);
@@ -518,7 +556,7 @@
     commandHistory.push(value);if(commandHistory.length>50)commandHistory.shift();historyIndex=commandHistory.length;
     const parsed=window.NIANSIA_TERMINAL.parse(value);
     if(parsed.error){record(value,t().quoteError);return;}
-    const aliases={'?':'help',work:'projects',portfolio:'projects',profile:'about','./start.sh':'home','start.sh':'home',meow:'pet',search:'find','作品':'projects','研究':'research','聯絡':'contact','联系':'contact',ddl:'deadlines',countdown:'deadlines','專題':'capstone','专题':'capstone','投稿':'deadlines','截止':'deadlines',hobby:'hobbies',cosplay:'hobbies',cos:'hobbies',fun:'hobbies','興趣':'hobbies','兴趣':'hobbies','日常':'hobbies','關於':'about','关于':'about'};
+    const aliases={'?':'help',resume:'cv',linkedin:'cv','cv.pdf':'cv','履歷':'cv','简历':'cv',work:'projects',portfolio:'projects',profile:'about','./start.sh':'home','start.sh':'home',meow:'pet',search:'find','作品':'projects','研究':'research','聯絡':'contact','联系':'contact',ddl:'deadlines',countdown:'deadlines','專題':'capstone','专题':'capstone','投稿':'deadlines','截止':'deadlines',hobby:'hobbies',cosplay:'hobbies',cos:'hobbies',fun:'hobbies','興趣':'hobbies','兴趣':'hobbies','日常':'hobbies','關於':'about','关于':'about'};
     const name=aliases[parsed.name]||parsed.name,args=parsed.args,arg=args.join(' '),lower=arg.toLowerCase();
     const definition=catalogue.find(c=>c.name===name);
     const usage=()=>record(value,`${t().usage}: ${definition?.usage||'help'}\n${definition?.description[locale]||t().unknown}`);
@@ -585,6 +623,7 @@
       }
       case 'pet':case 'feed':case 'play':case 'sleep':case 'wake':case 'lie':case 'trick':case 'hide':petCommand(name,value);break;
       case 'yuki':finish(yuki()?.report()||'-');break;
+      case 'cv':if(cvState()==='hidden'){finish(t().unknown);break;}navigate('cv');break;
       case 'notes':finish(`/notes/${locale==='en'?'en':locale.toLowerCase()}/`);location.href=`/notes/${locale==='en'?'en':locale.toLowerCase()}/`;break;
       case 'demo':finish('/lab/lumigrid/');location.href=`/lab/lumigrid/?lang=${locale}`;break;
       case 'stay':{const Y=yuki();if(!Y){finish(t().unknown);break;}const on=arg?!/^(off|no|0|roam)$/i.test(arg):!Y.stay();finish(Y.stay(on));break;}
