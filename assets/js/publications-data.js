@@ -11,38 +11,17 @@
    Any text field is either a plain string or {en, 'zh-TW', 'zh-CN'}. Manuscripts in preparation are listed from
    submissions-data.js, so they need no entry here until there is something public to link.
 
+   Fields of an entry (all optional except id, status and title):
+     {id, status, anonymous, draft, page, venue: 'CVPR 2027', year,
+      title, authors: [{name, me: true, aff: [1], equal: true}], affiliations: ['NYCU'], topics: ['VLM'],
+      tldr, abstract, highlights: [{value: '+2.1', label}], teaser: {src, video, alt, caption},
+      compare: {before, after, label: {en: ['Baseline', 'Ours'], …}},
+      links: {paper, arxiv, code, video, slides, poster}, bibtex}
+   Figures go in assets/publications/.
+
    Everything in this file ships with the public site. Do not add an entry under review with anonymous: false. */
 window.NIANSIA_PUBS = {
-  papers: [
-    // Template entry: shows every part of the paper card and page. Replace it with a real paper, or leave it as a draft.
-    {
-      id: 'example', draft: true, page: true, status: 'preprint', anonymous: false,
-      venue: 'VENUE 2027', year: 2027,
-      title: {en: 'Paper title: a short, specific claim about what the method does',
-              'zh-TW': '論文標題：一句具體說明方法做了什麼的主張',
-              'zh-CN': '论文标题：一句具体说明方法做了什么的主张'},
-      authors: [{name: 'Niansia', me: true, aff: [1]}, {name: 'Coauthor A', aff: [1]}, {name: 'Advisor B', aff: [1, 2]}],
-      affiliations: ['Institution One', 'Institution Two'],
-      topics: ['VLM', 'robustness'],
-      tldr: {en: 'One sentence a busy reader can repeat: the problem, the idea, and the headline result.',
-             'zh-TW': '一句讓忙碌讀者也能轉述的話：問題、想法，以及最重要的結果。',
-             'zh-CN': '一句让忙碌读者也能转述的话：问题、想法，以及最重要的结果。'},
-      abstract: {en: 'The abstract goes here, exactly as submitted. Two to four short paragraphs are easiest to read on a phone: the problem and why it matters, what is new, how it was evaluated, and what the results show, including where the method does not help.',
-                 'zh-TW': '這裡放論文摘要，內容與投稿版本一致。分成二到四段短段落，在手機上最好讀：問題與其重要性、新的地方、如何評估，以及結果顯示了什麼，包括方法沒有幫助的情況。',
-                 'zh-CN': '这里放论文摘要，内容与投稿版本一致。分成二到四段短段落，在手机上最好读：问题与其重要性、新的地方、如何评估，以及结果显示了什么，包括方法没有帮助的情况。'},
-      highlights: [
-        {value: '+0.0', label: {en: 'headline metric', 'zh-TW': '主要指標', 'zh-CN': '主要指标'}},
-        {value: '0 / 0', label: {en: 'benchmarks improved', 'zh-TW': '提升的基準', 'zh-CN': '提升的基准'}},
-        {value: '0 GPU', label: {en: 'training budget', 'zh-TW': '訓練資源', 'zh-CN': '训练资源'}},
-      ],
-      teaser: {src: '/assets/publications/template-teaser.svg', alt: 'Teaser figure placeholder',
-               caption: {en: 'Teaser figure: the one picture that explains the paper.', 'zh-TW': '示意圖：一張就能說明整篇論文的圖。', 'zh-CN': '示意图：一张就能说明整篇论文的图。'}},
-      compare: {before: '/assets/publications/template-before.svg', after: '/assets/publications/template-after.svg',
-                label: {en: ['Baseline', 'Ours'], 'zh-TW': ['基準方法', '本文方法'], 'zh-CN': ['基准方法', '本文方法']}},
-      links: {paper: '#', arxiv: '#', code: '#', video: '', poster: '', slides: '#'},
-      bibtex: '@inproceedings{niansia2027example,\n  title     = {Paper title: a short, specific claim about what the method does},\n  author    = {Niansia and Coauthor A and Advisor B},\n  booktitle = {Venue},\n  year      = {2027}\n}',
-    },
-  ],
+  papers: [],
   copy: {
     en: {title: 'Papers & manuscripts', intro: 'Peer-reviewed work, preprints and what is currently in preparation. Papers under double-blind review stay anonymous here until the decision.',
       published: 'Publications', none: 'No peer-reviewed papers yet.', noneBody: 'The first manuscripts are being written now. They will appear here, with code and a project page, once they are public.',

@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" font-family="Inter,system-ui,sans-serif">
-  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2b2a3a"/><stop offset="1" stop-color="#15142a"/></linearGradient>
-    <filter id="blur"><feGaussianBlur stdDeviation="7"/></filter></defs>
-  <rect width="1200" height="800" fill="url(#g)"/>
-  <g filter="url(#blur)" opacity=".7"><circle cx="380" cy="360" r="170" fill="#6b5f86"/><rect x="620" y="250" width="360" height="260" rx="30" fill="#5b5270"/><path d="M0 640q300-90 600 0t600 0v160H0z" fill="#3a3550"/></g>
-  <text x="600" y="740" text-anchor="middle" font-size="34" fill="#ffffffaa" font-family="'JetBrains Mono',monospace">baseline output · placeholder</text>
-</svg>

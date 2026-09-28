@@ -565,12 +565,12 @@ def build_brief(projects: dict, notes: dict, copy: dict, cv: dict, subs: dict, p
 PAPER_UI = {
     "en": {"tldr": "TL;DR", "abstract": "Abstract", "cite": "Citation", "copy": "Copy", "copied": "Copied", "compare": "Drag to compare",
            "blind": "Anonymous submission", "blindBody": "This paper is under double-blind review. The title, authors and materials will appear here after the decision.",
-           "after": "available after review", "template": "Template preview: this page is not linked from the site and is hidden from search engines. Replace the draft entry in assets/js/publications-data.js.",
+           "after": "available after review", "template": "Draft preview: this page is not linked from the site and is hidden from search engines.",
            "papers": "All papers", "brief": "One-page brief", "status": {"published": "Published", "accepted": "Accepted", "preprint": "Preprint", "under-review": "Under review", "in-prep": "In preparation"},
            "links": {"paper": "Paper", "arxiv": "arXiv", "code": "Code", "video": "Video", "slides": "Slides", "poster": "Poster"}, "affil": "Affiliations"},
     "zh-TW": {"tldr": "一句話摘要", "abstract": "摘要", "cite": "引用", "copy": "複製", "copied": "已複製", "compare": "拖曳比較",
               "blind": "匿名投稿", "blindBody": "這篇論文正在雙盲審查中。標題、作者與相關資料會在結果公布後放在這裡。",
-              "after": "審查結束後公開", "template": "範本預覽：這一頁沒有從網站連結，也不會被搜尋引擎收錄。請替換 assets/js/publications-data.js 裡的草稿條目。",
+              "after": "審查結束後公開", "template": "草稿預覽：這一頁沒有從網站連結，也不會被搜尋引擎收錄。",
               "papers": "全部論文", "brief": "一頁式簡介", "status": {"published": "已發表", "accepted": "已接受", "preprint": "預印本", "under-review": "審查中", "in-prep": "準備中"},
               "links": {"paper": "論文", "arxiv": "arXiv", "code": "程式碼", "video": "影片", "slides": "投影片", "poster": "海報"}, "affil": "單位"},
 }
