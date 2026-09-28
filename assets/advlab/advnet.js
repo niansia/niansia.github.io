@@ -1,7 +1,7 @@
 /* AdvNet: a tiny MNIST CNN with forward pass and gradients with respect to the input, in plain JavaScript (CPU only).
    Used by /lab/adversarial/ for FGSM / PGD attacks, saliency and the decision map (in a worker).
 
-   Architecture (matches tools/advlab/model.py):
+   Architecture (matches Net in advlab/common.py of github.com/niansia/adversarial-lab):
      conv1 1→16 5×5 pad 2 → ReLU → maxpool 2   (28→14)
      conv2 16→32 3×3 pad 1 → ReLU → maxpool 2  (14→7)
      fc1 1568→128 → ReLU → fc2 128→10

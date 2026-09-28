@@ -19,12 +19,7 @@ The public site has three language editions:
 
 ## Adversarial Lab (`/lab/adversarial/`)
 
-An in-browser attack playground under the AI-security research direction: draw or pick an MNIST digit, attack it with FGSM, PGD or targeted PGD under an L∞ budget, watch the prediction flip step by step, and compare a standard model with one trained by PGD adversarial training (ε = 0.3). A worker maps a 2-D slice of input space (gradient-sign direction × random direction) for both models, and the robustness curves come from an offline evaluation.
-
-- `assets/advlab/advnet.js`: the CNN forward pass and input gradients in plain JavaScript (CPU only); `map-worker.js` for the decision maps.
-- `tools/advlab/train.py`: trains both models and writes `standard.bin`, `robust.bin` (float16) and `robustness.json`. It hides the GPU, uses 2 threads by default and runs at idle priority (`--threads 4` when the machine is free). MNIST is read from `D:\data\mnist` (or `MNIST_DIR`).
-- `tools/advlab/gradcheck.py`: checks the JavaScript logits and gradients against PyTorch. `export_samples.py` writes the sample digits.
-- Linked from `research.md`, the `attack` command, the palette, the research tour and the brief.
+An in-browser attack playground under the AI-security research direction, listed as a project (`adversarial-lab`). Its source, training and evaluation live in **[niansia/adversarial-lab](https://github.com/niansia/adversarial-lab)**; this site hosts the published page (`lab/adversarial/`) and its files (`assets/advlab/`: the JavaScript engine, the decision-map worker, float16 weights, `robustness.json`, sample digits). To update it, retrain or change the page in that repository and copy `web/*` into `assets/advlab/` (the page itself goes to `lab/adversarial/index.html` with absolute asset paths).
 
 ## Navigation and style
 

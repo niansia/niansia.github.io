@@ -725,10 +725,11 @@ def lint_sources_and_output() -> None:
 
 
 # ------------------------------------------------------------------------------------------------ share pages
-HERO = {"lumigrid": "/assets/work/cards/lumigrid.jpg", "taiwan-exam": "/assets/work/taiwan-exam-social-preview.png", "kcrashlab": "/assets/work/cards/kcrashlab.jpg",
+HERO = {"adversarial-lab": "/assets/og/adversarial-demo.jpg", "lumigrid": "/assets/work/cards/lumigrid.jpg", "taiwan-exam": "/assets/work/taiwan-exam-social-preview.png", "kcrashlab": "/assets/work/cards/kcrashlab.jpg",
         "contextsec": "/assets/work/contextsec-decision-flow.svg", "merriv": "/assets/work/cards/merriv.jpg", "ai-repo-gardener": "/assets/work/ai-repo-gardener-demo.gif",
         "noveltyaudit": "/assets/work/cards/noveltyaudit.jpg", "research-meeting-coach": "/assets/work/research-meeting-coach.png", "chromarecover": "/assets/work/cards/chromarecover.jpg"}
-EXTRA = {"lumigrid": [("demo", "/lab/lumigrid/?lang={loc}"), ("film", "/assets/film/lumigrid.html?lang={loc}")],
+EXTRA = {"adversarial-lab": [("demo", "/lab/adversarial/?lang={loc}")],
+         "lumigrid": [("demo", "/lab/lumigrid/?lang={loc}"), ("film", "/assets/film/lumigrid.html?lang={loc}")],
          "taiwan-exam": [("film", "/assets/film/taiwan-exam.html?lang={loc}")]}
 
 
@@ -827,7 +828,7 @@ def og_jobs(projects: dict, notes: dict, pubs: dict | None = None) -> list[tuple
     for p in projects["en"]:
         img = HERO.get(p["id"])
         jobs.append((f"p-{p['id']}", og_page("project", title=p["name"], chips=[p["category"], p["status"]], desc=p["description"],
-                                             img=uri(img) if img else None, cover=p["id"] == "lumigrid")))
+                                             img=uri(img) if img else None, cover=p["id"] in ("lumigrid", "adversarial-lab"))))
     for seg, loc in LANGS.items():
         for slug, by in notes.items():
             n = by[loc]

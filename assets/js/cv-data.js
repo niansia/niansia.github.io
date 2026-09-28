@@ -24,7 +24,7 @@ window.NIANSIA_CV = {
   ],
   experience: [],   // {period, title, org, detail}
   // Research and projects: ids from portfolio-data.js, shown with their name, category and one-line result.
-  projects: ['lumigrid', 'taiwan-exam', 'kcrashlab', 'noveltyaudit', 'merriv'],
+  projects: ['adversarial-lab', 'lumigrid', 'taiwan-exam', 'kcrashlab', 'noveltyaudit', 'merriv'],
   awards: [],       // {period, title, org, detail}
   skills: {
     en: [['Research', 'computer vision · vision-language models · AI security · evaluation design'], ['ML', 'PyTorch · ONNX · OpenCV · scikit-learn'], ['Engineering', 'Python · C# / .NET · TypeScript · React · WebGL / WebGPU · SQLite · Git']],

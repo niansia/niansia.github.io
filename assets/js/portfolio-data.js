@@ -1,6 +1,17 @@
 window.NIANSIA_PROJECTS = {
   "en": [
     {
+      "id": "adversarial-lab",
+      "name": "Adversarial Lab",
+      "url": "https://github.com/niansia/adversarial-lab",
+      "category": "AI security",
+      "status": "Live demo",
+      "description": "An in-browser playground for adversarial attacks: draw or pick an MNIST digit, attack a CNN with FGSM, PGD or targeted PGD under an L∞ budget, watch the prediction flip step by step, and compare it with a PGD adversarially trained model through gradients, transfer and decision maps of input space. The attacks' gradients are computed in plain JavaScript on the visitor's CPU.",
+      "evidence": "On 2,000 MNIST test images under PGD-40: the standard model falls from 98.95% clean accuracy to 0.2% at ε = 0.2, while the adversarially trained model keeps 92.2% at ε = 0.2 and 85.3% at ε = 0.3 (97.92% clean). Gradient-masking checks (PGD below FGSM and below transfer at every ε), JavaScript gradients matched to PyTorch within 1e-8, CPU-only training and evaluation scripts.",
+      "reference": "https://github.com/niansia/adversarial-lab#results",
+      "referenceLabel": "Results and method"
+    },
+    {
       "id": "lumigrid",
       "name": "LumiGrid",
       "url": "https://github.com/niansia/LumiGrid",
@@ -113,6 +124,17 @@ window.NIANSIA_PROJECTS = {
   ],
   "zh-TW": [
     {
+      "id": "adversarial-lab",
+      "name": "Adversarial Lab",
+      "url": "https://github.com/niansia/adversarial-lab",
+      "category": "AI 安全",
+      "status": "線上試玩",
+      "description": "在瀏覽器裡執行的對抗攻擊實驗場：畫一個或挑一個 MNIST 數字，在 L∞ 預算內用 FGSM、PGD 或指定目標的 PGD 攻擊 CNN，一步步看預測被翻轉，再透過梯度、轉移攻擊與輸入空間的決策地圖，和經過 PGD 對抗訓練的模型比較。攻擊所需的梯度用純 JavaScript 在訪客的 CPU 上計算。",
+      "evidence": "在 2,000 張 MNIST 測試圖上以 PGD-40 評估：一般模型從 98.95% 的乾淨準確率在 ε = 0.2 時掉到 0.2%；對抗訓練模型在 ε = 0.2 仍有 92.2%、ε = 0.3 有 85.3%（乾淨準確率 97.92%）。附梯度遮蔽檢查（每個 ε 下 PGD 都比 FGSM 與轉移攻擊強）、與 PyTorch 誤差在 1e-8 內的 JavaScript 梯度，以及只用 CPU 的訓練與評估腳本。",
+      "reference": "https://github.com/niansia/adversarial-lab#results",
+      "referenceLabel": "成果與方法"
+    },
+    {
       "id": "lumigrid",
       "name": "LumiGrid",
       "url": "https://github.com/niansia/LumiGrid",
@@ -224,6 +246,17 @@ window.NIANSIA_PROJECTS = {
     }
   ],
   "zh-CN": [
+    {
+      "id": "adversarial-lab",
+      "name": "Adversarial Lab",
+      "url": "https://github.com/niansia/adversarial-lab",
+      "category": "AI 安全",
+      "status": "在线试玩",
+      "description": "在浏览器里运行的对抗攻击实验场：画一个或挑一个 MNIST 数字，在 L∞ 预算内用 FGSM、PGD 或指定目标的 PGD 攻击 CNN，一步步看预测被翻转，再通过梯度、迁移攻击与输入空间的决策地图，和经过 PGD 对抗训练的模型比较。攻击所需的梯度用纯 JavaScript 在访客的 CPU 上计算。",
+      "evidence": "在 2,000 张 MNIST 测试图上以 PGD-40 评估：普通模型从 98.95% 的干净准确率在 ε = 0.2 时降到 0.2%；对抗训练模型在 ε = 0.2 仍有 92.2%、ε = 0.3 有 85.3%（干净准确率 97.92%）。附梯度遮蔽检查（每个 ε 下 PGD 都比 FGSM 与迁移攻击强）、与 PyTorch 误差在 1e-8 内的 JavaScript 梯度，以及只用 CPU 的训练与评估脚本。",
+      "reference": "https://github.com/niansia/adversarial-lab#results",
+      "referenceLabel": "成果与方法"
+    },
     {
       "id": "lumigrid",
       "name": "LumiGrid",

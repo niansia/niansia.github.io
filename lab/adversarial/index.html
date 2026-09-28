@@ -157,7 +157,7 @@ input[type=range]{width:100%;accent-color:var(--bad);}
 </head>
 <body>
 <div class="wrap">
-  <div class="top"><b>Adversarial Lab</b><span>· lab</span><span class="sp"></span><a class="btn" id="back" href="/#research">←</a><button class="btn" id="lang" type="button">EN</button><a class="btn" href="https://github.com/niansia/niansia.github.io/tree/main/tools/advlab" target="_blank" rel="noopener">Source ↗</a></div>
+  <div class="top"><b>Adversarial Lab</b><span>· lab</span><span class="sp"></span><a class="btn" id="back" href="/#research">←</a><button class="btn" id="lang" type="button">EN</button><a class="btn" href="https://github.com/niansia/adversarial-lab" target="_blank" rel="noopener">GitHub ↗</a></div>
   <h1 id="h1"></h1>
   <p class="lede" id="lede"></p>
   <p class="warn" id="warn"></p>
@@ -228,7 +228,7 @@ input[type=range]{width:100%;accent-color:var(--bad);}
   </div>
 
   <div class="notes" id="notes"></div>
-  <div class="foot"><span id="foot-l"></span><a href="https://github.com/niansia/niansia.github.io/tree/main/tools/advlab">tools/advlab</a><span id="rt"></span><span data-stats hidden><b data-stat="online">–</b> online · <b data-stat="total">–</b> visits</span></div>
+  <div class="foot"><span id="foot-l"></span><a href="https://github.com/niansia/adversarial-lab">github.com/niansia/adversarial-lab</a><span id="rt"></span><span data-stats hidden><b data-stat="online">–</b> online · <b data-stat="total">–</b> visits</span></div>
 </div>
 <script defer src="/assets/js/site-stats.js"></script>
 <script src="/assets/advlab/advnet.js"></script>
@@ -255,11 +255,11 @@ const COPY = {
     mapExplain: 'Each pixel is one image x + a·u + b·v, coloured by the class the model predicts (brighter = more confident). <b>→</b> follows the sign of the loss gradient (the direction FGSM uses), <b>↑</b> is random. The dashed square is the ε-box; the ring is your input, the cross is where the attack landed. A standard model changes its mind just a short step along → but hardly at all along ↑: adversarial directions are special, not just “noise”. The robust model pushes the boundary out past ε.',
     verdict: (d, a) => (d === null ? '' : d <= a ? `boundary at ${d.toFixed(2)} along → (inside ε = ${a.toFixed(2)})` : `no flip along → within ε = ${a.toFixed(2)}`),
     curve: 'robustness on 2,000 test digits', curveExplain: r => `Accuracy under attack as ε grows, measured offline with PGD-${r.eval.pgd_steps} (1 random restart) and FGSM on the first ${r.eval.n.toLocaleString()} MNIST test images. “Transfer” attacks the robust model with examples crafted on the standard one. The vertical line is your current ε. These are <b>upper bounds</b> on true robustness: a stronger attack (e.g. AutoAttack) could only lower them.`,
-    noCurves: 'The robustness curves appear once the models are trained and evaluated (tools/advlab/train.py).',
+    noCurves: 'The robustness curves appear once the models are trained and evaluated (advlab/train.py).',
     th: ['ε', 'standard · PGD', 'robust · PGD', 'transfer'], sPgd: 'standard · PGD', sFgsm: 'standard · FGSM', rPgd: 'robust · PGD', rFgsm: 'robust · FGSM', tr: 'transfer → robust', clean: 'clean accuracy',
     notes: [['What you are seeing', 'The attack takes the gradient of the loss with respect to the pixels and nudges every pixel by at most ε in the direction that hurts the model most. FGSM does it in one step; PGD repeats small steps and projects back into the ε-box. A change of 0.2 per pixel is obvious on a black background, but the digit is still clearly the same to you.'],
       ['Why the robust model holds', 'The robust model was trained on PGD examples at ε = 0.3 (Madry et al., 2018): every training batch is attacked first, then learned from. It pays for this with a little clean accuracy and more compute, and its gradients become more human-aligned: the “gradient” view looks like strokes, not static.'],
-      ['Honest limits', 'MNIST is the easiest setting for this research; results on natural images are far weaker. The models are small (≈207 k parameters) and trained on a CPU. PGD numbers are upper bounds, and nothing here is a certificate. Code, training settings and evaluation are in <code>tools/advlab/</code>; the in-browser gradients are checked against PyTorch.']],
+      ['Honest limits', 'MNIST is the easiest setting for this research; results on natural images are far weaker. The models are small (≈207 k parameters) and trained on a CPU. PGD numbers are upper bounds, and nothing here is a certificate. Code, training settings and evaluation are in <code>niansia/adversarial-lab</code> on GitHub; the in-browser gradients are checked against PyTorch.']],
     foot: 'Adversarial Lab · small CNNs on MNIST · FGSM / PGD under L∞', rt: () => 'runs on your CPU · the decision maps use two background threads'},
   'zh-TW': {h1: '用幾乎看不見的雜訊，<em>騙過神經網路</em>', lede: '畫一個數字，或從 MNIST 測試集挑一個，然後用 <b>FGSM</b> 或 <b>PGD</b> 攻擊分類器：沿著模型自己的梯度，替每個像素加上一點點、有上限的改動。再對一個<b>專門為了抵抗這種攻擊而訓練</b>的模型做一樣的事，看看有什麼不同。<b>全部在這個分頁用你的 CPU 計算，不會上傳任何東西。</b>',
     untrained: '預覽：這兩個模型還沒有訓練（隨機權重），在訓練完成前預測結果沒有意義。',
@@ -276,11 +276,11 @@ const COPY = {
     mapExplain: '每個像素代表一張圖 x + a·u + b·v，顏色是模型預測的類別（越亮越有把握）。<b>→</b> 沿著損失梯度的符號（FGSM 用的方向），<b>↑</b> 是隨機方向。虛線方框是 ε 範圍，圓圈是你的輸入，叉叉是攻擊落點。一般模型沿 → 走一小步就改變答案，沿 ↑ 卻幾乎不變：對抗方向很特別，不只是「雜訊」。穩健模型則把邊界推到 ε 之外。',
     verdict: (d, a) => (d === null ? '' : d <= a ? `沿 → 在 ${d.toFixed(2)} 處翻轉（在 ε = ${a.toFixed(2)} 之內）` : `沿 → 在 ε = ${a.toFixed(2)} 內沒有翻轉`),
     curve: '在 2,000 張測試數字上的穩健性', curveExplain: r => `隨著 ε 變大，模型在攻擊下的準確率。離線以 PGD-${r.eval.pgd_steps}（1 次隨機起點）與 FGSM 在 MNIST 測試集前 ${r.eval.n.toLocaleString()} 張上量測。「轉移」是用一般模型做出的對抗樣本去攻擊穩健模型。直線是你目前的 ε。這些數字是真實穩健性的<b>上限</b>：更強的攻擊（例如 AutoAttack）只會讓它更低。`,
-    noCurves: '模型訓練並評估完成後（tools/advlab/train.py），這裡會出現穩健性曲線。',
+    noCurves: '模型訓練並評估完成後（advlab/train.py），這裡會出現穩健性曲線。',
     th: ['ε', '一般 · PGD', '穩健 · PGD', '轉移'], sPgd: '一般 · PGD', sFgsm: '一般 · FGSM', rPgd: '穩健 · PGD', rFgsm: '穩健 · FGSM', tr: '轉移 → 穩健', clean: '乾淨準確率',
     notes: [['你看到的是什麼', '攻擊會計算損失對每個像素的梯度，然後讓每個像素朝「最傷模型」的方向改動，但最多不超過 ε。FGSM 一步到位；PGD 則走很多小步，每步都投影回 ε 範圍內。在黑底上改動 0.2 看得出來，但對你來說那個數字還是同一個。'],
       ['為什麼穩健模型守得住', '穩健模型是用 ε = 0.3 的 PGD 對抗樣本訓練的（Madry 等人，2018）：每一批訓練資料都先被攻擊，再拿來學。代價是少一點乾淨準確率、多很多運算，而它的梯度也更接近人類的直覺：切到「梯度」檢視，會看到筆畫而不是雜訊。'],
-      ['誠實的限制', 'MNIST 是這個研究最容易的場景，在自然影像上的結果會弱很多。模型很小（約 20.7 萬參數），而且是用 CPU 訓練的。PGD 的數字是上限，這裡沒有任何保證。程式碼、訓練設定與評估都在 <code>tools/advlab/</code>，瀏覽器裡算的梯度也和 PyTorch 對照驗證過。']],
+      ['誠實的限制', 'MNIST 是這個研究最容易的場景，在自然影像上的結果會弱很多。模型很小（約 20.7 萬參數），而且是用 CPU 訓練的。PGD 的數字是上限，這裡沒有任何保證。程式碼、訓練設定與評估都在 GitHub 的 <code>niansia/adversarial-lab</code>，瀏覽器裡算的梯度也和 PyTorch 對照驗證過。']],
     foot: '對抗樣本實驗室 · MNIST 小型 CNN · L∞ 下的 FGSM / PGD', rt: () => '在你的 CPU 上執行 · 決策地圖使用兩個背景執行緒'},
   'zh-CN': {h1: '用几乎看不见的噪声，<em>骗过神经网络</em>', lede: '画一个数字，或从 MNIST 测试集挑一个，然后用 <b>FGSM</b> 或 <b>PGD</b> 攻击分类器：沿着模型自己的梯度，给每个像素加上一点点、有上限的改动。再对一个<b>专门为了抵抗这种攻击而训练</b>的模型做同样的事，看看有什么不同。<b>全部在这个标签页用你的 CPU 计算，不会上传任何东西。</b>',
     untrained: '预览：这两个模型还没有训练（随机权重），在训练完成前预测结果没有意义。',
@@ -297,11 +297,11 @@ const COPY = {
     mapExplain: '每个像素代表一张图 x + a·u + b·v，颜色是模型预测的类别（越亮越有把握）。<b>→</b> 沿着损失梯度的符号（FGSM 用的方向），<b>↑</b> 是随机方向。虚线方框是 ε 范围，圆圈是你的输入，叉叉是攻击落点。普通模型沿 → 走一小步就改变答案，沿 ↑ 却几乎不变：对抗方向很特别，不只是“噪声”。稳健模型则把边界推到 ε 之外。',
     verdict: (d, a) => (d === null ? '' : d <= a ? `沿 → 在 ${d.toFixed(2)} 处翻转（在 ε = ${a.toFixed(2)} 之内）` : `沿 → 在 ε = ${a.toFixed(2)} 内没有翻转`),
     curve: '在 2,000 张测试数字上的稳健性', curveExplain: r => `随着 ε 变大，模型在攻击下的准确率。离线以 PGD-${r.eval.pgd_steps}（1 次随机起点）与 FGSM 在 MNIST 测试集前 ${r.eval.n.toLocaleString()} 张上测量。“迁移”是用普通模型生成的对抗样本去攻击稳健模型。竖线是你当前的 ε。这些数字是真实稳健性的<b>上限</b>：更强的攻击（例如 AutoAttack）只会让它更低。`,
-    noCurves: '模型训练并评估完成后（tools/advlab/train.py），这里会出现稳健性曲线。',
+    noCurves: '模型训练并评估完成后（advlab/train.py），这里会出现稳健性曲线。',
     th: ['ε', '普通 · PGD', '稳健 · PGD', '迁移'], sPgd: '普通 · PGD', sFgsm: '普通 · FGSM', rPgd: '稳健 · PGD', rFgsm: '稳健 · FGSM', tr: '迁移 → 稳健', clean: '干净准确率',
     notes: [['你看到的是什么', '攻击会计算损失对每个像素的梯度，然后让每个像素朝“最伤模型”的方向改动，但最多不超过 ε。FGSM 一步到位；PGD 则走很多小步，每步都投影回 ε 范围内。在黑底上改动 0.2 看得出来，但对你来说那个数字还是同一个。'],
       ['为什么稳健模型守得住', '稳健模型是用 ε = 0.3 的 PGD 对抗样本训练的（Madry 等人，2018）：每一批训练数据都先被攻击，再拿来学。代价是少一点干净准确率、多很多运算，而它的梯度也更接近人类的直觉：切到“梯度”视图，会看到笔画而不是噪声。'],
-      ['诚实的限制', 'MNIST 是这个研究最容易的场景，在自然图像上的结果会弱很多。模型很小（约 20.7 万参数），而且是用 CPU 训练的。PGD 的数字是上限，这里没有任何保证。代码、训练设置与评估都在 <code>tools/advlab/</code>，浏览器里算的梯度也和 PyTorch 对照验证过。']],
+      ['诚实的限制', 'MNIST 是这个研究最容易的场景，在自然图像上的结果会弱很多。模型很小（约 20.7 万参数），而且是用 CPU 训练的。PGD 的数字是上限，这里没有任何保证。代码、训练设置与评估都在 GitHub 的 <code>niansia/adversarial-lab</code>，浏览器里算的梯度也和 PyTorch 对照验证过。']],
     foot: '对抗样本实验室 · MNIST 小型 CNN · L∞ 下的 FGSM / PGD', rt: () => '在你的 CPU 上运行 · 决策地图使用两个后台线程'}
 };
 const T = () => COPY[L];
