@@ -1,5 +1,5 @@
 window.NIANSIA_BLOG = {
- "ask": "",
+ "ask": "https://forms.gle/yNUw4eLZeeqf3Arb6",
  "posts": {
   "en": [
    {
