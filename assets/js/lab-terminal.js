@@ -537,6 +537,41 @@
     'zh-CN':{t:'动手试试：骗过神经网络',s:'对抗样本实验室 · FGSM／PGD 攻击、决策地图与对抗训练模型，全部在你的 CPU 上运行。'}}[locale]);
   function advCard() { const c=advCopy(); return `<a class="lg-try adv-try" href="/lab/adversarial/?lang=${locale}"><span class="adv-eq" aria-hidden="true"><i>7</i><b>+</b><i class="adv-noise"></i><b>=</b><i class="adv-fooled">3</i></span><span><b>${esc(c.t)}</b><small>${esc(c.s)}</small></span><em aria-hidden="true">↗</em></a>`; }
   function bibtexAll() { return pubList().filter(p=>p.bibtex&&!pubHidden(p)).map(p=>p.bibtex).join('\n\n')+'\n'; }
+  /* Project filters: a project can sit in several groups (Adversarial Lab is both vision and security). */
+  const PROJECT_FILTERS=[['all',null],['vision',['lumigrid','chromarecover','adversarial-lab']],['security',['adversarial-lab','contextsec','merriv','ai-repo-gardener']],
+    ['agents',['taiwan-exam','contextsec','ai-repo-gardener','psg','noveltyaudit','research-meeting-coach']],['research',['noveltyaudit','research-meeting-coach']],
+    ['systems',['kcrashlab','merriv','psg']],['demo',['adversarial-lab','lumigrid']]];
+  const filterCopy=()=>({en:{all:'All',vision:'Computer vision',security:'AI security & trust',agents:'Agents & Skills',research:'Research tools',systems:'Reliability & evidence',demo:'Try in the browser',label:'Filter projects',of:(a,b)=>`${a} of ${b} ${t().directory}`},
+    'zh-TW':{all:'全部',vision:'電腦視覺',security:'AI 安全與可信',agents:'Agent Skill 與 AI 代理',research:'研究工具',systems:'可靠性與證據',demo:'可以線上試玩',label:'篩選作品',of:(a,b)=>`${a} / ${b} 項作品`},
+    'zh-CN':{all:'全部',vision:'计算机视觉',security:'AI 安全与可信',agents:'Agent Skill 与 AI 代理',research:'研究工具',systems:'可靠性与证据',demo:'可以在线试玩',label:'筛选作品',of:(a,b)=>`${a} / ${b} 项作品`}}[locale]);
+  let projectFilter=(()=>{try{return sessionStorage.getItem('niansia-project-filter')||'all';}catch{return 'all';}})();
+  if(!PROJECT_FILTERS.some(([k])=>k===projectFilter))projectFilter='all';
+  const filterIds=key=>PROJECT_FILTERS.find(([k])=>k===key)?.[1];
+  const visibleProjects=()=>{const ids=filterIds(projectFilter);return projects().map((p,i)=>({p,i})).filter(({p})=>!ids||ids.includes(p.id));};
+  function directoryHTML(c) {
+    const F=filterCopy(), all=projects(), vis=visibleProjects();
+    if(!vis.some(v=>v.i===selectedProject))selectedProject=vis[0]?.i??0;
+    const chips=PROJECT_FILTERS.map(([k,ids])=>`<button type="button" class="pf-chip${k==='demo'?' is-demo':''}" data-filter="${k}" aria-pressed="${k===projectFilter}">${k==='demo'?icon('play'):''}<span>${esc(F[k])}</span><em>${ids?ids.filter(id=>all.some(p=>p.id===id)).length:all.length}</em></button>`).join('');
+    const rows=vis.map(({p,i},n)=>`<button class="project-row ${i===selectedProject?'is-selected':''}" data-project="${p.id}" data-project-index="${i}" style="--i:${n}"><span class="row-index">${String(n+1).padStart(2,'0')}</span><span class="project-row-title"><strong translate="no">${p.name}</strong><small>${p.category}</small></span><span class="project-status">${p.status}</span><span class="row-arrow">↗</span></button>`).join('');
+    const count=projectFilter==='all'?`${String(all.length).padStart(2,'0')} ${c.directory}`:F.of(vis.length,all.length);
+    return `<div class="directory-heading"><h1>${c.all}</h1><span class="dir-count">${esc(count)}</span></div><p class="screen-intro">${c.projectIntro}</p>
+      <div class="project-filters" role="group" aria-label="${esc(F.label)}">${chips}</div><div class="project-directory" aria-label="${c.all}">${rows}</div>`;
+  }
+  function setProjectFilter(key, focus) {
+    if(!PROJECT_FILTERS.some(([k])=>k===key))return false;
+    projectFilter=key; try{sessionStorage.setItem('niansia-project-filter',key);}catch{}
+    if(view!=='projects'||projectId)return true;
+    const out=$('.terminal-output'), top=out.scrollTop;
+    const box=document.createElement('div'); box.innerHTML=directoryHTML(t());
+    out.querySelector('.project-filters').replaceWith(box.querySelector('.project-filters'));
+    out.querySelector('.project-directory').replaceWith(box.querySelector('.project-directory'));
+    out.querySelector('.dir-count').textContent=box.querySelector('.dir-count').textContent;
+    const dir=out.querySelector('.project-directory'); if(motion()){dir.classList.add('is-filtering');}
+    out.scrollTop=top;
+    if(focus)out.querySelector(`[data-filter="${key}"]`)?.focus({preventScroll:true});
+    message(`${filterCopy()[key]} · ${visibleProjects().length}`);
+    return true;
+  }
   function screen(animate=true) {
     const c=t(), items=projects(), item=items.find(p=>p.id===projectId);
     let html='';
@@ -550,7 +585,7 @@
     if (view==='cv') html=cvScreen();
     if (view==='papers') html=papersScreen();
     if (view==='help') html=`${commandTitle('help')}<h1>${c.guideTitle}</h1><p>${c.guideIntro}</p><dl class="keyboard-guide">${c.keys.map(([key,description])=>`<div><dt><kbd>${key}</kbd></dt><dd>${description}</dd></div>`).join('')}</dl><h2>${c.commands}</h2>${commandCatalogue()}<p class="comment-line">${c.simulation}</p>`;
-    if (view==='projects' && !item) html=`${commandTitle('ls ./projects/')}<div class="directory-heading"><h1>${c.all}</h1><span>${String(items.length).padStart(2,'0')} ${c.directory}</span></div><p class="screen-intro">${c.projectIntro}</p><div class="project-directory" aria-label="${c.all}">${items.map((p,i)=>`<button class="project-row ${i===selectedProject?'is-selected':''}" data-project="${p.id}" data-project-index="${i}" style="--i:${i}"><span class="row-index">${String(i+1).padStart(2,'0')}</span><span class="project-row-title"><strong translate="no">${p.name}</strong><small>${p.category}</small></span><span class="project-status">${p.status}</span><span class="row-arrow">↗</span></button>`).join('')}</div>`;
+    if (view==='projects' && !item) html=`${commandTitle('ls ./projects/')}${directoryHTML(c)}`;
     if (view==='projects' && item) html=`${commandTitle('cat projects/'+esc(item.id)+'/README.md')}<button class="back-link" data-view="projects">← ${c.all}</button><div class="project-detail"><p class="detail-meta">${esc(item.category)}<span>${esc(item.status)}</span></p><h1 translate="no">${esc(item.name)}</h1><p class="project-description">${esc(item.description)}</p>${item.id==='taiwan-exam'?'<img class="project-art" src="/assets/work/taiwan-exam-social-preview.png" width="1280" height="640" alt="Taiwan Exam" loading="lazy">'+teFilmCard():''}${item.id==='lumigrid'?lumigridShowcase():''}${item.id==='adversarial-lab'?'<img class="project-art" src="/assets/og/adversarial-demo.jpg" width="1200" height="630" alt="Adversarial Lab" loading="lazy">'+advCard():''}<h2>${c.evidence}</h2><p>${esc(item.evidence)}</p><div class="output-actions"><a class="action-button primary" href="${esc(item.url)}" target="_blank" rel="noopener noreferrer"><span>${c.source}</span>${icon('link')}</a><a class="action-button" href="${esc(item.reference)}" target="_blank" rel="noopener noreferrer"><span>${esc(item.referenceLabel)}</span>${icon('link')}</a><button class="action-button" data-ask="${esc(item.name)}">${icon('chat')}<span>${c.askTitle}</span></button><button class="action-button" data-action="share" data-share="/p/${esc(item.id)}/${locale==='en'?'':locale.toLowerCase()+'/'}">${icon('link')}<span>${esc(noteCopy().share)}</span></button></div><div class="project-pagination"><button data-project-step="-1">← ${c.prev}</button><span>${items.indexOf(item)+1} / ${items.length}</span><button data-project-step="1">${c.next} →</button></div></div>`;
     const output=$('.terminal-output'); output.innerHTML=html; output.scrollTop=0; renderJournal();
     if (view==='research') initCapstone();
@@ -600,10 +635,11 @@
   }
   function moveSelection(key) {
     const inDirectory=view==='projects'&&!projectId;
-    const count=inDirectory?projects().length:paths.length;
-    let index=inDirectory?selectedProject:selectedNav;
+    const order=inDirectory?visibleProjects().map(v=>v.i):null;
+    const count=inDirectory?order.length:paths.length;
+    let index=inDirectory?Math.max(0,order.indexOf(selectedProject)):selectedNav;
     index=key==='Home'?0:key==='End'?count-1:(index+(key==='ArrowUp'?-1:1)+count)%count;
-    if(inDirectory){selectedProject=index;root.querySelectorAll('[data-project-index]').forEach((el,i)=>el.classList.toggle('is-selected',i===index));const el=$(`[data-project-index="${index}"]`);el.focus({preventScroll:true});el.scrollIntoView({block:'nearest'});}
+    if(inDirectory){selectedProject=order[index];root.querySelectorAll('[data-project-index]').forEach(el=>el.classList.toggle('is-selected',Number(el.dataset.projectIndex)===selectedProject));const el=$(`[data-project-index="${selectedProject}"]`);el.focus({preventScroll:true});el.scrollIntoView({block:'nearest'});}
     else {selectedNav=index;selectNav();}
   }
   function changeLanguage(next, origin) {
@@ -628,7 +664,7 @@
   function complete(value) {
     const split=value.indexOf(' '),head=split<0?value:value.slice(0,split),tail=split<0?'':value.slice(split+1).toLowerCase();
     if(split<0)return catalogue.map(c=>c.name).filter(name=>name.startsWith(head.toLowerCase()));
-    const values={festival:['list','auto','off',...(window.NIANSIA_FESTIVAL?.list||[]).map(f=>f.id)],accessory:['list','auto','none',...Object.keys(window.YukiWardrobe?.accessories||{})],outfit:['list','auto',...(window.YukiWardrobe?.outfits()||[]).map(o=>o.id)],theme:themes,style:themes,lang:['en','zh-tw','zh-cn'],tour:['research','builder','fun'],motion:['on','off'],follow:['on','off'],trail:['hearts','paws','stars','petals','off'],cursor:['s','m','l'],help:catalogue.map(c=>c.name)};
+    const values={festival:['list','auto','off',...(window.NIANSIA_FESTIVAL?.list||[]).map(f=>f.id)],accessory:['list','auto','none',...Object.keys(window.YukiWardrobe?.accessories||{})],outfit:['list','auto',...(window.YukiWardrobe?.outfits()||[]).map(o=>o.id)],theme:themes,style:themes,lang:['en','zh-tw','zh-cn'],tour:['research','builder','fun'],projects:PROJECT_FILTERS.map(([k])=>k),motion:['on','off'],follow:['on','off'],trail:['hearts','paws','stars','petals','off'],cursor:['s','m','l'],help:catalogue.map(c=>c.name)};
     const destinations=['home','about.md','research.md','papers.bib','contact.txt','hobbies.md','projects/',...projects().map(p=>p.id),...projects().map(p=>'projects/'+p.id+'/README.md')];
     return (values[head]||(['cd','cat','open','github'].includes(head)?destinations:[])).filter(item=>item.startsWith(tail)).map(item=>head+' '+item);
   }
@@ -687,6 +723,12 @@
     const finish=(text,links)=>record(value,text,links);
     const projectLinks=items=>items.map(p=>({id:p.id,label:p.name}));
     const showTarget=target=>{navigate(target.view,target.id||'',{keyboard:true});finish(t().routeReplies[target.view]);};
+    if(name==='projects'&&args.length){
+      const F=filterCopy(), key=PROJECT_FILTERS.map(([k])=>k).find(k=>k===lower||F[k].toLowerCase()===lower);
+      if(!key){finish(`${t().usage}: projects [${PROJECT_FILTERS.map(([k])=>k).join('|')}]`);return;}
+      setProjectFilter(key);navigate('projects','',{keyboard:true});
+      finish(visibleProjects().map(({p})=>`${p.name} · ${p.category}`).join('\n'),projectLinks(visibleProjects().map(v=>v.p)));return;
+    }
     if(paths.includes(name)&&name!=='help'){
       if(args.length){usage();return;}showTarget({view:name});return;
     }
@@ -814,6 +856,7 @@
     if(!event.target.closest('.style-menu'))toggleStyles(false);
     if(event.target.closest('.window-title')&&$('.terminal-window').classList.contains('is-minimized'))windowAction('win-min');
     if(!target)return;
+    if(target.dataset.filter){setProjectFilter(target.dataset.filter,true);return;}
     if(target.dataset.latestDot!==undefined){showLatest(Number(target.dataset.latestDot));return;}
     if(target.dataset.view){event.preventDefault();navigate(target.dataset.view,'',{keyboard:event.detail===0,origin:target});}
     if(target.dataset.project){navigate('projects',target.dataset.project,{keyboard:event.detail===0,origin:target});}
@@ -862,6 +905,9 @@
         }
       }
       return;
+    }
+    if(target.closest('.project-filters')&&['ArrowLeft','ArrowRight'].includes(event.key)){
+      event.preventDefault();const chips=[...root.querySelectorAll('.pf-chip')],i=chips.indexOf(target.closest('.pf-chip')),next=chips[(i+(event.key==='ArrowLeft'?-1:1)+chips.length)%chips.length];setProjectFilter(next.dataset.filter,true);return;
     }
     if(target.closest('.style-popover')&&['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(event.key)){
       event.preventDefault();const options=[...root.querySelectorAll('.style-option')],i=options.indexOf(target.closest('.style-option'));
