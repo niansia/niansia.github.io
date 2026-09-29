@@ -153,7 +153,7 @@ article blockquote{margin:18px 0;padding:4px 18px;border-left:3px solid var(--ac
 .chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px;}.chips span{font:500 12px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;padding:4px 11px;border-radius:99px;background:var(--code);}
 .btns{display:flex;flex-wrap:wrap;gap:10px;margin:22px 0;}
 .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:12px;border:1px solid var(--line);background:var(--paper);color:var(--ink);text-decoration:none;font-weight:600;font-size:14px;}
-.btn.primary{background:var(--accent);border-color:transparent;color:#fff;}
+.btn.primary{background:var(--accent);border-color:transparent;color:var(--paper);}
 .btn:hover{border-color:var(--accent);}
 .note{font-size:13.5px;color:var(--muted);}
 .live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#34c38f;box-shadow:0 0 0 3px #34c38f33;vertical-align:1px;}footer b{color:var(--ink);font-weight:600;}
@@ -545,7 +545,7 @@ EXAM_UI = {
                        "每份檔案都會先掃毒、移除連結與隱藏內容、檢查個資；不符合的會直接刪除，公開後也可能下架。"],
               "warn": "題目和詳解都是 AI 生成的，可能有錯；請搭配課本和老師的說明使用。發現錯誤、侵權或個資，請按每份考卷下方的「回報問題」來信告訴我。",
               "all": "全部", "none": "還沒有人分享考卷，歡迎當第一個！", "none_subject": "這一科還沒有考卷。", "q": "題本", "s": "詳解",
-              "pages": "頁", "by": "分享者", "report": "回報問題", "sha": "檔案校驗碼（SHA-256）", "dataset": "所有檔案都放在 Hugging Face 資料集",
+              "pages": "頁", "by": "分享者", "preview": "預覽", "download": "下載", "folder": "開啟資料夾", "set": "第 {n} 份", "report": "回報問題", "sha": "檔案校驗碼（SHA-256）", "dataset": "所有檔案都放在 Hugging Face 資料集",
               "license": "授權：CC BY-NC 4.0", "count": "共 {n} 份", "back": "回到作品集", "te": "Taiwan Exam 專案",
               "report_subject": "[考卷回報] {id}", "report_body": "考卷編號：{id}\n問題類型（侵權／個資／答案錯誤／其他）：\n說明："},
 }
@@ -561,17 +561,33 @@ EXAM_CSS = """
 .subjects a{padding:5px 13px;border-radius:99px;border:1px solid var(--line);text-decoration:none;font-size:13.5px;}
 .subjects a:hover{border-color:var(--accent);}.subjects em{font-style:normal;color:var(--muted);margin-left:6px;font-size:12px;}
 .subject{margin-top:34px;scroll-margin-top:16px;}
-.exams{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px;margin-top:12px;}
-.ex{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:var(--paper);scroll-margin-top:16px;}
-.ex img{display:block;width:100%;aspect-ratio:520/740;object-fit:cover;object-position:top;border-bottom:1px solid var(--line);background:#fff;}
-.ex .exb{display:flex;flex-direction:column;gap:8px;padding:12px 14px 14px;}
-.ex .exm{margin:0;font:500 12px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;color:var(--muted);}
-.ex .dl{display:flex;flex-wrap:wrap;gap:8px;}
-.ex .dl a{padding:6px 12px;border-radius:10px;background:var(--accent);color:#fff;text-decoration:none;font-size:13px;font-weight:600;}
-.ex .dl a.sol{background:transparent;color:var(--accent);border:1px solid var(--accent);}
-.ex .dl small{font-weight:400;opacity:.85;margin-left:4px;}
-.ex details{font-size:12px;color:var(--muted);}.ex details code{display:block;margin-top:4px;font-size:10.5px;word-break:break-all;}
-.ex .rep{align-self:flex-start;font-size:12px;color:var(--muted);}
+.exams{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px;margin-top:12px;}
+.ex{display:grid;grid-template-columns:76px minmax(0,1fr);gap:14px;padding:14px;border:1px solid var(--line);border-radius:16px;background:var(--paper);scroll-margin-top:16px;transition:border-color .2s;}
+.ex:hover{border-color:color-mix(in srgb,var(--accent) 45%,var(--line));}
+.ex .thumb{display:block;width:76px;aspect-ratio:520/740;object-fit:cover;object-position:top;border-radius:8px;border:1px solid var(--line);background:#fff;}
+.ex .exb{display:flex;flex-direction:column;min-width:0;}
+.ex .exh{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.ex .exh b{font-size:15.5px;line-height:1.4;}
+.ex .ai{flex:none;padding:2px 9px;border-radius:99px;font:600 11.5px 'JetBrains Mono',monospace;}
+.ex .ai.chatgpt{color:#0e8f6f;background:color-mix(in srgb,#10a37f 15%,transparent);}
+.ex .ai.claude{color:#b85c3c;background:color-mix(in srgb,#d97757 16%,transparent);}
+.ex .ai.gemini{color:#3b6fd8;background:color-mix(in srgb,#4285f4 15%,transparent);}
+.ex .ai.other{color:var(--muted);background:var(--code);}
+@media (prefers-color-scheme:dark){.ex .ai.chatgpt{color:#5fd4b1;}.ex .ai.claude{color:#f0a07e;}.ex .ai.gemini{color:#8ab4f8;}}
+.ex .exm{margin:3px 0 8px;font:500 12px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;color:var(--muted);}
+.ex .act{display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px dashed var(--line);}
+.ex .act .al{flex:1;min-width:0;font-weight:600;font-size:13.5px;}
+.ex .act .al small{margin-left:6px;font-weight:400;font-size:12px;color:var(--muted);}
+.ex .act a{flex:none;padding:5px 12px;border-radius:9px;font-size:12.5px;font-weight:600;text-decoration:none;line-height:1.4;}
+.ex .act a.pv{border:1px solid var(--line);color:var(--ink);}
+.ex .act a.pv:hover{border-color:var(--accent);color:var(--accent);}
+.ex .act a.dlb{background:var(--accent);color:var(--paper);border:1px solid transparent;}
+.ex .act a.dlb:hover{filter:brightness(1.08);}
+.ex .exf{display:flex;flex-wrap:wrap;align-items:center;gap:4px 14px;margin-top:4px;padding-top:8px;border-top:1px dashed var(--line);font-size:12px;}
+.ex .exf a{color:var(--muted);text-decoration:none;}.ex .exf a:hover{color:var(--accent);}
+.ex details{flex-basis:100%;font-size:12px;color:var(--muted);}.ex details summary{cursor:pointer;width:max-content;}
+.ex details code{display:block;margin-top:4px;font-size:10.5px;word-break:break-all;}
+@media (max-width:520px){.exams{grid-template-columns:1fr;}.ex{grid-template-columns:60px minmax(0,1fr);gap:12px;padding:12px;}.ex .thumb{width:60px;}.ex .act a{padding:9px 14px;}.ex .exf a{padding:6px 0;}}
 .fine{margin-top:34px;font-size:13px;color:var(--muted);}
 """
 
@@ -616,18 +632,27 @@ def build_exams(data: dict) -> list[str]:
                 continue
             name = EXAM_SUBJECTS[k] if loc == "zh-TW" else T2S.convert(EXAM_SUBJECTS[k])
             cards = []
-            for x in items:
+            base = f'https://huggingface.co/datasets/{data["dataset"]}'
+            for n, x in enumerate(items, 1):
                 files = {fl["role"]: fl for fl in x["files"]}
-                dl = "".join(f'<a class="{"sol" if r == "solutions" else "q"}" href="https://huggingface.co/datasets/{e(data["dataset"])}/resolve/main/{e(files[r]["path"])}?download=true" '
-                             f'rel="noopener noreferrer" download>{e(U["q" if r == "questions" else "s"])} PDF<small>{files[r]["pages"]} {e(U["pages"])} · {size(files[r]["bytes"])}</small></a>'
-                             for r in ("questions", "solutions") if r in files)
-                meta = " · ".join(v for v in (x["date"], x["ai"], f'Taiwan Exam {x["te_version"]}' if x["te_version"] else "") if v)
-                credit = f'<span>{e(U["by"])}：{e(x["credit"])}</span>' if x["credit"] else ""
+                acts = "".join(
+                    f'<div class="act"><span class="al">{e(U["q" if r == "questions" else "s"])}<small>{files[r]["pages"]} {e(U["pages"])} · {size(files[r]["bytes"])}</small></span>'
+                    f'<a class="pv" href="{base}/resolve/main/{e(files[r]["path"])}" target="_blank" rel="noopener noreferrer">{e(U["preview"])}</a>'
+                    f'<a class="dlb" href="{base}/resolve/main/{e(files[r]["path"])}?download=true" rel="noopener noreferrer" download>{e(U["download"])}</a></div>'
+                    for r in ("questions", "solutions") if r in files)
+                ai_cls = {"ChatGPT": "chatgpt", "Claude": "claude", "Gemini": "gemini"}.get(x["ai"], "other")
+                meta = " · ".join(v for v in (x["date"], f'Taiwan Exam {x["te_version"]}' if x["te_version"] else "",
+                                              f'{U["by"]} {x["credit"]}' if x["credit"] else "") if v)
                 sha = "".join(f'<code>{e(U["q" if fl["role"] == "questions" else "s"])}  {fl["sha256"]}</code>' for fl in x["files"])
                 mail = f'mailto:{EMAIL}?subject={quote(U["report_subject"].format(id=x["id"]))}&body={quote(U["report_body"].format(id=x["id"]))}'
-                img = f'<img src="{e(x["preview"])}" alt="" loading="lazy" width="520" height="740">' if (ROOT / x["preview"].lstrip("/")).exists() else ""
-                cards.append(f'<article class="ex" id="{x["id"]}">{img}<div class="exb"><p class="exm">{e(meta)}</p>{credit}<div class="dl">{dl}</div>'
-                             f'<details><summary>{e(U["sha"])}</summary>{sha}</details><a class="rep" href="{e(mail)}">{e(U["report"])}</a></div></article>')
+                img = (f'<img class="thumb" src="{e(x["preview"])}" alt="" loading="lazy" width="76" height="108">'
+                       if (ROOT / x["preview"].lstrip("/")).exists() else '<span class="thumb" aria-hidden="true"></span>')
+                folder = f'{base}/tree/main/exams/{x["subject"]}/{x["id"]}'
+                cards.append(f'<article class="ex" id="{x["id"]}">{img}<div class="exb">'
+                             f'<div class="exh"><b>{e(name)} · {e(U["set"].format(n=n))}</b><span class="ai {ai_cls}">{e(x["ai"])}</span></div>'
+                             f'<p class="exm">{e(meta)}</p>{acts}'
+                             f'<div class="exf"><a href="{e(folder)}" target="_blank" rel="noopener noreferrer">{e(U["folder"])} ↗</a>'
+                             f'<a href="{e(mail)}">{e(U["report"])}</a><details><summary>SHA-256</summary>{sha}</details></div></div></article>')
             sections.append(f'<section class="subject" id="{k}"><h2>{e(name)} <small class="note">{e(U["count"].format(n=len(items)))}</small></h2>'
                             f'<div class="exams">{"".join(cards)}</div></section>')
         body = (head + (f'<nav class="subjects" aria-label="{e(U["all"])}">{nav}</nav>' if nav else "")

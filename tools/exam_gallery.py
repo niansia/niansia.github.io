@@ -243,16 +243,25 @@ def scan_pii(path: Path) -> list[str]:
 def render_preview(pdf: Path, out: Path) -> None:
     import pymupdf as fitz
     from PIL import Image
+    from PIL import ImageChops
     doc = fitz.open(pdf)
     page = doc[0]
-    zoom = 520 / page.rect.width
+    zoom = 900 / page.rect.width
     pix = page.get_pixmap(matrix=fitz.Matrix(zoom, zoom), alpha=False)
     img = Image.frombytes("RGB", (pix.width, pix.height), pix.samples)
-    if img.height > 740:
-        img = img.crop((0, 0, img.width, 740))
-    out.parent.mkdir(parents=True, exist_ok=True)
-    img.save(out, "WEBP", quality=72, method=6)
     doc.close()
+    # Trim the page margins so the thumbnail starts at the content (covers differ in how much blank space sits on top),
+    # then keep a portrait slice from the top of the content, as wide as the content itself.
+    ink = ImageChops.difference(img, Image.new("RGB", img.size, (255, 255, 255))).convert("L").point(lambda v: 255 if v > 24 else 0)
+    box = ink.getbbox()
+    if box:
+        x0, y0, x1, _ = box
+        pad = 18
+        x0, y0, x1 = max(0, x0 - pad), max(0, y0 - pad), min(img.width, x1 + pad)
+        img = img.crop((x0, y0, x1, min(img.height, y0 + round((x1 - x0) * 740 / 520))))
+    img = img.resize((260, round(img.height * 260 / img.width)), Image.LANCZOS)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    img.save(out, "WEBP", quality=78, method=6)
 
 
 # ------------------------------------------------------------------------------------------------ the pipeline
