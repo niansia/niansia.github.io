@@ -1077,11 +1077,25 @@ def write_site_jsonld():
 
 
 # ------------------------------------------------------------------------------------------------ sitemap / robots
+AI_TRAINING_BOTS = ["GPTBot", "ClaudeBot", "anthropic-ai", "CCBot", "Google-Extended", "Applebot-Extended", "Bytespider",
+                    "meta-externalagent", "FacebookBot", "cohere-training-data-crawler", "Diffbot", "Omgilibot", "AI2Bot", "img2dataset"]
+
+
 def write_sitemap(urls: list[str]) -> None:
     today = date.today().isoformat()
     body = "".join(f"<url><loc>{SITE}{u}</loc><lastmod>{today}</lastmod></url>\n" for u in ["/lab/lumigrid/", "/lab/adversarial/", *urls])
     (ROOT / "sitemap-extra.xml").write_text(f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n{body}</urlset>\n', encoding="utf-8")
-    (ROOT / "robots.txt").write_text(f"User-agent: *\nAllow: /\n\nSitemap: {SITE}/sitemap.xml\nSitemap: {SITE}/sitemap-extra.xml\n", encoding="utf-8")
+    # Search engines may index everything; crawlers that collect text for training AI models are asked to stay out.
+    # robots.txt is a request, not a lock: well-behaved crawlers honour it, and a public page can always be read.
+    ai = "".join(f"User-agent: {bot}\n" for bot in AI_TRAINING_BOTS)
+    (ROOT / "robots.txt").write_text(f"User-agent: *\nAllow: /\n\n{ai}Disallow: /\n\nSitemap: {SITE}/sitemap.xml\nSitemap: {SITE}/sitemap-extra.xml\n", encoding="utf-8")
+    # security.txt (RFC 9116): where to report a security problem. Expires must stay within a year, so every build renews it.
+    well_known = ROOT / ".well-known"
+    well_known.mkdir(exist_ok=True)
+    expires = date.fromordinal(date.today().toordinal() + 360).isoformat()
+    (well_known / "security.txt").write_text(
+        f"Contact: mailto:{EMAIL}\nExpires: {expires}T00:00:00.000Z\nPreferred-Languages: zh-Hant, en\n"
+        f"Canonical: {SITE}/.well-known/security.txt\n", encoding="utf-8")
 
 
 if __name__ == "__main__":

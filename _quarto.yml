@@ -21,6 +21,7 @@ project:
     - paper/
     - blog/
     - robots.txt
+    - .well-known/
     - sitemap-extra.xml
 
 website:
