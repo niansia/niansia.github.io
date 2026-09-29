@@ -223,7 +223,7 @@
     app.store.set('tour-offered', '1');
     layer.hidden = false; document.documentElement.classList.add('tour-on');
     if (!layer.classList.contains('is-in')) { void layer.offsetWidth; layer.classList.add('is-in'); }
-    if (ROUTES[which]) { route = which; go(0); } else chooser();
+    if (Object.hasOwn(ROUTES, which || '')) { route = which; go(0); } else chooser();
   }
   function end() {
     if (!layer || layer.hidden) return;
