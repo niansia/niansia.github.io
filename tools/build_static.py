@@ -566,7 +566,7 @@ EXAM_AIS = ("ChatGPT", "Claude", "Gemini", "其他")
 EXAM_UI = {
     "zh-TW": {"title": "Taiwan Exam 考卷分享區", "lede": "用 Taiwan Exam 讓 AI 出的原創學測模擬考，大家一人分享一份；沒有付費 AI 的同學也能下載來練習。",
               "upload": "分享你生成的考卷", "upload_sub": "需要用 Google 帳號登入；我檢查過檔案與內容之後才會公開。", "upload_btn": "上傳考卷",
-              "upload_soon": "上傳表單即將開放", "rules": "上傳須知", "community": "學測生社群", "community_sub": "我是這兩個 LINE 社群的管理員。準備 116 學測、分科的同學歡迎加入，一起討論考試資訊和模擬考題目。", "join": "加入社群",
+              "upload_soon": "上傳表單即將開放", "rules": "上傳須知", "community": "學測生社群", "community_sub": "我是這兩個 LINE 社群的管理員，合計 {total}+ 位成員。準備 116 學測、分科的同學歡迎加入，一起討論考試資訊和模擬考題目。", "join": "加入社群",
               "rule": ["只接受用 Taiwan Exam 讓 AI 生成的原創考卷（PDF）。",
                        "不要上傳大考中心的歷屆試題，也不要上傳補習班、出版社的講義或題本。",
                        "考卷裡不要有姓名、學校、班級、座號等個人資料。",
@@ -595,7 +595,10 @@ EXAM_CSS = """
 .cm:hover .cm-ico,.cm:focus-visible .cm-ico{animation:cm-hop .6s cubic-bezier(.34,1.56,.64,1);}
 @keyframes cm-hop{30%{transform:translateY(-4px) rotate(-6deg);}65%{transform:translateY(0) rotate(4deg);}}
 .cm-text{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;}
-.cm-text b{font-size:14.5px;line-height:1.45;}.cm-text small{font-size:12.5px;line-height:1.55;color:var(--muted);}
+.cm-text b{font-size:14.5px;line-height:1.45;}
+.cm-n{align-self:flex-start;padding:1px 9px;border-radius:99px;font-size:11.5px;font-weight:700;color:#058a3e;border:1px solid color-mix(in srgb,#06c755 45%,transparent);}
+@media (prefers-color-scheme:dark){.cm-n{color:#5fe39a;}}
+.cm-text small{font-size:12.5px;line-height:1.55;color:var(--muted);}
 .cm-side{flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:6px;}
 .cm-role{padding:1px 9px;border-radius:99px;font:600 10.5px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;font-style:normal;color:#058a3e;background:color-mix(in srgb,#06c755 16%,transparent);}
 .cm-go{padding:6px 13px;border-radius:99px;background:#058a3e;color:#fff;font-size:12.5px;font-weight:700;white-space:nowrap;}
@@ -662,7 +665,19 @@ def load_exams() -> dict:
 
 LINE_BADGE = ('<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="12" fill="#06c755"/>'
               '<path fill="#fff" d="M12 5.6c-4 0-7.2 2.5-7.2 5.6 0 2.8 2.6 5.1 6 5.5l-.4 2.1 3-2.1c3.3-.5 5.8-2.8 5.8-5.5 0-3.1-3.2-5.6-7.2-5.6z"/></svg>')
-CM_ICONS = {"smile", "wave"}   # assets/icons/yuki-<icon>.webp, round crops of assets/lab/yuki/heads.webp
+CM_ICONS = {"gsat", "mock"}   # assets/icons/cm-<icon>.svg, the two kittens
+
+
+def cm_count(g: dict) -> int:
+    m = g.get("members")
+    return m if isinstance(m, int) and not isinstance(m, bool) and 0 < m < 1_000_000 else 0
+
+
+def community_total() -> str:
+    """Members of both groups, rounded down to hundreds ('5,500'), or '' when unknown."""
+    data = load_js("assets/js/community-data.js", "NIANSIA_COMMUNITY") or {}
+    s = sum(cm_count(g) for g in data.get("groups", []) if re.fullmatch(r"https://line\.me/ti/g2/[A-Za-z0-9_-]{10,80}", g.get("url", "")))
+    return f"{s // 100 * 100:,}" if s >= 100 else ""
 
 
 def community_cards(loc: str) -> str:
@@ -673,9 +688,11 @@ def community_cards(loc: str) -> str:
     for g in data.get("groups", []):
         if not re.fullmatch(r"https://line\.me/ti/g2/[A-Za-z0-9_-]{10,80}", g.get("url", "")):
             continue
-        icon = g.get("icon") if g.get("icon") in CM_ICONS else "smile"
-        cards.append(f'<a class="cm" href="{e(g["url"])}" target="_blank" rel="noopener noreferrer"><span class="cm-ico"><img src="/assets/icons/yuki-{icon}.webp" alt="" width="56" height="56" loading="lazy">{LINE_BADGE}</span>'
-                     f'<span class="cm-text"><b>{e(g["name"])}</b><small>{e(pick(g.get("desc"), loc))}</small></span>'
+        icon = g.get("icon") if g.get("icon") in CM_ICONS else "gsat"
+        count = (f'<span class="cm-n">{e(pick(data.get("members"), loc).replace("{n}", f"{cm_count(g):,}"))}</span>'
+                 if cm_count(g) and data.get("members") else "")
+        cards.append(f'<a class="cm" href="{e(g["url"])}" target="_blank" rel="noopener noreferrer"><span class="cm-ico"><img src="/assets/icons/cm-{icon}.svg" alt="" width="56" height="56" loading="lazy">{LINE_BADGE}</span>'
+                     f'<span class="cm-text"><b>{e(g["name"])}</b>{count}<small>{e(pick(g.get("desc"), loc))}</small></span>'
                      f'<span class="cm-side"><em class="cm-role">{e(role)}</em><span class="cm-go">{e(EXAM_UI[loc]["join"])} ↗</span></span></a>')
     return "".join(cards)
 
@@ -692,7 +709,7 @@ def build_exams(data: dict) -> list[str]:
               else f'<span class="btn" aria-disabled="true">{e(U["upload_soon"])}</span>')
         head = (f'<main><p class="kicker">~/niansia/exams</p><h1>{e(U["title"])}</h1><p class="lede">{e(U["lede"])}</p>'
                 f'<div class="upload"><div><b>{e(U["upload"])}</b><small>{e(U["upload_sub"])}</small></div>{up}</div>'
-                + (f'<section class="community" aria-label="{e(U["community"])}"><b>{e(U["community"])}</b><small>{e(U["community_sub"])}</small>'
+                + (f'<section class="community" aria-label="{e(U["community"])}"><b>{e(U["community"])}</b><small>{e(U["community_sub"].replace("{total}", total) if (total := community_total()) else U["community_sub"].replace("，合計 {total}+ 位成員", "").replace("，合计 {total}+ 位成员", ""))}</small>'
                    f'<div class="cm-list">{cm}</div></section>' if (cm := community_cards(loc)) else '')
                 + f'<details class="rules"><summary>{e(U["rules"])}</summary><ol>{"".join(f"<li>{e(r)}</li>" for r in U["rule"])}</ol></details>'
                 f'<p class="warnbox">{e(U["warn"])}</p>')

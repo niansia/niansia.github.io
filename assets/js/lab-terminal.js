@@ -225,23 +225,27 @@
   }
   /* LINE communities Niansia runs (community-data.js): a chip on the home profile line and a section on about.md. */
   const community=()=>window.NIANSIA_COMMUNITY;
-  const communityCopy=()=>({en:{title:'Community',intro:'I run these two LINE communities for students taking Taiwan\u2019s 2027 college entrance exams (GSAT and AST). If you are preparing for them, you are welcome to join and talk about exam news and mock exam questions.',chip:'LINE exam community admin',join:'Join'},
-    'zh-TW':{title:'社群經營',intro:'我是這兩個 LINE 社群的管理員。準備 116 學測、分科的同學歡迎加入，一起討論考試資訊和模擬考題目。',chip:'116 學測 LINE 社群管理員',join:'加入社群'},
-    'zh-CN':{title:'社群经营',intro:'我是这两个 LINE 社群的管理员。准备 116 学测、分科的同学欢迎加入，一起讨论考试资讯和模拟考题目。',chip:'116 学测 LINE 社群管理员',join:'加入社群'}}[locale]);
+  const communityCopy=()=>({en:{title:'Community',intro:'I run these two LINE communities ({total}+ members in all) for students taking Taiwan\u2019s 2027 college entrance exams (GSAT and AST). If you are preparing for them, you are welcome to join and talk about exam news and mock exam questions.',chip:'LINE exam community admin · {total}+ members',join:'Join'},
+    'zh-TW':{title:'社群經營',intro:'我是這兩個 LINE 社群的管理員，合計 {total}+ 位成員。準備 116 學測、分科的同學歡迎加入，一起討論考試資訊和模擬考題目。',chip:'116 學測 LINE 社群管理員 · {total}+ 人',join:'加入社群'},
+    'zh-CN':{title:'社群经营',intro:'我是这两个 LINE 社群的管理员，合计 {total}+ 位成员。准备 116 学测、分科的同学欢迎加入，一起讨论考试资讯和模拟考题目。',chip:'116 学测 LINE 社群管理员 · {total}+ 人',join:'加入社群'}}[locale]);
   const LINE_BADGE='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="12" fill="#06c755"/><path fill="#fff" d="M12 5.6c-4 0-7.2 2.5-7.2 5.6 0 2.8 2.6 5.1 6 5.5l-.4 2.1 3-2.1c3.3-.5 5.8-2.8 5.8-5.5 0-3.1-3.2-5.6-7.2-5.6z"/></svg>';
-  const cmIcon=g=>`/assets/icons/yuki-${['smile','wave'].includes(g.icon)?g.icon:'smile'}.webp`;
+  const cmIcon=g=>`/assets/icons/cm-${['gsat','mock'].includes(g.icon)?g.icon:'gsat'}.svg`;
+  const cmCount=g=>Number.isInteger(g.members)&&g.members>0&&g.members<1e6?g.members:0;
+  /* the total, rounded down to hundreds so the text does not go stale with every new member */
+  const cmTotal=()=>{const s=(community()?.groups||[]).filter(g=>lineOk(g.url)).reduce((a,g)=>a+cmCount(g),0);return s>=100?(Math.floor(s/100)*100).toLocaleString('en-US'):'';};
+  const cmFill=s=>{const t=cmTotal();return t?s.replace('{total}',t):s.replace(/ \(\{total\}\+ members in all\)|，合[計计] \{total\}\+ 位成[員员]| · \{total\}\+ (members|人)/,'');};
   const lineOk=u=>/^https:\/\/line\.me\/ti\/g2\/[A-Za-z0-9_-]{10,80}$/.test(u||'');
   function communityCards() {
     const C=community(), role=C?.role?.[locale]||C?.role?.en||'';
-    return (C?.groups||[]).filter(g=>lineOk(g.url)).map((g,i)=>`<a class="cm" href="${esc(g.url)}" target="_blank" rel="noopener noreferrer" style="--i:${i}"><span class="cm-ico"><img src="${cmIcon(g)}" alt="" width="56" height="56" loading="lazy">${LINE_BADGE}</span><span class="cm-text"><b>${esc(g.name)}</b><small>${esc(g.desc[locale]||g.desc.en)}</small></span><span class="cm-side"><em class="cm-role">${esc(role)}</em><span class="cm-go">${esc(communityCopy().join)} \u2197</span></span></a>`).join('');
+    return (C?.groups||[]).filter(g=>lineOk(g.url)).map((g,i)=>`<a class="cm" href="${esc(g.url)}" target="_blank" rel="noopener noreferrer" style="--i:${i}"><span class="cm-ico"><img src="${cmIcon(g)}" alt="" width="56" height="56" loading="lazy">${LINE_BADGE}</span><span class="cm-text"><b>${esc(g.name)}</b>${cmCount(g)?`<span class="cm-n">${esc((C.members?.[locale]||C.members?.en||'{n}').replace('{n}',cmCount(g).toLocaleString('en-US')))}</span>`:''}<small>${esc(g.desc[locale]||g.desc.en)}</small></span><span class="cm-side"><em class="cm-role">${esc(role)}</em><span class="cm-go">${esc(communityCopy().join)} \u2197</span></span></a>`).join('');
   }
   function communityBlock() {
     const cards=communityCards(); if(!cards) return '';
     const T=communityCopy();
-    return `<section class="community" id="community" aria-labelledby="community-title"><h2 id="community-title">${esc(T.title)}</h2><p class="screen-intro">${esc(T.intro)}</p><div class="cm-list">${cards}</div></section>`;
+    return `<section class="community" id="community" aria-labelledby="community-title"><h2 id="community-title">${esc(T.title)}</h2><p class="screen-intro">${esc(cmFill(T.intro))}</p><div class="cm-list">${cards}</div></section>`;
   }
   function communityChip() {
-    return communityCards()?`<button type="button" class="sub-chip cm-chip" data-view="about" data-anchor="community"><img src="/assets/icons/yuki-smile.webp" alt="" width="18" height="18">${esc(communityCopy().chip)}</button>`:'';
+    return communityCards()?`<button type="button" class="sub-chip cm-chip" data-view="about" data-anchor="community"><img src="/assets/icons/cm-gsat.svg" alt="" width="18" height="18">${esc(cmFill(communityCopy().chip))}</button>`:'';
   }
   function homeScreen(c) {
     const featured = [
