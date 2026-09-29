@@ -34,8 +34,27 @@ def main() -> None:
             path.write_text(html.replace("</head>", block + "</head>", 1), encoding="utf-8")
     sitemap = OUT / "sitemap.xml"
     if sitemap.is_file():
-        text = sitemap.read_text(encoding="utf-8")
-        sitemap.write_text(re.sub(r"(<loc>[^<]*/)index\.html</loc>", r"\1</loc>", text), encoding="utf-8")
+        text = re.sub(r"(<loc>[^<]*/)index\.html</loc>", r"\1</loc>", sitemap.read_text(encoding="utf-8"))
+        # Search Console reads sitemap.xml but kept reporting sitemap-extra.xml as "couldn't fetch", so the static
+        # pages from tools/build_static.py are listed in the main sitemap as well
+        extra = OUT / "sitemap-extra.xml"
+        if extra.is_file():
+            known = set(re.findall(r"<loc>([^<]+)</loc>", text))
+            urls = [u for u in re.findall(r"<url>.*?</url>", extra.read_text(encoding="utf-8"), flags=re.S)
+                    if re.search(r"<loc>([^<]+)</loc>", u).group(1) not in known]
+            text = text.replace("</urlset>", "".join(f"  {u}\n" for u in urls) + "</urlset>", 1)
+        # a partial render re-adds .../index.html next to the entry cleaned earlier; keep the first of each URL
+        seen = set()
+
+        def once(m: re.Match) -> str:
+            loc = re.search(r"<loc>([^<]+)</loc>", m.group(0)).group(1)
+            if loc in seen:
+                return ""
+            seen.add(loc)
+            return m.group(0)
+
+        text = re.sub(r"[ \t]*<url>.*?</url>\n?", once, text, flags=re.S)
+        sitemap.write_text(text, encoding="utf-8")
 
 
 if __name__ == "__main__":
