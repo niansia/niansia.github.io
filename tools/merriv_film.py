@@ -18,7 +18,9 @@ import io
 import json
 import subprocess
 import sys
+import tempfile
 from contextlib import redirect_stdout
+from datetime import date
 from pathlib import Path
 
 import numpy as np
@@ -29,6 +31,7 @@ from onnx import helper, numpy_helper
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "assets" / "merriv" / "film.json"
+SUMMARY = ROOT / "assets" / "merriv" / "summary.json"   # what the project page shows under the film
 BUILDS = ["build-00-fp16", "build-01-int8-balanced", "build-02-int8-calibration-scale-055", "build-03-int8-calibration-scale-050"]
 
 
@@ -165,6 +168,35 @@ def main() -> None:
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(data, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
     print(f"wrote {OUT.relative_to(ROOT)} ({OUT.stat().st_size // 1024} KB) · hero {rows[hero]['case_id']} (label {y[hero]}) · Merriv {commit[:12]}")
+
+    # the project page reads a small summary instead of the film's data: the results table, the trust dimensions and a
+    # fresh `merriv compare` of the llama.cpp #22544 replay that ships with Merriv
+    ex = repo / "examples" / "historical_llamacpp_22544"
+    with tempfile.TemporaryDirectory() as t:
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            try:
+                # outside standalone mode the CLI hands back its exit code (2 means BLOCK) instead of exiting
+                code = app(["compare", str(ex / "baseline.jsonl"), str(ex / "candidate.jsonl"), "--suite", str(ex / "suite.jsonl"),
+                            "--policy", str(ex / "policy.yaml"), "--output", t], standalone_mode=False) or 0
+            except SystemExit as e:
+                code = e.code
+        rep = json.loads((Path(t) / "mcr-report.json").read_text(encoding="utf-8"))
+    read = lambda f: [json.loads(l) for l in (ex / f).read_text(encoding="utf-8").splitlines() if l.strip()]
+    realized = {r["case_id"]: r["output"] for r in read("candidate.jsonl")}
+    llama = {"status": rep["decision"]["status"], "exit": code,
+             "tensors": [{"tensor": s["case_id"], "requested": s["expected"], "realized": realized[s["case_id"]]} for s in read("suite.jsonl")],
+             "rules": [{"rule": f["rule_id"], "status": f["status"]} for f in rep["decision"]["findings"]]}
+    summary = {
+        "source": data["source"] | {"run": date.today().isoformat(), "runtime": builds[2]["runtime"]},
+        "cases": data["cases"], "high": data["high"],
+        "builds": [{k: b[k] for k in ("id", "acc", "acc_high", "status", "rules")} | ({"pairs": b["pairs"]} if "pairs" in b else {}) for b in builds],
+        "clipped": {"all": builds[2]["clipped_pixels"], "high": builds[2]["clipped_pixels_high"], "common": builds[2]["clipped_pixels_common"]},
+        "first_bad": data["bisect"]["first"], "first_divergent": data["numerical_first"],
+        "divergence": data["numerical"], "evidence_count": builds[2]["evidence_count"], "trust": data["verify"]["trust"], "llama": llama,
+    }
+    SUMMARY.write_text(json.dumps(summary, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
+    print(f"wrote {SUMMARY.relative_to(ROOT)} ({SUMMARY.stat().st_size} bytes) · llama.cpp #22544 replay: {llama['status']} (exit {code})")
 
 
 if __name__ == "__main__":

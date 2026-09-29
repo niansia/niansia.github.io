@@ -850,19 +850,158 @@
     event.preventDefault(); const n=csData.products.length;
     csState.p=event.key==='Home'?0:event.key==='End'?n-1:(csState.p+(event.key==='ArrowRight'?1:n-1))%n; csPaint(); $(`[data-cs-p="${csState.p}"]`)?.focus();
   });
-  /* Merriv: a film of one real ONNX FP16 → INT8 release (assets/film/merriv.html); its data comes from tools/merriv_film.py,
-     which reruns Merriv's quantization demo and checks every number against the Model Change Reports it produced. */
-  const MV_COMMIT='d2dc28a';
-  const mvCopy=()=>({en:{film:'Watch the Merriv film',filmSub:'About 100 s, one continuous take through a real ONNX FP16 → INT8 release: the holdout digits, clipped inputs, a saturated hidden layer, paired statistics, the first bad build and the Model Change Report.',
-      note:`Every shape in the film is data from one run of Merriv’s ONNX quantization demo (commit ${MV_COMMIT}, ONNX Runtime on CPU). The ×0.55 and ×0.50 calibrations are deliberate negative controls, not estimates of real-world regressions.`},
+  /* Merriv: the film (assets/film/merriv.html), then what problem it solves, for whom, how, and what a real run produced.
+     Numbers come from assets/merriv/summary.json, written by tools/merriv_film.py from a fresh run of Merriv's demos. */
+  const mvCopy=()=>({
+    en:{film:'Watch the Merriv film',filmSub:'About 100 s, one continuous take through a real ONNX FP16 → INT8 release: the holdout digits, clipped inputs, a saturated hidden layer, paired statistics, the first bad build and the Model Change Report.',
+      filmNote:'Every shape in the film is data from one run of Merriv’s ONNX quantization demo. The ×0.55 and ×0.50 calibrations are deliberate negative controls, not estimates of real-world regressions.',
+      probT:'The problem it solves',
+      probLead:'You quantized a model to INT8, or changed its compiler or runtime. The new artifact builds and its outputs look fine. But can it actually replace the version in production?',
+      probBody:'A model release crosses optimizers, compilers, runtimes, hardware, registries, CI and several teams. Each tool can be right on its own while the evidence ends up scattered across evaluation databases, CI artifacts, notebooks, registry fields and an “OK” in a chat thread, so nobody can answer:',
+      qs:[['Which two files were compared?','The exact baseline and candidate artifacts, not “the latest”.'],['Which evidence and policy decided?','Cases, metrics, margins and the statistical method.'],['Where was it produced?','Runtime, hardware, platform and versions.'],['Can another team check it?','Without importing the producer’s evaluation code.']],
+      whoT:'Who it is for',whoYes:'Built for',whoNo:'Not a replacement for',
+      whoTeams:'Model optimization, inference runtime, ML compiler, ML platform and release engineering teams reviewing changes such as:',
+      changes:['FP16 → INT8 or FP8 quantization','new ONNX, TensorRT, OpenVINO or in-house compiler builds','compiler, runtime or execution-provider upgrades','backend migrations and hardware-specific builds','model release CI that needs a traceable handoff'],
+      whoReg:'Also for teams in healthcare, finance, automotive and other governed fields that must keep model release records. It is not a compliance certification.',
+      whoNot:'A training framework, an experiment tracker, a general model or prompt evaluation platform, a deployment controller, a registry or a serving system. Merriv connects the release evidence those systems already produce.',
+      howT:'How it works',bindEq:'= one independently verifiable Model Change Report',
+      bind:['exact baseline artifact','exact candidate artifact','evaluation evidence','statistical policy','evaluation decision','runtime and platform','first bad build (optional)'],
+      steps:[['Pin identities','Both artifacts are content-hashed. Evidence, report and run each get their own ID, so a replay reproduces the same evidence ID.'],
+        ['Evaluate in pairs','Both builds run the same cases, compared case by case with a matched test (e.g. a Tango score interval), Holm-corrected across rules, with power and minimum detectable effect recorded.'],
+        ['Decide in five states','PASS, WARN, INSUFFICIENT_POWER, BLOCK or ERROR. Too little evidence never becomes a pass: it fails closed.'],
+        ['Localize and hand off','Across several builds, a bisect finds the first bad one. Output is JSON, Markdown, JUnit and SARIF; anyone can run merriv mcr verify without importing merriv.']],
+      resT:'Real result: one FP16 → INT8 release',
+      resLead:'{n} paired holdout cases of UCI handwritten digits, {h} of them in the high-ink cohort. The weights stay fixed; only the INT8 calibration range changes.',
+      th:['Build','Overall accuracy','High-ink accuracy','High-ink Δ, 95% interval (margin −{m} pp)','Gate'],ref:'REFERENCE',
+      facts:[['First bad build','{fb}','found by monotonic bisect'],['Root cause','{cl}% of pixels cut','input ceiling 0.55 · high-ink {ch}% vs {cc}%'],['First divergent tensor','{ft}','cosine {cos} over the numerical diff'],['Paired outcomes','{lost} lost · {gained} gained','build-02 against FP16']],
+      verT:'merriv mcr verify',ver:{integrity_verified:'integrity verified',bundle_complete:'bundle complete',producer_authenticated:'producer authenticated',independently_reproduced:'independently reproduced',deployment_authorization:'deployment authorization'},
+      yes:'yes',no:'not claimed',ne:'not evaluated',verNote:'“valid” only means the report is internally consistent. It does not mean the model is safe or cleared to deploy.',
+      caution:'Engineering fixture: ×0.55 and ×0.50 are deliberate negative controls chosen to exercise PASS / BLOCK / localization reliably, not estimates of how often or how badly real releases regress.',
+      moreT:'Two more real cases',
+      llamaT:'llama.cpp #22544: replaying a real quantization regression',
+      llamaB:'Upstream reported that --tensor-type was ignored, so iq4_xs silently became q5_K. Rerunning the replay that ships with Merriv: both tensors are critical contract cases, so the release is BLOCKed (exit {code}). With only 2 cases the statistical rule alone is just WARN; a failed critical case blocks anyway.',
+      llamaNote:'A replay of the observations published upstream, not a fresh run of the 27B model.',req:'requested',got:'realized',
+      nvT:'NVIDIA ModelOpt → TensorRT on an RTX 4060',
+      nvB:'Run on an RTX 4060 Laptop GPU on 2026-08-29: all 629 ONNX Runtime and TensorRT outputs matched within tolerance, yet a calibration-range change dropped the critical cohort from 91.49% to 78.72%. Re-evaluated with Tango inference it gives WARN, WARN, BLOCK, BLOCK, and the report states that the old first-bad-build claim does not carry over.',
+      nvNote:'First-party evidence retained in the repository (quoted, not rerun here); not an independent or cross-hardware claim.',
+      open:'Open',
+      toolsT:'Where it sits among existing tools',toolsH:['Existing tools','Keep using them for','Merriv adds'],
+      tools:[['Model optimizers and compilers','producing deployable artifacts','artifact identity, retained evidence, release semantics'],['Backend debuggers such as Polygraphy','layer and output comparison','a portable bundle for downstream verification and policy'],['Evaluation and registries such as MLflow','metrics, experiments, lifecycle','cross-tool evidence behind a producer-neutral report'],['CI and promotion controllers','running the workflow','fail-closed five-state decisions with auditable inputs']],
+      status:'Status: pre-alpha reference implementation. MCR 0.4 is frozen for public external review; there is no external adopter yet and no claim of being a standard.',review:'External review',
+      src:'Data: Merriv {c} · {rt} · run {d}'},
     'zh-TW':{film:'觀看 Merriv 動畫',filmSub:'約 100 秒一鏡到底，走完一次真實的 ONNX FP16 → INT8 發布：測試手寫數字、被削平的輸入、飽和的隱藏層、配對統計、第一個壞掉的 build，到 Model Change Report。',
-      note:`片中每個形狀都是 Merriv ONNX 量化實驗實際執行一次的資料（commit ${MV_COMMIT}，ONNX Runtime、CPU）。×0.55 和 ×0.50 的校準是刻意設計的負對照，不代表真實世界的回歸機率。`},
+      filmNote:'片中每個形狀都是 Merriv ONNX 量化實驗實際執行一次的資料。×0.55 和 ×0.50 的校準是刻意設計的負對照，不代表真實世界的回歸機率。',
+      probT:'它解決什麼問題',
+      probLead:'你把模型量化成 INT8，或換了編譯器、runtime。新的模型檔能 build，輸出看起來也正常。但它真的能取代線上那一版嗎？',
+      probBody:'發布一個模型，會跨過最佳化工具、編譯器、runtime、硬體、模型倉庫、CI 和好幾個團隊。每個工具各自都沒錯，證據卻散落在評估資料庫、CI 產物、notebook、倉庫欄位和聊天室的一句「OK」裡，最後誰也回答不了：',
+      qs:[['比的到底是哪兩個檔案？','確切的基準與候選模型檔，而不是「最新版」。'],['是哪些證據、哪條政策做出判定？','案例、指標、容許邊界和統計方法。'],['在什麼環境跑出來的？','runtime、硬體、平台與版本。'],['別的團隊能不能自己驗證？','而且不必匯入原作者的評估程式碼。']],
+      whoT:'給誰用',whoYes:'為這些人設計',whoNo:'它不是',
+      whoTeams:'模型最佳化、推論 runtime、ML 編譯器、ML 平台和發布工程團隊，在審查這類變更時：',
+      changes:['FP16 → INT8 或 FP8 量化','ONNX、TensorRT、OpenVINO 或自家編譯器的新 build','編譯器、runtime 或 execution provider 升級','後端遷移、特定硬體的 build','需要可追溯交接紀錄的模型發布 CI'],
+      whoReg:'也適合醫療、金融、車用等受監管、必須保留模型發布紀錄的團隊。它不是合規認證。',
+      whoNot:'不是訓練框架、實驗追蹤工具、通用的模型或提示詞評估平台、部署控制器、模型倉庫，也不是推論服務。Merriv 串起的是這些系統已經產生的發布證據。',
+      howT:'它怎麼做',bindEq:'＝ 一份可以獨立驗證的 Model Change Report',
+      bind:['確切的基準模型檔','確切的候選模型檔','評估證據','統計政策','評估判定','runtime 與平台','第一個壞掉的 build（選配）'],
+      steps:[['鎖定身分','兩個模型檔都用內容雜湊鎖定；證據、報告、執行各有自己的 ID，重播會得到同一個證據 ID。'],
+        ['配對評估','兩個版本跑同一組案例，逐案配對比較，用配對檢定（例如 Tango 分數區間），多條規則做 Holm 校正，並記錄檢定力和最小可偵測效應。'],
+        ['五態判定','PASS、WARN、INSUFFICIENT_POWER、BLOCK、ERROR。證據不夠就不會被說成通過（fail-closed）。'],
+        ['定位與交接','有多個 build 時用二分搜尋找出第一個壞掉的；輸出 JSON、Markdown、JUnit、SARIF，任何人都能用 merriv mcr verify 驗證，不必匯入 merriv。']],
+      resT:'實際成果：一次 FP16 → INT8 發布',
+      resLead:'UCI 手寫數字的 {n} 個配對測試案例，其中高墨量族群 {h} 個。模型權重固定，只改 INT8 的校準範圍。',
+      th:['Build','整體準確率','高墨量準確率','高墨量 Δ 的 95% 區間（邊界 −{m} pp）','判定'],ref:'參考基準',
+      facts:[['第一個壞掉的 build','{fb}','由單調二分搜尋找到'],['根本原因','{cl}% 的像素被削平','輸入上限 0.55 · 高墨量 {ch}%、一般 {cc}%'],['第一個偏離的張量','{ft}','數值比對 cosine {cos}'],['配對結果','{lost} 例變錯 · {gained} 例變對','build-02 對上 FP16']],
+      verT:'merriv mcr verify',ver:{integrity_verified:'完整性已驗證',bundle_complete:'證據包完整',producer_authenticated:'發布者身分已驗證',independently_reproduced:'已獨立重現',deployment_authorization:'部署授權'},
+      yes:'是',no:'未宣稱',ne:'未評估',verNote:'「valid」只代表報告內部一致，不代表模型安全，也不代表可以部署。',
+      caution:'工程測試夾具：×0.55 和 ×0.50 是刻意設計的負對照，用來穩定地觸發 PASS／BLOCK／定位流程，不是真實發布多常、多嚴重回歸的估計。',
+      moreT:'另外兩個真實案例',
+      llamaT:'llama.cpp #22544：重播一個真實的量化回歸',
+      llamaB:'上游回報 --tensor-type 被忽略，要求的 iq4_xs 被悄悄換成 q5_K。我用 Merriv 重跑它附的重播：兩個張量都是關鍵契約案例，所以判定 BLOCK（exit {code}）。只有 2 個案例時，統計規則本身只是 WARN；但關鍵案例一失敗就擋下。',
+      llamaNote:'重播的是上游公開的觀察，不是重新執行 27B 模型。',req:'要求',got:'實際',
+      nvT:'NVIDIA ModelOpt → TensorRT：RTX 4060 實機',
+      nvB:'2026-08-29 在 RTX 4060 Laptop GPU 上實際執行：629 個案例的 ONNX Runtime 與 TensorRT 輸出都在容許誤差內一致，但校準範圍改變讓關鍵族群從 91.49% 掉到 78.72%。用 Tango 重新評估得到 WARN、WARN、BLOCK、BLOCK，報告也誠實註明舊的「第一個壞 build」結論不能直接沿用。',
+      nvNote:'repo 保存的作者實測證據（這裡是引用，沒有重跑）；不是獨立或跨硬體的宣稱。',
+      open:'查看',
+      toolsT:'和現有工具的關係',toolsH:['現有工具','繼續用它來','Merriv 補上'],
+      tools:[['模型最佳化工具與編譯器','產生可部署的模型檔','模型檔身分、保存的證據、發布語意'],['Polygraphy 等後端除錯工具','逐層、逐輸出的比對','可攜的證據包，讓下游驗證並套用政策'],['MLflow 等評估與模型倉庫','指標、實驗、生命週期','跨工具的證據，以及中立的報告邊界'],['CI 與升版控制器','執行流程','輸入可稽核、fail-closed 的五態判定']],
+      status:'現況：Pre-alpha 參考實作。MCR 0.4 已凍結並公開徵求外部審查；目前沒有任何外部採用者，也不宣稱自己是標準。',review:'外部審查',
+      src:'資料：Merriv {c} · {rt} · 執行於 {d}'},
     'zh-CN':{film:'观看 Merriv 动画',filmSub:'约 100 秒一镜到底，走完一次真实的 ONNX FP16 → INT8 发布：测试手写数字、被削平的输入、饱和的隐藏层、配对统计、第一个坏掉的 build，到 Model Change Report。',
-      note:`片中每个形状都是 Merriv ONNX 量化实验实际运行一次的数据（commit ${MV_COMMIT}，ONNX Runtime、CPU）。×0.55 和 ×0.50 的校准是刻意设计的负对照，不代表真实世界的回归概率。`}}[locale]);
+      filmNote:'片中每个形状都是 Merriv ONNX 量化实验实际运行一次的数据。×0.55 和 ×0.50 的校准是刻意设计的负对照，不代表真实世界的回归概率。',
+      probT:'它解决什么问题',
+      probLead:'你把模型量化成 INT8，或换了编译器、runtime。新的模型文件能 build，输出看起来也正常。但它真的能替代线上那一版吗？',
+      probBody:'发布一个模型，会跨过优化工具、编译器、runtime、硬件、模型仓库、CI 和好几个团队。每个工具各自都没错，证据却散落在评估数据库、CI 产物、notebook、仓库字段和聊天里的一句“OK”里，最后谁也回答不了：',
+      qs:[['比的到底是哪两个文件？','确切的基准与候选模型文件，而不是“最新版”。'],['是哪些证据、哪条策略做出判定？','案例、指标、容许边界和统计方法。'],['在什么环境跑出来的？','runtime、硬件、平台与版本。'],['别的团队能不能自己验证？','而且不必导入原作者的评估代码。']],
+      whoT:'给谁用',whoYes:'为这些人设计',whoNo:'它不是',
+      whoTeams:'模型优化、推理 runtime、ML 编译器、ML 平台和发布工程团队，在审查这类变更时：',
+      changes:['FP16 → INT8 或 FP8 量化','ONNX、TensorRT、OpenVINO 或自研编译器的新 build','编译器、runtime 或 execution provider 升级','后端迁移、特定硬件的 build','需要可追溯交接记录的模型发布 CI'],
+      whoReg:'也适合医疗、金融、车载等受监管、必须保留模型发布记录的团队。它不是合规认证。',
+      whoNot:'不是训练框架、实验追踪工具、通用的模型或提示词评估平台、部署控制器、模型仓库，也不是推理服务。Merriv 串起的是这些系统已经产生的发布证据。',
+      howT:'它怎么做',bindEq:'＝ 一份可以独立验证的 Model Change Report',
+      bind:['确切的基准模型文件','确切的候选模型文件','评估证据','统计策略','评估判定','runtime 与平台','第一个坏掉的 build（可选）'],
+      steps:[['锁定身份','两个模型文件都用内容哈希锁定；证据、报告、运行各有自己的 ID，重放会得到同一个证据 ID。'],
+        ['配对评估','两个版本跑同一组案例，逐案配对比较，用配对检验（例如 Tango 分数区间），多条规则做 Holm 校正，并记录检验功效和最小可检测效应。'],
+        ['五态判定','PASS、WARN、INSUFFICIENT_POWER、BLOCK、ERROR。证据不够就不会被说成通过（fail-closed）。'],
+        ['定位与交接','有多个 build 时用二分搜索找出第一个坏掉的；输出 JSON、Markdown、JUnit、SARIF，任何人都能用 merriv mcr verify 验证，不必导入 merriv。']],
+      resT:'实际成果：一次 FP16 → INT8 发布',
+      resLead:'UCI 手写数字的 {n} 个配对测试案例，其中高墨量群组 {h} 个。模型权重固定，只改 INT8 的校准范围。',
+      th:['Build','整体准确率','高墨量准确率','高墨量 Δ 的 95% 区间（边界 −{m} pp）','判定'],ref:'参考基准',
+      facts:[['第一个坏掉的 build','{fb}','由单调二分搜索找到'],['根本原因','{cl}% 的像素被削平','输入上限 0.55 · 高墨量 {ch}%、一般 {cc}%'],['第一个偏离的张量','{ft}','数值比对 cosine {cos}'],['配对结果','{lost} 例变错 · {gained} 例变对','build-02 对比 FP16']],
+      verT:'merriv mcr verify',ver:{integrity_verified:'完整性已验证',bundle_complete:'证据包完整',producer_authenticated:'发布者身份已验证',independently_reproduced:'已独立复现',deployment_authorization:'部署授权'},
+      yes:'是',no:'未声明',ne:'未评估',verNote:'“valid”只代表报告内部一致，不代表模型安全，也不代表可以部署。',
+      caution:'工程测试夹具：×0.55 和 ×0.50 是刻意设计的负对照，用来稳定地触发 PASS／BLOCK／定位流程，不是真实发布多常、多严重回归的估计。',
+      moreT:'另外两个真实案例',
+      llamaT:'llama.cpp #22544：重放一个真实的量化回归',
+      llamaB:'上游报告 --tensor-type 被忽略，要求的 iq4_xs 被悄悄换成 q5_K。我用 Merriv 重跑它附带的重放：两个张量都是关键契约案例，所以判定 BLOCK（exit {code}）。只有 2 个案例时，统计规则本身只是 WARN；但关键案例一失败就挡下。',
+      llamaNote:'重放的是上游公开的观察，不是重新运行 27B 模型。',req:'要求',got:'实际',
+      nvT:'NVIDIA ModelOpt → TensorRT：RTX 4060 实机',
+      nvB:'2026-08-29 在 RTX 4060 Laptop GPU 上实际运行：629 个案例的 ONNX Runtime 与 TensorRT 输出都在容许误差内一致，但校准范围改变让关键群组从 91.49% 掉到 78.72%。用 Tango 重新评估得到 WARN、WARN、BLOCK、BLOCK，报告也如实注明旧的“第一个坏 build”结论不能直接沿用。',
+      nvNote:'repo 保存的作者实测证据（这里是引用，没有重跑）；不是独立或跨硬件的声明。',
+      open:'查看',
+      toolsT:'和现有工具的关系',toolsH:['现有工具','继续用它来','Merriv 补上'],
+      tools:[['模型优化工具与编译器','产生可部署的模型文件','模型文件身份、保存的证据、发布语义'],['Polygraphy 等后端调试工具','逐层、逐输出的比对','可携带的证据包，让下游验证并套用策略'],['MLflow 等评估与模型仓库','指标、实验、生命周期','跨工具的证据，以及中立的报告边界'],['CI 与升版控制器','执行流程','输入可审计、fail-closed 的五态判定']],
+      status:'现况：Pre-alpha 参考实现。MCR 0.4 已冻结并公开征求外部审查；目前没有任何外部采用者，也不声称自己是标准。',review:'外部审查',
+      src:'数据：Merriv {c} · {rt} · 运行于 {d}'}}[locale]);
+  let mvData=null;
+  const mvFill=(s,o)=>s.replace(/\{(\w+)\}/g,(m,k)=>o[k]??m);
   function mvShowcase() {
     const c=mvCopy();
-    return `<section class="mv-show"><a class="cap-film mv-film" href="/assets/film/merriv.html?lang=${locale}" data-src="/assets/film/merriv.html" data-title="Merriv" aria-haspopup="dialog"><video src="/assets/merriv/teaser.mp4?v=1" poster="/assets/merriv/teaser-poster.jpg?v=1" muted loop playsinline preload="metadata" ${motion()?'autoplay':''} aria-hidden="true"></video><span class="cap-film-play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z"/></svg></span><span class="cap-film-text"><b>${esc(c.film)}</b><small>${esc(c.filmSub)}</small></span></a><p class="comment-line">${esc(c.note)}</p></section>`;
+    return `<section class="mv-show"><a class="cap-film mv-film" href="/assets/film/merriv.html?lang=${locale}" data-src="/assets/film/merriv.html" data-title="Merriv" aria-haspopup="dialog"><video src="/assets/merriv/teaser.mp4?v=1" poster="/assets/merriv/teaser-poster.jpg?v=1" muted loop playsinline preload="metadata" ${motion()?'autoplay':''} aria-hidden="true"></video><span class="cap-film-play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z"/></svg></span><span class="cap-film-text"><b>${esc(c.film)}</b><small>${esc(c.filmSub)}</small></span></a><p class="comment-line mv-filmnote">${esc(c.filmNote)}</p>
+      <h2>${esc(c.probT)}</h2><p class="mv-lead">${esc(c.probLead)}</p><p class="mv-p">${esc(c.probBody)}</p>
+      <div class="mv-qs">${c.qs.map(([q,a],i)=>`<div style="--i:${i}"><b>${esc(q)}</b><small>${esc(a)}</small></div>`).join('')}</div>
+      <h2>${esc(c.whoT)}</h2><div class="mv-who"><div class="mv-yes"><h3>${esc(c.whoYes)}</h3><p>${esc(c.whoTeams)}</p><ul>${c.changes.map(x=>`<li>${esc(x)}</li>`).join('')}</ul><p class="mv-reg">${esc(c.whoReg)}</p></div><div class="mv-no"><h3>${esc(c.whoNo)}</h3><p>${esc(c.whoNot)}</p></div></div>
+      <h2>${esc(c.howT)}</h2><div class="mv-bind">${c.bind.map((x,i)=>`<span style="--i:${i}">${i?'<em>+</em>':''}${esc(x)}</span>`).join('')}<b>${esc(c.bindEq)}</b></div>
+      <ol class="mv-steps">${c.steps.map(([t,d],i)=>`<li style="--i:${i}"><span>${i+1}</span><b>${esc(t)}</b><small>${esc(d)}</small></li>`).join('')}</ol>
+      <div class="mv-states" translate="no">${['PASS','WARN','INSUFFICIENT_POWER','BLOCK','ERROR'].map(s=>`<span class="s-${s.toLowerCase()}">${s}</span>`).join('')}</div>
+      <div class="mv-results"></div></section>`;
   }
+  function mvResults() {
+    const box=$('.mv-results'); if(!box||!mvData) return;
+    const c=mvCopy(), S=mvData, pp=v=>(v*100).toFixed(1), pc=v=>(v*100).toFixed(2);
+    const b0=S.builds[0], b2=S.builds[2], hi=b=>b.rules.find(r=>r.rule==='high-ink-quality');
+    const rows=S.builds.map((b,i)=>{ const r=hi(b), st=i===0?c.ref:b.status;
+      return `<tr class="${i?'':'is-ref'}"><td translate="no">${esc(b.id)}</td><td>${pc(b.acc)}%</td><td>${pc(b.acc_high)}%</td><td>${i?`[${pp(r.lo)}, ${pp(r.hi)}] pp`:'—'}</td><td><em class="g-${esc(i?b.status.toLowerCase():'ref')}">${esc(st)}</em></td></tr>`; }).join('');
+    const div=S.divergence.find(d=>d.tensor===S.first_divergent)||S.divergence[0], P=b2.pairs.overall;
+    const vals={fb:S.first_bad.slice(0,8),cl:pp(S.clipped.all),ch:pp(S.clipped.high),cc:pp(S.clipped.common),ft:S.first_divergent,cos:div.cosine_similarity.toFixed(3),lost:P.lost,gained:P.gained};
+    const facts=c.facts.map(([k,v,d])=>`<div><small>${esc(k)}</small><b>${esc(mvFill(v,vals))}</b><span>${esc(mvFill(d,vals))}</span></div>`).join('');
+    const trust=Object.entries(c.ver).map(([k,label])=>{ const v=S.trust[k]; return `<li class="${v===true?'ok':'no'}"><span>${esc(label)}</span><b>${v===true?'✓ '+esc(c.yes):v===false?esc(c.no):esc(c.ne)}</b></li>`; }).join('');
+    const L=S.llama;
+    const tensors=L.tensors.map(t=>`<tr><td translate="no">${esc(t.tensor)}</td><td translate="no">${esc(t.requested)}</td><td translate="no" class="bad">${esc(t.realized)}</td></tr>`).join('');
+    box.innerHTML=`<h2>${esc(c.resT)}</h2><p class="mv-p">${esc(mvFill(c.resLead,{n:S.cases,h:S.high}))}</p>
+      <div class="mv-tablewrap"><table class="mv-table"><thead><tr>${c.th.map(h=>`<th>${esc(mvFill(h,{m:pp(hi(b2).margin)}))}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div>
+      <div class="mv-facts">${facts}</div>
+      <div class="mv-verify"><h3 translate="no">${esc(c.verT)}</h3><ul>${trust}</ul><p>${esc(c.verNote)}</p></div>
+      <p class="mv-caution">${esc(c.caution)}</p>
+      <h2>${esc(c.moreT)}</h2><div class="mv-cases">
+        <article><div class="mv-case-h"><b>${esc(c.llamaT)}</b><em class="g-block" translate="no">${esc(L.status)}</em></div><p>${esc(mvFill(c.llamaB,{code:L.exit}))}</p>
+          <table class="mv-mini"><thead><tr><th>tensor</th><th>${esc(c.req)}</th><th>${esc(c.got)}</th></tr></thead><tbody>${tensors}</tbody></table>
+          <small>${esc(c.llamaNote)}</small><a href="https://github.com/ggml-org/llama.cpp/issues/22544" target="_blank" rel="noopener noreferrer">${esc(c.open)} #22544 ↗</a></article>
+        <article><div class="mv-case-h"><b>${esc(c.nvT)}</b><em class="g-block" translate="no">91.49% → 78.72%</em></div><p>${esc(c.nvB)}</p>
+          <small>${esc(c.nvNote)}</small><a href="https://github.com/niansia/Merriv/blob/main/docs/release-evidence-case-study.md" target="_blank" rel="noopener noreferrer">${esc(c.open)} case study ↗</a></article></div>
+      <h2>${esc(c.toolsT)}</h2><div class="mv-tablewrap"><table class="mv-table mv-tools"><thead><tr>${c.toolsH.map(h=>`<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${c.tools.map(r=>`<tr>${r.map((x,i)=>`<td${i===2?' class="add"':''}>${esc(x)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>
+      <p class="mv-status">${esc(c.status)} <a href="https://github.com/niansia/Merriv/issues/18" target="_blank" rel="noopener noreferrer">${esc(c.review)} ↗</a></p>
+      <p class="comment-line">${esc(mvFill(c.src,{c:S.source.commit.slice(0,7),rt:S.source.runtime,d:S.source.run}))}</p>`;
+  }
+  function initMerriv() { if(!$('.mv-show')) return; if(mvData) mvResults(); else fetch('/assets/merriv/summary.json?v=1').then(r=>r.json()).then(d=>{mvData=d;mvResults();}).catch(()=>{}); }
   root.addEventListener('input',event=>{ if(event.target.matches('.lg-range')){ const cmp=event.target.closest('.lg-compare'); cmp.dataset.touched='1'; cmp.style.setProperty('--x',`${event.target.value}%`); } });
   root.addEventListener('click',event=>{ const t=event.target.closest('[data-lg-i]'), v=event.target.closest('[data-lg-vs]'); if(t){lgState.i=Number(t.dataset.lgI);paintLumigrid();} if(v){lgState.vs=v.dataset.lgVs;paintLumigrid();} });
   /* Film dock: the capstone film plays in an in-page player that can shrink to a corner mini player
@@ -1135,6 +1274,7 @@
     if (view==='projects' && projectId==='lumigrid') initLumigrid();
     if (view==='projects' && projectId==='kcrashlab') initKcrash();
     if (view==='projects' && projectId==='contextsec') initContextsec();
+    if (view==='projects' && projectId==='merriv') initMerriv();
     output.classList.remove('screen-enter'); if (animate && motion()) { void output.offsetWidth; output.classList.add('screen-enter'); }
     root.querySelectorAll('[data-nav-index]').forEach((el,i)=>{el.classList.toggle('is-current',i===paths.indexOf(view));el.classList.toggle('is-selected',i===selectedNav);el.setAttribute('aria-current',i===paths.indexOf(view)?'page':'false');});
     moveIndicator();
