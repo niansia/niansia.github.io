@@ -275,8 +275,13 @@ def confirm(msg: str, yes: bool) -> None:
 
 
 def hf():
+    """Always the dedicated fine-grained token (write access to the gallery dataset only), never HF_TOKEN or the default login."""
     from huggingface_hub import HfApi
-    return HfApi()
+    from huggingface_hub.utils import get_stored_tokens
+    token = get_stored_tokens().get("exam-gallery-upload")
+    if not token:
+        raise SystemExit("no stored Hugging Face token named exam-gallery-upload; run `hf auth login --force` with it first")
+    return HfApi(token=token)
 
 
 def cmd_check(args) -> None:
