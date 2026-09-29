@@ -1457,6 +1457,201 @@
     event.preventDefault(); const n=naData.sweep.length, cur=naState.k<0?n-1:naState.k;
     naState.k=event.key==='Home'?0:event.key==='End'?n-1:(cur+(event.key==='ArrowRight'?1:n-1))%n; naPaint(); $(`[data-na-k="${naState.k}"]`)?.focus();
   });
+  /* Research Meeting Coach: how it turns a week of notes into one advisor decision, then its deterministic gates run on the
+     repository's synthetic worked example and on dishonest edits of it (assets/rmc/showcase.json, built by
+     tools/rmc_showcase.py from a clean checkout). The briefs are model-written; what is recorded is what the gates said. */
+  const rmCopy=()=>({
+    en:{note:'When you use the Skill, a model writes the meeting brief. What this page runs is the part that does not depend on a model: the Skill’s own validators, re-run for this page on the repository’s synthetic example. The example outputs were written during development and are labelled that way.',
+      archTitle:'How a week becomes one decision',
+      arch:[['Typed facts','Every result and claim becomes a fact with a quoted source line, a unit, a condition and whether the value was exact.'],
+        ['Prior actions','What the advisor asked for last time, with its real status. Unfinished stays unfinished.'],
+        ['Evidence boundary','Observation, interpretation, hypothesis and proposal stay separate; gaps are ranked Critical to Low, with no fake probabilities.'],
+        ['One decision','The meeting ends with one question the advisor can answer, with options that were proposed or supplied, never invented.'],
+        ['Deterministic gates','The state file, its sources, every number in the brief and any advisor profile are checked by scripts, not by the model.']],
+      skillT:'Who does what',skill:'The model reads your notes and writes the brief. Scripts check what can be checked: that each quote is on the cited line, that every number in the brief matches a typed fact with the same condition and qualifier, and that any advisor preference comes from recorded behaviour. A persona from someone’s nationality, institution or prestige is refused.',
+      rules:[['Observation ≠ interpretation','“Accuracy dropped” and “compression caused it” are different claims.'],['Themes ≠ predictions','Likely questions are preparation aids, never probabilities.'],['Behaviour, not background','Personalisation needs recorded feedback or a pattern across three meetings.'],['Unfinished stays unfinished','A half-done control is reported as half done.']],
+      demoTitle:'Before and after',demoLede:'The repository’s 60-second demo, all synthetic: a week of notes, last meeting’s request, a result table, and two briefs. Both catch the central confound; the difference is what else the second one makes explicit.',
+      inputs:'Inputs',notes:'Weekly notes',prev:'Last meeting',table:'Result table',generic:'A strong generic prompt',aware:'Advisor-aware brief',
+      outNote:'Both briefs are committed illustrations, not scored model runs.',
+      exTitle:'The worked example, and its gates',exLede:'The repository’s fuller example: the state file the brief is built from, and the brief itself. Click a fact to see where the brief cites it.',
+      facts:'Facts',layers:{observation:'observation',interpretation:'interpretation',hypothesis:'hypothesis',proposal:'proposal'},reasoning:'Reasoning, kept in layers',
+      continuity:'Carried over from last meeting',status:{partial:'partial',done:'done',not_started:'not started'},attack:'Attack surface',ask:'The one decision',
+      option:{proposed:'proposed',supplied:'supplied'},required:'required',briefT:'The brief (meeting-brief.md)',gatesT:'Gates on the committed example',
+      gate:{rms:'State file schema and invariants',sources:'Every quote on its cited line',numbers:'Every number bound to a fact',profile:'Advisor profile rules',profile_sources:'Profile evidence in the notes'},
+      passed:'passed',failed:'failed',
+      refTitle:'What the gates refuse',refLede:'The same example, edited to overclaim. Each card is one edit and what the validators answered.',
+      tabs:{brief:'The brief',rms:'The state file',profile:'The advisor profile'},
+      edits:{wrong_number:['A number changed','The baseline became 72.8 instead of 72.3.'],swapped_values:['Values swapped','Baseline and compression values traded places; the citations stayed.'],
+        unrecorded_math:['Arithmetic nobody declared','“A drop of 7.2 points” was added with no declared calculation.'],hedge_dropped:['“Around” dropped','“Returned to around 70” became “returned to 70”.'],
+        spelled_decimal:['A number in words','“Seven point two points lower” tries to slip past the digit check.'],
+        claimed_completion:['Completion claimed in prose','“Only half complete” became “complete”. No number changed, so the numeric gate passes; the Skill’s rules forbid it, but no script reads the sentence.'],
+        m_quote_changed:['A quote that isn’t in the notes','F01 now quotes 75.0; line 7 of the notes says 72.3.'],m_wrong_condition:['The wrong condition','F01’s value is labelled “compression setup”, which its quote never says.'],
+        m_hedge_as_exact:['Approximate marked exact','F03’s “around 70” is typed as an exact value.'],m_invented_option:['An option nobody supplied','“Drop the compression study” is marked as supplied, with no source fact.'],
+        m_dropped_required:['An awkward fact left out','F04, the half-finished control, is moved to “omit” although it is marked required.'],
+        m_marked_done:['A prior action marked done','The advisor’s request A12 is set to done. Its quote still exists, so both gates pass; what the status means is not checked.'],
+        p_stereotype:['A trait from background','A “nationality style” is added to the advisor profile.'],p_one_meeting_pattern:['A pattern from one meeting','“Repeated behaviour” now cites a single meeting.'],
+        p_impression_as_fact:['An impression at high confidence','The student’s impression is recorded with high confidence.'],p_quote_not_in_notes:['Feedback never given','The quoted feedback is not in the meeting notes.']},
+      limitT:'Still needs a human',limit:'These two pass. The gates check quotes, numbers and structure; whether a sentence or a status is true in meaning is left to the rules the model follows, and to you.',
+      numTitle:'Numbers',
+      nums:[['{c}','static checks passed for this page, plus the schema contract tests'],['{k}/{n}','dishonest edits caught; the other {m} are shown above as limits'],['{d} · {x}','behavioural case definitions · formally executed with a model so far'],['{r}','routing-collision cases; {s} public retrospective records for question themes only']],
+      numNote:'The development run in the repository was generated by the same session that built the Skill, so it is marked contaminated. No cross-model or real paired-meeting evaluation has been run; the next milestone is five permissioned, prospectively paired meetings.',
+      src:'Data: Research Meeting Coach {v} · commit {c} · run {d}'},
+    'zh-TW':{note:'使用這個 Skill 時，會議簡報是模型寫的。這一頁執行的是不依賴模型的部分：Skill 自己的驗證器，為這一頁在 repo 附的合成範例上重新執行。範例輸出是開發期間寫的，頁面上也如實標示。',
+      archTitle:'一週的進度怎麼變成一個決定',
+      arch:[['型別化的事實','每個結果和主張都變成一筆事實：引用的原始行、單位、條件，以及數值是精確還是大約。'],
+        ['上次的交辦','指導教授上次要求的事，以及它真正的狀態。沒做完就是沒做完。'],
+        ['證據邊界','觀察、解讀、假設、提案分開寫；缺口依 Critical 到 Low 排序，不編造機率。'],
+        ['一個決定','會議以一個指導教授能回答的問題作結，選項只能是提出或提供的，不能憑空捏造。'],
+        ['確定性關卡','狀態檔、它的來源、簡報裡每個數字、以及指導教授檔案，都由腳本檢查，而不是模型。']],
+      skillT:'誰負責什麼',skill:'模型讀你的筆記、寫簡報。腳本檢查能檢查的部分：每段引用是否真的在標示的那一行、簡報裡每個數字是否對得上同條件、同精確度的事實、指導教授的偏好是否來自有記錄的行為。從國籍、學校或名氣推測的人物設定會被拒絕。',
+      rules:[['觀察 ≠ 解讀','「準確率下降」和「是壓縮造成的」是兩個不同的主張。'],['主題 ≠ 預測','可能被問的問題是準備用的，不是機率。'],['看行為，不看背景','個人化需要有記錄的回饋，或三次會議以上的一致行為。'],['沒做完就是沒做完','做了一半的對照實驗，就報告做了一半。']],
+      demoTitle:'使用前與使用後',demoLede:'repo 裡的 60 秒示範，全部是合成資料：一週的筆記、上次會議的要求、一張結果表，以及兩份簡報。兩份都抓到了核心的混淆因素；差別在第二份把哪些東西攤開來講。',
+      inputs:'輸入',notes:'每週筆記',prev:'上次會議',table:'結果表',generic:'強的通用提示詞',aware:'面向指導教授的簡報',
+      outNote:'兩份簡報都是 repo 附的示意，不是經過評分的模型執行結果。',
+      exTitle:'完整範例和它的關卡',exLede:'repo 裡更完整的範例：簡報依據的狀態檔，以及簡報本身。點一筆事實，看簡報在哪裡引用它。',
+      facts:'事實',layers:{observation:'觀察',interpretation:'解讀',hypothesis:'假設',proposal:'提案'},reasoning:'分層的推論',
+      continuity:'從上次會議延續',status:{partial:'部分完成',done:'完成',not_started:'未開始'},attack:'可能被質疑的地方',ask:'唯一的決定',
+      option:{proposed:'提出',supplied:'提供'},required:'必留',briefT:'簡報（meeting-brief.md）',gatesT:'範例本身通過的關卡',
+      gate:{rms:'狀態檔結構與不變量',sources:'每段引用都在標示的那一行',numbers:'每個數字都綁定一筆事實',profile:'指導教授檔案規則',profile_sources:'檔案證據確實在筆記裡'},
+      passed:'通過',failed:'不通過',
+      refTitle:'關卡會拒絕什麼',refLede:'同一個範例，被改成誇大其詞的版本。每張卡是一種修改，以及驗證器的回答。',
+      tabs:{brief:'簡報',rms:'狀態檔',profile:'指導教授檔案'},
+      edits:{wrong_number:['數字被改了','baseline 從 72.3 變成 72.8。'],swapped_values:['數值對調','baseline 和 compression 的數值互換，引用不變。'],
+        unrecorded_math:['沒有宣告的計算','加上「掉了 7.2 分」，但狀態檔沒有宣告這個計算。'],hedge_dropped:['拿掉「大約」','「回到大約 70」變成「回到 70」。'],
+        spelled_decimal:['用文字寫數字','「低了 seven point two」想繞過數字檢查。'],
+        claimed_completion:['在文字裡宣稱完成','「只完成一半」變成「已完成」。沒有數字改變，所以數字關卡通過；Skill 的規則禁止這樣寫，但沒有腳本讀這句話。'],
+        m_quote_changed:['引用和筆記不符','F01 引用的是 75.0，但筆記第 7 行寫的是 72.3。'],m_wrong_condition:['條件標錯','F01 的數值被標成「compression setup」，引用裡根本沒有這個條件。'],
+        m_hedge_as_exact:['大約被標成精確','F03 的「大約 70」被標成精確值。'],m_invented_option:['沒人提供的選項','「放棄壓縮研究」被標成「提供的」，卻沒有來源事實。'],
+        m_dropped_required:['略掉不利的事實','F04（做了一半的對照實驗）明明標成必留，卻被移到「省略」。'],
+        m_marked_done:['把上次的交辦標成完成','指導教授的要求 A12 被改成完成。它的引用還在，所以兩個關卡都通過；狀態本身的意思不會被檢查。'],
+        p_stereotype:['從背景推測特質','在指導教授檔案裡加上「國籍風格」。'],p_one_meeting_pattern:['一次會議就當成規律','「重複行為」只引用了一次會議。'],
+        p_impression_as_fact:['印象被當成高信心','學生的個人印象被記成高信心。'],p_quote_not_in_notes:['沒說過的回饋','引用的回饋不在會議筆記裡。']},
+      limitT:'仍需要人來判斷',limit:'這兩種會通過。關卡檢查的是引用、數字和結構；一句話或一個狀態在意思上是否屬實，交給模型遵守的規則，以及你自己。',
+      numTitle:'數字',
+      nums:[['{c}','項靜態檢查為這一頁重跑通過，另有結構契約測試'],['{k}/{n}','種不誠實的修改被擋下；其餘 {m} 種在上面列為限制'],['{d} · {x}','個行為案例定義 · 目前真正用模型正式跑過的數量'],['{r}','個路由衝突案例；{s} 筆公開回顧紀錄，只用來整理問題主題']],
+      numNote:'repo 裡的開發執行紀錄，是由開發這個 Skill 的同一個工作階段產生的，所以標為「受污染」。目前沒有跨模型評估，也沒有真實配對的會議評估；下一個里程碑是五場經同意、事前配對的真實會議。',
+      src:'資料：Research Meeting Coach {v} · commit {c} · 執行於 {d}'},
+    'zh-CN':{note:'使用这个 Skill 时，会议简报是模型写的。这一页运行的是不依赖模型的部分：Skill 自己的验证器，为这一页在仓库附的合成示例上重新运行。示例输出是开发期间写的，页面上也如实标注。',
+      archTitle:'一周的进度怎么变成一个决定',
+      arch:[['类型化的事实','每个结果和主张都变成一条事实：引用的原始行、单位、条件，以及数值是精确还是大约。'],
+        ['上次的交办','导师上次要求的事，以及它真正的状态。没做完就是没做完。'],
+        ['证据边界','观察、解读、假设、提案分开写；缺口按 Critical 到 Low 排序，不编造概率。'],
+        ['一个决定','会议以一个导师能回答的问题作结，选项只能是提出或提供的，不能凭空捏造。'],
+        ['确定性关卡','状态文件、它的来源、简报里每个数字、以及导师档案，都由脚本检查，而不是模型。']],
+      skillT:'谁负责什么',skill:'模型读你的笔记、写简报。脚本检查能检查的部分：每段引用是否真的在标注的那一行、简报里每个数字是否对得上同条件、同精确度的事实、导师的偏好是否来自有记录的行为。从国籍、学校或名气推测的人物设定会被拒绝。',
+      rules:[['观察 ≠ 解读','“准确率下降”和“是压缩造成的”是两个不同的主张。'],['主题 ≠ 预测','可能被问的问题是准备用的，不是概率。'],['看行为，不看背景','个性化需要有记录的反馈，或三次会议以上的一致行为。'],['没做完就是没做完','做了一半的对照实验，就报告做了一半。']],
+      demoTitle:'使用前与使用后',demoLede:'仓库里的 60 秒示范，全部是合成数据：一周的笔记、上次会议的要求、一张结果表，以及两份简报。两份都抓到了核心的混淆因素；差别在第二份把哪些东西摊开来讲。',
+      inputs:'输入',notes:'每周笔记',prev:'上次会议',table:'结果表',generic:'强的通用提示词',aware:'面向导师的简报',
+      outNote:'两份简报都是仓库附的示意，不是经过评分的模型运行结果。',
+      exTitle:'完整示例和它的关卡',exLede:'仓库里更完整的示例：简报依据的状态文件，以及简报本身。点一条事实，看简报在哪里引用它。',
+      facts:'事实',layers:{observation:'观察',interpretation:'解读',hypothesis:'假设',proposal:'提案'},reasoning:'分层的推论',
+      continuity:'从上次会议延续',status:{partial:'部分完成',done:'完成',not_started:'未开始'},attack:'可能被质疑的地方',ask:'唯一的决定',
+      option:{proposed:'提出',supplied:'提供'},required:'必留',briefT:'简报（meeting-brief.md）',gatesT:'示例本身通过的关卡',
+      gate:{rms:'状态文件结构与不变量',sources:'每段引用都在标注的那一行',numbers:'每个数字都绑定一条事实',profile:'导师档案规则',profile_sources:'档案证据确实在笔记里'},
+      passed:'通过',failed:'不通过',
+      refTitle:'关卡会拒绝什么',refLede:'同一个示例，被改成夸大其词的版本。每张卡是一种修改，以及验证器的回答。',
+      tabs:{brief:'简报',rms:'状态文件',profile:'导师档案'},
+      edits:{wrong_number:['数字被改了','baseline 从 72.3 变成 72.8。'],swapped_values:['数值对调','baseline 和 compression 的数值互换，引用不变。'],
+        unrecorded_math:['没有声明的计算','加上“掉了 7.2 分”，但状态文件没有声明这个计算。'],hedge_dropped:['去掉“大约”','“回到大约 70”变成“回到 70”。'],
+        spelled_decimal:['用文字写数字','“低了 seven point two”想绕过数字检查。'],
+        claimed_completion:['在文字里声称完成','“只完成一半”变成“已完成”。没有数字改变，所以数字关卡通过；Skill 的规则禁止这样写，但没有脚本读这句话。'],
+        m_quote_changed:['引用和笔记不符','F01 引用的是 75.0，但笔记第 7 行写的是 72.3。'],m_wrong_condition:['条件标错','F01 的数值被标成“compression setup”，引用里根本没有这个条件。'],
+        m_hedge_as_exact:['大约被标成精确','F03 的“大约 70”被标成精确值。'],m_invented_option:['没人提供的选项','“放弃压缩研究”被标成“提供的”，却没有来源事实。'],
+        m_dropped_required:['略掉不利的事实','F04（做了一半的对照实验）明明标成必留，却被移到“省略”。'],
+        m_marked_done:['把上次的交办标成完成','导师的要求 A12 被改成完成。它的引用还在，所以两个关卡都通过；状态本身的意思不会被检查。'],
+        p_stereotype:['从背景推测特质','在导师档案里加上“国籍风格”。'],p_one_meeting_pattern:['一次会议就当成规律','“重复行为”只引用了一次会议。'],
+        p_impression_as_fact:['印象被当成高置信度','学生的个人印象被记成高置信度。'],p_quote_not_in_notes:['没说过的反馈','引用的反馈不在会议笔记里。']},
+      limitT:'仍需要人来判断',limit:'这两种会通过。关卡检查的是引用、数字和结构；一句话或一个状态在意思上是否属实，交给模型遵守的规则，以及你自己。',
+      numTitle:'数字',
+      nums:[['{c}','项静态检查为这一页重跑通过，另有结构契约测试'],['{k}/{n}','种不诚实的修改被挡下；其余 {m} 种在上面列为限制'],['{d} · {x}','个行为案例定义 · 目前真正用模型正式跑过的数量'],['{r}','个路由冲突案例；{s} 条公开回顾记录，只用来整理问题主题']],
+      numNote:'仓库里的开发运行记录，是由开发这个 Skill 的同一个会话生成的，所以标为“受污染”。目前没有跨模型评估，也没有真实配对的会议评估；下一个里程碑是五场经同意、事前配对的真实会议。',
+      src:'数据：Research Meeting Coach {v} · commit {c} · 运行于 {d}'}}[locale]);
+  let rmData=null;
+  const rmState={tab:'brief',f:''};
+  const RM_GATE={rms:'validate_rms.py',sources:'validate_source_grounding.py',numbers:'validate_numeric_closed_world.py',profile:'validate_advisor_profile.py',profile_sources:'validate_advisor_profile_grounding.py'};
+  // a small Markdown renderer for the committed briefs: headings, lists, tables, paragraphs, bold, code and [F01] citations
+  function rmMd(md) {
+    const inline=s=>esc(s).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/`([^`]+)`/g,'<code>$1</code>').replace(/\[([FARGQ]\d{2})\]/g,'<i class="rm-cite" data-rm-f="$1">$1</i>');
+    const out=[]; let list=null, table=null;
+    const flush=()=>{ if(list){ out.push(`<ul>${list.map(x=>`<li>${inline(x)}</li>`).join('')}</ul>`); list=null; }
+      if(table){ out.push(`<table>${table.map((r,i)=>`<tr>${r.map(c=>i?`<td>${inline(c)}</td>`:`<th>${inline(c)}</th>`).join('')}</tr>`).join('')}</table>`); table=null; } };
+    md.split('\n').forEach(line=>{ const l=line.trim();
+      if(l.startsWith('|')){ if(!/^\|[-| :]+\|$/.test(l)) (table=table||[]).push(l.slice(1,-1).split('|').map(x=>x.trim())); return; }
+      if(l.startsWith('- ')){ (list=list||[]).push(l.slice(2)); return; }
+      flush(); if(!l) return;
+      const h=l.match(/^(#{1,3}) (.*)/);
+      out.push(h?`<h${h[1].length+3}>${inline(h[2])}</h${h[1].length+3}>`:`<p>${inline(l)}</p>`); });
+    flush(); return out.join('');
+  }
+  const rmCsv=text=>{ const rows=text.split('\n').map(r=>r.split(',')); return `<table>${rows.map((r,i)=>`<tr>${r.map(x=>i?`<td>${esc(x)}</td>`:`<th>${esc(x.replace(/_/g,' '))}</th>`).join('')}</tr>`).join('')}</table>`; };
+  function rmShowcase() {
+    const c=rmCopy();
+    return `<section class="rm-show"><p class="rm-note"><b translate="no"></b><span class="rm-note-t"></span></p>
+      <h2>${esc(c.archTitle)}</h2><ol class="rm-flow">${c.arch.map(([t,d],i)=>`<li style="--i:${i}"><span class="rm-n">${i+1}</span><b>${esc(t)}</b><small>${esc(d)}</small></li>`).join('')}</ol>
+      <p class="rm-skill"><b>${esc(c.skillT)}</b><span>${esc(c.skill)}</span></p>
+      <div class="rm-rules">${c.rules.map(([t,d])=>`<div><b>${esc(t)}</b><small>${esc(d)}</small></div>`).join('')}</div>
+      <h2>${esc(c.demoTitle)}</h2><p class="screen-intro">${esc(c.demoLede)}</p><div class="rm-before"></div>
+      <h2>${esc(c.exTitle)}</h2><p class="screen-intro">${esc(c.exLede)}</p><div class="rm-example"></div>
+      <h2>${esc(c.refTitle)}</h2><p class="screen-intro">${esc(c.refLede)}</p><div class="rm-refs"><div class="rm-tabs" role="tablist" aria-label="${esc(c.refTitle)}"></div><div class="rm-cards" aria-live="polite"></div></div>
+      <div class="rm-limits"></div>
+      <h2>${esc(c.numTitle)}</h2><div class="rm-nums"></div><p class="comment-line">${esc(c.numNote)}</p><p class="rm-src"></p></section>`;
+  }
+  function rmPaintRefs() {
+    const box=$('.rm-show'); if(!box||!rmData) return;
+    const c=rmCopy(), tabs=['brief','rms','profile'];
+    box.querySelector('.rm-tabs').innerHTML=tabs.map(k=>`<button type="button" role="tab" data-rm-tab="${k}" aria-selected="${k===rmState.tab}" tabindex="${k===rmState.tab?0:-1}">${esc(c.tabs[k])}<i>${rmData.edits.filter(e=>e.target===k&&e.caught).length}</i></button>`).join('');
+    const card=e=>{ const [t,d]=c.edits[e.id]||[e.id,''];
+      const diff=e.old?`<pre class="rm-diff" translate="no"><code><span class="d-del">- ${esc(e.old)}</span><span class="d-add">+ ${esc(e.new)}</span></code></pre>`:'';
+      const gates=Object.entries(e.gates).map(([g,v])=>`<p class="rm-g ${v.status==='failed'?'is-no':'is-ok'}"><code translate="no">${esc(RM_GATE[g]||g)}</code><em>${esc(v.status==='failed'?c.failed:c.passed)}</em>${v.errors.slice(0,2).map(x=>`<small translate="no">${esc(x)}</small>`).join('')}</p>`).join('');
+      return `<div class="rm-card${e.caught?'':' is-limit'}"><b>${esc(t)}</b><small>${esc(d)}</small>${diff}${gates}</div>`; };
+    box.querySelector('.rm-cards').innerHTML=rmData.edits.filter(e=>e.target===rmState.tab&&e.caught).map(card).join('');
+    const limits=rmData.edits.filter(e=>!e.caught);
+    box.querySelector('.rm-limits').innerHTML=limits.length?`<h3>${esc(c.limitT)}</h3><p class="rm-limit-t">${esc(c.limit)}</p><div class="rm-cards">${limits.map(card).join('')}</div>`:'';
+  }
+  function rmPaintFacts() {
+    const box=$('.rm-show'); if(!box) return;
+    box.querySelectorAll('[data-rm-f]').forEach(el=>el.classList.toggle('is-on',!!rmState.f&&el.dataset.rmF===rmState.f));
+  }
+  function rmStatic() {
+    const box=$('.rm-show'); if(!box||!rmData) return;
+    const c=rmCopy(), D=rmData, R=D.rms, E=D.evals;
+    box.querySelector('.rm-note b').textContent='v'+D.source.version; box.querySelector('.rm-note-t').textContent=c.note;
+    box.querySelector('.rm-before').innerHTML=`<div class="rm-inputs"><h3>${esc(c.inputs)}</h3><div class="rm-in"><div><p class="rm-file" translate="no">raw-notes.md · ${esc(c.notes)}</p><div class="rm-doc">${rmMd(D.demo['raw-notes.md'])}</div></div>
+        <div><p class="rm-file" translate="no">previous-meeting.md · ${esc(c.prev)}</p><div class="rm-doc">${rmMd(D.demo['previous-meeting.md'])}</div><p class="rm-file" translate="no">result.csv · ${esc(c.table)}</p><div class="rm-doc rm-csv">${rmCsv(D.demo['result.csv'])}</div></div></div></div>
+      <div class="rm-outs"><div class="rm-out"><p class="rm-file" translate="no">generic-output.md · ${esc(c.generic)}</p><div class="rm-doc">${rmMd(D.demo['generic-output.md'])}</div></div>
+        <div class="rm-out is-aware"><p class="rm-file" translate="no">advisor-aware-output.md · ${esc(c.aware)}</p><div class="rm-doc">${rmMd(D.demo['advisor-aware-output.md'])}</div></div></div><p class="rm-outnote">${esc(c.outNote)}</p>`;
+    const req=new Set(R.facts.filter(f=>f.retention==='required').map(f=>f.id));
+    const facts=`<ul class="rm-facts">${R.facts.map(f=>`<li data-rm-f="${esc(f.id)}" tabindex="0"><b translate="no">${esc(f.id)}</b><span>${esc(f.statement)}</span><small translate="no">${esc(f.source.locator)} · ${esc(f.evidence_class)}${(f.measurements||[]).map(m=>` · ${esc(m.metric)} ${esc(m.value)} (${esc(m.qualifier)})`).join('')}</small>${req.has(f.id)?`<em>${esc(c.required)}</em>`:''}</li>`).join('')}</ul>`;
+    const layers=`<ol class="rm-layers">${R.reasoning_items.map(r=>`<li class="l-${esc(r.layer)}"><em>${esc(c.layers[r.layer]||r.layer)}</em><span>${esc(r.text)}</span><small translate="no">${(r.evidence_ids||[]).map(x=>`<i class="rm-cite" data-rm-f="${esc(x)}">${esc(x)}</i>`).join('')}</small></li>`).join('')}</ol>`;
+    const A=R.continuity.previous_actions;
+    const cont=`<ul class="rm-cont">${A.map(x=>`<li><b translate="no">${esc(x.id)}</b><span>${esc(x.item)}</span><em class="s-${esc(x.status)}">${esc(c.status[x.status]||x.status)}</em><small>“${esc(x.source.quote)}” <span translate="no">${esc(x.source.locator)}</span></small></li>`).join('')}</ul>`;
+    const attack=`<ul class="rm-attack">${R.attack_surface.map(g=>`<li class="r-${esc(g.risk.toLowerCase())}"><em translate="no">${esc(g.risk)}</em><span>${esc(g.gap)}</span><small>${esc(g.minimum_repair)}</small></li>`).join('')}</ul>`;
+    const ask=R.asks.map(q=>`<div class="rm-ask"><b>${esc(q.question)}</b>${q.options.map(o=>`<span>${esc(o.label)} <em>${esc(c.option[o.provenance]||o.provenance)}</em></span>`).join('')}</div>`).join('');
+    const gates=Object.entries(D.base).map(([g,v])=>`<li class="${v.status==='passed'?'is-ok':'is-no'}"><i>${v.status==='passed'?'✓':'✕'}</i><span>${esc(c.gate[g]||g)}</span><code translate="no">${esc(RM_GATE[g]||g)}</code></li>`).join('');
+    box.querySelector('.rm-example').innerHTML=`<div class="rm-cols"><div><h3>${esc(c.facts)}</h3>${facts}<h3>${esc(c.reasoning)}</h3>${layers}<h3>${esc(c.continuity)}</h3>${cont}<h3>${esc(c.attack)}</h3>${attack}<h3>${esc(c.ask)}</h3>${ask}</div>
+      <div><h3>${esc(c.briefT)}</h3><div class="rm-doc rm-brief">${rmMd(D.brief)}</div><h3>${esc(c.gatesT)}</h3><ul class="rm-gates">${gates}</ul></div></div>`;
+    const caught=D.edits.filter(e=>e.caught).length;
+    const vals=[{c:D.checks},{k:caught,n:D.edits.length,m:D.edits.length-caught},{d:E.case_definition_count,x:E.executed_case_definition_count},{r:E.routing_case_count,s:D.seed_records}];
+    box.querySelector('.rm-nums').innerHTML=c.nums.map(([big,small],j)=>`<div style="--i:${j}"><b>${esc(csFill(big,vals[j]))}</b><small>${esc(csFill(small,vals[j]))}</small></div>`).join('');
+    box.querySelector('.rm-src').textContent=csFill(c.src,{v:D.source.version,c:D.source.commit.slice(0,7),d:D.source.run});
+  }
+  function initMeetingCoach() {
+    const box=$('.rm-show'); if(!box) return;
+    box.classList.toggle('no-motion',!motion());
+    const go=()=>{ rmStatic(); rmPaintRefs(); rmPaintFacts(); };
+    if(rmData) go(); else fetch('/assets/rmc/showcase.json?v=1').then(r=>r.json()).then(d=>{rmData=d;go();}).catch(()=>{});
+  }
+  root.addEventListener('click',event=>{
+    const t=event.target.closest('[data-rm-tab]'); if(t){ rmState.tab=t.dataset.rmTab; rmPaintRefs(); return; }
+    const f=event.target.closest('.rm-show [data-rm-f]'); if(f){ rmState.f=rmState.f===f.dataset.rmF?'':f.dataset.rmF; rmPaintFacts(); }
+  });
+  root.addEventListener('keydown',event=>{
+    const f=event.target.closest?.('.rm-facts [data-rm-f]');
+    if(f&&(event.key==='Enter'||event.key===' ')){ event.preventDefault(); rmState.f=rmState.f===f.dataset.rmF?'':f.dataset.rmF; rmPaintFacts(); return; }
+    const b=event.target.closest?.('[data-rm-tab]'); if(!b||!['ArrowLeft','ArrowRight'].includes(event.key)||!rmData) return;
+    event.preventDefault(); const tabs=['brief','rms','profile'], i=tabs.indexOf(rmState.tab);
+    rmState.tab=tabs[(i+(event.key==='ArrowRight'?1:2))%3]; rmPaintRefs(); $(`[data-rm-tab="${rmState.tab}"]`)?.focus();
+  });
   /* Merriv: the film (assets/film/merriv.html), then what problem it solves, for whom, how, and what a real run produced.
      Numbers come from assets/merriv/summary.json, written by tools/merriv_film.py from a fresh run of Merriv's demos. */
   const mvCopy=()=>({
@@ -1875,7 +2070,7 @@
     if (view==='blog') html=blogScreen();
     if (view==='help') html=`${commandTitle('help')}<h1>${c.guideTitle}</h1><p>${c.guideIntro}</p><dl class="keyboard-guide">${c.keys.map(([key,description])=>`<div><dt><kbd>${key}</kbd></dt><dd>${description}</dd></div>`).join('')}</dl><h2>${c.commands}</h2>${commandCatalogue()}<p class="comment-line">${c.simulation}</p>`;
     if (view==='projects' && !item) html=`${commandTitle('ls ./projects/')}${directoryHTML(c)}`;
-    if (view==='projects' && item) html=`${commandTitle('cat projects/'+esc(item.id)+'/README.md')}<button class="back-link" data-view="projects">← ${c.all}</button><div class="project-detail"><p class="detail-meta">${esc(item.category)}<span>${esc(item.status)}</span></p><h1 translate="no">${esc(item.name)}</h1><p class="project-description">${esc(item.description)}</p>${item.id==='taiwan-exam'?'<img class="project-art" src="/assets/work/taiwan-exam-social-preview.png" width="1280" height="640" alt="Taiwan Exam" loading="lazy">'+teFilmCard()+examsCard():''}${item.id==='lumigrid'?lumigridShowcase():''}${item.id==='kcrashlab'?kcShowcase():''}${item.id==='contextsec'?csShowcase():''}${item.id==='merriv'?mvShowcase():''}${item.id==='ai-repo-gardener'?rgShowcase():''}${item.id==='psg'?psShowcase():''}${item.id==='noveltyaudit'?naShowcase():''}${item.id==='adversarial-lab'?'<img class="project-art" src="/assets/og/adversarial-demo.jpg" width="1200" height="630" alt="Adversarial Lab" loading="lazy">'+advCard():''}<h2>${c.evidence}</h2><p>${esc(item.evidence)}</p><div class="output-actions"><a class="action-button primary" href="${esc(item.url)}" target="_blank" rel="noopener noreferrer"><span>${c.source}</span>${icon('link')}</a><a class="action-button" href="${esc(item.reference)}" target="_blank" rel="noopener noreferrer"><span>${esc(item.referenceLabel)}</span>${icon('link')}</a><button class="action-button" data-ask="${esc(item.name)}">${icon('chat')}<span>${c.askTitle}</span></button><button class="action-button" data-action="share" data-share="/p/${esc(item.id)}/${locale==='en'?'':locale.toLowerCase()+'/'}">${icon('link')}<span>${esc(noteCopy().share)}</span></button></div><div class="project-pagination"><button data-project-step="-1">← ${c.prev}</button><span>${items.indexOf(item)+1} / ${items.length}</span><button data-project-step="1">${c.next} →</button></div></div>`;
+    if (view==='projects' && item) html=`${commandTitle('cat projects/'+esc(item.id)+'/README.md')}<button class="back-link" data-view="projects">← ${c.all}</button><div class="project-detail"><p class="detail-meta">${esc(item.category)}<span>${esc(item.status)}</span></p><h1 translate="no">${esc(item.name)}</h1><p class="project-description">${esc(item.description)}</p>${item.id==='taiwan-exam'?'<img class="project-art" src="/assets/work/taiwan-exam-social-preview.png" width="1280" height="640" alt="Taiwan Exam" loading="lazy">'+teFilmCard()+examsCard():''}${item.id==='lumigrid'?lumigridShowcase():''}${item.id==='kcrashlab'?kcShowcase():''}${item.id==='contextsec'?csShowcase():''}${item.id==='merriv'?mvShowcase():''}${item.id==='ai-repo-gardener'?rgShowcase():''}${item.id==='psg'?psShowcase():''}${item.id==='noveltyaudit'?naShowcase():''}${item.id==='research-meeting-coach'?rmShowcase():''}${item.id==='adversarial-lab'?'<img class="project-art" src="/assets/og/adversarial-demo.jpg" width="1200" height="630" alt="Adversarial Lab" loading="lazy">'+advCard():''}<h2>${c.evidence}</h2><p>${esc(item.evidence)}</p><div class="output-actions"><a class="action-button primary" href="${esc(item.url)}" target="_blank" rel="noopener noreferrer"><span>${c.source}</span>${icon('link')}</a><a class="action-button" href="${esc(item.reference)}" target="_blank" rel="noopener noreferrer"><span>${esc(item.referenceLabel)}</span>${icon('link')}</a><button class="action-button" data-ask="${esc(item.name)}">${icon('chat')}<span>${c.askTitle}</span></button><button class="action-button" data-action="share" data-share="/p/${esc(item.id)}/${locale==='en'?'':locale.toLowerCase()+'/'}">${icon('link')}<span>${esc(noteCopy().share)}</span></button></div><div class="project-pagination"><button data-project-step="-1">← ${c.prev}</button><span>${items.indexOf(item)+1} / ${items.length}</span><button data-project-step="1">${c.next} →</button></div></div>`;
     const output=$('.terminal-output'); output.dataset.view=view; output.innerHTML=html; output.scrollTop=0; renderJournal();
     if (view==='research') initCapstone();
     if (view==='guestbook') window.NIANSIA_GUESTBOOK?.mount(output,locale);
@@ -1886,6 +2081,7 @@
     if (view==='projects' && projectId==='ai-repo-gardener') initGardener();
     if (view==='projects' && projectId==='psg') initPsg();
     if (view==='projects' && projectId==='noveltyaudit') initNovelty();
+    if (view==='projects' && projectId==='research-meeting-coach') initMeetingCoach();
     output.classList.remove('screen-enter'); if (animate && motion()) { void output.offsetWidth; output.classList.add('screen-enter'); }
     root.querySelectorAll('[data-nav-index]').forEach((el,i)=>{el.classList.toggle('is-current',i===paths.indexOf(view));el.classList.toggle('is-selected',i===selectedNav);el.setAttribute('aria-current',i===paths.indexOf(view)?'page':'false');});
     moveIndicator();
