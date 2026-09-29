@@ -17,6 +17,7 @@ ROOT = Path(__file__).resolve().parents[1]
 REPO = Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT.parent / "KCrashLab"
 REC = REPO / "results" / "recorded"
 OUT = ROOT / "assets" / "kcrashlab" / "showcase.json"
+FILM = ROOT / "assets" / "kcrashlab" / "film.json"   # extra detail for assets/film/kcrashlab.html
 
 
 def manifest(bundle: str) -> dict[str, str]:
@@ -91,7 +92,40 @@ def main() -> None:
                "strategies": [{"id": s["strategy"], "rate": s["discovery_rate"], "median": s["median_first_finding_among_discoveries"]}
                               for s in e1["strategies"]]},
     }
+    # the film also draws G3's mutation lineage (who was derived from whom) and every E1 trial
+    first = {}
+    for r in rows:
+        first.setdefault(r["case_id"], int(r["execution"]))
+    ops = sorted({r["operator_id"] for r in rows} - {"seed"})
+    parent, kids = {}, {}
+    for r in rows:
+        e = int(r["execution"])
+        parent[e] = first[r["parent_case_id"]] if r["parent_case_id"] else 0
+        assert parent[e] < e
+        kids.setdefault(parent[e], []).append(e)
+    size = {}
+    for e in sorted(parent, reverse=True):
+        size[e] = 1 + sum(size[k] for k in kids.get(e, []))
+    angle, depth = {1: .5}, {1: 0}
+    def spread(e, a0, a1):   # a radial tree: each subtree gets an arc proportional to its size
+        span, a = a1 - a0, a0
+        for k in kids.get(e, []):
+            w = span * size[k] / (size[e] - 1)
+            angle[k], depth[k] = a + w / 2, depth[e] + 1
+            spread(k, a, a + w)
+            a += w
+    spread(1, 0, 1)
+    nodes = [[parent[int(r["execution"])], ops.index(r["operator_id"]) + 1 if r["operator_id"] in ops else 0, int(r["novel_coverage"]),
+              int(r["added_to_corpus"] == "true"), int(r["result_class"] != "COMPLETE"), round(angle[int(r["execution"])], 5), depth[int(r["execution"])]]
+             for r in rows]
+    trials = {}
+    for t in e1["trials"]:
+        trials.setdefault(t["strategy"], []).append(t["first_finding_execution"] if t["found"] else None)
+    film = {"operators": ops, "nodes": nodes, "seed_case": g3["seed_case_id"], "min_case": finding["case_id"],
+            "manifest": [[n, d] for n, d in sorted(manifest(b).items())], "e1_trials": trials,
+            "tree_digest": prov["source_tree_digest"]}
     OUT.parent.mkdir(parents=True, exist_ok=True)
+    FILM.write_text(json.dumps(film, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
     OUT.write_text(json.dumps(data, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
     print(f"wrote {OUT.relative_to(ROOT)} ({OUT.stat().st_size} bytes) from {prov['git_commit'][:12]}")
 

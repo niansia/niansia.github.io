@@ -491,7 +491,8 @@
   /* KCrashLab: its architecture and a replay of the evidence recorded in its repository. The numbers come from
      assets/kcrashlab/showcase.json, which tools/kcrash_showcase.py builds only after every source file matched the bundle manifests. */
   const kcCopy=()=>({
-    en:{note:'Every number and animation below comes from the simulated experiments recorded in the KCrashLab repository: a synthetic state machine, not a real system crash, and no third-party driver is involved.',
+    en:{film:'Watch the KCrashLab film',filmSub:'About 90 s, one continuous take through the recorded evidence: the mutation lineage of 256 executions, 32 failures collapsing into one signature, minimization, clean replays, the verified bundle and E1.',
+      note:'Every number and animation below comes from the simulated experiments recorded in the KCrashLab repository: a synthetic state machine, not a real system crash, and no third-party driver is involved.',
       archTitle:'Architecture: from an input to evidence anyone can check',
       arch:[['Case IR','Each input becomes versioned JSON whose identity is the SHA-256 of its canonical content, so two differently formatted copies of one input count once.'],
         ['Deterministic simulation','Scheduling, mutation and selection all derive from a seed: the same seed always gives the same run, and an interrupted run resumes from an append-only journal.'],
@@ -511,7 +512,8 @@
       e1:{keep:'Keep every case',novelty:'Keep only new coverage',uniform:'Uniform parent pick',energy:'Energy-ranked parent pick',stat:'found {f}/{t} · median when found: execution {m}'},
       e1Note:'A 2×2 comparison of corpus admission and parent selection, {t} paired trials of {b} executions each. It is a controlled experiment on a synthetic target: it compares strategies under the same conditions and says nothing about real drivers.',
       src:'Data: results/recorded · commit {c} · engine {e}'},
-    'zh-TW':{note:'以下的數字和動畫，全部來自 KCrashLab repo 裡記錄的模擬實驗：對象是合成的狀態機，不是真實的系統當機，也不涉及任何第三方驅動程式。',
+    'zh-TW':{film:'觀看 KCrashLab 動畫',filmSub:'約 90 秒一鏡到底，全部用 repo 裡記錄的證據：256 次執行的變異族譜、32 次失敗收斂成 1 個簽章、最小化、乾淨重播、證據驗證，到 E1 對照實驗。',
+      note:'以下的數字和動畫，全部來自 KCrashLab repo 裡記錄的模擬實驗：對象是合成的狀態機，不是真實的系統當機，也不涉及任何第三方驅動程式。',
       archTitle:'架構：從一個輸入到任何人都能驗證的證據',
       arch:[['Case IR','把每個輸入正規化成有版本的 JSON，用內容的 SHA-256 當身分；格式不同、內容相同的輸入只算一次。'],
         ['確定性模擬','排程、變異和挑選全部由種子決定，同一個種子一定跑出一樣的結果；中斷後可以從 append-only journal 接著跑。'],
@@ -531,7 +533,8 @@
       e1:{keep:'全部收錄',novelty:'只收新覆蓋',uniform:'均勻挑選父案例',energy:'依能量挑選父案例',stat:'{t} 次中找到 {f} 次 · 找到時中位數第 {m} 次'},
       e1Note:'2×2 對照：語料收錄方式 × 父案例挑選方式，每種 {t} 次配對試驗、每次 {b} 次執行。這是合成目標上的受控實驗，只比較同樣條件下的策略差異，不代表在真實驅動程式上的表現。',
       src:'資料：results/recorded · commit {c} · engine {e}'},
-    'zh-CN':{note:'以下的数字和动画，全部来自 KCrashLab repo 里记录的模拟实验：对象是合成的状态机，不是真实的系统崩溃，也不涉及任何第三方驱动程序。',
+    'zh-CN':{film:'观看 KCrashLab 动画',filmSub:'约 90 秒一镜到底，全部用 repo 里记录的证据：256 次执行的变异族谱、32 次失败收敛成 1 个签名、最小化、干净重放、证据验证，到 E1 对照实验。',
+      note:'以下的数字和动画，全部来自 KCrashLab repo 里记录的模拟实验：对象是合成的状态机，不是真实的系统崩溃，也不涉及任何第三方驱动程序。',
       archTitle:'架构：从一个输入到任何人都能验证的证据',
       arch:[['Case IR','把每个输入规范化成有版本的 JSON，用内容的 SHA-256 当身份；格式不同、内容相同的输入只算一次。'],
         ['确定性模拟','调度、变异和挑选全部由种子决定，同一个种子一定跑出一样的结果；中断后可以从 append-only journal 接着跑。'],
@@ -557,7 +560,7 @@
   const kcSig=s=>s.slice(0,12)+'…';
   function kcShowcase() {
     const c=kcCopy();
-    return `<section class="kc-show"><p class="kc-note"><b translate="no">SIMULATED</b><span>${esc(c.note)}</span></p>
+    return `<section class="kc-show"><a class="cap-film kc-film" href="/assets/film/kcrashlab.html?lang=${locale}" data-src="/assets/film/kcrashlab.html" data-title="KCrashLab" aria-haspopup="dialog"><video src="/assets/kcrashlab/teaser.mp4?v=1" poster="/assets/kcrashlab/teaser-poster.jpg?v=1" muted loop playsinline preload="metadata" ${motion()?'autoplay':''} aria-hidden="true"></video><span class="cap-film-play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z"/></svg></span><span class="cap-film-text"><b>${esc(c.film)}</b><small>${esc(c.filmSub)}</small></span></a><p class="kc-note"><b translate="no">SIMULATED</b><span>${esc(c.note)}</span></p>
       <h2>${esc(c.archTitle)}</h2><ol class="kc-arch">${c.arch.map(([t,d],i)=>`<li style="--i:${i}"><span class="kc-n">${i+1}</span><b translate="no">${esc(t)}</b><small>${esc(d)}</small></li>`).join('')}</ol>
       <div class="kc-gate"><b>${esc(c.gate[0])}</b><small>${esc(c.gate[1])}</small></div>
       <h2>${esc(c.replayTitle)}</h2><p class="screen-intro kc-lede">${esc(c.replayLede)}</p>

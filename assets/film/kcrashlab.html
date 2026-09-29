@@ -1,0 +1,451 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>KCrashLab · evidence replay</title>
+<meta name="description" content="KCrashLab, replayed end to end from the simulated evidence recorded in its repository: discovery, exact-signature minimization, clean replays, a verifiable evidence bundle and the E1 comparison.">
+<meta name="theme-color" content="#050507">
+<link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+TC:wght@400;500;700&display=swap">
+<style>
+:root{--bg:#050507;--ink:#f2f4f7;--dim:#8a8f99;--line:#ffffff26;--blue:#7cc4ff;--amber:#ffb454;--red:#ff5d6c;--green:#4ade80;}
+*{box-sizing:border-box;}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:Inter,'Noto Sans TC',system-ui,sans-serif;overflow:hidden;}
+#gl{position:fixed;inset:0;width:100%;height:100%;display:block;}
+.ui{position:fixed;inset:0;pointer-events:none;}
+.brand{position:absolute;top:18px;left:22px;font:500 12px/1.4 'JetBrains Mono',monospace;color:var(--dim);letter-spacing:.04em;transition:opacity .5s;}
+.brand b{color:var(--ink);font-weight:500;}
+.brand em{margin-left:8px;padding:1px 7px;border-radius:5px;font-style:normal;font-size:10px;font-weight:600;color:#1a0d00;background:var(--amber);}
+.top{position:absolute;top:14px;right:16px;display:flex;gap:8px;transition:opacity .5s;}
+.btn{pointer-events:auto;font:500 11px 'JetBrains Mono',monospace;color:var(--dim);background:transparent;border:1px solid var(--line);border-radius:999px;padding:6px 11px;cursor:pointer;text-decoration:none;}
+.btn:hover{color:var(--ink);border-color:#ffffff66;}
+.hud{position:absolute;top:52px;left:22px;display:flex;gap:18px;font:500 11px 'JetBrains Mono','Noto Sans TC',monospace;color:var(--dim);opacity:0;transition:opacity .5s;}
+.hud.on{opacity:1;}
+.hud b{display:block;font:600 20px 'JetBrains Mono',monospace;color:var(--ink);font-variant-numeric:tabular-nums;}
+.hud .f b{color:var(--red);}
+.lab{position:absolute;left:0;top:0;transform:translate(0,-100%);white-space:nowrap;font:500 12px/1.5 'JetBrains Mono','Noto Sans TC',monospace;color:#e9edf3;opacity:0;transition:opacity .4s;pointer-events:none;padding:4px 10px;border-left:1px solid var(--blue);background:linear-gradient(90deg,#0a0d12d9,#0a0d1200);}
+.lab small{display:block;color:var(--dim);font-size:11px;}
+.lab b{color:#fff;}
+.lab.on{opacity:1;}
+.lab.end{border-left:0;border-right:1px solid var(--blue);text-align:right;background:linear-gradient(270deg,#0a0d12d9,#0a0d1200);}.lab.end.amber{border-right-color:var(--amber);}
+.lab.amber{border-color:var(--amber);}.lab.red{border-color:var(--red);}.lab.ok{border-color:var(--green);}
+.title{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);text-align:center;opacity:0;transition:opacity 1.2s;pointer-events:none;}
+.title.on{opacity:1;}
+.title h1{margin:0;font:600 clamp(34px,5vw,64px)/1 Inter,sans-serif;letter-spacing:-.02em;text-shadow:0 2px 30px #000c;}
+.title p{margin:14px 0 0;font:400 13px 'JetBrains Mono','Noto Sans TC',monospace;color:#dfe4ea;text-shadow:0 2px 12px #000;}
+.title small{display:block;margin-top:8px;font:400 11px 'JetBrains Mono','Noto Sans TC',monospace;color:var(--dim);}
+.bar{position:absolute;left:0;right:0;bottom:0;padding:0 22px 18px;display:flex;align-items:center;gap:14px;transition:opacity .5s;}
+.bar .play{pointer-events:auto;width:30px;height:30px;border-radius:50%;border:1px solid var(--line);background:transparent;color:var(--ink);display:grid;place-items:center;cursor:pointer;flex:none;}
+.bar svg{width:12px;height:12px;fill:currentColor;}
+.track{position:relative;flex:1;height:18px;cursor:pointer;pointer-events:auto;}
+.track:before{content:'';position:absolute;left:0;right:0;top:8px;height:2px;background:#ffffff1c;}
+.fill{position:absolute;left:0;top:8px;height:2px;background:var(--ink);}
+.time{font:400 11px 'JetBrains Mono',monospace;color:var(--dim);min-width:84px;text-align:right;}
+.start{position:absolute;inset:0;display:grid;place-items:center;background:#050507e6;pointer-events:auto;transition:opacity .6s;}
+.start.off{opacity:0;pointer-events:none;}
+.start button{background:none;border:0;color:var(--ink);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:14px;font:500 13px Inter,'Noto Sans TC',sans-serif;}
+.start .ring{width:74px;height:74px;border-radius:50%;border:1px solid #ffffff55;display:grid;place-items:center;}
+.start .ring svg{width:22px;height:22px;fill:#fff;margin-left:3px;}
+.start small{color:var(--dim);font-family:'JetBrains Mono','Noto Sans TC',monospace;font-size:11px;}
+.idle .bar,.idle .top,.idle .brand{opacity:0;}
+.mini .brand,.mini .top,.mini .bar,.mini .lab,.mini .hud,.mini .start,.mini .title{display:none;}
+.embed #back{display:none;}
+@media(max-width:720px){.lab{font-size:10px;}.lab small{font-size:9px;}.hud{gap:12px;}.hud b{font-size:15px;}}
+</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
+</head>
+<body>
+<canvas id="gl"></canvas>
+<div class="ui" id="ui">
+  <div class="brand"><b>KCrashLab</b> · <span id="sub"></span><em>SIMULATED</em></div>
+  <div class="top"><a class="btn" id="back" href="/#projects/kcrashlab">←</a><button class="btn" id="lang" type="button">EN</button><button class="btn" id="fs" type="button">⛶</button></div>
+  <div class="hud" id="hud"><span><b id="h-exec">0</b><span id="l-exec"></span></span><span><b id="h-cov">0</b><span id="l-cov"></span></span><span><b id="h-corp">0</b><span id="l-corp"></span></span><span class="f"><b id="h-fail">0</b><span id="l-fail"></span></span></div>
+  <div id="labels"></div>
+  <div class="title" id="title"><h1>KCrashLab</h1><p id="title-sub"></p><small id="title-note"></small></div>
+  <div class="bar"><button class="play" id="play" type="button" aria-label="play / pause"></button><div class="track" id="track"><div class="fill" id="fill"></div></div><span class="time" id="time"></span></div>
+  <div class="start" id="start"><button type="button" id="go"><span class="ring"><svg viewBox="0 0 24 24"><path d="M6 4l14 8-14 8z"/></svg></span><span id="go-label"></span><small id="go-sub"></small></button></div>
+</div>
+<script type="module">
+/* Every number and shape in this film comes from assets/kcrashlab/showcase.json and film.json, which tools/kcrash_showcase.py
+   builds from the KCrashLab repository's recorded (simulated) evidence after checking each file against its manifest. */
+import * as THREE from 'three';
+import {EffectComposer} from 'three/addons/postprocessing/EffectComposer.js';
+import {RenderPass} from 'three/addons/postprocessing/RenderPass.js';
+import {UnrealBloomPass} from 'three/addons/postprocessing/UnrealBloomPass.js';
+import {ShaderPass} from 'three/addons/postprocessing/ShaderPass.js';
+import {OutputPass} from 'three/addons/postprocessing/OutputPass.js';
+
+const $ = id => document.getElementById(id);
+const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
+const seg = (t, a, b) => clamp((t - a) / (b - a));
+const sm = x => x * x * (3 - 2 * x);
+const ss = (t, a, b) => sm(seg(t, a, b));
+const lerp = (a, b, k) => a + (b - a) * k;
+const V = (x, y, z) => new THREE.Vector3(x, y, z);
+const pop = x => { const c = 1.7; x = clamp(x); return x <= 0 ? 0 : 1 + (c + 1) * Math.pow(x - 1, 3) + c * Math.pow(x - 1, 2); };   // ease-out-back
+const q = new URLSearchParams(location.search), EMBED = q.get('embed') === '1', CLEAN = q.get('clean') === '1';
+let L = q.get('lang') || (/^zh-(cn|sg)/i.test(navigator.language) ? 'zh-CN' : /^zh/i.test(navigator.language) ? 'zh-TW' : 'en');
+if (!['en', 'zh-TW', 'zh-CN'].includes(L)) L = 'en';
+const base = '/assets/kcrashlab/';
+const [S, F] = await Promise.all([fetch(base + 'showcase.json?v=1').then(r => r.json()), fetch(base + 'film.json?v=1').then(r => r.json()),
+  document.fonts.load('600 26px "JetBrains Mono"').catch(() => {}), document.fonts.load('500 19px "JetBrains Mono"').catch(() => {})]);
+const SIG = S.g3.signature.slice(0, 12) + '…', N = F.nodes.length, FIRST = S.g3.fails[0], COMMIT = S.source.commit.slice(0, 7);
+const M = S.min, NF = S.g3.fails.length;
+
+/* ---------------- copy ---------------- */
+const COPY = {
+  en: {sub: 'evidence replay', go: 'Play', goSub: '≈ 90 s · the recorded simulation evidence, end to end', home: 'back',
+    exec: 'executions', cov: 'coverage', corp: 'corpus', fail: 'failures',
+    caseir: 'Case IR · a case is a sequence of driver requests<small>canonical, versioned JSON · identity = SHA-256 of the content</small>',
+    seed: `G3 seed case · ${F.seed_case.slice(0, 8)}…<small>campaign seed ${S.g3.seed} · budget ${S.g3.budget} executions</small>`,
+    lineage: 'each new case is a mutation of an earlier one<small>distance from the centre = mutation depth · brighter = new coverage</small>',
+    first: `first synthetic failure · execution ${FIRST}`,
+    sig: `${NF} raw failures → ${S.g3.signatures} exact signature<small>${SIG} · grouped by normalized triage fields</small>`,
+    orig: `state-original.case.json · ${M.original.length} operations · ${M.bytes[0]} bytes`,
+    target: `target signature · ${SIG}`,
+    minim: `minimizer · ${M.attempts} oracle attempts (limit ${M.max_attempts})<small>a change is kept only if the exact signature is unchanged</small>`,
+    minDone: `${M.original.length} → ${M.minimized.length} operations · ${M.bytes[0]} → ${M.bytes[1]} bytes`,
+    clean: 'clean simulated state<small>every replay starts from the same baseline</small>',
+    replay: `${S.replay.filter(r => r === 'MATCH').length} / ${S.replay.length} replays reproduce the exact signature`,
+    states: 'campaign state machine<small>append-only SQLite journal · virtual time</small>',
+    bundle: `evidence bundle · ${S.manifest.length} files<small>every file is listed in a SHA-256 manifest</small>`,
+    verify: 'offline verification: passed<small>hashes plus cross-file checks: cases, signature, replays, provenance</small>',
+    e1: 'E1 · 2×2 policy ablation<small>20 paired trials × 256 executions · taller = found sooner · flat = not found</small>',
+    row: (a, p, f, t, m) => `${a} · ${p} · <b>${f}/${t}</b>`,
+    adm: {keep: 'keep all', novelty: 'novelty only'}, par: {uniform: 'uniform parent', energy: 'energy-ranked parent'},
+    titleSub: 'deterministic · replayable · independently verifiable', titleNote: `all evidence shown is simulated · commit ${COMMIT}`},
+  'zh-TW': {sub: '證據重播', go: '播放', goSub: '約 90 秒 · repo 裡記錄的模擬實驗，從頭到尾', home: '返回',
+    exec: '執行次數', cov: '覆蓋', corp: '語料', fail: '失敗',
+    caseir: 'Case IR · 一個案例 = 一串驅動程式請求<small>正規化、有版本的 JSON · 身分 = 內容的 SHA-256</small>',
+    seed: `G3 種子案例 · ${F.seed_case.slice(0, 8)}…<small>實驗種子 ${S.g3.seed} · 預算 ${S.g3.budget} 次執行</small>`,
+    lineage: '每個新案例都是從先前的案例變異而來<small>離中心越遠 = 變異越多代 · 越亮 = 帶來新覆蓋</small>',
+    first: `第 ${FIRST} 次執行：首次出現合成失敗`,
+    sig: `${NF} 次原始失敗 → ${S.g3.signatures} 個精確簽章<small>${SIG} · 依正規化後的分類欄位歸類</small>`,
+    orig: `state-original.case.json · ${M.original.length} 個操作 · ${M.bytes[0]} 位元組`,
+    target: `目標簽章 · ${SIG}`,
+    minim: `最小化 · ${M.attempts} 次嘗試（上限 ${M.max_attempts}）<small>只有簽章完全不變的修改才會保留</small>`,
+    minDone: `${M.original.length} → ${M.minimized.length} 個操作 · ${M.bytes[0]} → ${M.bytes[1]} 位元組`,
+    clean: '乾淨的模擬狀態<small>每次重播都從同一個基準開始</small>',
+    replay: `${S.replay.length} 次重播中 ${S.replay.filter(r => r === 'MATCH').length} 次得到相同的精確簽章`,
+    states: '實驗狀態機<small>append-only SQLite journal · 虛擬時間</small>',
+    bundle: `證據包 · ${S.manifest.length} 個檔案<small>每個檔案都列在 SHA-256 清單裡</small>`,
+    verify: '離線驗證：通過<small>比對雜湊，並交叉檢查案例、簽章、重播和來源紀錄</small>',
+    e1: 'E1 · 2×2 策略對照<small>每種 20 次配對試驗 × 256 次執行 · 越高 = 越早找到 · 平的 = 沒找到</small>',
+    row: (a, p, f, t, m) => `${a} · ${p} · <b>${f}/${t}</b>`,
+    adm: {keep: '全部收錄', novelty: '只收新覆蓋'}, par: {uniform: '均勻挑選父案例', energy: '依能量挑選父案例'},
+    titleSub: '確定 · 可重播 · 可獨立驗證', titleNote: `片中的證據全部是模擬結果 · commit ${COMMIT}`},
+  'zh-CN': {sub: '证据重放', go: '播放', goSub: '约 90 秒 · repo 里记录的模拟实验，从头到尾', home: '返回',
+    exec: '执行次数', cov: '覆盖', corp: '语料', fail: '失败',
+    caseir: 'Case IR · 一个案例 = 一串驱动程序请求<small>规范化、有版本的 JSON · 身份 = 内容的 SHA-256</small>',
+    seed: `G3 种子案例 · ${F.seed_case.slice(0, 8)}…<small>实验种子 ${S.g3.seed} · 预算 ${S.g3.budget} 次执行</small>`,
+    lineage: '每个新案例都是从先前的案例变异而来<small>离中心越远 = 变异越多代 · 越亮 = 带来新覆盖</small>',
+    first: `第 ${FIRST} 次执行：首次出现合成失败`,
+    sig: `${NF} 次原始失败 → ${S.g3.signatures} 个精确签名<small>${SIG} · 按规范化后的分类字段归类</small>`,
+    orig: `state-original.case.json · ${M.original.length} 个操作 · ${M.bytes[0]} 字节`,
+    target: `目标签名 · ${SIG}`,
+    minim: `最小化 · ${M.attempts} 次尝试（上限 ${M.max_attempts}）<small>只有签名完全不变的修改才会保留</small>`,
+    minDone: `${M.original.length} → ${M.minimized.length} 个操作 · ${M.bytes[0]} → ${M.bytes[1]} 字节`,
+    clean: '干净的模拟状态<small>每次重放都从同一个基准开始</small>',
+    replay: `${S.replay.length} 次重放中 ${S.replay.filter(r => r === 'MATCH').length} 次得到相同的精确签名`,
+    states: '实验状态机<small>append-only SQLite journal · 虚拟时间</small>',
+    bundle: `证据包 · ${S.manifest.length} 个文件<small>每个文件都列在 SHA-256 清单里</small>`,
+    verify: '离线验证：通过<small>比对哈希，并交叉检查案例、签名、重放和来源记录</small>',
+    e1: 'E1 · 2×2 策略对照<small>每种 20 次配对试验 × 256 次执行 · 越高 = 越早找到 · 平的 = 没找到</small>',
+    row: (a, p, f, t, m) => `${a} · ${p} · <b>${f}/${t}</b>`,
+    adm: {keep: '全部收录', novelty: '只收新覆盖'}, par: {uniform: '均匀挑选父案例', energy: '按能量挑选父案例'},
+    titleSub: '确定 · 可重放 · 可独立验证', titleNote: `片中的证据全部是模拟结果 · commit ${COMMIT}`},
+};
+const C = COPY[L];
+
+/* ---------------- renderer ---------------- */
+const canvas = $('gl');
+const renderer = new THREE.WebGLRenderer({canvas, antialias: true});
+renderer.setClearColor(0x000000, 1);
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(42, 1, .1, 800);
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), .55, .4, .82); composer.addPass(bloom);
+const lens = new ShaderPass({uniforms: {tDiffuse: {value: null}, uTime: {value: 0}, uRes: {value: new THREE.Vector2(1, 1)}, uFade: {value: 1}, uGrain: {value: CLEAN ? 0 : .035}},
+  vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.); }',
+  fragmentShader: `uniform sampler2D tDiffuse; uniform float uTime, uFade, uGrain; uniform vec2 uRes; varying vec2 vUv;
+    float h(vec2 p){ return fract(sin(dot(p, vec2(12.9898,78.233))) * 43758.5453); }
+    void main(){ vec3 c = texture2D(tDiffuse, vUv).rgb; vec2 d = vUv - .5; c *= 1. - dot(d,d) * .6; c += (h(vUv * uRes + fract(uTime) * 57.) - .5) * uGrain; gl_FragColor = vec4(c * uFade, 1.); }`});
+composer.addPass(new OutputPass()); composer.addPass(lens);
+
+const col = (hex, k = 1) => new THREE.Color(hex).multiplyScalar(k);
+const BLUE = '#7cc4ff', AMBER = '#ffb454', RED = '#ff5d6c', GREEN = '#4ade80', GREY = '#5b6472';
+
+/* ---------------- text cards (sprites), ASCII only so they need no CJK font ---------------- */
+function fit(g, s, x, y, max) { while (g.measureText(s).width > max && s.length > 3) s = s.slice(0, -2) + '…'; g.fillText(s, x, y); }
+function cardTex(title, sub = '', {w = 380, accent = BLUE, border = '#ffffff2e', idx = '', color = '#dfe4ea', tall = false} = {}) {
+  const h = sub || tall ? 104 : 70, c = document.createElement('canvas'); c.width = w * 2; c.height = h * 2;
+  const g = c.getContext('2d'); g.scale(2, 2);
+  g.beginPath(); g.roundRect(2, 2, w - 4, h - 4, 14); g.fillStyle = '#0b0f16ee'; g.fill(); g.lineWidth = 2.5; g.strokeStyle = border; g.stroke();
+  g.fillStyle = accent; g.beginPath(); g.roundRect(13, 15, 5, h - 30, 3); g.fill();
+  g.textBaseline = 'middle'; let x = 30; const y1 = sub || tall ? 36 : h / 2;
+  if (idx) { g.font = '500 20px "JetBrains Mono", monospace'; g.fillStyle = '#8a8f99'; g.fillText(idx, x, y1); x += g.measureText(idx).width + 14; }
+  g.font = '600 26px "JetBrains Mono", monospace'; g.fillStyle = color; fit(g, title, x, y1, w - x - 16);
+  if (sub) { g.font = '500 19px "JetBrains Mono", monospace'; g.fillStyle = '#8a8f99'; fit(g, sub, 30, 72, w - 46); }
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
+  return {t, a: w / h};
+}
+function sprite(tex, height, pos) {
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({map: tex.t, transparent: true, depthWrite: false, opacity: 0}));
+  s.scale.set(height * tex.a, height, 1); s.position.copy(pos); s.userData.h = height; scene.add(s); return s;
+}
+const setTex = (s, tex) => { s.material.map = tex.t; s.scale.set(s.userData.h * tex.a, s.userData.h, 1); };
+
+/* ---------------- ground ---------------- */
+{ const g = new THREE.GridHelper(420, 140, 0x9fb4cc, 0x9fb4cc); g.material.transparent = true; g.material.opacity = .045; g.position.set(90, -.6, 0); scene.add(g); }
+
+/* ---------------- 1 · Case IR: the recorded 14-operation trigger as cards ---------------- */
+const opTex = M.original.map((o, i) => cardTex(o.op, o.f, {idx: String(i + 1).padStart(2, '0'), tall: true}));
+const introCards = M.original.map((o, i) => sprite(opTex[i], .8, V((i % 7 - 3) * 3.4, 7.6 - Math.floor(i / 7) * 1.25, 0)));
+
+/* ---------------- 2 · discovery: G3's real mutation lineage, one node per execution ---------------- */
+const R = 15, DMAX = Math.max(...F.nodes.map(n => n[6]));
+const npos = F.nodes.map(n => { const a = n[5] * Math.PI * 2, r = n[6] / DMAX * R; return V(Math.cos(a) * r, n[6] * .12, Math.sin(a) * r); });
+const tExec = e => 9 + (e - 1) / (N - 1) * 17;   // execution e (1-based) appears at this time
+const ncol = F.nodes.map((n, i) => i === 0 ? col('#ffffff', 1.6) : n[4] ? col(RED, 2.4) : n[3] ? col(BLUE, .8 + .25 * n[2]) : col(GREY, .9));
+const nsize = F.nodes.map((n, i) => i === 0 ? .55 : n[4] ? .34 : n[3] ? .17 + .05 * n[2] : .11);
+const nodes = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1, 2), new THREE.MeshBasicMaterial({transparent: true}), N);
+ncol.forEach((c, i) => nodes.setColorAt(i, c)); nodes.instanceColor.needsUpdate = true; nodes.frustumCulled = false; scene.add(nodes);
+const edges = (() => { const p = [], c = [];
+  F.nodes.forEach((n, i) => { if (!n[0]) return; const a = npos[n[0] - 1], b = npos[i], k = ncol[i].clone().multiplyScalar(n[4] ? .5 : .32);
+    p.push(a.x, a.y, a.z, b.x, b.y, b.z); c.push(k.r, k.g, k.b, k.r, k.g, k.b); });
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(p, 3)); g.setAttribute('color', new THREE.Float32BufferAttribute(c, 3));
+  const l = new THREE.LineSegments(g, new THREE.LineBasicMaterial({vertexColors: true, transparent: true, opacity: .9})); l.frustumCulled = false; scene.add(l); return l; })();
+const rings = [5, 10, 15, 20, 25].filter(d => d <= DMAX).map(d => { const pts = []; for (let k = 0; k <= 96; k++) { const a = k / 96 * Math.PI * 2, r = d / DMAX * R; pts.push(V(Math.cos(a) * r, d * .12, Math.sin(a) * r)); }
+  const l = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({color: 0x9fb4cc, transparent: true, opacity: 0})); scene.add(l); return l; });
+const failIdx = F.nodes.map((n, i) => n[4] ? i : -1).filter(i => i >= 0);
+const FAILC = failIdx.reduce((a, i) => a.add(npos[i]), V(0, 0, 0)).multiplyScalar(1 / failIdx.length);
+const FIRSTP = npos[FIRST - 1];
+const pulse = new THREE.Mesh(new THREE.RingGeometry(.9, 1, 64), new THREE.MeshBasicMaterial({color: col(RED, 2), transparent: true, opacity: 0, side: THREE.DoubleSide, depthWrite: false}));
+pulse.rotation.x = -Math.PI / 2; pulse.position.copy(FIRSTP); scene.add(pulse);
+
+/* failures converge on one exact signature */
+const SIGP = V(0, 9, 0);
+const conv = (() => { const pts = []; failIdx.forEach(i => pts.push(npos[i], SIGP));
+  const l = new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({color: col(RED, 1.2), transparent: true, opacity: 0}));
+  scene.add(l); return l; })();
+const sparks = new THREE.Points(new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute(new Float32Array(failIdx.length * 3), 3)),
+  new THREE.PointsMaterial({color: col(RED, 3), size: .38, transparent: true, opacity: 0, depthWrite: false}));
+sparks.frustumCulled = false; scene.add(sparks);
+const crystal = new THREE.Group(); scene.add(crystal);
+{ const geo = new THREE.OctahedronGeometry(1.15, 0);
+  crystal.add(new THREE.Mesh(geo, new THREE.MeshBasicMaterial({color: col(AMBER, 1.25), transparent: true, opacity: .85})));
+  crystal.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo), new THREE.LineBasicMaterial({color: col('#fff4de', 2), transparent: true}))); }
+
+/* ---------------- 3 · minimization of the recorded 14-operation trigger ---------------- */
+const MX = 48, keep = new Set(M.keep);
+const keptTex = M.original.map((o, i) => cardTex(o.op, keep.has(i) ? M.minimized[M.keep.indexOf(i)].f || '' : o.f, {idx: String(i + 1).padStart(2, '0'), accent: GREEN, border: '#4ade80aa', tall: true}));
+const gridPos = i => V(MX + (i % 7 - 3) * 3.4, 5.6 - Math.floor(i / 7) * 1.35, 0);
+const minCards = M.original.map((o, i) => sprite(opTex[i], .8, gridPos(i)));
+const dropped = M.original.map((_, i) => i).filter(i => !keep.has(i));
+const tDrop = i => 34 + dropped.indexOf(i) * .55;
+const CRYST_MIN = V(MX, 9.4, 0);
+
+/* ---------------- 4 · three clean replays ---------------- */
+const LANES = [-4, 0, 4], RX0 = 82, RX1 = 99.2, GATE = 100.4;
+const replayGrp = new THREE.Group(); scene.add(replayGrp);
+const cleanPlane = new THREE.Mesh(new THREE.PlaneGeometry(13, 5), new THREE.MeshBasicMaterial({color: 0xdfe8ff, transparent: true, opacity: 0, side: THREE.DoubleSide, depthWrite: false}));
+cleanPlane.rotation.y = Math.PI / 2; cleanPlane.position.set(RX0 - .8, 2, 0); scene.add(cleanPlane);
+const cleanEdge = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.PlaneGeometry(13, 5)), new THREE.LineBasicMaterial({color: 0xdfe8ff, transparent: true, opacity: 0}));
+cleanEdge.rotation.y = Math.PI / 2; cleanEdge.position.copy(cleanPlane.position); scene.add(cleanEdge);
+const tRun = i => 46.8 + i * 1.7;
+const lanes = LANES.map((z, i) => {
+  const rail = new THREE.Line(new THREE.BufferGeometry().setFromPoints([V(RX0, 2, z), V(GATE, 2, z)]), new THREE.LineBasicMaterial({color: 0x9fb4cc, transparent: true, opacity: 0})); scene.add(rail);
+  const packet = new THREE.Group(); [0, 1, 2].forEach(k => { const b = new THREE.Mesh(new THREE.BoxGeometry(.5, .5, .5), new THREE.MeshBasicMaterial({color: col(k === 2 ? AMBER : GREEN, 1.1), transparent: true, opacity: 0, depthWrite: false})); b.position.x = (k - 1) * .68; packet.add(b); });
+  packet.position.set(RX0, 2, z); scene.add(packet);
+  const gate = new THREE.Mesh(new THREE.TorusGeometry(1.15, .07, 12, 64), new THREE.MeshBasicMaterial({color: col('#3a4252'), transparent: true, opacity: 0})); gate.rotation.y = Math.PI / 2; gate.position.set(GATE, 2, z); scene.add(gate);
+  const tag = sprite(cardTex(S.replay[i] || 'MATCH', SIG, {w: 300, accent: GREEN, border: '#4ade80aa', color: '#bff5d2'}), .8, V(GATE + .2, 3.75, z));
+  return {rail, packet, gate, tag};
+});
+const CRYST_REP = V(GATE + .2, 6.6, 0);
+
+/* ---------------- 5 · state machine and the evidence bundle ---------------- */
+const stPos = i => V(112 + i * 3.1, .9 + i * .28, -6);
+const stTex = S.events.map((e, i) => [cardTex(e.to, `t = ${e.ms} ms`, {w: 330, accent: GREY, color: '#9aa3ad'}), cardTex(e.to, `t = ${e.ms} ms`, {w: 330, accent: i === S.events.length - 1 ? GREEN : BLUE, border: i === S.events.length - 1 ? '#4ade80aa' : '#7cc4ff88'})]);
+const states = S.events.map((e, i) => sprite(stTex[i][0], .72, stPos(i)));
+const stLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints(S.events.map((_, i) => stPos(i))), new THREE.LineBasicMaterial({color: 0x9fb4cc, transparent: true, opacity: 0})); scene.add(stLine);
+const short = n => n.length > 22 ? n.slice(0, 13) + '…' : n;
+const fPos = k => V(113.5 + (k % 7) * 4.25, 5.9 - Math.floor(k / 7) * 1.3, 2);
+const fTex = F.manifest.map(([n, d]) => [cardTex(short(n), `sha256 ${d.slice(0, 12)}…`, {w: 330}), cardTex(short(n), `sha256 ${d.slice(0, 12)}…`, {w: 330, accent: GREEN, border: '#4ade80aa'})]);
+const files = F.manifest.map((_, k) => sprite(fTex[k][0], .8, fPos(k)));
+const SLAB = V(148.5, 4.6, 2);
+const slab = (() => { const w = 470, h = 600, c = document.createElement('canvas'); c.width = w * 2; c.height = h * 2; const g = c.getContext('2d'); g.scale(2, 2);
+  g.beginPath(); g.roundRect(2, 2, w - 4, h - 4, 16); g.fillStyle = '#0b0f16f2'; g.fill(); g.lineWidth = 2.5; g.strokeStyle = '#ffb45488'; g.stroke();
+  g.textBaseline = 'middle'; g.font = '600 26px "JetBrains Mono", monospace'; g.fillStyle = '#ffd9a0'; g.fillText('manifest.sha256', 24, 38);
+  g.font = '500 16.5px "JetBrains Mono", monospace';
+  F.manifest.forEach(([n, d], k) => { const y = 84 + k * 36; g.fillStyle = '#ffb454'; g.fillText(d.slice(0, 10), 24, y); g.fillStyle = '#b8c0ca'; fit(g, n, 146, y, w - 166); });
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; return sprite({t, a: w / h}, 7.4, SLAB); })();
+const slabRow = k => V(SLAB.x - 1.2, SLAB.y + 3.7 - (84 + k * 36) / 600 * 7.4, SLAB.z);
+const hashLines = (() => { const pts = []; F.manifest.forEach((_, k) => { pts.push(fPos(k).clone().add(V(1.4, 0, 0)), slabRow(k)); });
+  const l = new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({color: col(AMBER, 1.1), transparent: true, opacity: 0})); scene.add(l); return l; })();
+const scan = new THREE.Mesh(new THREE.PlaneGeometry(.12, 4.2), new THREE.MeshBasicMaterial({color: col('#9fe8ff', 2.4), transparent: true, opacity: 0, depthWrite: false}));
+scan.position.set(111, 5.25, 2.05); scene.add(scan);
+const verified = sprite(cardTex('VERIFIED', 'SHA-256 + cross-file checks', {w: 380, accent: GREEN, border: '#4ade80cc', color: '#bff5d2'}), .95, V(SLAB.x, SLAB.y + 4.6, SLAB.z));
+
+/* ---------------- 6 · E1: 4 strategies × 20 paired trials ---------------- */
+const E1X = 160, strat = [...S.e1.strategies].sort((a, b) => b.rate - a.rate);
+const pillars = new THREE.InstancedMesh(new THREE.BoxGeometry(.62, 1, .62).translate(0, .5, 0), new THREE.MeshBasicMaterial({transparent: true}), strat.length * 20);
+const pInfo = [];
+strat.forEach((s, i) => (F.e1_trials[s.id] || []).forEach((f, j) => { const k = pInfo.length;
+  pInfo.push({i, j, h: f == null ? .08 : .4 + 3.8 * (S.e1.budget - f) / S.e1.budget, p: V(E1X + j * .95, 0, -4.8 + i * 3.2)});
+  pillars.setColorAt(k, f == null ? col('#39414f') : i === 0 ? col(AMBER, 1.25) : col(BLUE, .85)); }));
+pillars.instanceColor.needsUpdate = true; pillars.frustumCulled = false; scene.add(pillars);
+
+/* ---------------- labels anchored in 3-D ---------------- */
+const LABELS = [];
+function label(html, t0, t1, anchor, cls = '') { const el = document.createElement('div'); el.className = `lab ${cls}`; el.innerHTML = html; $('labels').append(el); LABELS.push({el, t0, t1, anchor}); }
+label(C.caseir, 1.6, 7.6, () => V(-11.9, 8.9, 0));
+label(C.seed, 9.4, 13.4, () => npos[0].clone().add(V(.8, .6, 0)));
+label(C.lineage, 13.8, 20.4, () => V(-R, 1.6, 0));
+label(C.first, 22.9, 26.2, () => FIRSTP.clone().add(V(.5, .5, 0)), 'red');
+label(C.sig, 27.8, 31.6, () => crystal.position.clone().add(V(1.4, 1, 0)), 'amber');
+label(C.orig, 31.6, 37.4, () => V(MX - 11.9, 6.9, 0));
+label(C.target, 33.6, 43.4, () => crystal.position.clone().add(V(1.4, .8, 0)), 'amber');
+label(C.minim, 35.8, 41.2, () => V(MX - 11.9, 2.9, 0));
+label(C.minDone, 41.6, 45, () => V(MX - 5.2, 3.5, 0), 'ok');
+label(C.clean, 45.8, 50.6, () => V(RX0 - .8, 4.9, -6.5));
+label(C.replay, 52.6, 57, () => V(GATE - 6, 6.2, -4), 'ok');
+label(C.states, 57.8, 62.6, () => stPos(0).add(V(-1, 1.4, 0)));
+label(C.bundle, 62.6, 66.4, () => fPos(0).add(V(-1.2, 1.2, 0)));
+label(C.verify, 67.6, 71, () => V(SLAB.x - 3.4, SLAB.y + 5.7, SLAB.z), 'ok');
+label(C.e1, 71, 80.4, () => V(E1X - 1, 7.4, -4));
+strat.forEach((s, i) => { const t = F.e1_trials[s.id] || [], found = t.filter(v => v != null).sort((a, b) => a - b), med = found.length ? (found.length % 2 ? found[(found.length - 1) / 2] : (found[found.length / 2 - 1] + found[found.length / 2]) / 2) : '–';
+  label(C.row(C.adm[s.id.startsWith('NOVELTY') ? 'novelty' : 'keep'], C.par[s.id.includes('ENERGY') ? 'energy' : 'uniform'], found.length, t.length, med), 72 + i * .8, 80.4, () => V(E1X - 1, .2, -4.8 + i * 3.2), i === 0 ? 'amber end' : 'end'); });
+
+/* ---------------- one continuous camera path ---------------- */
+const KEYS = [
+  [0, V(0, 8.2, 22), V(0, 6.8, 0)], [6, V(.6, 9.4, 21), V(0, 5.8, 0)], [9.5, V(0, 30, 22), V(0, 0, 0)], [14, V(-24, 20, 12), V(0, 0, 0)],
+  [19, V(-12, 18, -22), V(0, 0, 0)], [23.5, FAILC.clone().add(V(7, 8, 11)), FAILC.clone()], [26.8, V(6, 21, 22), V(0, 5, 0)], [29.6, V(5, 13, 13), SIGP.clone()],
+  [32.8, V(MX - 1.5, 11, 23), V(MX, 5.8, 0)], [37.5, V(MX + .5, 9, 21), V(MX, 5, 0)], [42, V(MX + .8, 8.4, 17), V(MX, 5.2, 0)],
+  [45.8, V(RX0 - 3, 12, 20), V(RX0 + 7, 2.4, 0)], [50.5, V(RX0 + 9, 9, 17), V(RX0 + 12, 2.4, 0)], [55.2, V(GATE - 9, 8.6, 15), V(GATE - 1.5, 3, 0)],
+  [58.8, V(126, 9, 25), V(126, 3, -3)], [63.2, V(130, 7.6, 25), V(130, 4, 0)], [67.8, V(137, 7.4, 23), V(138, 4.4, 1)],
+  [71.2, V(E1X + 7, 17, 26), V(E1X + 9, 1.2, 0)], [76, V(E1X + 15, 14, 24), V(E1X + 9, 1.2, 0)], [80.2, V(E1X + 9, 16, 27), V(E1X + 9, 1.2, 0)],
+  [86, V(90, 58, 88), V(90, 0, -6)], [92, V(90, 61, 92), V(90, 0, -6)]];
+const posCurve = new THREE.CatmullRomCurve3(KEYS.map(k => k[1]), false, 'centripetal'), tgtCurve = new THREE.CatmullRomCurve3(KEYS.map(k => k[2]), false, 'centripetal');
+function camAt(t) {
+  let i = 0; while (i < KEYS.length - 2 && KEYS[i + 1][0] <= t) i++;
+  const u = (i + sm(clamp((t - KEYS[i][0]) / (KEYS[i + 1][0] - KEYS[i][0])))) / (KEYS.length - 1);
+  // on narrow screens pull back along the view line so each shot keeps about the width it has on a 16:9 screen
+  const tgt = tgtCurve.getPoint(u), pos = posCurve.getPoint(u), k = clamp(.68 / (Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2) * camera.aspect), 1, 2.4);
+  camera.position.copy(pos.sub(tgt).multiplyScalar(k).add(tgt)); camera.lookAt(tgt);
+}
+const TOTAL = 92;
+
+/* ---------------- the whole story as a function of time ---------------- */
+const m4 = new THREE.Matrix4(), s3 = V(1, 1, 1), q0 = new THREE.Quaternion(), tmp = V(0, 0, 0);
+function update(t) {
+  camAt(t);
+  // 1 · Case IR
+  introCards.forEach((s, i) => { s.material.opacity = ss(t, 1 + i * .1, 1.7 + i * .1) * (1 - ss(t, 7.4 + i * .04, 8.6 + i * .04)); s.position.y = 7.6 - Math.floor(i / 7) * 1.25 - ss(t, 7.4, 8.8) * 2; });
+  // 2 · discovery
+  let shown = 0, cov = 0, corp = 0, fail = 0;
+  F.nodes.forEach((n, i) => { const te = tExec(i + 1), k = pop(seg(t, te, te + .45)), fade = 1 - ss(t, 84, 86) * .5;
+    if (t >= te) { shown++; cov += n[2]; corp += n[3]; fail += n[4]; }
+    s3.setScalar(Math.max(.0001, nsize[i] * k * fade * (n[4] ? 1 + .25 * Math.sin(t * 5 + i) * ss(t, te, te + 1) : 1))); m4.compose(npos[i], q0, s3); nodes.setMatrixAt(i, m4); });
+  nodes.instanceMatrix.needsUpdate = true;
+  edges.geometry.setDrawRange(0, Math.max(0, shown - 1) * 2);
+  rings.forEach((r, i) => { r.material.opacity = ss(t, 9 + i * .3, 11 + i * .3) * .1; });
+  const pr = seg(t, tExec(FIRST), tExec(FIRST) + 1.6); pulse.material.opacity = (1 - pr) * (pr > 0 ? .9 : 0); pulse.scale.setScalar(.4 + pr * 3.2);
+  $('hud').classList.toggle('on', t > 9 && t < 30.6);
+  $('h-exec').textContent = `${shown}/${N}`; $('h-cov').textContent = cov; $('h-corp').textContent = corp; $('h-fail').textContent = fail;
+  // failures converge on one exact signature
+  conv.material.opacity = ss(t, 26.2, 27.2) * (1 - ss(t, 29.6, 30.8)) * .45;
+  const sp = sparks.geometry.attributes.position; failIdx.forEach((ni, k) => { const a = npos[ni], u = ss(t, 26.6 + k * .03, 28.6 + k * .03); tmp.copy(a).lerp(SIGP, u); sp.setXYZ(k, tmp.x, tmp.y, tmp.z); });
+  sp.needsUpdate = true; sparks.material.opacity = ss(t, 26.4, 26.9) * (1 - ss(t, 28.6, 29.6));
+  // the signature crystal travels with the story: discovery → minimization → replay
+  const cA = ss(t, 30, 33), cB = ss(t, 43.6, 46.6);
+  crystal.position.copy(SIGP).lerp(CRYST_MIN, cA).lerp(CRYST_REP, cB);
+  let bump = 0; dropped.forEach(i => { bump += Math.exp(-Math.pow((t - tDrop(i) - .25) * 6, 2)); });
+  crystal.scale.setScalar(Math.max(.0001, pop(seg(t, 27.8, 29)) * (1 - ss(t, 56, 57.6)) * (1 + .22 * bump)));
+  crystal.rotation.y = t * .7; crystal.rotation.x = Math.sin(t * .4) * .3;
+  // 3 · minimization: drop what the signature does not need, keep 3 operations
+  minCards.forEach((s, i) => { const a = ss(t, 31 + i * .08, 31.6 + i * .08);
+    if (keep.has(i)) { const k = M.keep.indexOf(i), mv = ss(t, 40.2, 41.6);
+      s.position.copy(gridPos(i)).lerp(V(MX + (k - 1) * 3.7, 4.7, 0), mv);
+      setTex(s, t > 40.8 ? keptTex[i] : opTex[i]); s.material.opacity = a * (1 - ss(t, 44.6, 45.6)); s.material.color.set(0xffffff); }
+    else { const d = tDrop(i), g = ss(t, d, d + .7), k = 1 - .3 * g; s.position.copy(gridPos(i)); s.position.y -= g * .5; s.position.z -= g * 4;
+      s.scale.set(s.userData.h * opTex[i].a * k, s.userData.h * k, 1); s.material.opacity = a * (1 - g * .93); s.material.color.set(0xffffff).lerp(col('#ff8a8a'), ss(t, d - .15, d + .1) * (1 - ss(t, d + .5, d + .8))); } });
+  // 4 · replays from a clean state
+  cleanPlane.visible = false; cleanEdge.material.opacity = ss(t, 45, 46.2) * (1 - ss(t, 56.5, 57.8)) * .55;
+  lanes.forEach((ln, i) => { const r0 = tRun(i), vis = ss(t, 45 + i * .2, 46 + i * .2) * (1 - ss(t, 56.5, 57.8));
+    ln.rail.material.opacity = vis * .35;
+    const u = ss(t, r0, r0 + 2.2); ln.packet.position.x = lerp(RX0, RX1 - .9, u);
+    ln.packet.children.forEach(b => { b.material.opacity = ss(t, r0 - .5, r0) * (1 - ss(t, r0 + 2.2, r0 + 2.6)) * vis; b.visible = b.material.opacity > .01; });
+    const hit = seg(t, r0 + 2.2, r0 + 2.5); ln.gate.material.opacity = vis; ln.gate.material.color.copy(hit > 0 ? col(GREEN, .75 + .45 * hit) : col('#3a4252', 1.6));
+    ln.gate.scale.setScalar(1 + .25 * Math.exp(-Math.pow((t - r0 - 2.35) * 5, 2)));
+    ln.tag.material.opacity = ss(t, r0 + 2.3, r0 + 2.7) * vis; });
+  // 5 · state machine, then every file hashed into the manifest and verified
+  states.forEach((s, i) => { const on = t > 57.8 + i * .45; setTex(s, stTex[i][on ? 1 : 0]); s.material.opacity = ss(t, 57, 58) * (on ? 1 : .45) * (1 - ss(t, 84, 86) * .6); });
+  stLine.material.opacity = ss(t, 57, 58) * .25;
+  const scanX = lerp(111, 151, ss(t, 66.2, 68.6));
+  files.forEach((s, k) => { const p = fPos(k); s.material.opacity = ss(t, 61.4 + k * .12, 62 + k * .12) * (1 - ss(t, 84, 86) * .6); setTex(s, fTex[k][scanX > p.x + 1.4 && t < 84 ? 1 : 0]); });
+  slab.material.opacity = ss(t, 62.6, 63.6) * (1 - ss(t, 84, 86) * .6);
+  hashLines.material.opacity = ss(t, 63.6, 64.4) * (1 - ss(t, 68.6, 70)) * .55;
+  hashLines.geometry.setDrawRange(0, Math.round(ss(t, 63.6, 65.6) * F.manifest.length) * 2);
+  scan.position.x = scanX; scan.material.opacity = ss(t, 66, 66.3) * (1 - ss(t, 68.4, 68.8));
+  verified.material.opacity = ss(t, 68.6, 69.2) * (1 - ss(t, 84, 86) * .6);
+  // 6 · E1 pillars rise row by row
+  pInfo.forEach(({i, j, h, p}, k) => { const g = pop(seg(t, 71.6 + i * .8 + j * .03, 72.6 + i * .8 + j * .03)); s3.set(1, Math.max(.0001, h * g), 1); m4.compose(p, q0, s3); pillars.setMatrixAt(k, m4); });
+  pillars.instanceMatrix.needsUpdate = true;
+  // finale
+  $('title').classList.toggle('on', t > 85.4);
+  lens.uniforms.uFade.value = ss(t, 0, 1) * (1 - ss(t, 85, 87.5) * .5);
+  // labels follow their 3-D anchors
+  const w = innerWidth, h = innerHeight;
+  LABELS.forEach(l => { const on = t >= l.t0 && t <= l.t1; l.el.classList.toggle('on', on); if (!on) return;
+    const p = l.anchor().project(camera); if (p.z > 1) { l.el.classList.remove('on'); return; }
+    const lw = l.el.offsetWidth, x = (p.x * .5 + .5) * w - (l.el.classList.contains('end') ? lw : 0); l.el.style.left = `${clamp(x, 10, w - lw - 10)}px`; l.el.style.top = `${clamp((-p.y * .5 + .5) * h, 110, h - 60)}px`; });
+}
+
+/* ---------------- playback (same controls and dock protocol as the other films) ---------------- */
+let time = clamp(Number(q.get('t')) || 0, 0, TOTAL), playing = false, last = 0, idleT;
+const fmt = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+const post = type => { if (EMBED) parent.postMessage({source: 'propaganda-film', type}, '*'); };
+function paint() { $('fill').style.width = `${time / TOTAL * 100}%`; $('time').textContent = `${fmt(time)} / ${fmt(TOTAL)}`;
+  $('play').innerHTML = playing ? '<svg viewBox="0 0 24 24"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>' : '<svg viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z"/></svg>'; }
+function loop(ts) {
+  const dt = last ? Math.min(.05, (ts - last) / 1000) : 0; last = ts;
+  if (playing) { time += dt; if (time >= TOTAL) { time = TOTAL; playing = false; post('ended'); } }
+  update(time); lens.uniforms.uTime.value = ts / 1000; composer.render(); paint(); requestAnimationFrame(loop);
+}
+function play(on = !playing) { if (on && time >= TOTAL) time = 0; playing = on; last = 0; $('start').classList.add('off'); paint(); post(on ? 'play' : 'pause'); }
+function seek(t) { time = clamp(t, 0, TOTAL); paint(); }
+function resize() {
+  const w = innerWidth, h = innerHeight, pr = Math.min(document.body.classList.contains('mini') ? 1 : 2, devicePixelRatio || 1);
+  renderer.setPixelRatio(pr); renderer.setSize(w, h, false); composer.setPixelRatio(pr); composer.setSize(w, h); bloom.setSize(w * pr / 2, h * pr / 2);
+  lens.uniforms.uRes.value.set(w * pr, h * pr); camera.aspect = w / h; camera.fov = w / h < 1 ? 70 : w / h < 1.4 ? 54 : 42; camera.updateProjectionMatrix();
+}
+document.documentElement.lang = L === 'en' ? 'en' : L === 'zh-CN' ? 'zh-Hans' : 'zh-Hant';
+$('sub').textContent = C.sub; $('go-label').textContent = C.go; $('go-sub').textContent = C.goSub; $('title-sub').textContent = C.titleSub; $('title-note').textContent = C.titleNote;
+$('l-exec').textContent = C.exec; $('l-cov').textContent = C.cov; $('l-corp').textContent = C.corp; $('l-fail').textContent = C.fail;
+$('lang').textContent = {en: 'EN', 'zh-TW': '繁', 'zh-CN': '简'}[L];
+$('back').href = `${L === 'en' ? '/' : L === 'zh-CN' ? '/zh-cn/' : '/zh-tw/'}#projects/kcrashlab`; $('back').title = C.home;
+$('go').addEventListener('click', () => play(true)); $('play').addEventListener('click', () => play());
+$('track').addEventListener('click', e => { const r = e.currentTarget.getBoundingClientRect(); seek((e.clientX - r.left) / r.width * TOTAL); });
+$('lang').addEventListener('click', () => { const p = new URLSearchParams(q); p.set('lang', {en: 'zh-TW', 'zh-TW': 'zh-CN', 'zh-CN': 'en'}[L]); p.set('t', time.toFixed(1)); p.set('autoplay', playing ? '1' : '0'); location.replace(`?${p}`); });
+$('fs').addEventListener('click', () => document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen?.());
+canvas.addEventListener('click', () => { if (document.body.classList.contains('mini')) play(); });
+addEventListener('keydown', e => {
+  if (e.key === ' ') { e.preventDefault(); play(); } else if (e.key === 'ArrowRight') seek(time + 5); else if (e.key === 'ArrowLeft') seek(time - 5);
+  else if (e.key.toLowerCase() === 'f') $('fs').click(); else if (e.key.toLowerCase() === 'r') { seek(0); play(true); }
+  else if (e.key === 'Escape' && EMBED) post('escape');
+});
+addEventListener('pointermove', () => { document.body.classList.remove('idle'); clearTimeout(idleT); idleT = setTimeout(() => playing && document.body.classList.add('idle'), 2400); });
+addEventListener('resize', () => { clearTimeout(resize.t); resize.t = setTimeout(resize, 120); });
+addEventListener('message', e => { const m = e.data; if (!m || m.source !== 'niansia-dock') return; if (m.type === 'mode') { document.body.classList.toggle('mini', !!m.mini); resize(); } if (m.type === 'play') play(true); if (m.type === 'pause') play(false); });
+window.__film = {seek, play, get time() { return time; }, TOTAL, render() { update(time); composer.render(); }};
+if (EMBED) document.body.classList.add('embed');
+if (CLEAN) $('ui').style.display = 'none';
+resize();
+if (q.has('t') || EMBED) { $('start').classList.add('off'); if (q.get('autoplay') === '1' || (EMBED && q.get('autoplay') !== '0')) play(true); }
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
