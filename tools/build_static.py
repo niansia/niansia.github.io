@@ -589,12 +589,11 @@ EXAM_CSS = """
 .cm{display:flex;align-items:center;gap:13px;padding:14px 14px 12px;border-radius:16px;text-decoration:none;color:var(--ink);
   background:color-mix(in srgb,#06c755 9%,var(--paper));border:1.5px solid color-mix(in srgb,#06c755 42%,transparent);transition:transform .3s cubic-bezier(.34,1.56,.64,1),box-shadow .3s,border-color .2s;}
 .cm:hover,.cm:focus-visible{transform:translateY(-3px);border-color:#06c755;box-shadow:0 14px 28px -16px #06c755;}
-.cm-ico{position:relative;flex:none;display:grid;place-items:center;width:44px;height:44px;margin-top:6px;border-radius:14px;background:#06c755;color:#fff;}
-.cm-ico:before,.cm-ico:after{content:'';position:absolute;top:-8px;border-left:8px solid transparent;border-right:8px solid transparent;border-bottom:12px solid #06c755;}
-.cm-ico:before{left:3px;transform:rotate(-16deg);}.cm-ico:after{right:3px;transform:rotate(16deg);}
-.cm-ico svg{width:27px;height:27px;}
-.cm:hover .cm-ico{animation:cm-wiggle .55s ease-in-out;}
-@keyframes cm-wiggle{25%{transform:rotate(-9deg);}60%{transform:rotate(7deg);}}
+.cm-ico{position:relative;flex:none;width:50px;height:50px;border-radius:50%;padding:2px;background:linear-gradient(140deg,#06c755,#7be3a6);box-shadow:0 6px 14px -8px #06c755;}
+.cm-ico img{display:block;width:100%;height:100%;border-radius:50%;border:2px solid var(--paper);object-fit:cover;background:#ecfaf1;}
+.cm-ico svg{position:absolute;right:-3px;bottom:-3px;width:20px;height:20px;border-radius:50%;box-shadow:0 0 0 2px var(--paper);}
+.cm:hover .cm-ico,.cm:focus-visible .cm-ico{animation:cm-hop .6s cubic-bezier(.34,1.56,.64,1);}
+@keyframes cm-hop{30%{transform:translateY(-4px) rotate(-6deg);}65%{transform:translateY(0) rotate(4deg);}}
 .cm-text{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;}
 .cm-text b{font-size:14.5px;line-height:1.45;}.cm-text small{font-size:12.5px;line-height:1.55;color:var(--muted);}
 .cm-side{flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:6px;}
@@ -661,9 +660,9 @@ def load_exams() -> dict:
     return data
 
 
-CAT_BUBBLE = ('<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4.5 4.5h15a2.5 2.5 0 0 1 2.5 2.5v8a2.5 2.5 0 0 1-2.5 2.5H12l-4.5 3.2v-3.2h-3A2.5 2.5 0 0 1 2 15V7a2.5 2.5 0 0 1 2.5-2.5z"/>'
-              '<circle cx="8.5" cy="10.3" r="1.5" fill="#06c755"/><circle cx="15.5" cy="10.3" r="1.5" fill="#06c755"/>'
-              '<path d="M9.9 13.2q1 1.1 2.1 0q1 1.1 2.1 0" fill="none" stroke="#06c755" stroke-width="1.5" stroke-linecap="round"/></svg>')
+LINE_BADGE = ('<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="12" fill="#06c755"/>'
+              '<path fill="#fff" d="M12 5.6c-4 0-7.2 2.5-7.2 5.6 0 2.8 2.6 5.1 6 5.5l-.4 2.1 3-2.1c3.3-.5 5.8-2.8 5.8-5.5 0-3.1-3.2-5.6-7.2-5.6z"/></svg>')
+CM_ICONS = {"smile", "wave"}   # assets/icons/yuki-<icon>.webp, round crops of assets/lab/yuki/heads.webp
 
 
 def community_cards(loc: str) -> str:
@@ -674,7 +673,8 @@ def community_cards(loc: str) -> str:
     for g in data.get("groups", []):
         if not re.fullmatch(r"https://line\.me/ti/g2/[A-Za-z0-9_-]{10,80}", g.get("url", "")):
             continue
-        cards.append(f'<a class="cm" href="{e(g["url"])}" target="_blank" rel="noopener noreferrer"><span class="cm-ico">{CAT_BUBBLE}</span>'
+        icon = g.get("icon") if g.get("icon") in CM_ICONS else "smile"
+        cards.append(f'<a class="cm" href="{e(g["url"])}" target="_blank" rel="noopener noreferrer"><span class="cm-ico"><img src="/assets/icons/yuki-{icon}.webp" alt="" width="56" height="56" loading="lazy">{LINE_BADGE}</span>'
                      f'<span class="cm-text"><b>{e(g["name"])}</b><small>{e(pick(g.get("desc"), loc))}</small></span>'
                      f'<span class="cm-side"><em class="cm-role">{e(role)}</em><span class="cm-go">{e(EXAM_UI[loc]["join"])} ↗</span></span></a>')
     return "".join(cards)
