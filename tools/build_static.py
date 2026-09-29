@@ -34,7 +34,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from content_safety import UnsafeContent, privacy_lint, render_markdown  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
-SITE = "https://niansia.github.io"
+# The public address lives in one place, website.site-url in _quarto.yml; moving to a custom domain means changing only that line.
+SITE = re.search(r'^\s*site-url:\s*"?([^"\s]+)"?', (ROOT / "_quarto.yml").read_text(encoding="utf-8"), re.M).group(1).rstrip("/")
+HOST = SITE.split("://", 1)[1]                                   # shown as text: footers, share images
 LANGS = {"en": "en", "zh-tw": "zh-TW", "zh-cn": "zh-CN"}          # url segment -> locale
 HTML_LANG = {"en": "en", "zh-TW": "zh-Hant", "zh-CN": "zh-Hans"}
 HOME = {"en": "/", "zh-TW": "/zh-tw/", "zh-CN": "/zh-cn/"}
@@ -215,7 +217,7 @@ def shell(*, loc: str, title: str, desc: str, url: str, og: str, alternates: dic
 <body>
 <header class="top"><a href="{HOME[loc]}"><b>~/niansia</b></a>{crumbs}<span class="sp"></span><span class="langs">{langs}</span>{top_extra}</header>
 {body}
-<footer>{e(UI[loc]['contact'])} <a href="mailto:{EMAIL}">{EMAIL}</a> · <a href="{HOME[loc]}">niansia.github.io</a> · <a href="https://github.com/niansia">github.com/niansia</a><span class="stats" data-stats hidden> · <i class="live-dot"></i> <b data-stat="online">–</b> {e(UI[loc]['online'])} · <b data-stat="total">–</b> {e(UI[loc]['visits'])}</span></footer>
+<footer>{e(UI[loc]['contact'])} <a href="mailto:{EMAIL}">{EMAIL}</a> · <a href="{HOME[loc]}">{HOST}</a> · <a href="https://github.com/niansia">github.com/niansia</a><span class="stats" data-stats hidden> · <i class="live-dot"></i> <b data-stat="online">–</b> {e(UI[loc]['online'])} · <b data-stat="total">–</b> {e(UI[loc]['visits'])}</span></footer>
 </body>
 </html>
 """
@@ -262,7 +264,7 @@ def build_notes(notes: dict) -> list[str]:
                                                            body=idx, jsonld=ld, crumbs=' / notes', og_type="website"), encoding="utf-8")
         urls.append(f"/notes/{seg}/")
     (ROOT / "notes" / "index.html").write_text(
-        '<!doctype html><html><head><meta charset="utf-8"><title>Research notes · Niansia</title><link rel="canonical" href="https://niansia.github.io/notes/en/">'
+        '<!doctype html><html><head><meta charset="utf-8"><title>Research notes · Niansia</title><link rel="canonical" href="' + SITE + '/notes/en/">'
         '<meta name="robots" content="noindex,follow"><script>var l=(navigator.language||"").toLowerCase();'
         'location.replace("/notes/"+(/^zh-(cn|sg)/.test(l)?"zh-cn":/^zh/.test(l)?"zh-tw":"en")+"/");</script></head>'
         '<body><a href="/notes/en/">English</a> · <a href="/notes/zh-tw/">繁體中文</a> · <a href="/notes/zh-cn/">简体中文</a></body></html>', encoding="utf-8")
@@ -518,7 +520,7 @@ def build_blog(posts: dict, cfg: dict) -> tuple[list[str], dict]:
             f'<?xml version="1.0" encoding="UTF-8"?>\n<rss version="2.0"><channel><title>Niansia · {e(U["blog"])}</title><link>{SITE}/blog/{seg}/</link>'
             f'<description>{e(U["lede"])}</description><language>{HTML_LANG[loc]}</language>{items}</channel></rss>\n', encoding="utf-8")
     (ROOT / "blog" / "index.html").write_text(
-        '<!doctype html><html><head><meta charset="utf-8"><title>Blog · Niansia</title><link rel="canonical" href="https://niansia.github.io/blog/en/">'
+        '<!doctype html><html><head><meta charset="utf-8"><title>Blog · Niansia</title><link rel="canonical" href="' + SITE + '/blog/en/">'
         '<meta name="robots" content="noindex,follow"><script>var l=(navigator.language||"").toLowerCase();'
         'location.replace("/blog/"+(/^zh-(cn|sg)/.test(l)?"zh-cn":/^zh/.test(l)?"zh-tw":"en")+"/");</script></head>'
         '<body><a href="/blog/en/">English</a> · <a href="/blog/zh-tw/">繁體中文</a> · <a href="/blog/zh-cn/">简体中文</a></body></html>', encoding="utf-8")
@@ -732,7 +734,7 @@ def build_brief(projects: dict, notes: dict, copy: dict, cv: dict, subs: dict, p
         body = f"""<main class="brief">
 <section class="b-hero"><div><p class="kicker">~/niansia/brief · {e(U["updated"])} {today}</p><h1>Niansia</h1>
 <p class="b-role">{e(C["role"])} · {e(C["leave"])}</p><p class="b-sub">{e(C["interests"])}</p>
-<p class="b-contact"><a href="mailto:{EMAIL}">{svg("mail")}{EMAIL}</a><a href="https://github.com/niansia">{svg("github")}github.com/niansia</a><a href="{HOME[loc]}">{svg("globe")}niansia.github.io</a></p></div>
+<p class="b-contact"><a href="mailto:{EMAIL}">{svg("mail")}{EMAIL}</a><a href="https://github.com/niansia">{svg("github")}github.com/niansia</a><a href="{HOME[loc]}">{svg("globe")}{HOST}</a></p></div>
 <div class="b-stats">{"".join(f"<div><b>{n}</b><span>{e(label)}</span></div>" for n, label in stats)}</div></section>
 <h2>{e(U["glance"])}</h2><ul class="b-glance">{"".join(f"<li>{e(x)}</li>" for x in glance)}</ul>
 <h2>{e(U["interests"])}</h2><div class="b-two">{"".join(f'<div class="b-q"><b>{e(a)}</b><p>{e(b)}</p></div>' for a, b in interests)}</div>
@@ -972,25 +974,25 @@ def og_page(kind: str, **k) -> str:
     if kind == "project":
         img = (f'<div class="img{" cover" if k.get("cover") else ""}" style="background-image:url({k["img"]})"></div>' if k.get("img")
                else f'<div class="pat">{e(k["title"].split(" - ")[0][:4])}</div>')
-        body = (f'<div class="k"><b>niansia.github.io</b> / projects</div><div class="t{" small" if len(k["title"]) > 14 else ""}">{e(k["title"])}</div>'
+        body = (f'<div class="k"><b>{HOST}</b> / projects</div><div class="t{" small" if len(k["title"]) > 14 else ""}">{e(k["title"])}</div>'
                 f'<div class="c" style="top:{250 if len(k["title"]) <= 14 else 270}px">' + "".join(f"<span>{e(x)}</span>" for x in k["chips"]) + "</div>"
                 f'<div class="d" style="top:{320 if len(k["title"]) <= 14 else 340}px">{e(k["desc"])}</div>{img}'
                 f'<div class="f"><b>Niansia</b> · AI security × CV × VLM</div>')
     elif kind == "note":
-        body = (f'<div class="k"><b>niansia.github.io</b> / {e(k.get("path", "notes"))}</div><div class="t small" style="width:1060px;font-size:54px">{e(k["title"])}</div>'
+        body = (f'<div class="k"><b>{HOST}</b> / {e(k.get("path", "notes"))}</div><div class="t small" style="width:1060px;font-size:54px">{e(k["title"])}</div>'
                 f'<div class="d" style="top:330px;width:1000px;-webkit-line-clamp:3">{e(k["desc"])}</div>'
                 f'<div class="f"><b>Niansia</b> · {e(k["label"])} · {e(k["date"])}</div>')
     elif kind == "home":
         body = (f'<div class="halo"></div><img class="yuki" src="{k["yuki"]}"><div class="k"><b>~/niansia</b> $ whoami</div>'
                 f'<div class="t" style="font-size:104px;top:110px">Niansia</div><div class="d" style="top:250px;font-weight:700;color:#2a2230;font-size:26px">{e(k["role"])}</div>'
                 f'<div class="c" style="top:310px">' + "".join(f"<span>{e(x)}</span>" for x in k["chips"]) + "</div>"
-                f'<div class="d" style="top:392px;width:560px">{e(k["desc"])}</div><div class="f"><b>niansia.github.io</b></div>')
+                f'<div class="d" style="top:392px;width:560px">{e(k["desc"])}</div><div class="f"><b>{HOST}</b></div>')
     else:  # film / demo: full-bleed image with a caption strip
         body = (f'<div style="position:absolute;inset:0;background:#000 url({k["img"]}) center/cover"></div>'
                 f'<div style="position:absolute;left:0;right:0;bottom:0;height:230px;background:linear-gradient(transparent,#000d)"></div>'
                 + ('<div class="play"></div>' if kind == "film" else "") +
                 f'<div class="t small" style="top:auto;bottom:92px;width:1080px;color:#fff">{e(k["title"])}</div>'
-                f'<div class="f" style="color:#ddd;bottom:48px"><b style="color:#fff">niansia.github.io</b> · {e(k["sub"])}</div>')
+                f'<div class="f" style="color:#ddd;bottom:48px"><b style="color:#fff">{HOST}</b> · {e(k["sub"])}</div>')
     return f'<!doctype html><html><head><meta charset="utf-8">{fonts}<style>{OG_CSS}</style></head><body>{body}</body></html>'
 
 
@@ -1024,8 +1026,8 @@ def og_jobs(projects: dict, notes: dict, pubs: dict | None = None) -> list[tuple
         for slug, by in notes.items():
             n = by[loc]
             jobs.append((f"note-{slug}-{seg}", og_page("note", title=n["title"], desc=n["description"], date=n["date"], label=UI[loc]["notes"])))
-        jobs.append((f"notes-{seg}", og_page("note", title=UI[loc]["notes"], desc=UI[loc]["notes_lede"], date=str(date.today()), label="niansia.github.io")))
-        jobs.append((f"log-{seg}", og_page("note", title=UI[loc]["log"], desc=UI[loc]["log_lede"], date=str(date.today()), label="niansia.github.io")))
+        jobs.append((f"notes-{seg}", og_page("note", title=UI[loc]["notes"], desc=UI[loc]["notes_lede"], date=str(date.today()), label=HOST)))
+        jobs.append((f"log-{seg}", og_page("note", title=UI[loc]["log"], desc=UI[loc]["log_lede"], date=str(date.today()), label=HOST)))
         st = parse_note(ROOT / "statement_src" / ("statement.en.md" if loc == "en" else "statement.zh-TW.md"))
         jobs.append((f"statement-{seg}", og_page("note", title=s_fix(st["title"]) if loc == "zh-CN" else st["title"],
                                                   desc=s_fix(st["description"]) if loc == "zh-CN" else st["description"], date=st["date"], label=UI[loc]["statement"])))
@@ -1035,7 +1037,7 @@ def og_jobs(projects: dict, notes: dict, pubs: dict | None = None) -> list[tuple
     for seg, (role, chips, desc) in roles.items():
         jobs.append((f"site-{seg}", og_page("home", role=role, chips=chips, desc=desc, yuki=uri("/assets/og/yuki-researcher.png"))))
     for seg, loc in LANGS.items():
-        jobs.append((f"brief-{seg}", og_page("note", title=f'Niansia · {BRIEF_UI[loc]["title"]}', desc=BRIEF_UI[loc]["desc"], date=str(date.today()), label="niansia.github.io/brief")))
+        jobs.append((f"brief-{seg}", og_page("note", title=f'Niansia · {BRIEF_UI[loc]["title"]}', desc=BRIEF_UI[loc]["desc"], date=str(date.today()), label=f"{HOST}/brief")))
     for p in (pubs or {}).get("papers", []):
         if p.get("page"):
             hidden = is_hidden(p)
@@ -1046,7 +1048,7 @@ def og_jobs(projects: dict, notes: dict, pubs: dict | None = None) -> list[tuple
                                                   img=uri(teaser) if teaser and not hidden else None, cover=True)))
     blog_posts, _ = load_blog()
     for seg, loc in LANGS.items():
-        jobs.append((f"blog-{seg}", og_page("note", title=f'Niansia · {BLOG_UI[loc]["blog"]}', desc=BLOG_UI[loc]["lede"], date=str(date.today()), label="niansia.github.io/blog", path="blog")))
+        jobs.append((f"blog-{seg}", og_page("note", title=f'Niansia · {BLOG_UI[loc]["blog"]}', desc=BLOG_UI[loc]["lede"], date=str(date.today()), label=f"{HOST}/blog", path="blog")))
         for slug, by in blog_posts.items():
             n = by.get(loc)
             if n and n["type"] != "qa":
@@ -1056,6 +1058,22 @@ def og_jobs(projects: dict, notes: dict, pubs: dict | None = None) -> list[tuple
     jobs.append(("film-taiwan-exam", og_page("film", img=uri("/assets/taiwan-exam/teaser-poster.jpg"), title="Taiwan Exam · the film", sub="an Agent Skill for GSAT practice exams")))
     jobs.append(("film-capstone", og_page("film", img=uri("/assets/film/teaser-poster.jpg"), title="Detecting propaganda with generative AI", sub="undergraduate capstone film")))
     return jobs
+
+
+def write_site_jsonld():
+    """includes/site-jsonld.html: schema.org Person + WebSite for every Quarto page, built from SITE."""
+    me = f"{SITE}/#me"
+    data = {"@context": "https://schema.org", "@graph": [
+        {"@type": "Person", "@id": me, "name": "Niansia", "url": f"{SITE}/", "email": f"mailto:{EMAIL}",
+         "image": f"{SITE}/assets/og/yuki-researcher.png", "jobTitle": "M.S. student in Computer Science",
+         "affiliation": {"@type": "CollegeOrUniversity", "name": "National Yang Ming Chiao Tung University"},
+         "alumniOf": {"@type": "CollegeOrUniversity", "name": "Yuan Ze University"},
+         "knowsAbout": ["AI security", "Computer vision", "Vision-language models", "Low-light image enhancement", "Trustworthy evaluation"],
+         "sameAs": ["https://github.com/niansia"]},
+        {"@type": "WebSite", "@id": f"{SITE}/#site", "url": f"{SITE}/", "name": "Niansia", "inLanguage": ["en", "zh-Hant", "zh-Hans"],
+         "publisher": {"@id": me}}]}
+    (ROOT / "includes" / "site-jsonld.html").write_text(
+        f'<script type="application/ld+json">{json.dumps(data, ensure_ascii=False, separators=(",", ":"))}</script>\n', encoding="utf-8")
 
 
 # ------------------------------------------------------------------------------------------------ sitemap / robots
@@ -1090,6 +1108,7 @@ if __name__ == "__main__":
     except UnsafeContent as err:
         sys.exit(f"REFUSED TO BUILD: {err}")
     write_sitemap(urls)
+    write_site_jsonld()
     if "--no-og" not in sys.argv:
         jobs = og_jobs(projects, notes, pubs)
         if "--og-missing" in sys.argv:

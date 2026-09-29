@@ -1025,7 +1025,7 @@
       case 'bib-all':{const blob=new Blob([bibtexAll()],{type:'application/x-bibtex'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='niansia.bib';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),4000);break;}
       case 'palette':window.NIANSIA_PALETTE?.open();break;
       case 'copy':try{await navigator.clipboard.writeText('niansia930202@gmail.com');toast(t().copied);}catch{toast(t().copyFail);}break;
-      case 'share':{const url=`https://niansia.github.io${target.dataset.share}`;try{if(navigator.share&&matchMedia('(pointer:coarse)').matches){await navigator.share({url});}else{await navigator.clipboard.writeText(url);toast(noteCopy().shared);}}catch(e){if(e?.name!=='AbortError')toast(url);}break;}
+      case 'share':{const url=`${location.origin}${target.dataset.share}`;try{if(navigator.share&&matchMedia('(pointer:coarse)').matches){await navigator.share({url});}else{await navigator.clipboard.writeText(url);toast(noteCopy().shared);}}catch(e){if(e?.name!=='AbortError')toast(url);}break;}
     }
   });
   root.addEventListener('pointerover',event=>{const pick=event.target.closest('.style-popover [data-theme-pick]');if(pick&&event.pointerType!=='touch')previewTheme(pick.dataset.themePick);});
