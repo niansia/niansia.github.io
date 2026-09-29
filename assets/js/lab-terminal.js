@@ -488,6 +488,189 @@
     const go=()=>{ paintLumigrid(); if(motion()){ const cmp=box.querySelector('.lg-compare'), t0=performance.now(); const step=now=>{ const k=Math.min(1,(now-t0)/1800), x=100-85*(1-Math.pow(1-k,3)); if(!cmp.isConnected)return; if(!cmp.dataset.touched){cmp.style.setProperty('--x',`${Math.max(50,x)}%`); box.querySelector('.lg-range').value=Math.max(50,x);} if(k<1)requestAnimationFrame(step); }; requestAnimationFrame(step);} };
     if(lgData)go(); else fetch('/assets/lumigrid/showcase.json?v=2').then(r=>r.json()).then(d=>{lgData=d;go();}).catch(()=>{});
   }
+  /* KCrashLab: its architecture and a replay of the evidence recorded in its repository. The numbers come from
+     assets/kcrashlab/showcase.json, which tools/kcrash_showcase.py builds only after every source file matched the bundle manifests. */
+  const kcCopy=()=>({
+    en:{note:'Every number and animation below comes from the simulated experiments recorded in the KCrashLab repository: a synthetic state machine, not a real system crash, and no third-party driver is involved.',
+      archTitle:'Architecture: from an input to evidence anyone can check',
+      arch:[['Case IR','Each input becomes versioned JSON whose identity is the SHA-256 of its canonical content, so two differently formatted copies of one input count once.'],
+        ['Deterministic simulation','Scheduling, mutation and selection all derive from a seed: the same seed always gives the same run, and an interrupted run resumes from an append-only journal.'],
+        ['Finding closure','A failure is identified by its exact signature, the trigger is shrunk only while that signature holds, and clean replays vote on the result.'],
+        ['Evidence closure','A SHA-256 manifest plus provenance; the verifier also cross-checks that summaries, cases and reports agree, not just that hashes match.']],
+      gate:['Track B · controlled Windows lab','A separate path that must be opened by hand, limited to the repository’s own test driver in an isolated VM. Ordinary commands never select it, and no real-machine result exists yet.'],
+      replayTitle:'Replay an experiment',replayLede:'Press play to follow one experiment: finding a failure, shrinking its trigger, confirming it by replay, and producing evidence another person can verify.',
+      tabs:['Discover','Minimize','Replay','Evidence'],play:'Play',replaying:'Playing…',again:'Play again',
+      g3:{exec:'executions',cov:'coverage',corpus:'corpus',fail:'failures',aria:'Coverage and corpus growing over 256 executions, with failures marked from execution 211',
+        legendCov:'Cumulative coverage',legendCorpus:'Corpus size',legendFail:'Failure',first:'First failure at execution {n}',done:'{raw} raw failures → {sig} exact signature',
+        cap:'Discovery run G3: seed {seed}, a budget of {budget} executions; duplicate candidates were skipped {skips} times.'},
+      min:{ops:'operations',bytes:'bytes',tries:'attempts',sig:'signature',same:'unchanged',done:'Down to {n} operations; the signature is the same',
+        cap:'The animation only shows before and after. The minimizer took {n} attempts (limit {max}) and kept a change only when the signature stayed the same.'},
+      rp:{input:'Replayed input: the minimized case',item:'Replay #{n}',clean:'From a clean state',pass:'{m} of {n} replays gave the same signature, meeting the replay policy ({n}/{n} required).'},
+      ev:{states:'Campaign state machine',files:'Evidence bundle ({n} files)',verify:'Offline verification passed',verifyS:'Each file’s SHA-256 is checked, and the cases, signature, replays and provenance are cross-checked against one another.'},
+      e1Title:'Experiment E1: which strategy finds the failure more often?',
+      e1:{keep:'Keep every case',novelty:'Keep only new coverage',uniform:'Uniform parent pick',energy:'Energy-ranked parent pick',stat:'found {f}/{t} · median when found: execution {m}'},
+      e1Note:'A 2×2 comparison of corpus admission and parent selection, {t} paired trials of {b} executions each. It is a controlled experiment on a synthetic target: it compares strategies under the same conditions and says nothing about real drivers.',
+      src:'Data: results/recorded · commit {c} · engine {e}'},
+    'zh-TW':{note:'以下的數字和動畫，全部來自 KCrashLab repo 裡記錄的模擬實驗：對象是合成的狀態機，不是真實的系統當機，也不涉及任何第三方驅動程式。',
+      archTitle:'架構：從一個輸入到任何人都能驗證的證據',
+      arch:[['Case IR','把每個輸入正規化成有版本的 JSON，用內容的 SHA-256 當身分；格式不同、內容相同的輸入只算一次。'],
+        ['確定性模擬','排程、變異和挑選全部由種子決定，同一個種子一定跑出一樣的結果；中斷後可以從 append-only journal 接著跑。'],
+        ['發現閉環','用精確簽章辨識失敗，只在簽章不變的前提下縮小觸發條件，再從乾淨狀態重播投票確認。'],
+        ['證據閉環','產生 SHA-256 清單和來源紀錄；驗證器不只比對雜湊，還交叉檢查摘要、案例和報表是否一致。']],
+      gate:['Track B · 受控 Windows 實驗室','另一條要手動開啟的路徑，只能對 repo 自己的測試驅動、在隔離的虛擬機裡執行。一般指令永遠不會選到它，目前也還沒有實機結果。'],
+      replayTitle:'實驗重播',replayLede:'按播放，一步步看一次實驗怎麼找到失敗、縮小觸發條件、重播確認，最後產生別人也能驗證的證據。',
+      tabs:['探索','最小化','重播','證據'],play:'播放',replaying:'播放中…',again:'再播一次',
+      g3:{exec:'執行次數',cov:'覆蓋',corpus:'語料',fail:'失敗',aria:'256 次執行中覆蓋與語料的成長，第 211 次起標出失敗',
+        legendCov:'累積覆蓋',legendCorpus:'語料庫大小',legendFail:'失敗',first:'第 {n} 次執行首次出現失敗',done:'{raw} 次原始失敗 → {sig} 個精確簽章',
+        cap:'探索實驗 G3：種子 {seed}、預算 {budget} 次執行；重複的候選跳過了 {skips} 次。'},
+      min:{ops:'操作',bytes:'位元組',tries:'嘗試',sig:'簽章',same:'不變',done:'縮到只剩 {n} 個操作，簽章完全一樣',
+        cap:'動畫只呈現前後差異。最小化實際經過 {n} 次嘗試（上限 {max}），只有簽章沒變的修改才會保留。'},
+      rp:{input:'重播的輸入：最小化後的案例',item:'重播 #{n}',clean:'從乾淨狀態開始',pass:'{n} 次重播中 {m} 次得到相同簽章，符合重播政策（需要 {n}/{n}）。'},
+      ev:{states:'實驗狀態機',files:'證據包（{n} 個檔案）',verify:'離線驗證：通過',verifyS:'比對每個檔案的 SHA-256，並交叉檢查案例、簽章、重播和來源紀錄是否互相一致。'},
+      e1Title:'對照實驗 E1：哪種策略比較容易找到失敗？',
+      e1:{keep:'全部收錄',novelty:'只收新覆蓋',uniform:'均勻挑選父案例',energy:'依能量挑選父案例',stat:'{t} 次中找到 {f} 次 · 找到時中位數第 {m} 次'},
+      e1Note:'2×2 對照：語料收錄方式 × 父案例挑選方式，每種 {t} 次配對試驗、每次 {b} 次執行。這是合成目標上的受控實驗，只比較同樣條件下的策略差異，不代表在真實驅動程式上的表現。',
+      src:'資料：results/recorded · commit {c} · engine {e}'},
+    'zh-CN':{note:'以下的数字和动画，全部来自 KCrashLab repo 里记录的模拟实验：对象是合成的状态机，不是真实的系统崩溃，也不涉及任何第三方驱动程序。',
+      archTitle:'架构：从一个输入到任何人都能验证的证据',
+      arch:[['Case IR','把每个输入规范化成有版本的 JSON，用内容的 SHA-256 当身份；格式不同、内容相同的输入只算一次。'],
+        ['确定性模拟','调度、变异和挑选全部由种子决定，同一个种子一定跑出一样的结果；中断后可以从 append-only journal 接着跑。'],
+        ['发现闭环','用精确签名识别失败，只在签名不变的前提下缩小触发条件，再从干净状态重放投票确认。'],
+        ['证据闭环','生成 SHA-256 清单和来源记录；验证器不只比对哈希，还交叉检查摘要、案例和报表是否一致。']],
+      gate:['Track B · 受控 Windows 实验室','另一条要手动开启的路径，只能对 repo 自己的测试驱动、在隔离的虚拟机里执行。一般命令永远不会选到它，目前也还没有实机结果。'],
+      replayTitle:'实验重放',replayLede:'按播放，一步步看一次实验怎么找到失败、缩小触发条件、重放确认，最后生成别人也能验证的证据。',
+      tabs:['探索','最小化','重放','证据'],play:'播放',replaying:'播放中…',again:'再播一次',
+      g3:{exec:'执行次数',cov:'覆盖',corpus:'语料',fail:'失败',aria:'256 次执行中覆盖与语料的增长，第 211 次起标出失败',
+        legendCov:'累积覆盖',legendCorpus:'语料库大小',legendFail:'失败',first:'第 {n} 次执行首次出现失败',done:'{raw} 次原始失败 → {sig} 个精确签名',
+        cap:'探索实验 G3：种子 {seed}、预算 {budget} 次执行；重复的候选跳过了 {skips} 次。'},
+      min:{ops:'操作',bytes:'字节',tries:'尝试',sig:'签名',same:'不变',done:'缩到只剩 {n} 个操作，签名完全一样',
+        cap:'动画只呈现前后差异。最小化实际经过 {n} 次尝试（上限 {max}），只有签名没变的修改才会保留。'},
+      rp:{input:'重放的输入：最小化后的案例',item:'重放 #{n}',clean:'从干净状态开始',pass:'{n} 次重放中 {m} 次得到相同签名，符合重放策略（需要 {n}/{n}）。'},
+      ev:{states:'实验状态机',files:'证据包（{n} 个文件）',verify:'离线验证：通过',verifyS:'比对每个文件的 SHA-256，并交叉检查案例、签名、重放和来源记录是否互相一致。'},
+      e1Title:'对照实验 E1：哪种策略比较容易找到失败？',
+      e1:{keep:'全部收录',novelty:'只收新覆盖',uniform:'均匀挑选父案例',energy:'按能量挑选父案例',stat:'{t} 次中找到 {f} 次 · 找到时中位数第 {m} 次'},
+      e1Note:'2×2 对照：语料收录方式 × 父案例挑选方式，每种 {t} 次配对试验、每次 {b} 次执行。这是合成目标上的受控实验，只比较同样条件下的策略差异，不代表在真实驱动程序上的表现。',
+      src:'数据：results/recorded · commit {c} · engine {e}'}}[locale]);
+  let kcData=null, kcSeen=false;
+  const kcState={tab:0,run:0};
+  const kcFill=(s,o)=>s.replace(/\{(\w+)\}/g,(m,k)=>o[k]??m);
+  const kcSig=s=>s.slice(0,12)+'…';
+  function kcShowcase() {
+    const c=kcCopy();
+    return `<section class="kc-show"><p class="kc-note"><b translate="no">SIMULATED</b><span>${esc(c.note)}</span></p>
+      <h2>${esc(c.archTitle)}</h2><ol class="kc-arch">${c.arch.map(([t,d],i)=>`<li style="--i:${i}"><span class="kc-n">${i+1}</span><b translate="no">${esc(t)}</b><small>${esc(d)}</small></li>`).join('')}</ol>
+      <div class="kc-gate"><b>${esc(c.gate[0])}</b><small>${esc(c.gate[1])}</small></div>
+      <h2>${esc(c.replayTitle)}</h2><p class="screen-intro kc-lede">${esc(c.replayLede)}</p>
+      <div class="kc-demo"><div class="kc-tabs" role="tablist" aria-label="${esc(c.replayTitle)}">${c.tabs.map((t,i)=>`<button type="button" role="tab" data-kc-tab="${i}" aria-selected="${i===kcState.tab}"><span>${i+1}</span>${esc(t)}</button>`).join('')}</div>
+      <div class="kc-stage" role="tabpanel" aria-live="polite"></div>
+      <div class="kc-ctrl"><button type="button" class="kc-play" data-kc-play>${icon('play')}<span>${esc(c.play)}</span></button><span class="kc-src"></span></div></div>
+      <h2>${esc(c.e1Title)}</h2><div class="kc-e1"></div><p class="comment-line kc-e1-note"></p></section>`;
+  }
+  function kcStage(animate) {
+    const box=$('.kc-show'); if(!box||!kcData) return;
+    const c=kcCopy(), D=kcData, stage=box.querySelector('.kc-stage'), run=++kcState.run, label=box.querySelector('.kc-play span');
+    const alive=()=>run===kcState.run&&stage.isConnected;
+    box.querySelectorAll('[data-kc-tab]').forEach(b=>b.setAttribute('aria-selected',String(Number(b.dataset.kcTab)===kcState.tab)));
+    box.querySelector('.kc-src').textContent=kcFill(c.src,{c:D.source.commit.slice(0,7),e:D.source.engine});
+    const go=animate&&motion();
+    label.textContent=go?c.replaying:c.play;
+    const done=()=>{ if(alive()) label.textContent=go?c.again:c.play; };
+    [kcDiscover,kcMinimize,kcReplay,kcEvidence][kcState.tab](stage,c,D,go,alive,done);
+  }
+  const kcStats=(c,keys)=>`<div class="kc-stats">${keys.map(([k,label])=>`<div><b data-k="${k}">–</b><span>${esc(label)}</span></div>`).join('')}</div>`;
+  const kcSet=(stage,k,v)=>{ const el=stage.querySelector(`[data-k="${k}"]`); if(el) el.textContent=v; };
+  function kcAfter(alive,ms,fn){ setTimeout(()=>{ if(alive()) fn(); },ms); }
+  function kcDiscover(stage,c,D,go,alive,done) {
+    const G=D.g3, N=G.budget, W=600, H=190, P=6, x=t=>P+(W-2*P)*(t-1)/(N-1), y=v=>H-26-(H-40)*v/100;
+    stage.innerHTML=kcStats(c,[['exec',c.g3.exec],['cov',c.g3.cov],['corpus',c.g3.corpus],['fail',c.g3.fail]])
+      +`<svg class="kc-chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(c.g3.aria)}"><path class="kc-grid" d="M${P} ${y(0)}H${W-P}M${P} ${y(50)}H${W-P}M${P} ${y(100)}H${W-P}"/>`
+      +`<polyline class="kc-corp"/><polyline class="kc-cov"/><g class="kc-fails"></g><line class="kc-cur" y1="6" y2="${H-4}"/></svg>`
+      +`<p class="kc-legend"><span><i class="l-cov"></i>${esc(c.g3.legendCov)}</span><span><i class="l-corp"></i>${esc(c.g3.legendCorpus)}</span><span><i class="l-fail"></i>${esc(c.g3.legendFail)}</span></p>`
+      +`<p class="kc-msg"></p><p class="kc-cap">${esc(kcFill(c.g3.cap,{seed:G.seed,budget:N,skips:G.skips}))}</p>`;
+    const svg=stage.querySelector('svg'), msg=stage.querySelector('.kc-msg');
+    const paint=t=>{
+      const pts=a=>a.slice(0,t).map((v,i)=>`${x(i+1).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
+      svg.querySelector('.kc-cov').setAttribute('points',pts(G.cov)); svg.querySelector('.kc-corp').setAttribute('points',pts(G.corpus));
+      const f=G.fails.filter(e=>e<=t);
+      svg.querySelector('.kc-fails').innerHTML=f.map(e=>`<line x1="${x(e).toFixed(1)}" x2="${x(e).toFixed(1)}" y1="${H-18}" y2="${H-6}"/>`).join('');
+      const cur=svg.querySelector('.kc-cur'); cur.setAttribute('x1',x(t)); cur.setAttribute('x2',x(t)); cur.style.opacity=t<N?1:0;
+      kcSet(stage,'exec',`${t}/${N}`); kcSet(stage,'cov',G.cov[t-1]); kcSet(stage,'corpus',G.corpus[t-1]); kcSet(stage,'fail',f.length);
+      msg.textContent=t>=N?`${kcFill(c.g3.done,{raw:G.fails.length,sig:G.signatures})} · ${kcSig(G.signature)}`:f.length?kcFill(c.g3.first,{n:G.fails[0]}):'';
+      msg.classList.toggle('is-hit',f.length>0);
+    };
+    if(!go){ paint(N); done(); return; }
+    const t0=performance.now(), dur=4500;
+    const step=now=>{ if(!alive()) return; const k=Math.min(1,(now-t0)/dur); paint(Math.max(1,Math.round(k*N))); if(k<1) requestAnimationFrame(step); else done(); };
+    requestAnimationFrame(step);
+  }
+  function kcMinimize(stage,c,D,go,alive,done) {
+    const M=D.min, keep=new Set(M.keep);
+    stage.innerHTML=kcStats(c,[['ops',c.min.ops],['bytes',c.min.bytes],['tries',c.min.tries],['sig',c.min.sig]])
+      +`<ol class="kc-ops">${M.original.map((o,i)=>`<li class="${keep.has(i)?'is-keep':''}"><em>${String(i+1).padStart(2,'0')}</em><code translate="no">${esc(o.op)}</code>${o.f?`<small translate="no">${esc(o.f)}</small>`:''}</li>`).join('')}</ol>`
+      +`<p class="kc-msg"></p><p class="kc-cap">${esc(kcFill(c.min.cap,{n:M.attempts,max:M.max_attempts}))}</p>`;
+    const items=[...stage.querySelectorAll('.kc-ops li')], drop=items.filter((_,i)=>!keep.has(i));
+    kcSet(stage,'ops',M.original.length); kcSet(stage,'bytes',M.bytes[0]); kcSet(stage,'tries',`–/${M.max_attempts}`); kcSet(stage,'sig',kcSig(D.g3.signature));
+    const finish=()=>{
+      drop.forEach(li=>li.classList.add('is-gone'));
+      M.keep.forEach((oi,j)=>{ const small=items[oi].querySelector('small'); if(small) small.textContent=M.minimized[j].f; });
+      stage.querySelector('.kc-ops').classList.add('is-done');
+      kcSet(stage,'ops',`${M.original.length} → ${M.minimized.length}`); kcSet(stage,'bytes',`${M.bytes[0]} → ${M.bytes[1]}`);
+      kcSet(stage,'tries',`${M.attempts}/${M.max_attempts}`); kcSet(stage,'sig',`${c.min.same} ✓`);
+      const msg=stage.querySelector('.kc-msg'); msg.textContent=kcFill(c.min.done,{n:M.minimized.length}); msg.classList.add('is-ok'); done();
+    };
+    if(!go){ finish(); return; }
+    drop.forEach((li,n)=>kcAfter(alive,350+n*170,()=>li.classList.add('is-gone')));
+    kcAfter(alive,350+drop.length*170+300,finish);
+  }
+  function kcReplay(stage,c,D,go,alive,done) {
+    stage.innerHTML=`<h3 class="kc-h">${esc(c.rp.input)}</h3><ol class="kc-flow">${D.min.minimized.map(o=>`<li><code translate="no">${esc(o.op)}</code>${o.f?`<small translate="no">${esc(o.f)}</small>`:''}</li>`).join('')}</ol><div class="kc-replays">${D.replay.map((r,i)=>`<div class="kc-rp"><b>${esc(kcFill(c.rp.item,{n:i+1}))}</b><small>${esc(c.rp.clean)}</small><span class="kc-rp-res"><em translate="no">${esc(r)}</em><code translate="no">${esc(kcSig(D.g3.signature))}</code></span><i aria-hidden="true"></i></div>`).join('')}</div><p class="kc-msg"></p>`;
+    const cards=[...stage.querySelectorAll('.kc-rp')], m=D.replay.filter(r=>r==='MATCH').length;
+    const finish=()=>{ cards.forEach(el=>el.classList.add('is-done')); const msg=stage.querySelector('.kc-msg'); msg.textContent=kcFill(c.rp.pass,{m,n:D.replay.length}); msg.classList.toggle('is-ok',m===D.replay.length); done(); };
+    if(!go){ finish(); return; }
+    cards.forEach((el,i)=>{ kcAfter(alive,200+i*900,()=>el.classList.add('is-run')); kcAfter(alive,200+i*900+750,()=>el.classList.add('is-done')); });
+    kcAfter(alive,200+cards.length*900,finish);
+  }
+  function kcEvidence(stage,c,D,go,alive,done) {
+    const short=f=>f.length>36?`${f.slice(0,16)}…${f.slice(-8)}`:f;
+    stage.innerHTML=`<h3 class="kc-h">${esc(c.ev.states)}</h3><ol class="kc-states">${D.events.map(e=>`<li><code translate="no">${esc(e.to)}</code><small>${e.ms} ms</small></li>`).join('')}</ol>`
+      +`<h3 class="kc-h">${esc(kcFill(c.ev.files,{n:D.manifest.length}))}</h3><ul class="kc-files">${D.manifest.map(f=>`<li title="${esc(f)}"><code translate="no">${esc(short(f))}</code></li>`).join('')}</ul>`
+      +`<div class="kc-verify"><b>✓ ${esc(c.ev.verify)}</b><small>${esc(c.ev.verifyS)}</small></div>`;
+    const states=[...stage.querySelectorAll('.kc-states li')], files=[...stage.querySelectorAll('.kc-files li')], verify=stage.querySelector('.kc-verify');
+    const finish=()=>{ states.concat(files).forEach(el=>el.classList.add('is-on')); verify.classList.add('is-on'); done(); };
+    if(!go){ finish(); return; }
+    states.forEach((el,i)=>kcAfter(alive,150+i*230,()=>el.classList.add('is-on')));
+    const t1=150+states.length*230;
+    files.forEach((el,i)=>kcAfter(alive,t1+i*90,()=>el.classList.add('is-on')));
+    kcAfter(alive,t1+files.length*90+250,finish);
+  }
+  function kcE1() {
+    const box=$('.kc-e1'); if(!box||!kcData) return;
+    const c=kcCopy(), E=kcData.e1, list=[...E.strategies].sort((a,b)=>b.rate-a.rate), best=list[0].rate;
+    box.innerHTML=list.map((s,i)=>`<div class="kc-bar${s.rate===best?' is-best':''}" style="--v:${s.rate};--i:${i}"><span class="kc-bar-l"><b>${esc(s.id.startsWith('NOVELTY')?c.e1.novelty:c.e1.keep)}</b><small>${esc(s.id.includes('ENERGY')?c.e1.energy:c.e1.uniform)}</small></span>`
+      +`<span class="kc-bar-t"><i></i><em>${Math.round(s.rate*100)}%</em></span><span class="kc-bar-s">${esc(kcFill(c.e1.stat,{f:Math.round(s.rate*E.trials),t:E.trials,m:s.median}))}</span></div>`).join('');
+    $('.kc-e1-note').textContent=kcFill(c.e1Note,{t:E.trials,b:E.budget});
+  }
+  function initKcrash() {
+    const box=$('.kc-show'); if(!box) return;
+    const go=()=>{
+      kcE1(); kcStage(false);
+      const demo=box.querySelector('.kc-demo');
+      if(motion()&&!kcSeen&&'IntersectionObserver' in window){
+        const io=new IntersectionObserver(ents=>{ if(ents.some(e=>e.isIntersecting)){ io.disconnect(); kcSeen=true; if(demo.isConnected) kcStage(true); } },{threshold:.45});
+        io.observe(demo);
+      }
+    };
+    if(kcData) go(); else fetch('/assets/kcrashlab/showcase.json?v=1').then(r=>r.json()).then(d=>{kcData=d;go();}).catch(()=>{});
+  }
+  root.addEventListener('click',event=>{
+    const t=event.target.closest('[data-kc-tab]'), p=event.target.closest('[data-kc-play]');
+    if(t){ kcState.tab=Number(t.dataset.kcTab); kcStage(true); }
+    if(p) kcStage(true);
+  });
+  root.addEventListener('keydown',event=>{
+    const t=event.target.closest?.('[data-kc-tab]'); if(!t||!['ArrowLeft','ArrowRight'].includes(event.key)) return;
+    event.preventDefault(); kcState.tab=(kcState.tab+(event.key==='ArrowRight'?1:3))%4; kcStage(true); $(`[data-kc-tab="${kcState.tab}"]`)?.focus();
+  });
   root.addEventListener('input',event=>{ if(event.target.matches('.lg-range')){ const cmp=event.target.closest('.lg-compare'); cmp.dataset.touched='1'; cmp.style.setProperty('--x',`${event.target.value}%`); } });
   root.addEventListener('click',event=>{ const t=event.target.closest('[data-lg-i]'), v=event.target.closest('[data-lg-vs]'); if(t){lgState.i=Number(t.dataset.lgI);paintLumigrid();} if(v){lgState.vs=v.dataset.lgVs;paintLumigrid();} });
   /* Film dock: the capstone film plays in an in-page player that can shrink to a corner mini player
@@ -753,11 +936,12 @@
     if (view==='blog') html=blogScreen();
     if (view==='help') html=`${commandTitle('help')}<h1>${c.guideTitle}</h1><p>${c.guideIntro}</p><dl class="keyboard-guide">${c.keys.map(([key,description])=>`<div><dt><kbd>${key}</kbd></dt><dd>${description}</dd></div>`).join('')}</dl><h2>${c.commands}</h2>${commandCatalogue()}<p class="comment-line">${c.simulation}</p>`;
     if (view==='projects' && !item) html=`${commandTitle('ls ./projects/')}${directoryHTML(c)}`;
-    if (view==='projects' && item) html=`${commandTitle('cat projects/'+esc(item.id)+'/README.md')}<button class="back-link" data-view="projects">← ${c.all}</button><div class="project-detail"><p class="detail-meta">${esc(item.category)}<span>${esc(item.status)}</span></p><h1 translate="no">${esc(item.name)}</h1><p class="project-description">${esc(item.description)}</p>${item.id==='taiwan-exam'?'<img class="project-art" src="/assets/work/taiwan-exam-social-preview.png" width="1280" height="640" alt="Taiwan Exam" loading="lazy">'+teFilmCard()+examsCard():''}${item.id==='lumigrid'?lumigridShowcase():''}${item.id==='adversarial-lab'?'<img class="project-art" src="/assets/og/adversarial-demo.jpg" width="1200" height="630" alt="Adversarial Lab" loading="lazy">'+advCard():''}<h2>${c.evidence}</h2><p>${esc(item.evidence)}</p><div class="output-actions"><a class="action-button primary" href="${esc(item.url)}" target="_blank" rel="noopener noreferrer"><span>${c.source}</span>${icon('link')}</a><a class="action-button" href="${esc(item.reference)}" target="_blank" rel="noopener noreferrer"><span>${esc(item.referenceLabel)}</span>${icon('link')}</a><button class="action-button" data-ask="${esc(item.name)}">${icon('chat')}<span>${c.askTitle}</span></button><button class="action-button" data-action="share" data-share="/p/${esc(item.id)}/${locale==='en'?'':locale.toLowerCase()+'/'}">${icon('link')}<span>${esc(noteCopy().share)}</span></button></div><div class="project-pagination"><button data-project-step="-1">← ${c.prev}</button><span>${items.indexOf(item)+1} / ${items.length}</span><button data-project-step="1">${c.next} →</button></div></div>`;
+    if (view==='projects' && item) html=`${commandTitle('cat projects/'+esc(item.id)+'/README.md')}<button class="back-link" data-view="projects">← ${c.all}</button><div class="project-detail"><p class="detail-meta">${esc(item.category)}<span>${esc(item.status)}</span></p><h1 translate="no">${esc(item.name)}</h1><p class="project-description">${esc(item.description)}</p>${item.id==='taiwan-exam'?'<img class="project-art" src="/assets/work/taiwan-exam-social-preview.png" width="1280" height="640" alt="Taiwan Exam" loading="lazy">'+teFilmCard()+examsCard():''}${item.id==='lumigrid'?lumigridShowcase():''}${item.id==='kcrashlab'?kcShowcase():''}${item.id==='adversarial-lab'?'<img class="project-art" src="/assets/og/adversarial-demo.jpg" width="1200" height="630" alt="Adversarial Lab" loading="lazy">'+advCard():''}<h2>${c.evidence}</h2><p>${esc(item.evidence)}</p><div class="output-actions"><a class="action-button primary" href="${esc(item.url)}" target="_blank" rel="noopener noreferrer"><span>${c.source}</span>${icon('link')}</a><a class="action-button" href="${esc(item.reference)}" target="_blank" rel="noopener noreferrer"><span>${esc(item.referenceLabel)}</span>${icon('link')}</a><button class="action-button" data-ask="${esc(item.name)}">${icon('chat')}<span>${c.askTitle}</span></button><button class="action-button" data-action="share" data-share="/p/${esc(item.id)}/${locale==='en'?'':locale.toLowerCase()+'/'}">${icon('link')}<span>${esc(noteCopy().share)}</span></button></div><div class="project-pagination"><button data-project-step="-1">← ${c.prev}</button><span>${items.indexOf(item)+1} / ${items.length}</span><button data-project-step="1">${c.next} →</button></div></div>`;
     const output=$('.terminal-output'); output.dataset.view=view; output.innerHTML=html; output.scrollTop=0; renderJournal();
     if (view==='research') initCapstone();
     if (view==='guestbook') window.NIANSIA_GUESTBOOK?.mount(output,locale);
     if (view==='projects' && projectId==='lumigrid') initLumigrid();
+    if (view==='projects' && projectId==='kcrashlab') initKcrash();
     output.classList.remove('screen-enter'); if (animate && motion()) { void output.offsetWidth; output.classList.add('screen-enter'); }
     root.querySelectorAll('[data-nav-index]').forEach((el,i)=>{el.classList.toggle('is-current',i===paths.indexOf(view));el.classList.toggle('is-selected',i===selectedNav);el.setAttribute('aria-current',i===paths.indexOf(view)?'page':'false');});
     moveIndicator();
