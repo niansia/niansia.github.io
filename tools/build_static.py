@@ -238,7 +238,7 @@ def shell(*, loc: str, title: str, desc: str, url: str, og: str, alternates: dic
 {FONTS}
 <style>{CSS}{extra_css}</style>
 {head_extra}{ld}
-<script defer src="/assets/js/site-stats.js"></script>
+<script defer src="/assets/js/site-stats.js?v=2"></script>
 <script defer src="/assets/js/lightbox.js"></script>
 {"".join(f'<script defer src="{x}"></script>' for x in scripts)}
 </head>
@@ -575,7 +575,7 @@ EXAM_UI = {
               "warn": "題目和詳解都是 AI 生成的，可能有錯；請搭配課本和老師的說明使用。發現錯誤、侵權或個資，請按每份考卷下方的「回報問題」來信告訴我。",
               "all": "全部", "none": "還沒有人分享考卷，歡迎當第一個！", "none_subject": "這一科還沒有考卷。", "q": "題本", "s": "詳解",
               "pages": "頁", "by": "分享者", "preview": "預覽", "download": "下載", "folder": "開啟資料夾", "set": "第 {n} 份", "report": "回報問題", "sha": "檔案校驗碼（SHA-256）", "dataset": "所有檔案都放在 Hugging Face 資料集",
-              "license": "授權：CC BY-NC 4.0", "count": "共 {n} 份", "back": "Taiwan Exam 作品頁", "te": "Taiwan Exam 原始碼", "author_note": "Taiwan Exam 和這個分享區都是我做的，歡迎逛逛我的其他作品。",
+              "license": "授權：CC BY-NC 4.0", "count": "共 {n} 份", "back": "Taiwan Exam 作品頁", "te": "Taiwan Exam 原始碼", "author_note": "若對作者的作品與研究有興趣，歡迎到個人網站逛逛。",
               "report_subject": "[考卷回報] {id}", "report_body": "考卷編號：{id}\n問題類型（侵權／個資／答案錯誤／其他）：\n說明："},
 }
 EXAM_UI["zh-CN"] = {k: (T2S.convert(v) if isinstance(v, str) else [T2S.convert(x) for x in v]) for k, v in EXAM_UI["zh-TW"].items()}
