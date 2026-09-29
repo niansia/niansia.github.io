@@ -566,7 +566,7 @@ EXAM_AIS = ("ChatGPT", "Claude", "Gemini", "其他")
 EXAM_UI = {
     "zh-TW": {"title": "Taiwan Exam 考卷分享區", "lede": "用 Taiwan Exam 讓 AI 出的原創學測模擬考，大家一人分享一份；沒有付費 AI 的同學也能下載來練習。",
               "upload": "分享你生成的考卷", "upload_sub": "需要用 Google 帳號登入；我檢查過檔案與內容之後才會公開。", "upload_btn": "上傳考卷",
-              "upload_soon": "上傳表單即將開放", "rules": "上傳須知",
+              "upload_soon": "上傳表單即將開放", "rules": "上傳須知", "community": "學測生社群", "community_sub": "我是這兩個 LINE 社群的管理員。準備 116 學測、分科的同學歡迎加入，一起討論考試資訊和模擬考題目。", "join": "加入社群",
               "rule": ["只接受用 Taiwan Exam 讓 AI 生成的原創考卷（PDF）。",
                        "不要上傳大考中心的歷屆試題，也不要上傳補習班、出版社的講義或題本。",
                        "考卷裡不要有姓名、學校、班級、座號等個人資料。",
@@ -583,6 +583,27 @@ EXAM_CSS = """
 .upload{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:22px 0 14px;padding:16px 18px;border-radius:16px;background:var(--code);}
 .upload b{display:block;font-size:15.5px;}.upload small{display:block;color:var(--muted);font-size:13px;}
 .upload .btn{flex:none;margin:0;}.upload .btn[aria-disabled]{opacity:.55;pointer-events:none;}
+.community{margin:0 0 18px;padding:16px 18px;border-radius:16px;border:1px solid var(--line);}
+.community>b{display:block;font-size:15.5px;}.community>small{display:block;margin-top:2px;color:var(--muted);font-size:13px;line-height:1.6;}
+.cm-list{display:grid;gap:12px;margin-top:12px;}
+.cm{display:flex;align-items:center;gap:13px;padding:14px 14px 12px;border-radius:16px;text-decoration:none;color:var(--ink);
+  background:color-mix(in srgb,#06c755 9%,var(--paper));border:1.5px solid color-mix(in srgb,#06c755 42%,transparent);transition:transform .3s cubic-bezier(.34,1.56,.64,1),box-shadow .3s,border-color .2s;}
+.cm:hover,.cm:focus-visible{transform:translateY(-3px);border-color:#06c755;box-shadow:0 14px 28px -16px #06c755;}
+.cm-ico{position:relative;flex:none;display:grid;place-items:center;width:44px;height:44px;margin-top:6px;border-radius:14px;background:#06c755;color:#fff;}
+.cm-ico:before,.cm-ico:after{content:'';position:absolute;top:-8px;border-left:8px solid transparent;border-right:8px solid transparent;border-bottom:12px solid #06c755;}
+.cm-ico:before{left:3px;transform:rotate(-16deg);}.cm-ico:after{right:3px;transform:rotate(16deg);}
+.cm-ico svg{width:27px;height:27px;}
+.cm:hover .cm-ico{animation:cm-wiggle .55s ease-in-out;}
+@keyframes cm-wiggle{25%{transform:rotate(-9deg);}60%{transform:rotate(7deg);}}
+.cm-text{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;}
+.cm-text b{font-size:14.5px;line-height:1.45;}.cm-text small{font-size:12.5px;line-height:1.55;color:var(--muted);}
+.cm-side{flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:6px;}
+.cm-role{padding:1px 9px;border-radius:99px;font:600 10.5px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;font-style:normal;color:#058a3e;background:color-mix(in srgb,#06c755 16%,transparent);}
+.cm-go{padding:6px 13px;border-radius:99px;background:#058a3e;color:#fff;font-size:12.5px;font-weight:700;white-space:nowrap;}
+.cm:hover .cm-go{background:#04753a;}
+@media (prefers-color-scheme:dark){.cm-role{color:#5fe39a;}}
+@media (prefers-reduced-motion:reduce){.cm,.cm-ico{transition:none;animation:none!important;}}
+@media (max-width:560px){.cm{flex-wrap:wrap;}.cm-side{flex-direction:row;align-items:center;justify-content:space-between;flex-basis:100%;}.cm-go{padding:9px 16px;}}
 .rules{margin:0 0 14px;padding:12px 18px;border:1px solid var(--line);border-radius:14px;}
 .rules summary{cursor:pointer;font-weight:700;}.rules ol{margin:10px 0 2px;padding-left:22px;font-size:14px;line-height:1.75;}
 .warnbox{margin:0 0 26px;padding:12px 16px;border-radius:12px;border-left:4px solid #c9853a;background:var(--paper);font-size:13.5px;line-height:1.7;}
@@ -640,6 +661,25 @@ def load_exams() -> dict:
     return data
 
 
+CAT_BUBBLE = ('<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4.5 4.5h15a2.5 2.5 0 0 1 2.5 2.5v8a2.5 2.5 0 0 1-2.5 2.5H12l-4.5 3.2v-3.2h-3A2.5 2.5 0 0 1 2 15V7a2.5 2.5 0 0 1 2.5-2.5z"/>'
+              '<circle cx="8.5" cy="10.3" r="1.5" fill="#06c755"/><circle cx="15.5" cy="10.3" r="1.5" fill="#06c755"/>'
+              '<path d="M9.9 13.2q1 1.1 2.1 0q1 1.1 2.1 0" fill="none" stroke="#06c755" stroke-width="1.5" stroke-linecap="round"/></svg>')
+
+
+def community_cards(loc: str) -> str:
+    """The LINE communities Niansia runs, from assets/js/community-data.js; only LINE OpenChat invite links are shown."""
+    data = load_js("assets/js/community-data.js", "NIANSIA_COMMUNITY") or {}
+    role = pick(data.get("role"), loc)
+    cards = []
+    for g in data.get("groups", []):
+        if not re.fullmatch(r"https://line\.me/ti/g2/[A-Za-z0-9_-]{10,80}", g.get("url", "")):
+            continue
+        cards.append(f'<a class="cm" href="{e(g["url"])}" target="_blank" rel="noopener noreferrer"><span class="cm-ico">{CAT_BUBBLE}</span>'
+                     f'<span class="cm-text"><b>{e(g["name"])}</b><small>{e(pick(g.get("desc"), loc))}</small></span>'
+                     f'<span class="cm-side"><em class="cm-role">{e(role)}</em><span class="cm-go">{e(EXAM_UI[loc]["join"])} ↗</span></span></a>')
+    return "".join(cards)
+
+
 def build_exams(data: dict) -> list[str]:
     from urllib.parse import quote
     urls = []
@@ -652,7 +692,9 @@ def build_exams(data: dict) -> list[str]:
               else f'<span class="btn" aria-disabled="true">{e(U["upload_soon"])}</span>')
         head = (f'<main><p class="kicker">~/niansia/exams</p><h1>{e(U["title"])}</h1><p class="lede">{e(U["lede"])}</p>'
                 f'<div class="upload"><div><b>{e(U["upload"])}</b><small>{e(U["upload_sub"])}</small></div>{up}</div>'
-                f'<details class="rules"><summary>{e(U["rules"])}</summary><ol>{"".join(f"<li>{e(r)}</li>" for r in U["rule"])}</ol></details>'
+                + (f'<section class="community" aria-label="{e(U["community"])}"><b>{e(U["community"])}</b><small>{e(U["community_sub"])}</small>'
+                   f'<div class="cm-list">{cm}</div></section>' if (cm := community_cards(loc)) else '')
+                + f'<details class="rules"><summary>{e(U["rules"])}</summary><ol>{"".join(f"<li>{e(r)}</li>" for r in U["rule"])}</ol></details>'
                 f'<p class="warnbox">{e(U["warn"])}</p>')
         nav = "".join(f'<a href="#{k}">{e(EXAM_SUBJECTS[k] if loc == "zh-TW" else T2S.convert(EXAM_SUBJECTS[k]))}<em>{len(v)}</em></a>' for k, v in by_subject.items() if v)
         sections = []

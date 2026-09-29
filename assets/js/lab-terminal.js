@@ -223,6 +223,25 @@
     return `<nav class="social-dock" aria-label="${esc(S.label)}"><a class="sd-github" href="https://github.com/niansia" target="_blank" rel="noopener noreferrer">${ghMark}<span class="sd-gh-text"><b translate="no">github.com/<em>niansia</em></b><small>${esc(S.gh)}</small></span><span class="sd-gh-arrow" aria-hidden="true">↗</span></a>
       <div class="sd-chips">${chip('mailto:'+mail,'mail',S.mail,mail,false)}${hobby.length?`<span class="sd-sep" title="${esc(S.hobby)}" aria-hidden="true"></span>${hobby.map(l=>chip(l.url,l.id,l.label,l.handle||l.label)).join('')}`:''}</div></nav>`;
   }
+  /* LINE communities Niansia runs (community-data.js): a chip on the home profile line and a section on about.md. */
+  const community=()=>window.NIANSIA_COMMUNITY;
+  const communityCopy=()=>({en:{title:'Community',intro:'I run these two LINE communities for students taking Taiwan\u2019s 2027 college entrance exams (GSAT and AST). If you are preparing for them, you are welcome to join and talk about exam news and mock exam questions.',chip:'LINE exam community admin',join:'Join'},
+    'zh-TW':{title:'社群經營',intro:'我是這兩個 LINE 社群的管理員。準備 116 學測、分科的同學歡迎加入，一起討論考試資訊和模擬考題目。',chip:'116 學測 LINE 社群管理員',join:'加入社群'},
+    'zh-CN':{title:'社群经营',intro:'我是这两个 LINE 社群的管理员。准备 116 学测、分科的同学欢迎加入，一起讨论考试资讯和模拟考题目。',chip:'116 学测 LINE 社群管理员',join:'加入社群'}}[locale]);
+  const CAT_BUBBLE='<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4.5 4.5h15a2.5 2.5 0 0 1 2.5 2.5v8a2.5 2.5 0 0 1-2.5 2.5H12l-4.5 3.2v-3.2h-3A2.5 2.5 0 0 1 2 15V7a2.5 2.5 0 0 1 2.5-2.5z"/><circle cx="8.5" cy="10.3" r="1.5" fill="#06c755"/><circle cx="15.5" cy="10.3" r="1.5" fill="#06c755"/><path d="M9.9 13.2q1 1.1 2.1 0q1 1.1 2.1 0" fill="none" stroke="#06c755" stroke-width="1.5" stroke-linecap="round"/></svg>';
+  const lineOk=u=>/^https:\/\/line\.me\/ti\/g2\/[A-Za-z0-9_-]{10,80}$/.test(u||'');
+  function communityCards() {
+    const C=community(), role=C?.role?.[locale]||C?.role?.en||'';
+    return (C?.groups||[]).filter(g=>lineOk(g.url)).map((g,i)=>`<a class="cm" href="${esc(g.url)}" target="_blank" rel="noopener noreferrer" style="--i:${i}"><span class="cm-ico">${CAT_BUBBLE}</span><span class="cm-text"><b>${esc(g.name)}</b><small>${esc(g.desc[locale]||g.desc.en)}</small></span><span class="cm-side"><em class="cm-role">${esc(role)}</em><span class="cm-go">${esc(communityCopy().join)} \u2197</span></span></a>`).join('');
+  }
+  function communityBlock() {
+    const cards=communityCards(); if(!cards) return '';
+    const T=communityCopy();
+    return `<section class="community" id="community" aria-labelledby="community-title"><h2 id="community-title">${esc(T.title)}</h2><p class="screen-intro">${esc(T.intro)}</p><div class="cm-list">${cards}</div></section>`;
+  }
+  function communityChip() {
+    return communityCards()?`<button type="button" class="sub-chip cm-chip" data-view="about" data-anchor="community">\ud83d\udc31 ${esc(communityCopy().chip)}</button>`:'';
+  }
   function homeScreen(c) {
     const featured = [
       {id:'adversarial-lab',ext:'.lab',copy:c.newestAdv,media:'<img src="/assets/og/adversarial-demo.jpg" alt="" loading="lazy" width="1200" height="630">'},
@@ -235,7 +254,7 @@
     const quick = ['projects','theme sakura','neofetch','trick','trail paws','help'];
     return `${commandTitle('./start.sh')}${festivalBanner(c)}<div class="${boot}"><span><b>✓</b> profile loaded</span><span><b>✓</b> ${projects().length} projects mounted</span><span><b>✓</b> yuki.exe is awake</span><span><b>✓</b> brain.nn ready</span></div>
       <div class="welcome-copy"><p class="hello-world" translate="no">${c.welcome}<i class="text-cursor" aria-hidden="true"></i></p><h1>${name}</h1><p class="welcome-tagline">${c.tagline}</p><p>${c.intro}</p></div>${socialDock()}
-      <a class="brief-chip" href="/brief/${pubSeg()}">${icon('bolt')}<span>${esc(briefCopy().chip)}</span><em aria-hidden="true">→</em></a><div class="profile-facts"><span>${c.role}</span><span>${c.leave}</span>${subCopy()?`<button type="button" class="sub-chip" data-view="research">✍ ${subCopy().chip}${nextDeadline()?` · <b data-deadline="${nextDeadline().deadline}">${countdown(nextDeadline().deadline)}</b>`:''}</button>`:''}</div>
+      <a class="brief-chip" href="/brief/${pubSeg()}">${icon('bolt')}<span>${esc(briefCopy().chip)}</span><em aria-hidden="true">→</em></a><div class="profile-facts"><span>${c.role}</span><span>${c.leave}</span>${subCopy()?`<button type="button" class="sub-chip" data-view="research">✍ ${subCopy().chip}${nextDeadline()?` · <b data-deadline="${nextDeadline().deadline}">${countdown(nextDeadline().deadline)}</b>`:''}</button>`:''}${communityChip()}</div>
       <div class="output-actions">${button('projects',c.start,true)}${button('about',c.more)}</div>
       <div class="home-cards">
         <div class="home-card latest-card"><span class="card-label">${c.latestCard}${featured.length>1?`<span class="latest-dots">${featured.map((f,i)=>`<button type="button" class="latest-dot" data-latest-dot="${i}" aria-label="${esc(f.p.name)}" aria-pressed="${i===0}"></button>`).join('')}</span>`:''}</span><div class="latest-slides">${featured.map((f,i)=>`<button class="latest-slide${i?'':' is-on'}" data-project="${f.p.id}"${i?' tabindex="-1" aria-hidden="true"':''}>${f.media}<strong translate="no">${esc(f.p.name)} <span class="file-extension">${f.ext}</span></strong><span class="card-copy">${f.copy}</span></button>`).join('')}</div></div>
@@ -719,7 +738,7 @@
     $('.pane-path').textContent=`~/ ${view === 'home'?'start.sh':view === 'projects'?'projects/'+(item ? item.id : ''):files[paths.indexOf(view)]}`;
     document.title = `${item?.name || navLabel(view,c)} | Niansia terminal`;
     if (view==='home') html=homeScreen(c);
-    if (view==='about') html=`${commandTitle('cat about.md')}<h1>${c.aboutTitle}</h1><div class="reading"><p>${c.bio}</p><p>${c.bio2}</p><p>${c.bio3}</p><h2>${c.education}</h2><ul class="education-list"><li><span class="edu-dot" aria-hidden="true"></span>${c.undergrad}</li><li><span class="edu-dot is-now" aria-hidden="true"></span>${c.graduate}<small>${c.leave}</small></li></ul><div class="interest-tags">${c.interests.split(' / ').map(tag=>`<span>${tag}</span>`).join('')}</div></div>${button('research',c.nav[3],true)}`;
+    if (view==='about') html=`${commandTitle('cat about.md')}<h1>${c.aboutTitle}</h1><div class="reading"><p>${c.bio}</p><p>${c.bio2}</p><p>${c.bio3}</p><h2>${c.education}</h2><ul class="education-list"><li><span class="edu-dot" aria-hidden="true"></span>${c.undergrad}</li><li><span class="edu-dot is-now" aria-hidden="true"></span>${c.graduate}<small>${c.leave}</small></li></ul><div class="interest-tags">${c.interests.split(' / ').map(tag=>`<span>${tag}</span>`).join('')}</div></div>${communityBlock()}${button('research',c.nav[3],true)}`;
     if (view==='research') html=`${commandTitle('cat research.md')}<h1>${c.researchTitle}</h1><p class="screen-intro">${c.researchIntro}</p>${capCopy()?`<button type="button" class="cap-jump" data-cap-jump>✦ ${esc(capCopy().open)} ↓</button>`:''}<div class="research-entry"><span>01</span><div><h2>${c.researchA}</h2><p>${c.researchABody}</p><small>security / robustness / evaluation</small></div></div>${advCard()}<div class="research-entry"><span>02</span><div><h2>${c.researchB}</h2><p>${c.researchBBody}</p><small>vision / reasoning / grounding</small></div></div>${statementLink()}${notesBlock()}${logBlock()}${capstoneBlock()}${teBlock()}${submissionsBlock()}<p class="comment-line">${c.researchNote}</p>`;
     if (view==='contact') html=`${commandTitle('cat contact.txt')}<h1>${c.contactTitle}</h1><div class="reading"><p>${c.contactBody}</p><div class="contact-address"><span translate="no">email:</span><a href="mailto:niansia930202@gmail.com" translate="no">niansia930202@gmail.com</a></div><div class="output-actions"><a class="action-button primary" href="mailto:niansia930202@gmail.com">${icon('mail')}<span>${c.send}</span></a><button class="action-button" data-action="copy">${icon('copy')}<span>${c.copy}</span></button></div><a class="github-link" href="https://github.com/niansia" target="_blank" rel="noopener noreferrer">github.com/niansia ${icon('link')}</a></div>`;
     if (view==='hobbies') html=hobbiesScreen();
@@ -1011,7 +1030,7 @@
     if(target.dataset.filter){setProjectFilter(target.dataset.filter,true);return;}
     if(target.dataset.blogFilter){setBlogFilter(target.dataset.blogFilter,true);return;}
     if(target.dataset.latestDot!==undefined){showLatest(Number(target.dataset.latestDot));return;}
-    if(target.dataset.view){event.preventDefault();navigate(target.dataset.view,'',{keyboard:event.detail===0,origin:target});}
+    if(target.dataset.view){event.preventDefault();const anchor=target.dataset.anchor;navigate(target.dataset.view,'',{keyboard:event.detail===0,origin:target});if(anchor)setTimeout(()=>root.querySelector('#'+CSS.escape(anchor))?.scrollIntoView({behavior:motion()?'smooth':'auto',block:'start'}),700);}
     if(target.dataset.project){navigate('projects',target.dataset.project,{keyboard:event.detail===0,origin:target});}
     if(target.dataset.projectStep){const i=projects().findIndex(p=>p.id===projectId),count=projects().length;navigate('projects',projects()[(i+Number(target.dataset.projectStep)+count)%count].id);}
     if(target.dataset.lang&&target.dataset.lang!==locale){changeLanguage(target.dataset.lang,target);}
