@@ -5,13 +5,13 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>把 LumiGrid 搬进浏览器：一个只在 WebGPU 出错的 6 信道卷积 · Niansia</title>
 <meta name="description" content="两个神经网络加上一段自己写的 WebGL 着色器，逐像素对照 PyTorch 验证；以及一个让 WebGPU 版本只剩 28.75 dB 的错，是怎么一步步二分找出来的。">
-<link rel="canonical" href="https://niansia.github.io/notes/zh-cn/lumigrid-in-the-browser/">
-<link rel="alternate" hreflang="en" href="https://niansia.github.io/notes/en/lumigrid-in-the-browser/"><link rel="alternate" hreflang="zh-Hant-TW" href="https://niansia.github.io/notes/zh-tw/lumigrid-in-the-browser/"><link rel="alternate" hreflang="zh-Hans-CN" href="https://niansia.github.io/notes/zh-cn/lumigrid-in-the-browser/"><link rel="alternate" hreflang="x-default" href="https://niansia.github.io/notes/en/lumigrid-in-the-browser/">
+<link rel="canonical" href="https://niansia.com/notes/zh-cn/lumigrid-in-the-browser/">
+<link rel="alternate" hreflang="en" href="https://niansia.com/notes/en/lumigrid-in-the-browser/"><link rel="alternate" hreflang="zh-Hant-TW" href="https://niansia.com/notes/zh-tw/lumigrid-in-the-browser/"><link rel="alternate" hreflang="zh-Hans-CN" href="https://niansia.com/notes/zh-cn/lumigrid-in-the-browser/"><link rel="alternate" hreflang="x-default" href="https://niansia.com/notes/en/lumigrid-in-the-browser/">
 <meta property="og:type" content="article"><meta property="og:site_name" content="Niansia">
 <meta property="og:title" content="把 LumiGrid 搬进浏览器：一个只在 WebGPU 出错的 6 信道卷积 · Niansia"><meta property="og:description" content="两个神经网络加上一段自己写的 WebGL 着色器，逐像素对照 PyTorch 验证；以及一个让 WebGPU 版本只剩 28.75 dB 的错，是怎么一步步二分找出来的。">
-<meta property="og:url" content="https://niansia.github.io/notes/zh-cn/lumigrid-in-the-browser/"><meta property="og:image" content="https://niansia.github.io/assets/og/note-lumigrid-in-the-browser-zh-cn.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta property="og:url" content="https://niansia.com/notes/zh-cn/lumigrid-in-the-browser/"><meta property="og:image" content="https://niansia.com/assets/og/note-lumigrid-in-the-browser-zh-cn.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
 <meta property="og:locale" content="zh_CN">
-<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://niansia.github.io/assets/og/note-lumigrid-in-the-browser-zh-cn.jpg">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://niansia.com/assets/og/note-lumigrid-in-the-browser-zh-cn.jpg">
 
 <meta name="theme-color" content="#fbf6ee" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#15142a" media="(prefers-color-scheme: dark)">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://*.firebasedatabase.app; connect-src 'self' https://*.firebasedatabase.app wss://*.firebasedatabase.app; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; frame-src https://*.firebasedatabase.app; object-src 'none'; base-uri 'self'; form-action 'none'">
@@ -72,7 +72,7 @@ figure.fig figcaption{margin-top:8px;font-size:13.5px;color:var(--muted);line-he
 .statement-link{display:flex;justify-content:space-between;align-items:center;}
 footer{max-width:760px;margin:0 auto;padding:26px 20px 50px;border-top:1px solid var(--line);font-size:14px;color:var(--muted);}
 </style>
-<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BlogPosting", "headline": "把 LumiGrid 搬进浏览器：一个只在 WebGPU 出错的 6 信道卷积", "description": "两个神经网络加上一段自己写的 WebGL 着色器，逐像素对照 PyTorch 验证；以及一个让 WebGPU 版本只剩 28.75 dB 的错，是怎么一步步二分找出来的。", "datePublished": "2026-09-28", "dateModified": "2026-09-28", "inLanguage": "zh-Hans", "author": {"@type": "Person", "name": "Niansia", "url": "https://niansia.github.io/", "email": "mailto:niansia930202@gmail.com", "sameAs": ["https://github.com/niansia"]}, "mainEntityOfPage": "https://niansia.github.io/notes/zh-cn/lumigrid-in-the-browser/", "image": "https://niansia.github.io/assets/og/note-lumigrid-in-the-browser-zh-cn.jpg", "keywords": "WebGPU, ONNX Runtime Web, 调试"}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BlogPosting", "headline": "把 LumiGrid 搬进浏览器：一个只在 WebGPU 出错的 6 信道卷积", "description": "两个神经网络加上一段自己写的 WebGL 着色器，逐像素对照 PyTorch 验证；以及一个让 WebGPU 版本只剩 28.75 dB 的错，是怎么一步步二分找出来的。", "datePublished": "2026-09-28", "dateModified": "2026-09-28", "inLanguage": "zh-Hans", "author": {"@type": "Person", "name": "Niansia", "url": "https://niansia.com/", "email": "mailto:niansia930202@gmail.com", "sameAs": ["https://github.com/niansia"]}, "mainEntityOfPage": "https://niansia.com/notes/zh-cn/lumigrid-in-the-browser/", "image": "https://niansia.com/assets/og/note-lumigrid-in-the-browser-zh-cn.jpg", "keywords": "WebGPU, ONNX Runtime Web, 调试"}</script>
 <script defer src="/assets/js/site-stats.js"></script>
 <script defer src="/assets/js/lightbox.js"></script>
 
@@ -157,6 +157,6 @@ footer{max-width:760px;margin:0 auto;padding:26px 20px 50px;border-top:1px solid
 <li>我还没有把它缩成最小重现回报给 ONNX Runtime，这是下一件要做的事。</li>
 </ul>
 <p>自己试试看：<a href="/lab/lumigrid/?lang=zh-CN">在浏览器运行的 LumiGrid</a>。</p></article><h2 style="margin-top:48px">其他笔记</h2><a class="card" href="/notes/zh-cn/lumigrid-notes/"><b>LumiGrid 研究笔记：一个亮度曲线网格，实际上学到了什么</b><small>从 16.48 dB 的课堂作法到 24.57 dB：LumiGrid 的设计、消融实验、两个失败案例，以及一个对自己方法不太有利的发现。</small></a><a class="card" href="/notes/zh-cn/taiwan-exam-design/"><b>Taiwan Exam 设计笔记：让模型出题，让程序只负责检查</b><small>一个让 AI 出原创学测仿真考的 Agent Skill，为什么刻意不让程序替题目品质背书，以及那些检查、锁定与套版是怎么设计的。</small></a><div class="btns"><a class="btn" href="/notes/zh-cn/">研究笔记</a><a class="btn primary" href="/zh-cn/#research">回到作品集</a></div></main>
-<footer>有问题或想法？写信到 <a href="mailto:niansia930202@gmail.com">niansia930202@gmail.com</a> · <a href="/zh-cn/">niansia.github.io</a> · <a href="https://github.com/niansia">github.com/niansia</a><span class="stats" data-stats hidden> · <i class="live-dot"></i> <b data-stat="online">–</b> 人在线 · <b data-stat="total">–</b> 次造访</span></footer>
+<footer>有问题或想法？写信到 <a href="mailto:niansia930202@gmail.com">niansia930202@gmail.com</a> · <a href="/zh-cn/">niansia.com</a> · <a href="https://github.com/niansia">github.com/niansia</a><span class="stats" data-stats hidden> · <i class="live-dot"></i> <b data-stat="online">–</b> 人在线 · <b data-stat="total">–</b> 次造访</span></footer>
 </body>
 </html>

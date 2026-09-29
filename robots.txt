@@ -1,5 +1,5 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://niansia.github.io/sitemap.xml
-Sitemap: https://niansia.github.io/sitemap-extra.xml
+Sitemap: https://niansia.com/sitemap.xml
+Sitemap: https://niansia.com/sitemap-extra.xml

@@ -57,4 +57,4 @@ Dialogue and training utterances live in `tools/yuki_brain_data.py`. Edit that f
 quarto preview
 ```
 
-The published site is available at <https://niansia.github.io>.
+The published site is available at <https://niansia.com> (niansia.github.io redirects there).
