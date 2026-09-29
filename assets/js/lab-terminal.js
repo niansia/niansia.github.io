@@ -671,6 +671,185 @@
     const t=event.target.closest?.('[data-kc-tab]'); if(!t||!['ArrowLeft','ArrowRight'].includes(event.key)) return;
     event.preventDefault(); kcState.tab=(kcState.tab+(event.key==='ArrowRight'?1:3))%4; kcStage(true); $(`[data-kc-tab="${kcState.tab}"]`)?.focus();
   });
+  /* ContextSec: its decision pipeline, then the real output of ContextSec itself on the sample products in its repository
+     (assets/contextsec/showcase.json, built by tools/contextsec_showcase.py from a clean checkout). */
+  const CS_PACK={en:{foundation:'Foundation','baseline-web':'Web baseline','auth-session':'Auth & sessions',payments:'Payments','privacy-pii':'Personal data','multi-tenant':'Multi-tenant','api-inbound':'Inbound API','external-api':'External APIs','file-upload':'File upload','ai-rag-agent':'AI & agents','secrets-management':'Secrets','cloud-iam-controlplane':'Cloud IAM','cicd-supply-chain':'CI/CD supply chain','third-party-saas-oauth':'Third-party OAuth','support-admin-ops':'Support & admin','high-impact-transactions':'High-impact actions'},
+    'zh-TW':{foundation:'基礎','baseline-web':'網頁基線','auth-session':'登入與工作階段',payments:'金流','privacy-pii':'個資','multi-tenant':'多租戶','api-inbound':'對外 API','external-api':'外部服務','file-upload':'檔案上傳','ai-rag-agent':'AI 與代理','secrets-management':'機密管理','cloud-iam-controlplane':'雲端權限','cicd-supply-chain':'CI/CD 供應鏈','third-party-saas-oauth':'第三方 OAuth','support-admin-ops':'客服與後台','high-impact-transactions':'高影響交易'},
+    'zh-CN':{foundation:'基础','baseline-web':'网页基线','auth-session':'登录与会话',payments:'支付','privacy-pii':'个人信息','multi-tenant':'多租户','api-inbound':'对外 API','external-api':'外部服务','file-upload':'文件上传','ai-rag-agent':'AI 与代理','secrets-management':'密钥管理','cloud-iam-controlplane':'云端权限','cicd-supply-chain':'CI/CD 供应链','third-party-saas-oauth':'第三方 OAuth','support-admin-ops':'客服与后台','high-impact-transactions':'高影响交易'}};
+  const csCopy=()=>({
+    en:{note:'Everything below is the real output of ContextSec {v} run on the sample products that ship in its repository. It decides which security controls a product needs and whether the evidence exists; it is not a penetration test, a vulnerability scanner or a compliance certification.',
+      archTitle:'How it decides',
+      arch:[['Bounded reading','Local text only, with file and size limits. It never runs, builds or tests the code, never uses the network, and never prints source values.'],
+        ['Product contexts','Dependencies, routes and data models become claims such as payments, personal data, tenancy or AI, each tied to a file and line.'],
+        ['Pack routing','Of 16 risk packs, only those with evidence open, plus their dependencies. Missing evidence is “unknown”, never “not applicable”.'],
+        ['Compositions','Two contexts side by side are only a candidate; a real intersection or data flow is needed before the combined control becomes required.'],
+        ['Ledger and gate','Every control records applicability and verification separately; a required control without proof keeps the release gate at BLOCK.']],
+      rules:[['Applicable ≠ vulnerable','A pack can apply even when no bug is found.'],['No finding ≠ verified','Unchecked controls stay unknown in the ledger.'],['Confidence ≠ impact','Weak evidence and a critical control are separate fields.'],['Co-occurrence ≠ data flow','An intersection needs direct evidence to become required.']],
+      demoTitle:'Pick a product, see the decision',demoLede:'Nine sample products from the repository. Each was profiled, checked and gated by ContextSec; switch between them to see how differently it routes.',
+      files:'files',bytes:'bytes',evidence:'Evidence',more:'+{n} more',noEvidence:'No production evidence: documentation, tests and dev-only dependencies cannot create claims.',
+      board:'16 risk packs',reason:{universal:'every repo',evidence:'evidence','no-evidence':'no evidence','needs-confirmation':'needs confirmation',dependency:'↳ {p}'},
+      state:{required:'required',candidate:'candidate',unknown:'unknown',not_applicable:'not applicable'},
+      comps:'Intersections',compRule:'{a} × {b}',
+      ledger:'Control ledger · {n} controls',ledgerNote:'Rows say whether a control applies, columns whether it was verified. They are kept apart, so unchecked is never counted as passed.',
+      ver:{verified:'verified',failed:'failed',unknown:'unverified',waived:'waived'},
+      gate:{BLOCK:'Blocking required controls failed or lack verification.',WARN:'Only candidate, unknown or non-blocking gaps remain.',PASS:'Every blocking required control is verified.',WAIVED:'Every blocker has a valid waiver.'},
+      why:'Why the gate says {g}',findings:'Deterministic findings',noFind:'No deterministic check failed here, yet {n} blocking required controls have no evidence, so the gate stays at BLOCK: no finding is not the same as verified.',
+      warnWhy:'Nothing required blocks the release; what remains is candidate or unknown applicability, so the gate is WARN.',
+      status:{failed:'failed',unknown:'unverified'},
+      twinsTitle:'One character apart',twinsLede:'Two one-line files from the test suite. On the left the call is only text inside a string; on the right it sits in ${…}, so it really runs.',
+      opens:'opens {n}',benchTitle:'Offline benchmarks',
+      bench:[['{c}/{t}','annotations correct across {s} regression scenarios'],['F1 {f}','on {c} profile cases, with {z} false required activations'],['{k}/{e}','single-edit security mutations caught'],['{p}/{c}','pathological {kb} KB files handled, slowest {s} s, no source disclosed']],
+      benchNote:'These cases are authored by the maintainer, so they show reproducibility and no regressions, not ecosystem-wide accuracy; an independent third-party evaluation protocol is published but not yet run.',
+      src:'Data: ContextSec {v} · commit {c} · run {d}',
+      prod:{'composite-saas':['AI invoice SaaS','Next.js, Stripe payments, a multi-tenant Prisma database, S3 uploads and an OpenAI assistant: a deliberately incomplete sample.'],
+        'next-static':['Static site','A single Next.js page: no login, payments or database.'],
+        'docs-noise':['Decoy docs','A README packed with Stripe, OpenAI and personal-data words plus an adversarial instruction; the two SDKs are dev dependencies only.'],
+        'high-impact':['Payouts','One function calling stripe.payouts.create: money that cannot be taken back.'],
+        'support-admin':['Support impersonation','An admin API that lets support staff open a session as a user.'],
+        'saas-oauth':['Slack connection','Connects a third-party SaaS with an OAuth refresh token and scopes.'],
+        'cicd-supply':['Release pipeline','A GitHub Actions release workflow with its action pinned to a commit.'],
+        'cloud-iam':['Cloud IAM','Terraform creating an IAM role and a policy that can assume roles.'],
+        'analytics-organization':['Analytics table','A Prisma table with an organizationId: it looks multi-tenant, but the evidence is not conclusive.']},
+      find:{}},
+    'zh-TW':{note:'以下全部是 ContextSec {v} 對它 repo 內附的範例產品實際執行的輸出。它判斷的是「這個產品需要哪些安全控制、證據夠不夠」，不是滲透測試、漏洞掃描，也不是合規認證。',
+      archTitle:'它怎麼判斷',
+      arch:[['有界讀取','只讀本地文字檔，有檔案數與大小上限；不執行、不建置、不測試程式碼，不連網，也不輸出原始碼內容。'],
+        ['產品情境','從依賴、路由、資料模型推出產品有哪些情境，例如金流、個資、多租戶、AI，每個判斷都連到檔案與行號。'],
+        ['風險包路由','16 個風險包只打開有證據支持的，連同它們的依賴；沒有證據的標成「未知」，不會當成「不適用」。'],
+        ['交集組合','兩個情境同時存在只算候選；要有實際的交集或資料流證據，組合控制才會升級成必要。'],
+        ['帳本與閘門','每項控制分開記「適不適用」和「驗證了沒」；缺證據的必要控制會讓發布閘門停在 BLOCK。']],
+      rules:[['適用 ≠ 有漏洞','沒找到 bug，風險包一樣可能適用。'],['沒發現 ≠ 已驗證','沒檢查到的控制在帳本裡維持未知。'],['推論信心 ≠ 影響程度','證據強弱和控制的嚴重度分開記錄。'],['同時出現 ≠ 有資料流','交集要有直接證據才會變成必要。']],
+      demoTitle:'選一個產品，看它怎麼判斷',demoLede:'repo 內附的 9 個範例產品，每個都實際經過 ContextSec 的 profile、check 和 gate。切換看看，同一個引擎對不同產品的判斷差多少。',
+      files:'個檔案',bytes:'位元組',evidence:'證據',more:'還有 {n} 筆',noEvidence:'沒有任何正式環境的證據：文件、測試和開發用依賴都不能產生判斷。',
+      board:'16 個風險包',reason:{universal:'每個 repo',evidence:'有證據','no-evidence':'無證據','needs-confirmation':'待確認',dependency:'↳ {p}'},
+      state:{required:'必要',candidate:'候選',unknown:'未知',not_applicable:'不適用'},
+      comps:'情境交集',compRule:'{a} × {b}',
+      ledger:'控制帳本 · 共 {n} 項',ledgerNote:'直的是「適不適用」，橫的是「驗證了沒」。兩者分開記，沒驗證的永遠不會被算成通過。',
+      ver:{verified:'已驗證',failed:'失敗',unknown:'未驗證',waived:'豁免'},
+      gate:{BLOCK:'有必要且會阻擋發布的控制失敗或缺少驗證。',WARN:'只剩候選、未知或不阻擋發布的缺口。',PASS:'所有會阻擋發布的必要控制都已驗證。',WAIVED:'每個阻擋項目都有有效的豁免。'},
+      why:'為什麼閘門是 {g}',findings:'確定性檢查發現',noFind:'這個產品沒有任何確定性檢查失敗，但仍有 {n} 項必要且會阻擋發布的控制沒有證據，所以閘門還是 BLOCK：沒發現問題，不等於通過驗證。',
+      warnWhy:'沒有必要的控制擋住發布；剩下的是候選或未知的適用性，所以是 WARN。',
+      status:{failed:'失敗',unknown:'未驗證'},
+      twinsTitle:'一字之差',twinsLede:'測試集裡的兩個一行檔案。左邊的呼叫只是字串裡的文字；右邊放在 ${…} 裡，是真的會執行。',
+      opens:'打開 {n} 個',benchTitle:'離線評測',
+      bench:[['{c}/{t}','{s} 個迴歸情境的人工標註全部正確'],['F1 {f}','{c} 個風險輪廓案例，誤開必要包 {z} 次'],['{k}/{e}','單一安全修改的變異全部被抓到'],['{p}/{c}','{kb} KB 的病態檔案全部處理完，最慢 {s} 秒，不外洩內容']],
+      benchNote:'這些案例都由維護者自己標註，證明的是可重現和不退步，不是整個生態系的準確率；獨立第三方評估的規範已經公開，但還沒有實際執行。',
+      src:'資料：ContextSec {v} · commit {c} · 執行於 {d}',
+      prod:{'composite-saas':['AI 發票 SaaS','Next.js、Stripe 付款、Prisma 多租戶資料庫、S3 上傳，再加上 OpenAI 問答：一個故意寫得不完整的範例產品。'],
+        'next-static':['靜態網站','只有一個 Next.js 頁面，沒有登入、付款或資料庫。'],
+        'docs-noise':['誘餌文件','README 塞滿 Stripe、OpenAI、個資等字眼，還夾了一段對抗性指令；兩個 SDK 也只列在開發依賴裡。'],
+        'high-impact':['出款功能','一個呼叫 stripe.payouts.create 的函式：錢送出去就收不回來。'],
+        'support-admin':['客服代登入','後台 API 讓客服可以用使用者的身分開啟工作階段。'],
+        'saas-oauth':['Slack 串接','用 OAuth refresh token 和 scopes 連接第三方 SaaS。'],
+        'cicd-supply':['發布流程','一個 GitHub Actions 發布 workflow，action 已經釘選到 commit。'],
+        'cloud-iam':['雲端權限','用 Terraform 建立 IAM 角色，以及可以 AssumeRole 的政策。'],
+        'analytics-organization':['分析事件表','Prisma 資料表裡有 organizationId：看起來像多租戶，但證據還不夠確定。']},
+      find:{'AI-PII-EGRESS-001':['未經篩選的資料庫物件被送進 AI 服務','含個資的 Prisma 查詢結果 → 整個物件序列化進模型請求'],
+        'PAYMENT-IDEMPOTENCY-001':['找不到可重現的 webhook 冪等性證據','重複的已簽章事件 → webhook 處理 → 業務狀態可能被重複執行'],
+        'PII-LOG-001':['敏感的資料庫物件被寫進應用程式日誌','含個資的 Prisma 查詢結果 → 寬鬆的 console 日誌'],
+        'TENANT-QUERY-001':['租戶資料的查詢缺少租戶條件','外部傳入的 id → 只用物件 id 查資料庫 → 回傳或處理別的租戶的資料'],
+        'UPLOAD-PUBLIC-001':['上傳的檔案被明確設成公開','外部上傳的檔案 → 寫入物件儲存 → public-read 權限']}},
+    'zh-CN':{note:'以下全部是 ContextSec {v} 对它 repo 内附的示例产品实际运行的输出。它判断的是“这个产品需要哪些安全控制、证据够不够”，不是渗透测试、漏洞扫描，也不是合规认证。',
+      archTitle:'它怎么判断',
+      arch:[['有界读取','只读本地文本文件，有文件数与大小上限；不运行、不构建、不测试代码，不联网，也不输出源代码内容。'],
+        ['产品情境','从依赖、路由、数据模型推出产品有哪些情境，例如支付、个人信息、多租户、AI，每个判断都关联到文件与行号。'],
+        ['风险包路由','16 个风险包只打开有证据支持的，连同它们的依赖；没有证据的标成“未知”，不会当成“不适用”。'],
+        ['交集组合','两个情境同时存在只算候选；要有实际的交集或数据流证据，组合控制才会升级成必要。'],
+        ['账本与闸门','每项控制分开记“适不适用”和“验证了没”；缺证据的必要控制会让发布闸门停在 BLOCK。']],
+      rules:[['适用 ≠ 有漏洞','没找到 bug，风险包一样可能适用。'],['没发现 ≠ 已验证','没检查到的控制在账本里维持未知。'],['推断置信度 ≠ 影响程度','证据强弱和控制的严重度分开记录。'],['同时出现 ≠ 有数据流','交集要有直接证据才会变成必要。']],
+      demoTitle:'选一个产品，看它怎么判断',demoLede:'repo 内附的 9 个示例产品，每个都实际经过 ContextSec 的 profile、check 和 gate。切换看看，同一个引擎对不同产品的判断差多少。',
+      files:'个文件',bytes:'字节',evidence:'证据',more:'还有 {n} 条',noEvidence:'没有任何生产环境的证据：文档、测试和开发用依赖都不能产生判断。',
+      board:'16 个风险包',reason:{universal:'每个 repo',evidence:'有证据','no-evidence':'无证据','needs-confirmation':'待确认',dependency:'↳ {p}'},
+      state:{required:'必要',candidate:'候选',unknown:'未知',not_applicable:'不适用'},
+      comps:'情境交集',compRule:'{a} × {b}',
+      ledger:'控制账本 · 共 {n} 项',ledgerNote:'竖的是“适不适用”，横的是“验证了没”。两者分开记，没验证的永远不会被算成通过。',
+      ver:{verified:'已验证',failed:'失败',unknown:'未验证',waived:'豁免'},
+      gate:{BLOCK:'有必要且会阻挡发布的控制失败或缺少验证。',WARN:'只剩候选、未知或不阻挡发布的缺口。',PASS:'所有会阻挡发布的必要控制都已验证。',WAIVED:'每个阻挡项目都有有效的豁免。'},
+      why:'为什么闸门是 {g}',findings:'确定性检查发现',noFind:'这个产品没有任何确定性检查失败，但仍有 {n} 项必要且会阻挡发布的控制没有证据，所以闸门还是 BLOCK：没发现问题，不等于通过验证。',
+      warnWhy:'没有必要的控制挡住发布；剩下的是候选或未知的适用性，所以是 WARN。',
+      status:{failed:'失败',unknown:'未验证'},
+      twinsTitle:'一字之差',twinsLede:'测试集里的两个单行文件。左边的调用只是字符串里的文字；右边放在 ${…} 里，是真的会执行。',
+      opens:'打开 {n} 个',benchTitle:'离线评测',
+      bench:[['{c}/{t}','{s} 个回归情境的人工标注全部正确'],['F1 {f}','{c} 个风险画像案例，误开必要包 {z} 次'],['{k}/{e}','单一安全修改的变异全部被抓到'],['{p}/{c}','{kb} KB 的病态文件全部处理完，最慢 {s} 秒，不泄露内容']],
+      benchNote:'这些案例都由维护者自己标注，证明的是可复现和不退步，不是整个生态的准确率；独立第三方评估的规范已经公开，但还没有实际执行。',
+      src:'数据：ContextSec {v} · commit {c} · 运行于 {d}',
+      prod:{'composite-saas':['AI 发票 SaaS','Next.js、Stripe 支付、Prisma 多租户数据库、S3 上传，再加上 OpenAI 问答：一个故意写得不完整的示例产品。'],
+        'next-static':['静态网站','只有一个 Next.js 页面，没有登录、支付或数据库。'],
+        'docs-noise':['诱饵文档','README 塞满 Stripe、OpenAI、个人信息等字眼，还夹了一段对抗性指令；两个 SDK 也只列在开发依赖里。'],
+        'high-impact':['出款功能','一个调用 stripe.payouts.create 的函数：钱发出去就收不回来。'],
+        'support-admin':['客服代登录','后台 API 让客服可以用用户的身份开启会话。'],
+        'saas-oauth':['Slack 集成','用 OAuth refresh token 和 scopes 连接第三方 SaaS。'],
+        'cicd-supply':['发布流程','一个 GitHub Actions 发布 workflow，action 已经固定到 commit。'],
+        'cloud-iam':['云端权限','用 Terraform 创建 IAM 角色，以及可以 AssumeRole 的策略。'],
+        'analytics-organization':['分析事件表','Prisma 数据表里有 organizationId：看起来像多租户，但证据还不够确定。']},
+      find:{'AI-PII-EGRESS-001':['未经筛选的数据库对象被发送给 AI 服务','含个人信息的 Prisma 查询结果 → 整个对象序列化进模型请求'],
+        'PAYMENT-IDEMPOTENCY-001':['找不到可复现的 webhook 幂等性证据','重复的已签名事件 → webhook 处理 → 业务状态可能被重复执行'],
+        'PII-LOG-001':['敏感的数据库对象被写进应用日志','含个人信息的 Prisma 查询结果 → 宽松的 console 日志'],
+        'TENANT-QUERY-001':['租户数据的查询缺少租户条件','外部传入的 id → 只用对象 id 查数据库 → 返回或处理其他租户的数据'],
+        'UPLOAD-PUBLIC-001':['上传的文件被明确设为公开','外部上传的文件 → 写入对象存储 → public-read 权限']}}}[locale]);
+  let csData=null;
+  const csState={p:0};
+  const csFill=(s,o)=>s.replace(/\{(\w+)\}/g,(m,k)=>o[k]??m);
+  const csPack=id=>(CS_PACK[locale]||CS_PACK.en)[id]||id;
+  function csShowcase() {
+    const c=csCopy();
+    return `<section class="cs-show"><p class="cs-note"><b translate="no">v0.4.1</b><span class="cs-note-t"></span></p>
+      <h2>${esc(c.archTitle)}</h2><ol class="cs-flow">${c.arch.map(([t,d],i)=>`<li style="--i:${i}"><span class="cs-n">${i+1}</span><b>${esc(t)}</b><small>${esc(d)}</small></li>`).join('')}</ol>
+      <div class="cs-rules">${c.rules.map(([t,d])=>`<div><b>${esc(t)}</b><small>${esc(d)}</small></div>`).join('')}</div>
+      <h2>${esc(c.demoTitle)}</h2><p class="screen-intro">${esc(c.demoLede)}</p>
+      <div class="cs-demo"><div class="cs-products" role="tablist" aria-label="${esc(c.demoTitle)}"></div><div class="cs-stage" role="tabpanel" aria-live="polite"></div><p class="cs-src"></p></div>
+      <h2>${esc(c.twinsTitle)}</h2><p class="screen-intro">${esc(c.twinsLede)}</p><div class="cs-twins"></div>
+      <h2>${esc(c.benchTitle)}</h2><div class="cs-bench"></div><p class="comment-line">${esc(c.benchNote)}</p></section>`;
+  }
+  function csPaint() {
+    const box=$('.cs-show'); if(!box||!csData) return;
+    const c=csCopy(), D=csData, P=D.products[csState.p], stage=box.querySelector('.cs-stage');
+    box.querySelector('.cs-products').innerHTML=D.products.map((p,i)=>`<button type="button" role="tab" data-cs-p="${i}" aria-selected="${i===csState.p}" tabindex="${i===csState.p?0:-1}"><i class="g-${esc(p.gate.status.toLowerCase())}" aria-hidden="true"></i>${esc((c.prod[p.id]||[p.id])[0])}</button>`).join('');
+    const [name,desc]=c.prod[P.id]||[P.id,''];
+    // code locations before manifest entries, and one line per claim before repeats, so the first nine say the most
+    const byCode=[...P.evidence].sort((a,b)=>(/^\d+$/.test(b.l)-/^\d+$/.test(a.l))), firstOf=new Set(), lead=[], rest=[];
+    byCode.forEach(e=>{ (firstOf.has(e.c)?rest:lead).push(e); firstOf.add(e.c); });
+    const ev=lead.concat(rest).slice(0,9).map(e=>`<li><code translate="no">${esc(e.p)}${/^\d+$/.test(e.l)?':'+esc(e.l):' · '+esc(e.l)}</code><span translate="no">→ ${esc(e.c)}</span></li>`).join('');
+    const tiles=D.packs.map((k,i)=>{ const [st,why,dep]=P.packs[k.id]||['unknown','no-evidence'];
+      return `<div class="cs-tile s-${esc(st)}" style="--i:${i}" title="${esc(c.state[st]||st)}"><b>${esc(csPack(k.id))}</b><small translate="no">${esc(k.id)}</small><em>${esc(csFill(c.reason[why]||why,{p:csPack(dep||'')}))}</em></div>`; }).join('');
+    const comps=Object.entries(P.compositions).map(([id,st])=>{ const r=D.composition_rules.find(x=>x.id===id); const [a,b]=r?r.requires:['?','?'];
+      return `<span class="cs-comp s-${esc(st)}"><b>${esc(csFill(c.compRule,{a:csPack(a),b:csPack(b)}))}</b><em>${esc(c.state[st]||st)}</em><small translate="no">${esc(id)}</small></span>`; }).join('');
+    const APP=['required','candidate','unknown','not_applicable'], VER=['verified','failed','unknown','waived'];
+    const max=Math.max(1,...APP.flatMap(a=>VER.map(v=>P.matrix[a]?.[v]||0)));
+    const matrix=`<table class="cs-matrix"><thead><tr><th></th>${VER.map(v=>`<th>${esc(c.ver[v])}</th>`).join('')}</tr></thead><tbody>${APP.map(a=>`<tr><th>${esc(c.state[a])}</th>${VER.map(v=>{ const n=P.matrix[a]?.[v]||0; return `<td class="${P.gate.status==='BLOCK'&&a==='required'&&(v==='failed'||v==='unknown')&&n?'is-gap':''}" style="--a:${(n/max).toFixed(2)}">${n||'·'}</td>`; }).join('')}</tr>`).join('')}</tbody></table>`;
+    const g=P.gate.status;
+    const why=P.findings.length?`<h3>${esc(c.findings)}</h3><ul class="cs-finds">${P.findings.map(f=>{ const [t,path]=c.find[f.checker]||[f.title,f.attack];
+        return `<li class="sev-${esc(f.severity)}"><div><em class="st-${esc(f.status)}">${esc(c.status[f.status]||f.status)}</em><b>${esc(t)}</b></div><code translate="no">${esc(f.path)}:${esc(f.line)}</code><small>${esc(path)}</small><span class="cs-ids" translate="no">${esc(f.checker)} → ${f.controls.map(esc).join(' · ')}</span></li>`; }).join('')}</ul>`
+      :`<p class="cs-why-t">${esc(g==='BLOCK'?csFill(c.noFind,{n:P.gate.blocking}):c.warnWhy)}</p>`;
+    stage.innerHTML=`<div class="cs-head"><div><b>${esc(name)}</b><small>${esc(desc)}</small><span class="cs-meta" translate="no">${esc(P.repo)} · ${P.files} ${esc(c.files)} · ${P.bytes.toLocaleString('en-US')} ${esc(c.bytes)}</span></div>
+      <div class="cs-gate g-${esc(g.toLowerCase())}"><em translate="no">${esc(g)}</em><small>${esc(c.gate[g]||'')}</small></div></div>
+      <div class="cs-cols"><div class="cs-ev"><h3>${esc(c.evidence)} · ${P.evidence.length}</h3>${P.evidence.length?`<ul>${ev}</ul>${P.evidence.length>9?`<p class="cs-more">${esc(csFill(c.more,{n:P.evidence.length-9}))}</p>`:''}`:`<p class="cs-more">${esc(c.noEvidence)}</p>`}</div>
+      <div><h3>${esc(c.board)}</h3><div class="cs-board">${tiles}</div><p class="cs-legend">${['required','candidate','unknown'].map(s=>`<span class="s-${s}"><i></i>${esc(c.state[s])}</span>`).join('')}</p></div></div>
+      ${comps?`<h3>${esc(c.comps)}</h3><div class="cs-comps">${comps}</div>`:''}
+      <div class="cs-cols cs-cols-b"><div><h3>${esc(csFill(c.ledger,{n:P.controls}))}</h3>${matrix}<p class="cs-more">${esc(c.ledgerNote)}</p></div><div class="cs-why"><h3>${esc(csFill(c.why,{g}))}</h3>${why}</div></div>`;
+    box.querySelector('.cs-src').textContent=csFill(c.src,{v:D.source.version,c:D.source.commit.slice(0,7),d:D.source.run});
+  }
+  function csStatic() {
+    const box=$('.cs-show'); if(!box||!csData) return;
+    const c=csCopy(), D=csData, B=D.bench;
+    box.querySelector('.cs-note-t').textContent=csFill(c.note,{v:D.source.version});
+    box.querySelector('.cs-twins').innerHTML=D.twins.map(t=>`<div class="cs-twin t-${esc(t.id)}"><span class="cs-file" translate="no">${esc(t.file)}</span><pre translate="no"><code>${esc(t.code)}</code></pre><p><b>${esc(csFill(c.opens,{n:t.required.length}))}</b>${t.required.map(p=>`<span>${esc(csPack(p))}</span>`).join('')}</p></div>`).join('');
+    const vals=[{c:B.regression.correct,t:B.regression.annotations,s:B.regression.scenarios},{f:B.profile.macro_f1.toFixed(2),c:B.profile.cases,z:B.profile.false_required},
+      {k:B.mutation.killed,e:B.mutation.eligible},{p:B.adversarial.passed,c:B.adversarial.cases,kb:Math.round(B.adversarial.bytes/1000),s:B.adversarial.slowest}];
+    box.querySelector('.cs-bench').innerHTML=c.bench.map(([big,small],i)=>`<div style="--i:${i}"><b>${esc(csFill(big,vals[i]))}</b><small>${esc(csFill(small,vals[i]))}</small></div>`).join('');
+  }
+  function initContextsec() {
+    const box=$('.cs-show'); if(!box) return;
+    box.classList.toggle('no-motion',!motion());
+    const go=()=>{ csStatic(); csPaint(); };
+    if(csData) go(); else fetch('/assets/contextsec/showcase.json?v=1').then(r=>r.json()).then(d=>{csData=d;go();}).catch(()=>{});
+  }
+  root.addEventListener('click',event=>{ const b=event.target.closest('[data-cs-p]'); if(b){ csState.p=Number(b.dataset.csP); csPaint(); } });
+  root.addEventListener('keydown',event=>{
+    const b=event.target.closest?.('[data-cs-p]'); if(!b||!['ArrowLeft','ArrowRight','Home','End'].includes(event.key)||!csData) return;
+    event.preventDefault(); const n=csData.products.length;
+    csState.p=event.key==='Home'?0:event.key==='End'?n-1:(csState.p+(event.key==='ArrowRight'?1:n-1))%n; csPaint(); $(`[data-cs-p="${csState.p}"]`)?.focus();
+  });
   root.addEventListener('input',event=>{ if(event.target.matches('.lg-range')){ const cmp=event.target.closest('.lg-compare'); cmp.dataset.touched='1'; cmp.style.setProperty('--x',`${event.target.value}%`); } });
   root.addEventListener('click',event=>{ const t=event.target.closest('[data-lg-i]'), v=event.target.closest('[data-lg-vs]'); if(t){lgState.i=Number(t.dataset.lgI);paintLumigrid();} if(v){lgState.vs=v.dataset.lgVs;paintLumigrid();} });
   /* Film dock: the capstone film plays in an in-page player that can shrink to a corner mini player
@@ -936,12 +1115,13 @@
     if (view==='blog') html=blogScreen();
     if (view==='help') html=`${commandTitle('help')}<h1>${c.guideTitle}</h1><p>${c.guideIntro}</p><dl class="keyboard-guide">${c.keys.map(([key,description])=>`<div><dt><kbd>${key}</kbd></dt><dd>${description}</dd></div>`).join('')}</dl><h2>${c.commands}</h2>${commandCatalogue()}<p class="comment-line">${c.simulation}</p>`;
     if (view==='projects' && !item) html=`${commandTitle('ls ./projects/')}${directoryHTML(c)}`;
-    if (view==='projects' && item) html=`${commandTitle('cat projects/'+esc(item.id)+'/README.md')}<button class="back-link" data-view="projects">← ${c.all}</button><div class="project-detail"><p class="detail-meta">${esc(item.category)}<span>${esc(item.status)}</span></p><h1 translate="no">${esc(item.name)}</h1><p class="project-description">${esc(item.description)}</p>${item.id==='taiwan-exam'?'<img class="project-art" src="/assets/work/taiwan-exam-social-preview.png" width="1280" height="640" alt="Taiwan Exam" loading="lazy">'+teFilmCard()+examsCard():''}${item.id==='lumigrid'?lumigridShowcase():''}${item.id==='kcrashlab'?kcShowcase():''}${item.id==='adversarial-lab'?'<img class="project-art" src="/assets/og/adversarial-demo.jpg" width="1200" height="630" alt="Adversarial Lab" loading="lazy">'+advCard():''}<h2>${c.evidence}</h2><p>${esc(item.evidence)}</p><div class="output-actions"><a class="action-button primary" href="${esc(item.url)}" target="_blank" rel="noopener noreferrer"><span>${c.source}</span>${icon('link')}</a><a class="action-button" href="${esc(item.reference)}" target="_blank" rel="noopener noreferrer"><span>${esc(item.referenceLabel)}</span>${icon('link')}</a><button class="action-button" data-ask="${esc(item.name)}">${icon('chat')}<span>${c.askTitle}</span></button><button class="action-button" data-action="share" data-share="/p/${esc(item.id)}/${locale==='en'?'':locale.toLowerCase()+'/'}">${icon('link')}<span>${esc(noteCopy().share)}</span></button></div><div class="project-pagination"><button data-project-step="-1">← ${c.prev}</button><span>${items.indexOf(item)+1} / ${items.length}</span><button data-project-step="1">${c.next} →</button></div></div>`;
+    if (view==='projects' && item) html=`${commandTitle('cat projects/'+esc(item.id)+'/README.md')}<button class="back-link" data-view="projects">← ${c.all}</button><div class="project-detail"><p class="detail-meta">${esc(item.category)}<span>${esc(item.status)}</span></p><h1 translate="no">${esc(item.name)}</h1><p class="project-description">${esc(item.description)}</p>${item.id==='taiwan-exam'?'<img class="project-art" src="/assets/work/taiwan-exam-social-preview.png" width="1280" height="640" alt="Taiwan Exam" loading="lazy">'+teFilmCard()+examsCard():''}${item.id==='lumigrid'?lumigridShowcase():''}${item.id==='kcrashlab'?kcShowcase():''}${item.id==='contextsec'?csShowcase():''}${item.id==='adversarial-lab'?'<img class="project-art" src="/assets/og/adversarial-demo.jpg" width="1200" height="630" alt="Adversarial Lab" loading="lazy">'+advCard():''}<h2>${c.evidence}</h2><p>${esc(item.evidence)}</p><div class="output-actions"><a class="action-button primary" href="${esc(item.url)}" target="_blank" rel="noopener noreferrer"><span>${c.source}</span>${icon('link')}</a><a class="action-button" href="${esc(item.reference)}" target="_blank" rel="noopener noreferrer"><span>${esc(item.referenceLabel)}</span>${icon('link')}</a><button class="action-button" data-ask="${esc(item.name)}">${icon('chat')}<span>${c.askTitle}</span></button><button class="action-button" data-action="share" data-share="/p/${esc(item.id)}/${locale==='en'?'':locale.toLowerCase()+'/'}">${icon('link')}<span>${esc(noteCopy().share)}</span></button></div><div class="project-pagination"><button data-project-step="-1">← ${c.prev}</button><span>${items.indexOf(item)+1} / ${items.length}</span><button data-project-step="1">${c.next} →</button></div></div>`;
     const output=$('.terminal-output'); output.dataset.view=view; output.innerHTML=html; output.scrollTop=0; renderJournal();
     if (view==='research') initCapstone();
     if (view==='guestbook') window.NIANSIA_GUESTBOOK?.mount(output,locale);
     if (view==='projects' && projectId==='lumigrid') initLumigrid();
     if (view==='projects' && projectId==='kcrashlab') initKcrash();
+    if (view==='projects' && projectId==='contextsec') initContextsec();
     output.classList.remove('screen-enter'); if (animate && motion()) { void output.offsetWidth; output.classList.add('screen-enter'); }
     root.querySelectorAll('[data-nav-index]').forEach((el,i)=>{el.classList.toggle('is-current',i===paths.indexOf(view));el.classList.toggle('is-selected',i===selectedNav);el.setAttribute('aria-current',i===paths.indexOf(view)?'page':'false');});
     moveIndicator();
