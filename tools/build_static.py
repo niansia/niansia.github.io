@@ -170,6 +170,15 @@ figure.fig figcaption{margin-top:8px;font-size:13.5px;color:var(--muted);line-he
 .log-entry h2{margin:4px 0 6px!important;font-size:21px!important;}
 .log-entry h2 a{color:var(--ink);text-decoration:none;}
 .statement-link{display:flex;justify-content:space-between;align-items:center;}
+.top a.me{display:inline-flex;align-items:center;gap:8px;padding:3px 12px 3px 3px;border:1px solid var(--line);border-radius:99px;transition:border-color .2s;}.top a.me:hover{border-color:var(--accent);}.top a.me img{width:24px;height:24px;border-radius:50%;display:block;}
+.author{max-width:720px;margin:44px auto 0;padding:18px 20px;display:flex;align-items:center;gap:16px;border-radius:18px;background:var(--code);border:1px solid var(--line);}
+.author{box-sizing:border-box;}.author>*{flex:none;}
+.author .an-face img{display:block;width:56px;height:56px;border-radius:50%;border:2px solid var(--accent);}
+.author .an-text{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px;}
+.author .an-text b{font-size:15px;}.author .an-text small{font-size:13px;line-height:1.6;color:var(--muted);}
+.author .an-note{color:var(--ink)!important;}
+.author .an-go{margin:0;white-space:nowrap;}
+@media (max-width:760px){.author{margin:40px 16px 0;}}@media (max-width:600px){.author{flex-wrap:wrap;padding:16px;}.author .an-text{flex-basis:calc(100% - 72px);}.author .an-go{flex:1 1 100%;justify-content:center;text-align:center;}}
 footer{max-width:760px;margin:0 auto;padding:26px 20px 50px;border-top:1px solid var(--line);font-size:14px;color:var(--muted);}
 """
 FONTS = ('<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
@@ -177,9 +186,28 @@ FONTS = ('<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="
          '&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap">')
 
 
+AUTHOR_UI = {
+    "en": {"by": "Made by Niansia", "who": "M.S. student in computer science at NYCU, working on AI security, computer vision and vision-language models.",
+           "go": "Visit niansia.com", "home": "Back to Niansia's website"},
+    "zh-TW": {"by": "由 Niansia 製作", "who": "陽明交大資工碩士生，研究 AI 安全、電腦視覺與視覺語言模型。",
+              "go": "前往 niansia.com", "home": "回到 Niansia 的個人網站"},
+}
+AUTHOR_UI["zh-CN"] = {k: T2S.convert(v) for k, v in AUTHOR_UI["zh-TW"].items()}
+
+
+def author_card(loc: str, note: str = "") -> str:
+    """Who made this page, with a way back to the main site; shown above the footer of every static page but the brief."""
+    A = AUTHOR_UI[loc]
+    extra = f'<small class="an-note">{e(note)}</small>' if note else ""
+    return (f'<aside class="author" aria-label="{e(A["by"])}"><a class="an-face" href="{HOME[loc]}" tabindex="-1" aria-hidden="true" data-nz-title="Niansia">'
+            f'<img src="/assets/icons/author.webp" alt="" width="56" height="56" loading="lazy"></a>'
+            f'<div class="an-text"><b>{e(A["by"])}</b><small>{e(A["who"])}</small>{extra}</div>'
+            f'<a class="btn primary an-go" href="{HOME[loc]}" data-nz-title="Niansia">{e(A["go"])} →</a></aside>')
+
+
 def shell(*, loc: str, title: str, desc: str, url: str, og: str, alternates: dict, body: str, jsonld: dict | None = None,
           crumbs: str = "", og_type: str = "article", noindex: bool = False, extra_css: str = "", scripts: tuple = (), top_extra: str = "",
-          head_extra: str = "") -> str:
+          head_extra: str = "", author: bool = True, author_note: str = "") -> str:
     alt = "".join(f'<link rel="alternate" hreflang="{HTML_LANG[l].split("-")[0] if l == "en" else ("zh-Hant-TW" if l == "zh-TW" else "zh-Hans-CN")}" href="{SITE}{u}">'
                   for l, u in alternates.items())
     if "en" in alternates:
@@ -206,7 +234,7 @@ def shell(*, loc: str, title: str, desc: str, url: str, og: str, alternates: dic
 <meta http-equiv="Content-Security-Policy" content="{CSP}">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml">
-<script src="/assets/js/page-transition.js?v=2"></script>
+<script src="/assets/js/page-transition.js?v=3"></script>
 {FONTS}
 <style>{CSS}{extra_css}</style>
 {head_extra}{ld}
@@ -215,8 +243,9 @@ def shell(*, loc: str, title: str, desc: str, url: str, og: str, alternates: dic
 {"".join(f'<script defer src="{x}"></script>' for x in scripts)}
 </head>
 <body>
-<header class="top"><a href="{HOME[loc]}"><b>~/niansia</b></a>{crumbs}<span class="sp"></span><span class="langs">{langs}</span>{top_extra}</header>
+<header class="top"><a class="me" href="{HOME[loc]}" title="{e(AUTHOR_UI[loc]["home"])}" data-nz-title="Niansia"><img src="/assets/icons/author.webp" alt="" width="24" height="24"><b>~/niansia</b></a>{crumbs}<span class="sp"></span><span class="langs">{langs}</span>{top_extra}</header>
 {body}
+{author_card(loc, author_note) if author else ""}
 <footer>{e(UI[loc]['contact'])} <a href="mailto:{EMAIL}">{EMAIL}</a> · <a href="{HOME[loc]}">{HOST}</a> · <a href="https://github.com/niansia">github.com/niansia</a><span class="stats" data-stats hidden> · <i class="live-dot"></i> <b data-stat="online">–</b> {e(UI[loc]['online'])} · <b data-stat="total">–</b> {e(UI[loc]['visits'])}</span></footer>
 </body>
 </html>
@@ -546,7 +575,7 @@ EXAM_UI = {
               "warn": "題目和詳解都是 AI 生成的，可能有錯；請搭配課本和老師的說明使用。發現錯誤、侵權或個資，請按每份考卷下方的「回報問題」來信告訴我。",
               "all": "全部", "none": "還沒有人分享考卷，歡迎當第一個！", "none_subject": "這一科還沒有考卷。", "q": "題本", "s": "詳解",
               "pages": "頁", "by": "分享者", "preview": "預覽", "download": "下載", "folder": "開啟資料夾", "set": "第 {n} 份", "report": "回報問題", "sha": "檔案校驗碼（SHA-256）", "dataset": "所有檔案都放在 Hugging Face 資料集",
-              "license": "授權：CC BY-NC 4.0", "count": "共 {n} 份", "back": "回到作品集", "te": "Taiwan Exam 專案",
+              "license": "授權：CC BY-NC 4.0", "count": "共 {n} 份", "back": "Taiwan Exam 作品頁", "te": "Taiwan Exam 原始碼", "author_note": "Taiwan Exam 和這個分享區都是我做的，歡迎逛逛我的其他作品。",
               "report_subject": "[考卷回報] {id}", "report_body": "考卷編號：{id}\n問題類型（侵權／個資／答案錯誤／其他）：\n說明："},
 }
 EXAM_UI["zh-CN"] = {k: (T2S.convert(v) if isinstance(v, str) else [T2S.convert(x) for x in v]) for k, v in EXAM_UI["zh-TW"].items()}
@@ -660,14 +689,14 @@ def build_exams(data: dict) -> list[str]:
                 + f'<p class="fine">{e(U["license"])} · <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener noreferrer">CC BY-NC 4.0</a>'
                   f' · <a href="https://huggingface.co/datasets/{e(data["dataset"])}" target="_blank" rel="noopener noreferrer">{e(U["dataset"])} ↗</a></p>'
                 + f'<div class="btns"><a class="btn" href="https://github.com/niansia/taiwan-exam" target="_blank" rel="noopener noreferrer">{e(U["te"])} ↗</a>'
-                  f'<a class="btn primary" href="{HOME[loc]}#projects/taiwan-exam">{e(U["back"])}</a></div></main>')
+                  f'<a class="btn" href="{HOME[loc]}#projects/taiwan-exam">{e(U["back"])}</a></div></main>')
         ld = {"@context": "https://schema.org", "@type": "CollectionPage", "name": U["title"], "url": f"{SITE}/exams/{seg}/", "inLanguage": HTML_LANG[loc],
               "author": PERSON, "license": "https://creativecommons.org/licenses/by-nc/4.0/"}
         out = ROOT / "exams" / seg / "index.html"
         out.parent.mkdir(parents=True, exist_ok=True)
         out.write_text(shell(loc=loc, title=f'{U["title"]} · Niansia', desc=U["lede"], url=f"/exams/{seg}/", og=f"/assets/og/exams-{seg}.jpg",
                              alternates={l: f"/exams/{s}/" for s, l in segs.items()}, body=body, jsonld=ld, crumbs=" / exams", og_type="website",
-                             extra_css=EXAM_CSS), encoding="utf-8")
+                             extra_css=EXAM_CSS, author_note=U["author_note"]), encoding="utf-8")
         urls.append(f"/exams/{seg}/")
     (ROOT / "exams" / "index.html").write_text(
         '<!doctype html><html><head><meta charset="utf-8"><title>Taiwan Exam · Niansia</title><link rel="canonical" href="' + SITE + '/exams/zh-tw/">'
@@ -900,7 +929,7 @@ def build_brief(projects: dict, notes: dict, copy: dict, cv: dict, subs: dict, p
               "dateModified": today, "mainEntity": PERSON | {"jobTitle": C["role"], "knowsAbout": C["interests"].split(" / ")}}
         out = ROOT / base.strip("/") / "index.html"
         out.parent.mkdir(parents=True, exist_ok=True)
-        out.write_text(shell(loc=loc, title=f'Niansia · {U["title"]}', desc=U["desc"], url=base, og=f"/assets/og/brief-{seg}.jpg", alternates=alts, body=body,
+        out.write_text(shell(loc=loc, author=False, title=f'Niansia · {U["title"]}', desc=U["desc"], url=base, og=f"/assets/og/brief-{seg}.jpg", alternates=alts, body=body,
                              jsonld=ld, crumbs=" / brief", og_type="profile", extra_css=BRIEF_CSS, scripts=("/assets/js/static-pages.js",), top_extra=actions), encoding="utf-8")
         urls.append(base)
     return urls

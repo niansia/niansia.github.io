@@ -76,7 +76,8 @@
   function zoom(a, url) {
     const p = palette(url);
     const named = [...a.querySelectorAll('h2,h3,strong,b')].find(n => !n.closest('[aria-hidden="true"]') && n.textContent.trim().length > 1);
-    const text = (named || a).textContent.replace(/\s+/g, ' ').replace(/[↗→]/g, '').trim().slice(0, 60);
+    // data-nz-title names the destination when the link text is a call to action (the author card's "Visit niansia.com").
+    const text = (a.dataset.nzTitle || (named || a).textContent).replace(/\s+/g, ' ').replace(/[↗→]/g, '').trim().slice(0, 60);
     const home = /^\/(zh-tw\/|zh-cn\/)?(work\/)?$/.test(url.pathname);
     const kicker = home ? 'niansia.terminal' : '~/niansia' + url.pathname.replace(/\/(index\.html)?$/, '').replace(/\/(en|zh-tw|zh-cn)$/, '');
     const r = a.getBoundingClientRect(), W = innerWidth, H = innerHeight;

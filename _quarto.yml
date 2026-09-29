@@ -44,7 +44,7 @@ format:
       - file: includes/site-jsonld.html
       - text: |
           <meta name="theme-color" content="#fbeff4">
-          <script src="/assets/js/page-transition.js?v=2"></script>
+          <script src="/assets/js/page-transition.js?v=3"></script>
           <link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml">
           <link rel="icon" href="/assets/icons/favicon-32.png" type="image/png" sizes="32x32">
           <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">

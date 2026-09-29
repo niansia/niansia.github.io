@@ -17,7 +17,7 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://*.firebasedatabase.app; connect-src 'self' https://*.firebasedatabase.app wss://*.firebasedatabase.app; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; frame-src https://*.firebasedatabase.app; object-src 'none'; base-uri 'self'; form-action 'none'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml">
-<script src="/assets/js/page-transition.js?v=2"></script>
+<script src="/assets/js/page-transition.js?v=3"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap">
 <style>
 :root{--bg:#fbf6ee;--paper:#fffdf9;--ink:#2a2230;--muted:#766b73;--line:#2a22301a;--accent:#c0673a;--accent2:#8f6bb3;--code:#f3ece2;}
@@ -70,6 +70,15 @@ figure.fig figcaption{margin-top:8px;font-size:13.5px;color:var(--muted);line-he
 .log-entry h2{margin:4px 0 6px!important;font-size:21px!important;}
 .log-entry h2 a{color:var(--ink);text-decoration:none;}
 .statement-link{display:flex;justify-content:space-between;align-items:center;}
+.top a.me{display:inline-flex;align-items:center;gap:8px;padding:3px 12px 3px 3px;border:1px solid var(--line);border-radius:99px;transition:border-color .2s;}.top a.me:hover{border-color:var(--accent);}.top a.me img{width:24px;height:24px;border-radius:50%;display:block;}
+.author{max-width:720px;margin:44px auto 0;padding:18px 20px;display:flex;align-items:center;gap:16px;border-radius:18px;background:var(--code);border:1px solid var(--line);}
+.author{box-sizing:border-box;}.author>*{flex:none;}
+.author .an-face img{display:block;width:56px;height:56px;border-radius:50%;border:2px solid var(--accent);}
+.author .an-text{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px;}
+.author .an-text b{font-size:15px;}.author .an-text small{font-size:13px;line-height:1.6;color:var(--muted);}
+.author .an-note{color:var(--ink)!important;}
+.author .an-go{margin:0;white-space:nowrap;}
+@media (max-width:760px){.author{margin:40px 16px 0;}}@media (max-width:600px){.author{flex-wrap:wrap;padding:16px;}.author .an-text{flex-basis:calc(100% - 72px);}.author .an-go{flex:1 1 100%;justify-content:center;text-align:center;}}
 footer{max-width:760px;margin:0 auto;padding:26px 20px 50px;border-top:1px solid var(--line);font-size:14px;color:var(--muted);}
 </style>
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "SoftwareSourceCode", "name": "Adversarial Lab", "description": "在浏览器里运行的对抗攻击实验场：画一个或挑一个 MNIST 数字，在 L∞ 预算内用 FGSM、PGD 或指定目标的 PGD 攻击 CNN，一步步看预测被翻转，再通过梯度、迁移攻击与输入空间的决策地图，和经过 PGD 对抗训练的模型比较。攻击所需的梯度用纯 JavaScript 在访客的 CPU 上计算。", "codeRepository": "https://github.com/niansia/adversarial-lab", "author": {"@type": "Person", "name": "Niansia", "url": "https://niansia.com/", "email": "mailto:niansia930202@gmail.com", "sameAs": ["https://github.com/niansia"]}, "inLanguage": "zh-Hans", "url": "https://niansia.com/p/adversarial-lab/zh-cn/"}</script>
@@ -78,8 +87,9 @@ footer{max-width:760px;margin:0 auto;padding:26px 20px 50px;border-top:1px solid
 
 </head>
 <body>
-<header class="top"><a href="/zh-cn/"><b>~/niansia</b></a> / <a href="/zh-cn/#projects">projects</a><span class="sp"></span><span class="langs"><a href="/p/adversarial-lab/" hreflang="en">EN</a><a href="/p/adversarial-lab/zh-tw/" hreflang="zh-Hant">繁</a><a href="/p/adversarial-lab/zh-cn/" aria-current="page" hreflang="zh-Hans">简</a></span></header>
+<header class="top"><a class="me" href="/zh-cn/" title="回到 Niansia 的个人网站" data-nz-title="Niansia"><img src="/assets/icons/author.webp" alt="" width="24" height="24"><b>~/niansia</b></a> / <a href="/zh-cn/#projects">projects</a><span class="sp"></span><span class="langs"><a href="/p/adversarial-lab/" hreflang="en">EN</a><a href="/p/adversarial-lab/zh-tw/" hreflang="zh-Hant">繁</a><a href="/p/adversarial-lab/zh-cn/" aria-current="page" hreflang="zh-Hans">简</a></span></header>
 <main><p class="kicker">projects/adversarial-lab</p><h1>Adversarial Lab</h1><div class="chips"><span>AI 安全</span><span>在线试玩</span></div><img class="hero" src="/assets/og/adversarial-demo.jpg" alt="Adversarial Lab" loading="lazy"><p class="lede">在浏览器里运行的对抗攻击实验场：画一个或挑一个 MNIST 数字，在 L∞ 预算内用 FGSM、PGD 或指定目标的 PGD 攻击 CNN，一步步看预测被翻转，再通过梯度、迁移攻击与输入空间的决策地图，和经过 PGD 对抗训练的模型比较。攻击所需的梯度用纯 JavaScript 在访客的 CPU 上计算。</p><h2>佐证</h2><p>在 2,000 张 MNIST 测试图上以 PGD-40 评估：普通模型从 98.95% 的干净准确率在 ε = 0.2 时降到 0.2%；对抗训练模型在 ε = 0.2 仍有 92.2%、ε = 0.3 有 85.3%（干净准确率 97.92%）。附梯度遮蔽检查（每个 ε 下 PGD 都比 FGSM 与迁移攻击强）、与 PyTorch 误差在 1e-8 内的 JavaScript 梯度，以及只用 CPU 的训练与评估脚本。</p><div class="btns"><a class="btn primary" href="/zh-cn/#projects/adversarial-lab">打开交互式作品集 →</a><a class="btn" href="/lab/adversarial/?lang=zh-CN">在浏览器试试</a><a class="btn" href="https://github.com/niansia/adversarial-lab">原代码 ↗</a><a class="btn" href="https://github.com/niansia/adversarial-lab#results">成果与方法 ↗</a></div><p class="note">这是方便分享的精简页面；完整、可交互的版本在终端作品集里。</p></main>
+<aside class="author" aria-label="由 Niansia 制作"><a class="an-face" href="/zh-cn/" tabindex="-1" aria-hidden="true" data-nz-title="Niansia"><img src="/assets/icons/author.webp" alt="" width="56" height="56" loading="lazy"></a><div class="an-text"><b>由 Niansia 制作</b><small>阳明交大资工硕士生，研究 AI 安全、电脑视觉与视觉语言模型。</small></div><a class="btn primary an-go" href="/zh-cn/" data-nz-title="Niansia">前往 niansia.com →</a></aside>
 <footer>有问题或想法？写信到 <a href="mailto:niansia930202@gmail.com">niansia930202@gmail.com</a> · <a href="/zh-cn/">niansia.com</a> · <a href="https://github.com/niansia">github.com/niansia</a><span class="stats" data-stats hidden> · <i class="live-dot"></i> <b data-stat="online">–</b> 人在线 · <b data-stat="total">–</b> 次造访</span></footer>
 </body>
 </html>

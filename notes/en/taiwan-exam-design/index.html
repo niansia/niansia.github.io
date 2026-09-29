@@ -17,7 +17,7 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://*.firebasedatabase.app; connect-src 'self' https://*.firebasedatabase.app wss://*.firebasedatabase.app; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; frame-src https://*.firebasedatabase.app; object-src 'none'; base-uri 'self'; form-action 'none'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml">
-<script src="/assets/js/page-transition.js?v=2"></script>
+<script src="/assets/js/page-transition.js?v=3"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap">
 <style>
 :root{--bg:#fbf6ee;--paper:#fffdf9;--ink:#2a2230;--muted:#766b73;--line:#2a22301a;--accent:#c0673a;--accent2:#8f6bb3;--code:#f3ece2;}
@@ -70,6 +70,15 @@ figure.fig figcaption{margin-top:8px;font-size:13.5px;color:var(--muted);line-he
 .log-entry h2{margin:4px 0 6px!important;font-size:21px!important;}
 .log-entry h2 a{color:var(--ink);text-decoration:none;}
 .statement-link{display:flex;justify-content:space-between;align-items:center;}
+.top a.me{display:inline-flex;align-items:center;gap:8px;padding:3px 12px 3px 3px;border:1px solid var(--line);border-radius:99px;transition:border-color .2s;}.top a.me:hover{border-color:var(--accent);}.top a.me img{width:24px;height:24px;border-radius:50%;display:block;}
+.author{max-width:720px;margin:44px auto 0;padding:18px 20px;display:flex;align-items:center;gap:16px;border-radius:18px;background:var(--code);border:1px solid var(--line);}
+.author{box-sizing:border-box;}.author>*{flex:none;}
+.author .an-face img{display:block;width:56px;height:56px;border-radius:50%;border:2px solid var(--accent);}
+.author .an-text{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px;}
+.author .an-text b{font-size:15px;}.author .an-text small{font-size:13px;line-height:1.6;color:var(--muted);}
+.author .an-note{color:var(--ink)!important;}
+.author .an-go{margin:0;white-space:nowrap;}
+@media (max-width:760px){.author{margin:40px 16px 0;}}@media (max-width:600px){.author{flex-wrap:wrap;padding:16px;}.author .an-text{flex-basis:calc(100% - 72px);}.author .an-go{flex:1 1 100%;justify-content:center;text-align:center;}}
 footer{max-width:760px;margin:0 auto;padding:26px 20px 50px;border-top:1px solid var(--line);font-size:14px;color:var(--muted);}
 </style>
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "BlogPosting", "headline": "Taiwan Exam design notes: the model writes, the scripts only check", "description": "An Agent Skill that has an AI write original GSAT practice exams — why its scripts deliberately never vouch for question quality, and how the checks, locks and template stamping are designed.", "datePublished": "2026-09-28", "dateModified": "2026-09-28", "inLanguage": "en", "author": {"@type": "Person", "name": "Niansia", "url": "https://niansia.com/", "email": "mailto:niansia930202@gmail.com", "sameAs": ["https://github.com/niansia"]}, "mainEntityOfPage": "https://niansia.com/notes/en/taiwan-exam-design/", "image": "https://niansia.com/assets/og/note-taiwan-exam-design-en.jpg", "keywords": "Agent Skill, LLM, system design"}</script>
@@ -78,7 +87,7 @@ footer{max-width:760px;margin:0 auto;padding:26px 20px 50px;border-top:1px solid
 
 </head>
 <body>
-<header class="top"><a href="/"><b>~/niansia</b></a> / <a href="/notes/en/">notes</a><span class="sp"></span><span class="langs"><a href="/notes/en/taiwan-exam-design/" aria-current="page" hreflang="en">EN</a><a href="/notes/zh-tw/taiwan-exam-design/" hreflang="zh-Hant">繁</a><a href="/notes/zh-cn/taiwan-exam-design/" hreflang="zh-Hans">简</a></span></header>
+<header class="top"><a class="me" href="/" title="Back to Niansia&#x27;s website" data-nz-title="Niansia"><img src="/assets/icons/author.webp" alt="" width="24" height="24"><b>~/niansia</b></a> / <a href="/notes/en/">notes</a><span class="sp"></span><span class="langs"><a href="/notes/en/taiwan-exam-design/" aria-current="page" hreflang="en">EN</a><a href="/notes/zh-tw/taiwan-exam-design/" hreflang="zh-Hant">繁</a><a href="/notes/zh-cn/taiwan-exam-design/" hreflang="zh-Hans">简</a></span></header>
 <main><p class="kicker">Research notes</p><h1>Taiwan Exam design notes: the model writes, the scripts only check</h1><p class="lede">An Agent Skill that has an AI write original GSAT practice exams — why its scripts deliberately never vouch for question quality, and how the checks, locks and template stamping are designed.</p><div class="meta"><time datetime="2026-09-28">2026-09-28</time><span>3 min read</span><span class="tag">Agent Skill</span><span class="tag">LLM</span><span class="tag">system design</span></div><article><p><a href="https://github.com/niansia/taiwan-exam" rel="noopener noreferrer">Taiwan Exam</a> has an AI write an original practice exam for Taiwan's GSAT and delivers two PDFs: the questions and the worked solutions. Its core division of labour fits in one sentence: <strong>the model writes the questions; the scripts only lay out, check and stamp pages — and never vouch for question quality.</strong></p>
 <h2>Why split it this way</h2>
 <p>LLMs are good at writing questions, and just as good at saying they wrote them well. If one model writes, self-reviews and declares itself done, quality problems disappear behind the word "checked". So the design rule is:</p>
@@ -113,6 +122,7 @@ footer{max-width:760px;margin:0 auto;padding:26px 20px 50px;border-top:1px solid
 <li>The project has 112 scripts and 1,089 tests, but the tests verify the tooling, not every question a model writes.</li>
 </ul>
 <p>Source and installation: <a href="https://github.com/niansia/taiwan-exam" rel="noopener noreferrer">github.com/niansia/taiwan-exam</a>. There is also an 80-second <a href="/assets/film/taiwan-exam.html?lang=en">film</a>.</p></article><h2 style="margin-top:48px">More notes</h2><a class="card" href="/notes/en/lumigrid-notes/"><b>LumiGrid notes: what a luminance-guided curve grid actually learned</b><small>From a 16.48 dB course pipeline to 24.57 dB — the design, the ablation, two failure cases, and one finding that does not flatter the method.</small></a><a class="card" href="/notes/en/lumigrid-in-the-browser/"><b>Porting LumiGrid to the browser: a 6-channel convolution that only broke on WebGPU</b><small>Two neural networks and a hand-written WebGL shader, verified pixel by pixel against PyTorch — and how a bug that left the WebGPU version at 28.75 dB was found by bisection.</small></a><div class="btns"><a class="btn" href="/notes/en/">Research notes</a><a class="btn primary" href="/#research">Back to the portfolio</a></div></main>
+<aside class="author" aria-label="Made by Niansia"><a class="an-face" href="/" tabindex="-1" aria-hidden="true" data-nz-title="Niansia"><img src="/assets/icons/author.webp" alt="" width="56" height="56" loading="lazy"></a><div class="an-text"><b>Made by Niansia</b><small>M.S. student in computer science at NYCU, working on AI security, computer vision and vision-language models.</small></div><a class="btn primary an-go" href="/" data-nz-title="Niansia">Visit niansia.com →</a></aside>
 <footer>Questions or ideas? Email <a href="mailto:niansia930202@gmail.com">niansia930202@gmail.com</a> · <a href="/">niansia.com</a> · <a href="https://github.com/niansia">github.com/niansia</a><span class="stats" data-stats hidden> · <i class="live-dot"></i> <b data-stat="online">–</b> online · <b data-stat="total">–</b> visits</span></footer>
 </body>
 </html>

@@ -17,7 +17,7 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://*.firebasedatabase.app; connect-src 'self' https://*.firebasedatabase.app wss://*.firebasedatabase.app; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; frame-src https://*.firebasedatabase.app; object-src 'none'; base-uri 'self'; form-action 'none'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml">
-<script src="/assets/js/page-transition.js?v=2"></script>
+<script src="/assets/js/page-transition.js?v=3"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap">
 <style>
 :root{--bg:#fbf6ee;--paper:#fffdf9;--ink:#2a2230;--muted:#766b73;--line:#2a22301a;--accent:#c0673a;--accent2:#8f6bb3;--code:#f3ece2;}
@@ -70,6 +70,15 @@ figure.fig figcaption{margin-top:8px;font-size:13.5px;color:var(--muted);line-he
 .log-entry h2{margin:4px 0 6px!important;font-size:21px!important;}
 .log-entry h2 a{color:var(--ink);text-decoration:none;}
 .statement-link{display:flex;justify-content:space-between;align-items:center;}
+.top a.me{display:inline-flex;align-items:center;gap:8px;padding:3px 12px 3px 3px;border:1px solid var(--line);border-radius:99px;transition:border-color .2s;}.top a.me:hover{border-color:var(--accent);}.top a.me img{width:24px;height:24px;border-radius:50%;display:block;}
+.author{max-width:720px;margin:44px auto 0;padding:18px 20px;display:flex;align-items:center;gap:16px;border-radius:18px;background:var(--code);border:1px solid var(--line);}
+.author{box-sizing:border-box;}.author>*{flex:none;}
+.author .an-face img{display:block;width:56px;height:56px;border-radius:50%;border:2px solid var(--accent);}
+.author .an-text{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px;}
+.author .an-text b{font-size:15px;}.author .an-text small{font-size:13px;line-height:1.6;color:var(--muted);}
+.author .an-note{color:var(--ink)!important;}
+.author .an-go{margin:0;white-space:nowrap;}
+@media (max-width:760px){.author{margin:40px 16px 0;}}@media (max-width:600px){.author{flex-wrap:wrap;padding:16px;}.author .an-text{flex-basis:calc(100% - 72px);}.author .an-go{flex:1 1 100%;justify-content:center;text-align:center;}}
 footer{max-width:760px;margin:0 auto;padding:26px 20px 50px;border-top:1px solid var(--line);font-size:14px;color:var(--muted);}
 </style>
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "SoftwareSourceCode", "name": "ChromaRecover", "description": "以本機運算為核心的電腦視覺工具，用於還原由細微色彩差異承載的空間結構。系統比較多種假設、保留可稽核產物，並在證據不足時選擇不作判定。", "codeRepository": "https://github.com/niansia/ChromaRecover", "author": {"@type": "Person", "name": "Niansia", "url": "https://niansia.com/", "email": "mailto:niansia930202@gmail.com", "sameAs": ["https://github.com/niansia"]}, "inLanguage": "zh-Hant", "url": "https://niansia.com/p/chromarecover/zh-tw/"}</script>
@@ -78,8 +87,9 @@ footer{max-width:760px;margin:0 auto;padding:26px 20px 50px;border-top:1px solid
 
 </head>
 <body>
-<header class="top"><a href="/zh-tw/"><b>~/niansia</b></a> / <a href="/zh-tw/#projects">projects</a><span class="sp"></span><span class="langs"><a href="/p/chromarecover/" hreflang="en">EN</a><a href="/p/chromarecover/zh-tw/" aria-current="page" hreflang="zh-Hant">繁</a><a href="/p/chromarecover/zh-cn/" hreflang="zh-Hans">简</a></span></header>
+<header class="top"><a class="me" href="/zh-tw/" title="回到 Niansia 的個人網站" data-nz-title="Niansia"><img src="/assets/icons/author.webp" alt="" width="24" height="24"><b>~/niansia</b></a> / <a href="/zh-tw/#projects">projects</a><span class="sp"></span><span class="langs"><a href="/p/chromarecover/" hreflang="en">EN</a><a href="/p/chromarecover/zh-tw/" aria-current="page" hreflang="zh-Hant">繁</a><a href="/p/chromarecover/zh-cn/" hreflang="zh-Hans">简</a></span></header>
 <main><p class="kicker">projects/chromarecover</p><h1>ChromaRecover</h1><div class="chips"><span>電腦視覺</span><span>Public alpha</span></div><img class="hero" src="/assets/work/cards/chromarecover.jpg" alt="ChromaRecover" loading="lazy"><p class="lede">以本機運算為核心的電腦視覺工具，用於還原由細微色彩差異承載的空間結構。系統比較多種假設、保留可稽核產物，並在證據不足時選擇不作判定。</p><h2>佐證</h2><p>遮罩、疊圖、品質訊號、來源紀錄、不確定狀態與演算法說明。</p><div class="btns"><a class="btn primary" href="/zh-tw/#projects/chromarecover">打開互動式作品集 →</a><a class="btn" href="https://github.com/niansia/ChromaRecover">原始碼 ↗</a><a class="btn" href="https://github.com/niansia/ChromaRecover/blob/main/docs/algorithm.md">演算法說明 ↗</a></div><p class="note">這是方便分享的精簡頁面；完整、可互動的版本在終端作品集裡。</p></main>
+<aside class="author" aria-label="由 Niansia 製作"><a class="an-face" href="/zh-tw/" tabindex="-1" aria-hidden="true" data-nz-title="Niansia"><img src="/assets/icons/author.webp" alt="" width="56" height="56" loading="lazy"></a><div class="an-text"><b>由 Niansia 製作</b><small>陽明交大資工碩士生，研究 AI 安全、電腦視覺與視覺語言模型。</small></div><a class="btn primary an-go" href="/zh-tw/" data-nz-title="Niansia">前往 niansia.com →</a></aside>
 <footer>有問題或想法？寫信到 <a href="mailto:niansia930202@gmail.com">niansia930202@gmail.com</a> · <a href="/zh-tw/">niansia.com</a> · <a href="https://github.com/niansia">github.com/niansia</a><span class="stats" data-stats hidden> · <i class="live-dot"></i> <b data-stat="online">–</b> 人在線 · <b data-stat="total">–</b> 次造訪</span></footer>
 </body>
 </html>
