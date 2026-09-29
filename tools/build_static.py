@@ -985,6 +985,8 @@ def build_brief(projects: dict, notes: dict, copy: dict, cv: dict, subs: dict, p
                 links.append(f'<a href="/lab/lumigrid/?lang={loc}">{svg("play")}{e(U["demo"])}</a>')
             if pid == "taiwan-exam":
                 links.append(f'<a href="/assets/film/taiwan-exam.html?lang={loc}">{svg("play")}{e(U["film"])}</a>')
+            if pid == "chromarecover":
+                links.append(f'<a href="/lab/chromarecover/?lang={loc}">{svg("play")}{e(U["demo"])}</a>')
             links.append(f'<a href="/p/{pid}/{seg_of(loc)}">{svg("arrow")}{e(U["page"])}</a>')
             cards.append(f'<article class="b-card"><header><b>{e(p["name"])}</b><span>{e(p["category"])} · {e(p["status"])}</span></header>'
                          f'<p>{e(first_sentence(p["description"]))}</p><p class="ev"><b>{e(U["result"])}:</b> {e(first_sentence(p["evidence"]))}</p>'
@@ -1197,7 +1199,8 @@ HERO = {"adversarial-lab": "/assets/og/adversarial-demo.jpg", "lumigrid": "/asse
         "noveltyaudit": "/assets/work/cards/noveltyaudit.jpg", "research-meeting-coach": "/assets/work/research-meeting-coach.png", "chromarecover": "/assets/work/cards/chromarecover.jpg"}
 EXTRA = {"adversarial-lab": [("demo", "/lab/adversarial/?lang={loc}")],
          "lumigrid": [("demo", "/lab/lumigrid/?lang={loc}"), ("film", "/assets/film/lumigrid.html?lang={loc}")],
-         "taiwan-exam": [("film", "/assets/film/taiwan-exam.html?lang={loc}")]}
+         "taiwan-exam": [("film", "/assets/film/taiwan-exam.html?lang={loc}")],
+         "chromarecover": [("demo", "/lab/chromarecover/?lang={loc}"), ("film", "/assets/film/chromarecover.html?lang={loc}")]}
 
 
 def build_share(projects: dict) -> list[str]:
@@ -1359,7 +1362,7 @@ AI_TRAINING_BOTS = ["GPTBot", "ClaudeBot", "anthropic-ai", "CCBot", "Google-Exte
 
 def write_sitemap(urls: list[str]) -> None:
     today = date.today().isoformat()
-    body = "".join(f"<url><loc>{SITE}{u}</loc><lastmod>{today}</lastmod></url>\n" for u in ["/lab/lumigrid/", "/lab/adversarial/", *urls])
+    body = "".join(f"<url><loc>{SITE}{u}</loc><lastmod>{today}</lastmod></url>\n" for u in ["/lab/lumigrid/", "/lab/adversarial/", "/lab/chromarecover/", *urls])
     (ROOT / "sitemap-extra.xml").write_text(f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n{body}</urlset>\n', encoding="utf-8")
     # Search engines may index everything; crawlers that collect text for training AI models are asked to stay out.
     # robots.txt is a request, not a lock: well-behaved crawlers honour it, and a public page can always be read.

@@ -1652,6 +1652,180 @@
     event.preventDefault(); const tabs=['brief','rms','profile'], i=tabs.indexOf(rmState.tab);
     rmState.tab=tabs[(i+(event.key==='ArrowRight'?1:2))%3]; rmPaintRefs(); $(`[data-rm-tab="${rmState.tab}"]`)?.focus();
   });
+  /* ChromaRecover (flagship): the film (assets/film/chromarecover.html), the in-browser lab (lab/chromarecover/), then what it
+     solves, for whom, how it decides and what real runs produced. Every number comes from assets/chromarecover/data.json and
+     film.json, written by tools/chromarecover_showcase.py and tools/chromarecover_parity.py from the pinned commit. */
+  const crCopy=()=>({
+    en:{film:'Watch the ChromaRecover film',filmSub:'About 90 s, one continuous take through a real recovery: the tiles, their colours in Lab space, 156 competing masks, the decision contract, the evidence behind “820”, and the decoy it refuses to call.',
+      filmNote:'Every shape in the film is data from one run of the pinned commit: the generator’s plate, the tiles ChromaRecover segments, their Lab colours, every scored hypothesis, the winner’s metrics and the evidence map it returned.',
+      tryT:'Try it in your browser',tryS:'Hide your own number in a plate, drop in an image, or rerun the examples. The real Python package runs on your device (Pyodide / WebAssembly); nothing is uploaded.',
+      tryChips:['the real package, SHA-256 verified','same status and best pick as native on {n}/{t} examples','nothing leaves your device'],tryGo:'Open the lab',
+      probT:'The problem it solves',probLead:'Some shapes are carried almost only by colour: a number drawn in one colour among others, a pattern that survives in hue while brightness stays flat. People with colour-vision differences, OCR and general vision models can all miss it, or worse, confidently read something that is not there.',
+      probBody:'Tools that “enhance” such images usually return a single picture or a single answer. ChromaRecover returns the spatial structure itself, the evidence that supports it, and an explicit status: ok, uncertain or retry recommended. When the evidence is weak, it says so instead of guessing.',
+      whoT:'Who it is for',whoYes:'Built for',whoNo:'Not a replacement for',
+      yes:['accessibility researchers and tool builders who need to see what colour alone encodes','image and document analysts who need auditable masks, not a guess','computer-vision researchers studying colour-carried structure and abstention'],
+      no:['a medical colour-vision test','OCR: reading digits is optional, conservative and never decides the pixels','a detector of hidden messages in ordinary photographs'],
+      howT:'How it decides',
+      how:[['Normalise','The image is decoded (EXIF, ICC to sRGB) and analysed on a copy of at most {side} px; every result is mapped back to full resolution.'],
+        ['Four colour views','Absolute chroma (Lab a*, b*), local chroma with shading removed, opponent colour (R−G, (R+G)/2−B), and all of them together.'],
+        ['Competing masks','k-means with 2–6 clusters and their complements, thresholds along the main colour axes, nearby shapes grouped, and where the tiles of one colour gather: {h} distinct masks for the “820” plate.'],
+        ['Scoring','Colour separation, spatial structure, focus away from the frame, edge evidence, agreement across colour views, a penalty for plain gradients, and the capture quality.'],
+        ['The contract','ok needs decision confidence ≥ {thr}, a lead of {m} over the runner-up unless the two agree, and one of four evidence gates. Otherwise uncertain; a bad capture asks for a retry.'],
+        ['Outputs','Selected pixels, their envelope, a continuous evidence map and an overlay, plus result.json with transforms and provenance. Reading digits is optional, runs afterwards and never changes the status.']],
+      cT:'The same contract, twice',cLede:'The hidden-number plate and its decoy have the same colours and the same number of special tiles. Here is what the contract saw in each.',
+      cRows:[['decision confidence','≥ {thr}'],['lead over runner-up','≥ {m}, or agreement'],['edge + residual gate','edge ≥ 0.55'],['mosaic distribution gate','≥ 0.77'],['status','']],
+      cNote:'ok needs only one of the four evidence gates. On this plate the mosaic-distribution gate carries it; the edge gate does not fire, and the runner-up is close but selects largely the same pixels (IoU {v}).',
+      pos:'Hides “820”',neg:'Decoy',agree:'agree (IoU {v})',
+      galT:'Real results',galLede:'Every case ChromaRecover ran for this page, with the same configuration the lab uses. Switch the view to see what it selected and how strongly.',
+      views:{input:'Input',overlay:'Overlay',evidence:'Evidence'},decision:'decision',truth:'precision {p} · recall {r}',
+      names:{'mosaic-820':'Mosaic hiding “820”','mosaic-820-decoy':'Its decoy','mosaic-37':'Mosaic hiding “37”','dots-8':'Dot plate hiding “8”','dots-decoy':'Dot plate, no digit','mosaic-2026-fragment':'OK on a fragment of “2026”','camera-820':'“820” through a simulated camera','blank':'A blank card','ramp':'A smooth colour ramp'},
+      measT:'Measured',
+      meas:[['{p}/{t}','tests passed for this page'],['{g}/{G}','CI benchmark gates passed, re-run for this page'],['{b}/{n}','examples where the browser picks the same best candidate as native'],['{x}','largest decision-confidence difference between browser and native']],
+      bench:[['Dot plates, 192 px','{ok} of {n} hidden digits ok · top-3 IoU median {iou} · {abs} of {n} decoys abstain (max {max})'],['Dot plates, 128 px','{ok} of {n} ok: at this size every plate abstains, by design · {abs} of {n} decoys abstain'],['Gradients and stripes','{ok} of {n} called ok · highest confidence {max}'],['Matched-colour mosaics','decoys: {abs} abstain, highest decision {max} · envelope IoU median {iou}']],
+      extT:'Documented external runs (data not redistributable, not re-run here)',
+      ext:[['SmartDoc','document-corner geometry: {d}/{f} frames found, median IoU {iou}, worst corner error {rmse}'],['ColorBlindnessEval','held-out group of {n} images: {a} digit readings accepted, {c} of them correct, {fa} false acceptances']],
+      limT:'Limits, shown rather than hidden',
+      lim:['ok means a coherent colour structure passed the contract. It says nothing about what the shape means.','ok can rest on a fragment: on the “2026” example every selected pixel belongs to the text (precision {p}), but only {r} of the text was found. The lab reports both numbers for any plate you generate.','Dot-plate decoys are not colour-matched the way mosaic decoys are, so they are the easier negative.','The digit reader’s templates include the font the plate generator draws with, so readings on generated plates are not a held-out test; the external run above is.','Camera mode is experimental and uncalibrated; geometry was checked on SmartDoc, recovery confidence was not.','Speed: about {ns} s natively and {bs} s in a browser for a 480 px plate on the machine that built this page.'],
+      statusT:'Status',status:'Public alpha {v}. The digital path is the stable baseline; camera capture, burst fusion and restoration hypotheses are experimental. Next: independently licensed camera captures, broader primitive families, lower-memory bursts and measured performance work.',
+      src:'Data: ChromaRecover {v} · commit {c} · native Python {py}, NumPy {np}, OpenCV {cv} · run {d}'},
+    'zh-TW':{film:'觀看 ChromaRecover 動畫',filmSub:'約 90 秒一鏡到底，走過一次真實的找回：色塊、它們在 Lab 空間的顏色、156 個互相競爭的遮罩、決策契約、「820」背後的證據，以及它拒絕下結論的誘餌。',
+      filmNote:'動畫裡的每個形狀都是固定 commit 一次執行的資料：產生器畫的色盤、ChromaRecover 切出的色塊、它們的 Lab 顏色、每一個評分過的假設、勝出者的指標，以及它回傳的證據圖。',
+      tryT:'在你的瀏覽器試試',tryS:'把自己的數字藏進色盤、丟一張圖片進去，或重跑範例。真正的 Python 套件在你的裝置上執行（Pyodide / WebAssembly），不會上傳任何東西。',
+      tryChips:['真正的套件，已驗證 SHA-256','{n}/{t} 個範例的狀態與最佳候選和本機相同','資料不會離開你的裝置'],tryGo:'打開實驗室',
+      probT:'它解決什麼問題',probLead:'有些形狀幾乎只靠顏色撐著：用某一種顏色畫在其他顏色之間的數字、亮度平平只有色相在變的圖案。色覺差異者、OCR 和一般的視覺模型都可能看不見，甚至更糟：信心滿滿地讀出根本不存在的東西。',
+      probBody:'「強化」這類圖片的工具，通常只給一張圖或一個答案。ChromaRecover 回傳的是空間結構本身、支持它的證據，以及明確的狀態：ok、uncertain 或 retry recommended。證據不夠時，它會直說，而不是用猜的。',
+      whoT:'它是給誰用的',whoYes:'適合',whoNo:'不能取代',
+      yes:['需要看清「只靠顏色編碼了什麼」的無障礙研究者與工具開發者','需要可稽核的遮罩、而不是猜測的影像與文件分析者','研究顏色承載結構與「不下結論」的電腦視覺研究者'],
+      no:['醫療用的色覺檢測','OCR：讀數字是選用、保守的，而且永遠不決定像素','在一般照片裡偵測隱藏訊息'],
+      howT:'它怎麼判斷',
+      how:[['正規化','解碼圖片（EXIF、ICC 轉 sRGB），在最多 {side} px 的副本上分析；所有結果都映射回原始解析度。'],
+        ['四種顏色觀點','絕對色度（Lab a*、b*）、去除陰影後的局部色度、對立色（R−G、(R+G)/2−B），以及全部合起來。'],
+        ['互相競爭的遮罩','2 到 6 群的 k-means 與其補集、沿主要顏色軸的門檻、把相鄰形狀分組，以及某一色色塊聚集的位置：「820」色盤共有 {h} 個不同的遮罩。'],
+        ['評分','顏色分離度、空間結構、是否遠離邊框、邊緣證據、不同顏色觀點的一致性、對單純漸層的懲罰，以及拍攝品質。'],
+        ['契約','ok 需要決策信心 ≥ {thr}、領先亞軍 {m}（除非兩者一致），以及四道證據閘門之一。否則就是 uncertain；拍攝太差則要求重拍。'],
+        ['輸出','選中的像素、它的範圍、連續的證據圖和疊圖，以及記錄轉換與來源的 result.json。讀數字是選用的、在之後才執行，而且永遠不改變狀態。']],
+      cT:'同一份契約，看兩次',cLede:'藏著數字的色盤和它的誘餌，顏色相同、特殊色塊的數量也相同。以下是契約在兩者身上看到的。',
+      cRows:[['決策信心','≥ {thr}'],['領先亞軍','≥ {m}，或兩者一致'],['邊緣＋殘差閘門','邊緣 ≥ 0.55'],['拼貼分布閘門','≥ 0.77'],['狀態','']],
+      cNote:'ok 只需要四道證據閘門中的一道。這張色盤靠的是拼貼分布閘門；邊緣閘門沒有觸發，亞軍分數很接近，但選的幾乎是同一批像素（IoU {v}）。',
+      pos:'藏著「820」',neg:'誘餌',agree:'一致（IoU {v}）',
+      galT:'真實結果',galLede:'ChromaRecover 為這一頁跑過的每個案例，設定和實驗室相同。切換檢視，看它選了什麼、證據有多強。',
+      views:{input:'輸入',overlay:'疊圖',evidence:'證據'},decision:'決策',truth:'精確率 {p} · 召回率 {r}',
+      names:{'mosaic-820':'藏著「820」的拼貼','mosaic-820-decoy':'它的誘餌','mosaic-37':'藏著「37」的拼貼','dots-8':'藏著「8」的圓點色盤','dots-decoy':'沒有數字的圓點色盤','mosaic-2026-fragment':'只找到「2026」一小塊也 OK','camera-820':'模擬相機拍過的「820」','blank':'一張空白卡','ramp':'平滑的顏色漸層'},
+      measT:'實測',
+      meas:[['{p}/{t}','項測試為這一頁重跑通過'],['{g}/{G}','道 CI 評測關卡為這一頁重跑通過'],['{b}/{n}','個範例在瀏覽器選出的最佳候選和本機相同'],['{x}','瀏覽器與本機之間，決策信心的最大差距']],
+      bench:[['圓點色盤，192 px','{n} 個藏數字的有 {ok} 個 ok · 前三名 IoU 中位數 {iou} · {n} 個誘餌有 {abs} 個不下結論（最高 {max}）'],['圓點色盤，128 px','{n} 個有 {ok} 個 ok：這個大小下全部刻意不下結論 · {n} 個誘餌有 {abs} 個不下結論'],['漸層與條紋','{n} 個中被判 ok 的有 {ok} 個 · 最高信心 {max}'],['顏色匹配的拼貼','誘餌：{abs} 不下結論，最高決策信心 {max} · 範圍 IoU 中位數 {iou}']],
+      extT:'文件記錄的外部測試（資料不能重新散布，這裡沒有重跑）',
+      ext:[['SmartDoc','文件角點幾何：{f} 幀找到 {d} 幀，IoU 中位數 {iou}，最差角點誤差 {rmse}'],['ColorBlindnessEval','保留組 {n} 張圖：接受 {a} 個數字讀數，其中 {c} 個正確，錯誤接受 {fa} 個']],
+      limT:'限制，攤開來講',
+      lim:['ok 代表一個一致的顏色結構通過了契約，不代表這個形狀有什麼意思。','ok 也可能建立在一小塊上：在「2026」範例裡，選中的像素全部屬於文字（精確率 {p}），但只找到文字的 {r}。你在實驗室產生的任何色盤，都會同時顯示這兩個數字。','圓點色盤的誘餌不像拼貼誘餌那樣匹配顏色，所以是比較容易的反例。','讀數字的範本包含了色盤產生器所用的字型，所以產生的色盤上的讀數不算保留測試；上面的外部測試才是。','camera 模式是實驗性的、尚未校準；幾何在 SmartDoc 上檢查過，找回的信心沒有。','速度：在建置這一頁的機器上，一張 480 px 色盤本機約 {ns} 秒、瀏覽器約 {bs} 秒。'],
+      statusT:'現況',status:'公開 alpha {v}。digital 路徑是穩定的基準；相機拍攝、多張融合與還原假設仍是實驗性的。接下來：取得獨立授權的相機照片、更多種類的基本形狀、更省記憶體的多張處理，以及實測的效能改善。',
+      src:'資料：ChromaRecover {v} · commit {c} · 本機 Python {py}、NumPy {np}、OpenCV {cv} · 執行於 {d}'},
+    'zh-CN':{film:'观看 ChromaRecover 动画',filmSub:'约 90 秒一镜到底，走过一次真实的找回：色块、它们在 Lab 空间的颜色、156 个互相竞争的遮罩、决策契约、“820”背后的证据，以及它拒绝下结论的诱饵。',
+      filmNote:'动画里的每个形状都是固定 commit 一次运行的数据：生成器画的色盘、ChromaRecover 切出的色块、它们的 Lab 颜色、每一个评分过的假设、胜出者的指标，以及它返回的证据图。',
+      tryT:'在你的浏览器试试',tryS:'把自己的数字藏进色盘、拖一张图片进去，或重跑示例。真正的 Python 包在你的设备上运行（Pyodide / WebAssembly），不会上传任何东西。',
+      tryChips:['真正的包，已验证 SHA-256','{n}/{t} 个示例的状态与最佳候选和本机相同','数据不会离开你的设备'],tryGo:'打开实验室',
+      probT:'它解决什么问题',probLead:'有些形状几乎只靠颜色撑着：用某一种颜色画在其他颜色之间的数字、亮度平平只有色相在变的图案。色觉差异者、OCR 和一般的视觉模型都可能看不见，甚至更糟：信心满满地读出根本不存在的东西。',
+      probBody:'“增强”这类图片的工具，通常只给一张图或一个答案。ChromaRecover 返回的是空间结构本身、支持它的证据，以及明确的状态：ok、uncertain 或 retry recommended。证据不够时，它会直说，而不是靠猜。',
+      whoT:'它是给谁用的',whoYes:'适合',whoNo:'不能取代',
+      yes:['需要看清“只靠颜色编码了什么”的无障碍研究者与工具开发者','需要可审计的遮罩、而不是猜测的图像与文档分析者','研究颜色承载结构与“不下结论”的计算机视觉研究者'],
+      no:['医疗用的色觉检测','OCR：读数字是可选、保守的，而且永远不决定像素','在一般照片里检测隐藏信息'],
+      howT:'它怎么判断',
+      how:[['规范化','解码图片（EXIF、ICC 转 sRGB），在最多 {side} px 的副本上分析；所有结果都映射回原始分辨率。'],
+        ['四种颜色视角','绝对色度（Lab a*、b*）、去除阴影后的局部色度、对立色（R−G、(R+G)/2−B），以及全部合起来。'],
+        ['互相竞争的遮罩','2 到 6 簇的 k-means 与其补集、沿主要颜色轴的门槛、把相邻形状分组，以及某一色色块聚集的位置：“820”色盘共有 {h} 个不同的遮罩。'],
+        ['评分','颜色分离度、空间结构、是否远离边框、边缘证据、不同颜色视角的一致性、对单纯渐变的惩罚，以及拍摄质量。'],
+        ['契约','ok 需要决策置信度 ≥ {thr}、领先亚军 {m}（除非两者一致），以及四道证据闸门之一。否则就是 uncertain；拍摄太差则要求重拍。'],
+        ['输出','选中的像素、它的范围、连续的证据图和叠图，以及记录变换与来源的 result.json。读数字是可选的、在之后才运行，而且永远不改变状态。']],
+      cT:'同一份契约，看两次',cLede:'藏着数字的色盘和它的诱饵，颜色相同、特殊色块的数量也相同。以下是契约在两者身上看到的。',
+      cRows:[['决策置信度','≥ {thr}'],['领先亚军','≥ {m}，或两者一致'],['边缘＋残差闸门','边缘 ≥ 0.55'],['拼贴分布闸门','≥ 0.77'],['状态','']],
+      cNote:'ok 只需要四道证据闸门中的一道。这张色盘靠的是拼贴分布闸门；边缘闸门没有触发，亚军分数很接近，但选的几乎是同一批像素（IoU {v}）。',
+      pos:'藏着“820”',neg:'诱饵',agree:'一致（IoU {v}）',
+      galT:'真实结果',galLede:'ChromaRecover 为这一页跑过的每个案例，配置和实验室相同。切换视图，看它选了什么、证据有多强。',
+      views:{input:'输入',overlay:'叠图',evidence:'证据'},decision:'决策',truth:'精确率 {p} · 召回率 {r}',
+      names:{'mosaic-820':'藏着“820”的拼贴','mosaic-820-decoy':'它的诱饵','mosaic-37':'藏着“37”的拼贴','dots-8':'藏着“8”的圆点色盘','dots-decoy':'没有数字的圆点色盘','mosaic-2026-fragment':'只找到“2026”一小块也 OK','camera-820':'模拟相机拍过的“820”','blank':'一张空白卡','ramp':'平滑的颜色渐变'},
+      measT:'实测',
+      meas:[['{p}/{t}','项测试为这一页重跑通过'],['{g}/{G}','道 CI 评测关卡为这一页重跑通过'],['{b}/{n}','个示例在浏览器选出的最佳候选和本机相同'],['{x}','浏览器与本机之间，决策置信度的最大差距']],
+      bench:[['圆点色盘，192 px','{n} 个藏数字的有 {ok} 个 ok · 前三名 IoU 中位数 {iou} · {n} 个诱饵有 {abs} 个不下结论（最高 {max}）'],['圆点色盘，128 px','{n} 个有 {ok} 个 ok：这个大小下全部刻意不下结论 · {n} 个诱饵有 {abs} 个不下结论'],['渐变与条纹','{n} 个中被判 ok 的有 {ok} 个 · 最高置信度 {max}'],['颜色匹配的拼贴','诱饵：{abs} 不下结论，最高决策置信度 {max} · 范围 IoU 中位数 {iou}']],
+      extT:'文档记录的外部测试（数据不能重新分发，这里没有重跑）',
+      ext:[['SmartDoc','文档角点几何：{f} 帧找到 {d} 帧，IoU 中位数 {iou}，最差角点误差 {rmse}'],['ColorBlindnessEval','保留组 {n} 张图：接受 {a} 个数字读数，其中 {c} 个正确，错误接受 {fa} 个']],
+      limT:'限制，摊开来讲',
+      lim:['ok 代表一个一致的颜色结构通过了契约，不代表这个形状有什么意思。','ok 也可能建立在一小块上：在“2026”示例里，选中的像素全部属于文字（精确率 {p}），但只找到文字的 {r}。你在实验室生成的任何色盘，都会同时显示这两个数字。','圆点色盘的诱饵不像拼贴诱饵那样匹配颜色，所以是比较容易的反例。','读数字的模板包含了色盘生成器所用的字体，所以生成的色盘上的读数不算保留测试；上面的外部测试才是。','camera 模式是实验性的、尚未校准；几何在 SmartDoc 上检查过，找回的置信度没有。','速度：在构建这一页的机器上，一张 480 px 色盘本机约 {ns} 秒、浏览器约 {bs} 秒。'],
+      statusT:'现状',status:'公开 alpha {v}。digital 路径是稳定的基准；相机拍摄、多张融合与还原假设仍是实验性的。接下来：获取独立授权的相机照片、更多种类的基本形状、更省内存的多张处理，以及实测的性能改进。',
+      src:'数据：ChromaRecover {v} · commit {c} · 本机 Python {py}、NumPy {np}、OpenCV {cv} · 运行于 {d}'}}[locale]);
+  let crData=null, crFilm=null;
+  const crLut=(()=>{ const S=[[0,[0,0,4]],[.25,[66,10,104]],[.5,[147,38,103]],[.75,[229,92,48]],[.9,[248,173,22]],[1,[252,255,164]]], L=new Uint8ClampedArray(768);
+    for(let i=0;i<256;i++){ const x=i/255; let k=0; while(k<S.length-2&&x>S[k+1][0]) k++; const [x0,c0]=S[k],[x1,c1]=S[k+1],u=(x-x0)/(x1-x0); for(let j=0;j<3;j++) L[i*3+j]=c0[j]+(c1[j]-c0[j])*u; } return L; })();
+  const crInk=new Map();
+  function crColor(img) {
+    const src=img.dataset.ev; if(crInk.has(src)){ img.src=crInk.get(src); return; }
+    const im=new Image(); im.onload=()=>{ const cv=document.createElement('canvas'); cv.width=im.naturalWidth; cv.height=im.naturalHeight; const g=cv.getContext('2d'); g.drawImage(im,0,0);
+      const d=g.getImageData(0,0,cv.width,cv.height), p=d.data; for(let i=0;i<p.length;i+=4){ const v=p[i]; p[i]=crLut[v*3]; p[i+1]=crLut[v*3+1]; p[i+2]=crLut[v*3+2]; p[i+3]=255; }
+      g.putImageData(d,0,0); const url=cv.toDataURL('image/png'); crInk.set(src,url); if(img.dataset.ev===src) img.src=url; }; im.src=src; }
+  const crState={view:'overlay'};
+  function crShowcase() {
+    const c=crCopy();
+    return `<section class="cr-show"><a class="cap-film cr-film" href="/assets/film/chromarecover.html?lang=${locale}" data-src="/assets/film/chromarecover.html" data-title="ChromaRecover" aria-haspopup="dialog"><video src="/assets/chromarecover/teaser.mp4?v=1" poster="/assets/chromarecover/teaser-poster.jpg?v=1" muted loop playsinline preload="metadata" ${motion()?'autoplay':''} aria-hidden="true"></video><span class="cap-film-play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z"/></svg></span><span class="cap-film-text"><b>${esc(c.film)}</b><small>${esc(c.filmSub)}</small></span></a><p class="comment-line cr-filmnote">${esc(c.filmNote)}</p>
+      <a class="cr-try" href="/lab/chromarecover/?lang=${locale}"><img src="/assets/og/chromarecover-demo.jpg" alt="" width="1200" height="630" loading="lazy"><span class="cr-try-t"><b>${esc(c.tryT)}</b><small>${esc(c.tryS)}</small><span class="cr-chips"></span><em>${esc(c.tryGo)} →</em></span></a>
+      <h2>${esc(c.probT)}</h2><p class="cr-lead">${esc(c.probLead)}</p><p class="cr-p">${esc(c.probBody)}</p>
+      <h2>${esc(c.whoT)}</h2><div class="cr-who"><div><h3>${esc(c.whoYes)}</h3><ul>${c.yes.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div><div class="is-no"><h3>${esc(c.whoNo)}</h3><ul>${c.no.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div></div>
+      <h2>${esc(c.howT)}</h2><ol class="cr-how"></ol>
+      <h2>${esc(c.cT)}</h2><p class="screen-intro">${esc(c.cLede)}</p><div class="cr-contract"></div>
+      <h2>${esc(c.galT)}</h2><p class="screen-intro">${esc(c.galLede)}</p><div class="cr-views" role="tablist"></div><div class="cr-gal"></div>
+      <h2>${esc(c.measT)}</h2><div class="cr-meas"></div><div class="cr-bench"></div><h3 class="cr-exth">${esc(c.extT)}</h3><div class="cr-ext"></div>
+      <h2>${esc(c.limT)}</h2><ul class="cr-lim"></ul>
+      <h2>${esc(c.statusT)}</h2><p class="cr-p cr-status"></p><p class="cr-src"></p></section>`;
+  }
+  function crGallery() {
+    const box=$('.cr-show'); if(!box||!crData) return;
+    const c=crCopy(), D=crData, v=crState.view;
+    box.querySelector('.cr-views').innerHTML=Object.entries(c.views).map(([k,label])=>`<button type="button" role="tab" data-cr-view="${k}" aria-selected="${k===v}">${esc(label)}</button>`).join('');
+    box.querySelector('.cr-gal').innerHTML=D.gallery.map((g,i)=>{ const b=g.candidates[0], has=!!b, file=v==='input'||!has?'input.png':v==='overlay'?'overlay_1.webp':'evidence_1.webp';
+      const tr=b&&b.truth_support?`<small class="cr-truth">${esc(csFill(c.truth,{p:`${Math.round(b.truth_support.precision*100)}%`,r:`${Math.round(b.truth_support.recall*100)}%`}))}</small>`:'';
+      const url=`/assets/chromarecover/gallery/${esc(g.id)}/${file}`, ev=v==='evidence'&&has;
+      return `<figure class="cr-case s-${esc(g.status)}${ev?' is-ev':''}" style="--i:${i}"><img src="${ev?'/assets/chromarecover/gallery/'+esc(g.id)+'/input.png':url}"${ev?` data-ev="${url}"`:''} alt="${esc(c.names[g.id]||g.id)}" loading="lazy" width="240" height="240"><figcaption><b>${esc(c.names[g.id]||g.id)}</b><span><em class="cr-st">${esc(g.status.replace('_',' '))}</em>${has?` ${esc(c.decision)} ${b.decision.toFixed(3)}`:''}</span>${tr}</figcaption></figure>`; }).join('');
+    box.querySelectorAll('.cr-gal img[data-ev]').forEach(crColor);
+  }
+  function crStatic() {
+    const box=$('.cr-show'); if(!box||!crData||!crFilm) return;
+    const c=crCopy(), D=crData, P=crFilm.positive, Dc=crFilm.decoy, M=P.best.metrics, Md=Dc.best.metrics, thr=D.config.confidence_threshold, m=D.config.ambiguity_margin, par=D.parity;
+    box.querySelector('.cr-chips').innerHTML=c.tryChips.map(x=>`<i>${esc(csFill(x,{n:par?Math.min(par.status_same,par.best_same):'—',t:par?par.total:'—'}))}</i>`).join('');
+    box.querySelector('.cr-how').innerHTML=c.how.map(([t,d],i)=>`<li style="--i:${i}"><span class="cr-n">${i+1}</span><b>${esc(t)}</b><small>${esc(csFill(d,{side:D.config.analysis_max_side,h:P.scored.length,thr,m}))}</small></li>`).join('');
+    const cell=(ok,val)=>`<td class="${ok===null?'':ok?'y':'n'}">${ok===null?'':ok?'✓ ':'✕ '}${esc(val)}</td>`;
+    const rows=[[P.best.decision>=thr,P.best.decision.toFixed(3),Dc.best.decision>=thr,Dc.best.decision.toFixed(3)],
+      [M.runner_up_margin>=m||M.consensus_support>=1,M.runner_up_margin>=m?M.runner_up_margin.toFixed(3):csFill(c.agree,{v:M.runner_up_consensus_iou.toFixed(3)}),Md.runner_up_margin>=m||Md.consensus_support>=1,Md.runner_up_margin>=m?Md.runner_up_margin.toFixed(3):(Md.consensus_support>=1?csFill(c.agree,{v:Md.runner_up_consensus_iou.toFixed(3)}):Md.runner_up_margin.toFixed(3))],
+      [M.boundary_evidence>=.55&&M.local_residual_support>=.30&&M.color_separation>=.60,M.boundary_evidence.toFixed(3),Md.boundary_evidence>=.55&&Md.local_residual_support>=.30&&Md.color_separation>=.60,Md.boundary_evidence.toFixed(3)],
+      [M.mosaic_distribution_score>=.77,M.mosaic_distribution_score.toFixed(3),Md.mosaic_distribution_score>=.77,Md.mosaic_distribution_score.toFixed(3)]];
+    box.querySelector('.cr-contract').innerHTML=`<div class="cr-plates"><figure><img src="/assets/chromarecover/gallery/mosaic-820/overlay_1.webp" alt="" loading="lazy" width="240" height="240"><figcaption>${esc(c.pos)}</figcaption></figure><figure><img src="/assets/chromarecover/gallery/mosaic-820-decoy/overlay_1.webp" alt="" loading="lazy" width="240" height="240"><figcaption>${esc(c.neg)}</figcaption></figure></div>
+      <table class="cr-table"><thead><tr><th></th><th>${esc(c.pos)}</th><th>${esc(c.neg)}</th></tr></thead><tbody>${c.cRows.slice(0,4).map(([k,need],i)=>`<tr><th>${esc(k)}<small>${esc(csFill(need,{thr,m}))}</small></th>${cell(rows[i][0],rows[i][1])}${cell(rows[i][2],rows[i][3])}</tr>`).join('')}
+      <tr class="cr-final"><th>${esc(c.cRows[4][0])}</th><td><em class="cr-stamp ok">${esc(P.status.toUpperCase())}</em></td><td><em class="cr-stamp unc">${esc(Dc.status.toUpperCase())}</em></td></tr></tbody></table><p class="cr-note">${esc(csFill(c.cNote,{v:M.runner_up_consensus_iou.toFixed(3)}))}</p>`;
+    const B=Object.fromEntries(D.benchmarks.map(b=>[`${b.script}:${b.size}`,b.result]));
+    const s192=B['evaluate_synthetic.py:192'], s128=B['evaluate_synthetic.py:128'], n160=B['evaluate_nuisance.py:160'], n384=B['evaluate_nuisance.py:384'], mo=B['evaluate_mosaic.py:192'];
+    const fx=v=>Number(v).toFixed(2), cnt=(rate,n)=>Math.round(rate*n);
+    const bench=[{n:s192.cases_per_class,ok:cnt(s192.structured.ok_rate,s192.cases_per_class),iou:fx(s192.structured.median_top3_iou),abs:cnt(s192.no_structure.abstention_rate,s192.cases_per_class),max:fx(s192.no_structure.maximum_candidate_confidence)},
+      {n:s128.cases_per_class,ok:cnt(s128.structured.ok_rate,s128.cases_per_class),abs:cnt(s128.no_structure.abstention_rate,s128.cases_per_class)},
+      {n:n160.cases+n384.cases,ok:n160.ok_count+n384.ok_count,max:fx(Math.max(n160.maximum_confidence,n384.maximum_confidence))},
+      {abs:`${cnt(mo.no_structure.abstention_rate,mo.cases_per_class)}/${mo.cases_per_class}`,max:fx(mo.no_structure.maximum_decision_confidence),iou:fx(mo.structured.median_top5_structure_iou)}];
+    const T=D.tests, passed=D.benchmarks.filter(b=>b.passed).length;
+    const vals=[{p:T.passed,t:T.collected},{g:passed,G:D.benchmarks.length},{b:par?par.best_same:'—',n:par?par.total:'—'},{x:par?par.max_abs_diff.toExponential(1):'—'}];
+    box.querySelector('.cr-meas').innerHTML=c.meas.map(([big,small],i)=>`<div style="--i:${i}"><b>${esc(csFill(big,vals[i]))}</b><small>${esc(csFill(small,vals[i]))}</small></div>`).join('');
+    box.querySelector('.cr-bench').innerHTML=c.bench.map(([t,d],i)=>`<div><b>${esc(t)}</b><small>${esc(csFill(d,bench[i]))}</small></div>`).join('');
+    const E=D.external;
+    box.querySelector('.cr-ext').innerHTML=c.ext.map(([t,d],i)=>`<div><b>${esc(t)}</b><small>${esc(csFill(d,i===0?{d:E.smartdoc.detected,f:E.smartdoc.frames,iou:E.smartdoc.median_iou,rmse:E.smartdoc.max_rmse}:{n:E.colorblindness.images,a:E.colorblindness.accepted,c:E.colorblindness.correct,fa:E.colorblindness.false_accept}))}</small></div>`).join('');
+    const frag=D.gallery.find(g=>g.id==='mosaic-2026-fragment'), fb=frag&&frag.candidates[0];
+    const med=a=>{ const s=[...a].sort((x,y)=>x-y); return s.length?s[Math.floor(s.length/2)]:0; };
+    const g480=D.gallery.filter(g=>g.width===480&&g.candidates.length), ns=med(g480.map(g=>g.wall_s)).toFixed(1), bs=par?(med(par.cases.filter(x=>g480.some(g=>g.id===x.id)).map(x=>x.browser_ms))/1000).toFixed(1):'—';
+    box.querySelector('.cr-lim').innerHTML=c.lim.map(x=>`<li>${esc(csFill(x,{p:fb?`${Math.round(fb.truth_support.precision*100)}%`:'—',r:fb?`${Math.round(fb.truth_support.recall*100)}%`:'—',ns,bs}))}</li>`).join('');
+    box.querySelector('.cr-status').textContent=csFill(c.status,{v:D.source.version});
+    box.querySelector('.cr-src').textContent=csFill(c.src,{v:D.source.version,c:D.source.commit.slice(0,7),py:D.native.python,np:D.native.numpy,cv:D.native.opencv,d:D.source.run});
+    crGallery();
+  }
+  function initChroma() {
+    const box=$('.cr-show'); if(!box) return;
+    box.classList.toggle('no-motion',!motion());
+    if(crData&&crFilm) { crStatic(); return; }
+    Promise.all([fetch('/assets/chromarecover/data.json?v=1').then(r=>r.json()),fetch('/assets/chromarecover/film.json?v=1').then(r=>r.json())]).then(([d,f])=>{crData=d;crFilm=f;crStatic();}).catch(()=>{});
+  }
+  root.addEventListener('click',event=>{ const b=event.target.closest('[data-cr-view]'); if(b){ crState.view=b.dataset.crView; crGallery(); } });
   /* Merriv: the film (assets/film/merriv.html), then what problem it solves, for whom, how, and what a real run produced.
      Numbers come from assets/merriv/summary.json, written by tools/merriv_film.py from a fresh run of Merriv's demos. */
   const mvCopy=()=>({
@@ -2070,7 +2244,7 @@
     if (view==='blog') html=blogScreen();
     if (view==='help') html=`${commandTitle('help')}<h1>${c.guideTitle}</h1><p>${c.guideIntro}</p><dl class="keyboard-guide">${c.keys.map(([key,description])=>`<div><dt><kbd>${key}</kbd></dt><dd>${description}</dd></div>`).join('')}</dl><h2>${c.commands}</h2>${commandCatalogue()}<p class="comment-line">${c.simulation}</p>`;
     if (view==='projects' && !item) html=`${commandTitle('ls ./projects/')}${directoryHTML(c)}`;
-    if (view==='projects' && item) html=`${commandTitle('cat projects/'+esc(item.id)+'/README.md')}<button class="back-link" data-view="projects">← ${c.all}</button><div class="project-detail"><p class="detail-meta">${esc(item.category)}<span>${esc(item.status)}</span></p><h1 translate="no">${esc(item.name)}</h1><p class="project-description">${esc(item.description)}</p>${item.id==='taiwan-exam'?'<img class="project-art" src="/assets/work/taiwan-exam-social-preview.png" width="1280" height="640" alt="Taiwan Exam" loading="lazy">'+teFilmCard()+examsCard():''}${item.id==='lumigrid'?lumigridShowcase():''}${item.id==='kcrashlab'?kcShowcase():''}${item.id==='contextsec'?csShowcase():''}${item.id==='merriv'?mvShowcase():''}${item.id==='ai-repo-gardener'?rgShowcase():''}${item.id==='psg'?psShowcase():''}${item.id==='noveltyaudit'?naShowcase():''}${item.id==='research-meeting-coach'?rmShowcase():''}${item.id==='adversarial-lab'?'<img class="project-art" src="/assets/og/adversarial-demo.jpg" width="1200" height="630" alt="Adversarial Lab" loading="lazy">'+advCard():''}<h2>${c.evidence}</h2><p>${esc(item.evidence)}</p><div class="output-actions"><a class="action-button primary" href="${esc(item.url)}" target="_blank" rel="noopener noreferrer"><span>${c.source}</span>${icon('link')}</a><a class="action-button" href="${esc(item.reference)}" target="_blank" rel="noopener noreferrer"><span>${esc(item.referenceLabel)}</span>${icon('link')}</a><button class="action-button" data-ask="${esc(item.name)}">${icon('chat')}<span>${c.askTitle}</span></button><button class="action-button" data-action="share" data-share="/p/${esc(item.id)}/${locale==='en'?'':locale.toLowerCase()+'/'}">${icon('link')}<span>${esc(noteCopy().share)}</span></button></div><div class="project-pagination"><button data-project-step="-1">← ${c.prev}</button><span>${items.indexOf(item)+1} / ${items.length}</span><button data-project-step="1">${c.next} →</button></div></div>`;
+    if (view==='projects' && item) html=`${commandTitle('cat projects/'+esc(item.id)+'/README.md')}<button class="back-link" data-view="projects">← ${c.all}</button><div class="project-detail"><p class="detail-meta">${esc(item.category)}<span>${esc(item.status)}</span></p><h1 translate="no">${esc(item.name)}</h1><p class="project-description">${esc(item.description)}</p>${item.id==='taiwan-exam'?'<img class="project-art" src="/assets/work/taiwan-exam-social-preview.png" width="1280" height="640" alt="Taiwan Exam" loading="lazy">'+teFilmCard()+examsCard():''}${item.id==='lumigrid'?lumigridShowcase():''}${item.id==='kcrashlab'?kcShowcase():''}${item.id==='contextsec'?csShowcase():''}${item.id==='merriv'?mvShowcase():''}${item.id==='ai-repo-gardener'?rgShowcase():''}${item.id==='psg'?psShowcase():''}${item.id==='noveltyaudit'?naShowcase():''}${item.id==='research-meeting-coach'?rmShowcase():''}${item.id==='chromarecover'?crShowcase():''}${item.id==='adversarial-lab'?'<img class="project-art" src="/assets/og/adversarial-demo.jpg" width="1200" height="630" alt="Adversarial Lab" loading="lazy">'+advCard():''}<h2>${c.evidence}</h2><p>${esc(item.evidence)}</p><div class="output-actions"><a class="action-button primary" href="${esc(item.url)}" target="_blank" rel="noopener noreferrer"><span>${c.source}</span>${icon('link')}</a><a class="action-button" href="${esc(item.reference)}" target="_blank" rel="noopener noreferrer"><span>${esc(item.referenceLabel)}</span>${icon('link')}</a><button class="action-button" data-ask="${esc(item.name)}">${icon('chat')}<span>${c.askTitle}</span></button><button class="action-button" data-action="share" data-share="/p/${esc(item.id)}/${locale==='en'?'':locale.toLowerCase()+'/'}">${icon('link')}<span>${esc(noteCopy().share)}</span></button></div><div class="project-pagination"><button data-project-step="-1">← ${c.prev}</button><span>${items.indexOf(item)+1} / ${items.length}</span><button data-project-step="1">${c.next} →</button></div></div>`;
     const output=$('.terminal-output'); output.dataset.view=view; output.innerHTML=html; output.scrollTop=0; renderJournal();
     if (view==='research') initCapstone();
     if (view==='guestbook') window.NIANSIA_GUESTBOOK?.mount(output,locale);
@@ -2082,6 +2256,7 @@
     if (view==='projects' && projectId==='psg') initPsg();
     if (view==='projects' && projectId==='noveltyaudit') initNovelty();
     if (view==='projects' && projectId==='research-meeting-coach') initMeetingCoach();
+    if (view==='projects' && projectId==='chromarecover') initChroma();
     output.classList.remove('screen-enter'); if (animate && motion()) { void output.offsetWidth; output.classList.add('screen-enter'); }
     root.querySelectorAll('[data-nav-index]').forEach((el,i)=>{el.classList.toggle('is-current',i===paths.indexOf(view));el.classList.toggle('is-selected',i===selectedNav);el.setAttribute('aria-current',i===paths.indexOf(view)?'page':'false');});
     moveIndicator();

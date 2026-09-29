@@ -1,0 +1,539 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ChromaRecover · try it in your browser</title>
+<meta name="description" content="Find structure hidden in subtle colour differences with ChromaRecover, running the real Python package in your browser. Your images never leave your device.">
+<link rel="canonical" href="https://niansia.com/lab/chromarecover/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="ChromaRecover · try it in your browser">
+<meta property="og:description" content="Hide a number in a colour mosaic, then watch ChromaRecover find it, or say it is not sure. The real engine runs locally in your browser.">
+<meta property="og:url" content="https://niansia.com/lab/chromarecover/">
+<meta property="og:image" content="https://niansia.com/assets/og/chromarecover-demo.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#0a0b0f">
+<script src="/assets/js/page-transition.js?v=3"></script>
+<link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap">
+<style>
+:root{--bg:#0a0b0f;--panel:#10131a;--panel2:#161a23;--panel3:#1c2130;--line:#ffffff14;--line2:#ffffff24;--ink:#eef1f6;--dim:#8f98a8;--dim2:#6b7384;
+  --ok:#5fd49a;--unc:#f2b64c;--bad:#ff7b8a;--acc:#7cc4ff;--acc2:#b69cff;--glow:#7cc4ff22;--mono:'JetBrains Mono',ui-monospace,monospace;}
+*{box-sizing:border-box;}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,'Noto Sans TC','Noto Sans SC',system-ui,sans-serif;-webkit-font-smoothing:antialiased;}
+html:lang(zh-CN) body{font-family:Inter,'Noto Sans SC','Noto Sans TC',system-ui,sans-serif;}
+body{min-height:100vh;background:radial-gradient(1100px 520px at 85% -12%,#1b2a4a55,transparent 62%),radial-gradient(900px 480px at -10% 8%,#2a1b4a40,transparent 60%),var(--bg);}
+a{color:var(--acc);text-decoration:none;}a:hover{text-decoration:underline;}
+button,input,select{font:inherit;color:inherit;}
+.wrap{max-width:1280px;margin:0 auto;padding:16px 20px 64px;}
+.top{display:flex;align-items:center;gap:12px;font:500 12px var(--mono);color:var(--dim);}
+.top .sp{flex:1;}
+.top a.back{color:var(--dim);}.top a.back:hover{color:var(--ink);text-decoration:none;}
+.langs{display:flex;gap:2px;padding:3px;border:1px solid var(--line);border-radius:999px;background:var(--panel);}
+.langs a{padding:3px 10px;border-radius:999px;color:var(--dim);font:500 11.5px var(--mono);}
+.langs a[aria-current=true]{background:var(--panel3);color:var(--ink);}
+.langs a:hover{text-decoration:none;color:var(--ink);}
+.hero{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:28px;align-items:end;margin:34px 0 22px;}
+.eyebrow{font:600 11.5px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--acc);}
+h1{margin:10px 0 12px;font-size:clamp(30px,4.2vw,52px);line-height:1.06;letter-spacing:-.025em;font-weight:800;}
+h1 .grad{background:linear-gradient(95deg,#9fd3ff,#c3a6ff 55%,#ff9fbf);-webkit-background-clip:text;background-clip:text;color:transparent;}
+.lede{margin:0;max-width:640px;font-size:15.5px;line-height:1.7;color:#c5ccd8;}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;}
+.chip{display:inline-flex;align-items:center;gap:7px;padding:6px 11px;border-radius:999px;border:1px solid var(--line2);background:#ffffff08;font:500 12px var(--mono);color:#cfd6e2;}
+.chip i{width:6px;height:6px;border-radius:50%;background:var(--ok);box-shadow:0 0 10px var(--ok);}
+.engine{padding:18px;border-radius:18px;border:1px solid var(--line2);background:linear-gradient(180deg,#151a24,#10131a);box-shadow:0 30px 80px -40px #000,0 0 0 1px #ffffff05 inset;}
+.engine h2{margin:0 0 6px;font-size:15px;}
+.engine p{margin:0 0 12px;font-size:13px;line-height:1.6;color:var(--dim);}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 16px;border-radius:12px;border:1px solid var(--line2);background:var(--panel2);font:600 13px Inter,'Noto Sans TC',sans-serif;cursor:pointer;transition:border-color .2s,background .2s,transform .15s;}
+.btn:hover{border-color:#ffffff40;}
+.btn:active{transform:translateY(1px);}
+.btn.primary{border:0;background:linear-gradient(135deg,#6db8ff,#9b82ff);color:#08101c;box-shadow:0 10px 30px -12px #7cc4ff;}
+.btn.primary:hover{filter:brightness(1.07);}
+.btn[disabled]{opacity:.45;cursor:not-allowed;filter:none;}
+.bar{position:relative;height:6px;margin:14px 0 8px;border-radius:99px;background:#ffffff10;overflow:hidden;}
+.bar b{position:absolute;inset:0 auto 0 0;width:0;border-radius:inherit;background:linear-gradient(90deg,#6db8ff,#b69cff);transition:width .5s ease;}
+.stages{display:flex;flex-wrap:wrap;gap:4px 14px;margin:0;padding:0;list-style:none;font:500 11px var(--mono);color:var(--dim2);}
+.stages li.on{color:var(--ink);}.stages li.done{color:var(--ok);}
+.stages li.done:before{content:'✓ ';}
+.prov{margin-top:10px;font:500 11px var(--mono);color:var(--dim);line-height:1.7;word-break:break-all;}
+.grid{display:grid;grid-template-columns:minmax(0,380px) minmax(0,1fr);gap:18px;align-items:start;}
+.panel{border-radius:18px;border:1px solid var(--line);background:var(--panel);}
+.input{position:sticky;top:14px;padding:14px;}
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:4px;border-radius:13px;background:#0a0c11;border:1px solid var(--line);}
+.tabs button{padding:8px 6px;border:0;border-radius:10px;background:none;color:var(--dim);font:600 12.5px Inter,'Noto Sans TC',sans-serif;cursor:pointer;}
+.tabs button[aria-selected=true]{background:var(--panel3);color:var(--ink);box-shadow:0 4px 14px -8px #000;}
+.pane{margin-top:12px;}
+.pane[hidden]{display:none;}
+.examples{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
+.ex{display:flex;flex-direction:column;gap:6px;padding:7px;border-radius:12px;border:1px solid var(--line);background:var(--panel2);text-align:left;cursor:pointer;transition:border-color .2s,transform .2s;}
+.ex:hover{border-color:#ffffff38;transform:translateY(-1px);}
+.ex[aria-pressed=true]{border-color:var(--acc);box-shadow:0 0 0 1px var(--acc) inset,0 8px 24px -14px var(--acc);}
+.ex img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;image-rendering:auto;background:#000;}
+.ex b{font-size:12.5px;line-height:1.3;}
+.ex small{font:500 10.5px var(--mono);color:var(--dim);}
+.st{display:inline-block;padding:1px 7px;border-radius:6px;font:700 10px var(--mono);letter-spacing:.04em;text-transform:uppercase;}
+.st.ok{color:#062012;background:var(--ok);}.st.uncertain{color:#241703;background:var(--unc);}.st.retry_recommended{color:#2a0710;background:var(--bad);}
+label.f{display:block;margin:12px 0 5px;font:600 11.5px var(--mono);color:var(--dim);letter-spacing:.04em;}
+.field{width:100%;padding:10px 12px;border-radius:11px;border:1px solid var(--line2);background:#0b0d12;font:600 16px var(--mono);letter-spacing:.2em;}
+.field:focus{outline:2px solid #7cc4ff66;outline-offset:1px;}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:4px;padding:4px;border-radius:12px;background:#0b0d12;border:1px solid var(--line);}
+.seg button{padding:7px 6px;border:0;border-radius:9px;background:none;color:var(--dim);font:600 12px Inter,'Noto Sans TC',sans-serif;cursor:pointer;}
+.seg button[aria-pressed=true]{background:var(--panel3);color:var(--ink);}
+.row{display:flex;gap:8px;align-items:center;}
+.row .field{flex:1;letter-spacing:.04em;font-size:14px;}
+.hint{margin:8px 0 0;font-size:12px;line-height:1.6;color:var(--dim);}
+.drop{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:150px;padding:16px;border-radius:14px;border:1.5px dashed var(--line2);background:#0b0d12;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;}
+.drop:hover,.drop.over{border-color:var(--acc);background:#7cc4ff0a;}
+.drop b{font-size:13.5px;}.drop small{font-size:12px;color:var(--dim);}
+.opts{margin-top:14px;padding-top:12px;border-top:1px solid var(--line);}
+.opts .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+select.field{letter-spacing:0;font:500 13px Inter,'Noto Sans TC',sans-serif;padding:8px 10px;}
+.check{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:12.5px;color:#cfd6e2;cursor:pointer;}
+.check input{accent-color:#7cc4ff;width:15px;height:15px;}
+.run{width:100%;margin-top:14px;padding:12px;}
+.result{min-height:560px;padding:16px;}
+.empty{display:grid;place-items:center;min-height:520px;text-align:center;color:var(--dim);}
+.empty .glyph{font:800 64px var(--mono);letter-spacing:.08em;background:linear-gradient(95deg,#6c5a4a,#7a5a52 45%,#5f6a52);-webkit-background-clip:text;background-clip:text;color:transparent;opacity:.55;}
+.empty p{max-width:420px;margin:10px auto 0;font-size:13.5px;line-height:1.7;}
+.busy{position:relative;}
+.busy:after{content:'';position:absolute;inset:0;border-radius:18px;background:repeating-linear-gradient(110deg,transparent 0 40%,#ffffff08 50%,transparent 60%) 0 0/300% 100%;animation:sheen 1.4s linear infinite;pointer-events:none;}
+@keyframes sheen{to{background-position:-300% 0;}}
+.rhead{display:flex;gap:16px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;}
+.stamp{display:inline-flex;align-items:center;gap:10px;padding:8px 14px;border-radius:12px;font:800 18px var(--mono);letter-spacing:.08em;animation:stamp .5s cubic-bezier(.2,1.4,.4,1) both;}
+.stamp.ok{color:var(--ok);background:#5fd49a17;box-shadow:0 0 0 1.5px var(--ok) inset;}
+.stamp.uncertain{color:var(--unc);background:#f2b64c14;box-shadow:0 0 0 1.5px var(--unc) inset;}
+.stamp.retry_recommended{color:var(--bad);background:#ff7b8a14;box-shadow:0 0 0 1.5px var(--bad) inset;}
+@keyframes stamp{from{transform:scale(1.25) rotate(-3deg);opacity:0;}}
+.meaning{margin:8px 0 0;max-width:560px;font-size:13.5px;line-height:1.65;color:#c5ccd8;}
+.dbar{min-width:260px;flex:1;max-width:380px;}
+.dbar p{display:flex;justify-content:space-between;margin:0 0 6px;font:500 11.5px var(--mono);color:var(--dim);}
+.dbar p b{color:var(--ink);font-size:13px;}
+.track{position:relative;height:10px;border-radius:99px;background:#ffffff10;}
+.track i{position:absolute;inset:0 auto 0 0;border-radius:inherit;background:linear-gradient(90deg,#6db8ff,#b69cff);transition:width .6s ease;}
+.track u{position:absolute;top:-5px;bottom:-5px;width:2px;margin-left:-1px;border-radius:2px;background:var(--ink);opacity:.8;}
+.track em{position:absolute;top:13px;transform:translateX(-50%);font:500 10px var(--mono);font-style:normal;color:var(--dim);white-space:nowrap;}
+.viewer{margin-top:22px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,250px);gap:16px;}
+.stage{position:relative;border-radius:14px;overflow:hidden;background:#000;border:1px solid var(--line);aspect-ratio:1;}
+.stage img,.stage canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;}
+.stage .top-layer{clip-path:inset(0 0 0 var(--cut,50%));}
+.stage .knob{position:absolute;top:0;bottom:0;left:var(--cut,50%);width:2px;margin-left:-1px;background:#fff;box-shadow:0 0 12px #0008;pointer-events:none;}
+.stage .knob:after{content:'⇆';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:#fff;color:#111;font-size:13px;}
+.stage input[type=range]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:ew-resize;margin:0;}
+.stage .cap{position:absolute;bottom:8px;padding:3px 8px;border-radius:7px;background:#000a;font:600 10.5px var(--mono);color:#fff;pointer-events:none;}
+.stage .cap.l{left:8px;}.stage .cap.r{right:8px;}
+.views{display:flex;flex-direction:column;gap:6px;}
+.views button{display:flex;flex-direction:column;gap:2px;padding:9px 11px;border-radius:11px;border:1px solid var(--line);background:var(--panel2);text-align:left;cursor:pointer;}
+.views button b{font-size:12.5px;}.views button small{font-size:11px;line-height:1.45;color:var(--dim);}
+.views button[aria-pressed=true]{border-color:var(--acc);background:#7cc4ff10;}
+.cands{display:flex;gap:6px;margin:18px 0 10px;flex-wrap:wrap;}
+.cands button{display:flex;align-items:center;gap:8px;padding:7px 12px;border-radius:10px;border:1px solid var(--line);background:var(--panel2);cursor:pointer;font:600 12px var(--mono);}
+.cands button[aria-selected=true]{border-color:var(--acc2);background:#b69cff14;}
+.cands button small{font-weight:500;color:var(--dim);}
+.cols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;}
+.box{padding:13px 14px;border-radius:14px;border:1px solid var(--line);background:var(--panel2);}
+.box h3{margin:0 0 10px;font:700 11.5px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--dim);}
+.src{font:600 12px var(--mono);color:var(--acc2);word-break:break-all;}
+.fam{margin:4px 0 10px;font-size:12px;color:var(--dim);line-height:1.5;}
+.m{display:grid;grid-template-columns:minmax(0,1fr) 70px 46px;align-items:center;gap:8px;margin:5px 0;font-size:12px;}
+.m span{color:#c5ccd8;}.m em{font:600 11.5px var(--mono);font-style:normal;text-align:right;}
+.m .mt{height:6px;border-radius:99px;background:#ffffff10;position:relative;}
+.m .mt i{position:absolute;inset:0 auto 0 0;border-radius:inherit;background:#8ab8ff;}
+.warn{display:flex;flex-wrap:wrap;gap:6px;}
+.warn span{padding:3px 9px;border-radius:8px;background:#f2b64c14;border:1px solid #f2b64c44;color:#f5cd84;font-size:11.5px;}
+.warn .none{background:none;border-color:var(--line);color:var(--dim);}
+.gates li{display:grid;grid-template-columns:18px minmax(0,1fr);gap:0 8px;margin:6px 0;font-size:12.5px;line-height:1.5;}
+.gates{margin:0;padding:0;list-style:none;}
+.gates i{font-style:normal;font-weight:800;}.gates .y{color:var(--ok);}.gates .n{color:var(--dim2);}
+.gates small{grid-column:2;font:500 11px var(--mono);color:var(--dim);}
+.truth{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;}
+.truth div{padding:10px;border-radius:11px;background:#0b0d12;border:1px solid var(--line);}
+.truth b{display:block;font:800 20px var(--mono);}
+.truth small{font-size:11px;color:var(--dim);line-height:1.45;}
+.kv{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 12px;margin:0;font-size:12px;}
+.kv dt{color:var(--dim);}.kv dd{margin:0;font-family:var(--mono);word-break:break-all;}
+.parity{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:#5fd49a0f;border:1px solid #5fd49a40;font-size:12.5px;line-height:1.55;}
+.parity.diff{background:#f2b64c10;border-color:#f2b64c50;}
+.parity b{font-family:var(--mono);}
+.note{font-size:12px;line-height:1.6;color:var(--dim);}
+.explain{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:22px;}
+.explain .box p{margin:0;font-size:13px;line-height:1.7;color:#c5ccd8;}
+.explain .box h3{color:var(--acc);}
+footer{margin-top:26px;padding-top:16px;border-top:1px solid var(--line);font:500 11.5px var(--mono);color:var(--dim);line-height:1.8;}
+footer a{color:var(--dim);text-decoration:underline;}
+.err{margin-top:10px;padding:10px 12px;border-radius:11px;background:#ff7b8a14;border:1px solid #ff7b8a55;color:#ffb3bd;font-size:12.5px;}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);}
+@media(max-width:1000px){.hero{grid-template-columns:1fr;}.grid{grid-template-columns:1fr;}.input{position:static;}.viewer{grid-template-columns:1fr;}.views{flex-direction:row;flex-wrap:wrap;}.views button{flex:1 1 140px;}.explain{grid-template-columns:1fr;}}
+@media(max-width:560px){.wrap{padding:12px 14px 50px;}.cols{grid-template-columns:1fr;}.truth{grid-template-columns:1fr 1fr 1fr;}.dbar{min-width:0;max-width:none;width:100%;}.top a.back span{display:none;}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><a class="back" href="/#projects/chromarecover" data-back>← <span>niansia.com / </span>chromarecover</a><span class="sp"></span><nav class="langs" aria-label="Language"><a data-lang="en" href="?lang=en">EN</a><a data-lang="zh-TW" href="?lang=zh-TW">繁</a><a data-lang="zh-CN" href="?lang=zh-CN">简</a></nav></div>
+  <section class="hero">
+    <div><div class="eyebrow" data-t="eyebrow"></div><h1 data-t-html="h1"></h1><p class="lede" data-t="lede"></p>
+      <div class="chips"><span class="chip"><i></i><span data-t="chip1"></span></span><span class="chip"><i></i><span data-t="chip2"></span></span><span class="chip"><i></i><span data-t="chip3"></span></span></div></div>
+    <div class="engine" aria-live="polite"><h2 data-t="engineT"></h2><p data-t="engineP"></p>
+      <button class="btn primary" id="load" type="button"></button>
+      <div class="bar" aria-hidden="true"><b id="bar"></b></div>
+      <ul class="stages" id="stages"></ul>
+      <div class="prov" id="prov"></div></div>
+  </section>
+  <main class="grid">
+    <aside class="panel input" aria-label="Input">
+      <div class="tabs" role="tablist"><button type="button" role="tab" data-tab="examples" aria-selected="true"></button><button type="button" role="tab" data-tab="make" aria-selected="false"></button><button type="button" role="tab" data-tab="upload" aria-selected="false"></button></div>
+      <div class="pane" data-pane="examples"><div class="examples" id="examples"></div><p class="hint" data-t="exHint"></p></div>
+      <div class="pane" data-pane="make" hidden>
+        <label class="f" for="text" data-t="textL"></label><input class="field" id="text" maxlength="6" value="2026" autocomplete="off" spellcheck="false">
+        <label class="f" data-t="styleL"></label><div class="seg" id="style"><button type="button" data-style="mosaic" aria-pressed="true"></button><button type="button" data-style="dots" aria-pressed="false"></button></div>
+        <label class="f" data-t="hideL"></label><div class="seg" id="hide"><button type="button" data-hide="1" aria-pressed="true"></button><button type="button" data-hide="0" aria-pressed="false"></button></div>
+        <div class="grid2" style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div><label class="f" for="size" data-t="sizeL"></label><select class="field" id="size"><option value="320">320 px</option><option value="480" selected>480 px</option></select></div>
+          <div><label class="f" for="seed" data-t="seedL"></label><div class="row"><input class="field" id="seed" type="number" min="0" max="99999" value="1"><button class="btn" type="button" id="dice" aria-label="random seed">🎲</button></div></div></div>
+        <p class="hint" data-t="makeHint"></p>
+      </div>
+      <div class="pane" data-pane="upload" hidden>
+        <label class="drop" id="drop" for="file"><b data-t="dropB"></b><small data-t="dropS"></small></label><input class="sr" type="file" id="file" accept="image/png,image/jpeg,image/webp">
+        <p class="hint" data-t="uploadHint"></p>
+      </div>
+      <div class="opts">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div><label class="f" for="mode" data-t="modeL"></label><select class="field" id="mode"><option value="digital"></option><option value="auto"></option><option value="camera"></option></select></div>
+          <div><label class="f" for="topk" data-t="topkL"></label><select class="field" id="topk"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select></div></div>
+        <label class="check"><input type="checkbox" id="sem" checked><span data-t="semL"></span></label>
+      </div>
+      <button class="btn primary run" type="button" id="run" disabled></button>
+      <div id="inerr"></div>
+    </aside>
+    <section class="panel result" id="result" aria-live="polite"></section>
+  </main>
+  <section class="explain" id="explain"></section>
+  <footer id="foot"></footer>
+</div>
+<script>
+(() => {
+  const T = {
+    en: {eyebrow: 'ChromaRecover · live in your browser', h1: 'Find what <span class="grad">colour alone</span> is hiding.',
+      lede: 'Some shapes are carried almost only by a small change in colour. ChromaRecover looks for that spatial structure, shows you the evidence, and says “uncertain” when the evidence is weak instead of guessing. This page runs the real Python package on your own device.',
+      chip1: 'the real package, checksum-verified', chip2: 'runs on your device', chip3: 'images never uploaded',
+      engineT: 'The engine', engineP: 'Python, NumPy, OpenCV and Pillow compiled to WebAssembly (Pyodide), plus ChromaRecover built from its pinned commit. About 20 MB, downloaded once and cached by your browser.',
+      load: 'Load the engine · ≈ 20 MB', loading: 'Loading…', loaded: 'Engine ready', retry: 'Try again',
+      stages: {runtime: 'Python runtime', packages: 'NumPy · OpenCV · Pillow', engine: 'ChromaRecover (SHA-256 checked)', warm: 'ready to run'},
+      tabs: {examples: 'Examples', make: 'Make a plate', upload: 'Your image'},
+      exHint: 'Each example was also run natively when this page was built. Before the engine loads you see that recorded run; after, your browser runs it again and the two are compared.',
+      textL: 'Text to hide (digits read best)', styleL: 'Plate style', styles: {mosaic: 'Polygon mosaic', dots: 'Dot plate'}, hideL: 'What to generate', hides: {'1': 'Hide the text', '0': 'Decoy: same colours, no text'},
+      sizeL: 'Size', seedL: 'Seed', makeHint: 'The plate is drawn by ChromaRecover’s own generator, in your browser. The mosaic decoy has exactly as many special-colour tiles as the real plate, only scattered, so colour counts alone cannot give the answer.',
+      dropB: 'Drop an image here or choose one', dropS: 'PNG, JPEG or WebP · scaled to 1024 px', uploadHint: 'The picture is decoded by your browser and handed to the engine as pixels. It never leaves this tab.',
+      modeL: 'Mode', modes: {digital: 'digital (stable)', auto: 'auto', camera: 'camera (experimental)'}, topkL: 'Candidates', semL: 'Also try to read digits (optional, conservative)',
+      run: 'Run ChromaRecover', runNeedEngine: 'Load the engine to run it yourself', running: 'Running in your browser…',
+      emptyP: 'Pick an example, hide your own number in a plate, or drop in an image. The result shows the recovered structure, the evidence behind it and why the status is what it is.',
+      recorded: 'Recorded native run', browser: 'Run in your browser',
+      status: {ok: 'OK', uncertain: 'UNCERTAIN', retry_recommended: 'RETRY RECOMMENDED'},
+      meaning: {ok: 'A coherent colour structure passed the decision contract: its decision confidence clears the threshold and at least one evidence gate holds. This is about pixels, not about what the shape means.', uncertain: 'No candidate passed the contract, so ChromaRecover abstains. The best guesses are still shown so you can see why.', retry_recommended: 'The capture itself is the problem (blur, glare or clipping), so a new photo would help more than a guess.'},
+      decision: 'decision confidence', threshold: 'threshold',
+      views: {overlay: ['Overlay', 'the selection (cyan) and its envelope (yellow) on the image'], evidence: ['Evidence', 'continuous local support for the structure'], mask: ['Selected pixels', 'the colour class that carries the structure'], structure: ['Envelope', 'its spatial extent'], input: ['Input', 'what the engine received']},
+      cmp: 'drag to compare with the input', candT: 'Candidate', noCand: 'No candidate: the image carries too little colour variation to propose any structure.',
+      source: 'Hypothesis', families: {global_lab: 'absolute chroma (Lab a*, b*)', local_lab: 'local chroma residual, shading removed', opponent: 'opponent colour (R−G, (R+G)/2−B)', hybrid: 'all colour features together', primitive_distribution: 'where the tiles of one colour gather', primitive_graph: 'nearby shapes grouped', projection: 'a threshold along the main colour axis'},
+      conf: [['structure', 'Structure'], ['capture', 'After capture quality'], ['decision', 'Decision']],
+      metrics: [['color_separation', 'colour separation'], ['spatial_structure', 'spatial structure'], ['boundary_evidence', 'edge evidence'], ['cross_family_agreement', 'agreement across feature families'], ['local_residual_support', 'survives shading removal'], ['mosaic_distribution_score', 'mosaic distribution score'], ['primitive_distribution_evidence', 'tile distribution evidence']],
+      warningsT: 'Warnings', none: 'none',
+      warn: {cross_hypothesis_consensus: 'close runner-up, but it agrees', multiple_plausible_structures: 'several structures are about as plausible', weak_structure_evidence: 'no evidence gate holds', severe_blur: 'severe blur', mild_blur: 'mild blur', low_texture_blur_indeterminate: 'too little texture to judge sharpness', insufficient_chromatic_variation: 'almost no colour variation', exposure_clipping: 'clipped exposure', possible_glare: 'possible glare', low_effective_resolution: 'too few pixels', possible_moire: 'possible moiré', possible_refresh_banding: 'screen refresh banding', strong_shadow: 'strong shadow', possible_fold_or_wrinkle: 'fold or wrinkle', perspective_not_rectified: 'perspective not corrected'},
+      whyT: 'Why this status', why: {thr: 'Decision {d} vs threshold {t}', margin: 'Lead over the runner-up {m} (needs {n} unless the two agree)', consensus: 'Overlap with the runner-up (IoU) {c}', gates: 'Evidence gates (any one must hold):',
+        g1: 'edge + local residual + separation', g2: 'discrete region', g3: 'tile distribution', g4: 'mosaic distribution'},
+      truthT: 'Against the hidden truth', truth: [['precision', 'of the selected pixels belong to the hidden text'], ['recall', 'of the hidden text’s pixels were selected'], ['iou', 'overlap (IoU)']], truthNote: 'Only generated plates have a truth. A low recall with high precision means it found part of the text.',
+      semT: 'Digit reading', semNone: 'No reading was accepted.', semOff: 'Off.', semAccepted: 'Accepted: {h}', semCand: 'Candidate #{r} read {h} ({c})', semNote: 'Reading runs only after the pixels are recovered and never changes the status.',
+      qualT: 'Capture quality', timeT: 'Time', provT: 'Provenance',
+      parityOk: 'Same as the native run: <b>{s}</b> · decision <b>{d}</b> · hypothesis <b>{h}</b>', parityDiff: 'Differs from the native run ({ns} · {nd}); your browser gave {bs} · {bd}.',
+      recordedNote: 'This is the recorded native run. Load the engine to run it again yourself.',
+      err: 'Something went wrong: ', tooBig: 'That file is larger than 25 MB.',
+      explain: [['How to read it', 'Cyan is the colour class the engine selected; yellow outlines where it gathers. The evidence map is continuous support, so you can judge a weak result yourself.'], ['Why it abstains', 'A structure must clear a confidence threshold and at least one evidence gate. Close competitors that disagree lower the confidence. “Uncertain” is a normal answer, not an error.'], ['What it is not', 'Not OCR, not a medical colour-vision test, and not a claim that a photograph hides a message. Camera mode is experimental and uncalibrated.']],
+      foot: 'ChromaRecover {v} · commit {c} · wheel SHA-256 {w} · Apache-2.0. Runtime: Pyodide (MPL-2.0), NumPy (BSD-3), OpenCV (Apache-2.0), Pillow (MIT-CMU). Examples are generated by ChromaRecover’s own generators.', project: 'Project page, film and full explanation', gh: 'Source on GitHub',
+      ex: {'mosaic-820': 'Mosaic hiding “820”', 'mosaic-820-decoy': 'Its decoy: same colours', 'mosaic-37': 'Mosaic hiding “37”', 'dots-8': 'Dot plate hiding “8”', 'dots-decoy': 'Dot plate, no digit', 'mosaic-2026-fragment': 'OK, but only a fragment of “2026”', 'camera-820': '“820” after a simulated camera', 'blank': 'A blank card', 'ramp': 'A smooth colour ramp'}},
+    'zh-TW': {eyebrow: 'ChromaRecover · 在你的瀏覽器上執行', h1: '找出<span class="grad">只靠顏色</span>藏起來的東西。',
+      lede: '有些形狀幾乎只靠一點點顏色差異撐著。ChromaRecover 會找出這種空間結構、把證據攤給你看；證據不夠時，它會說「不確定」，而不是用猜的。這一頁在你自己的裝置上執行真正的 Python 套件。',
+      chip1: '真正的套件，已驗證雜湊', chip2: '在你的裝置上執行', chip3: '圖片不會上傳',
+      engineT: '引擎', engineP: '編譯成 WebAssembly 的 Python、NumPy、OpenCV 和 Pillow（Pyodide），加上從固定 commit 建出的 ChromaRecover。約 20 MB，只下載一次，之後由瀏覽器快取。',
+      load: '載入引擎 · 約 20 MB', loading: '載入中…', loaded: '引擎已就緒', retry: '再試一次',
+      stages: {runtime: 'Python 執行環境', packages: 'NumPy · OpenCV · Pillow', engine: 'ChromaRecover（已檢查 SHA-256）', warm: '可以開始'},
+      tabs: {examples: '範例', make: '自製色盤', upload: '你的圖片'},
+      exHint: '每個範例在建置這一頁時都已在本機跑過。引擎載入前你看到的是那次記錄；載入後，瀏覽器會重跑一次，並和本機結果比對。',
+      textL: '要藏的文字（數字最好）', styleL: '色盤樣式', styles: {mosaic: '多邊形拼貼', dots: '圓點色盤'}, hideL: '要產生什麼', hides: {'1': '藏進文字', '0': '誘餌：同樣的顏色，沒有文字'},
+      sizeL: '大小', seedL: '種子', makeHint: '色盤由 ChromaRecover 自己的產生器在你的瀏覽器裡畫出。拼貼誘餌的特殊色塊數量和真的色盤完全一樣，只是打散了，所以光數顏色得不到答案。',
+      dropB: '把圖片拖到這裡，或點一下選擇', dropS: 'PNG、JPEG 或 WebP · 會縮到 1024 px', uploadHint: '圖片由你的瀏覽器解碼後，以像素交給引擎，不會離開這個分頁。',
+      modeL: '模式', modes: {digital: 'digital（穩定）', auto: 'auto', camera: 'camera（實驗性）'}, topkL: '候選數', semL: '也嘗試讀出數字（選用，保守）',
+      run: '執行 ChromaRecover', runNeedEngine: '先載入引擎，才能自己執行', running: '正在你的瀏覽器裡執行…',
+      emptyP: '選一個範例、把自己的數字藏進色盤，或丟一張圖片進來。結果會顯示找回的結構、背後的證據，以及狀態為什麼是這樣。',
+      recorded: '本機執行記錄', browser: '在你的瀏覽器執行',
+      status: {ok: 'OK', uncertain: 'UNCERTAIN', retry_recommended: 'RETRY RECOMMENDED'},
+      meaning: {ok: '有一個一致的顏色結構通過了決策契約：決策信心超過門檻，而且至少一道證據閘門成立。這說的是像素，不是形狀代表什麼。', uncertain: '沒有候選通過契約，所以 ChromaRecover 選擇不下結論。最好的幾個猜測仍然列出來，讓你看到原因。', retry_recommended: '問題出在拍攝本身（模糊、反光或過曝），重拍一張比硬猜更有用。'},
+      decision: '決策信心', threshold: '門檻',
+      views: {overlay: ['疊圖', '選中的區域（青色）和它的範圍（黃色）疊在圖上'], evidence: ['證據', '這個結構的連續局部支持度'], mask: ['選中的像素', '承載結構的那一類顏色'], structure: ['範圍', '它在空間上的範圍'], input: ['輸入', '引擎收到的圖']},
+      cmp: '左右拖曳，和輸入比較', candT: '候選', noCand: '沒有候選：這張圖的顏色變化太少，提不出任何結構。',
+      source: '假設', families: {global_lab: '絕對色度（Lab a*、b*）', local_lab: '去除陰影後的局部色度殘差', opponent: '對立色（R−G、(R+G)/2−B）', hybrid: '所有顏色特徵合起來', primitive_distribution: '某一色的色塊聚集在哪裡', primitive_graph: '把相鄰形狀分成一組', projection: '沿著主要顏色軸切一刀'},
+      conf: [['structure', '結構'], ['capture', '計入拍攝品質後'], ['decision', '決策']],
+      metrics: [['color_separation', '顏色分離度'], ['spatial_structure', '空間結構'], ['boundary_evidence', '邊緣證據'], ['cross_family_agreement', '不同特徵族群的一致性'], ['local_residual_support', '去除陰影後仍成立'], ['mosaic_distribution_score', '拼貼分布分數'], ['primitive_distribution_evidence', '色塊分布證據']],
+      warningsT: '警告', none: '無',
+      warn: {cross_hypothesis_consensus: '亞軍很接近，但兩者一致', multiple_plausible_structures: '有好幾個差不多可能的結構', weak_structure_evidence: '沒有任何證據閘門成立', severe_blur: '嚴重模糊', mild_blur: '輕微模糊', low_texture_blur_indeterminate: '紋理太少，無法判斷清晰度', insufficient_chromatic_variation: '幾乎沒有顏色變化', exposure_clipping: '曝光裁切', possible_glare: '可能有反光', low_effective_resolution: '像素太少', possible_moire: '可能有摩爾紋', possible_refresh_banding: '螢幕更新條紋', strong_shadow: '強烈陰影', possible_fold_or_wrinkle: '摺痕或皺褶', perspective_not_rectified: '透視未校正'},
+      whyT: '為什麼是這個狀態', why: {thr: '決策信心 {d}，門檻 {t}', margin: '領先亞軍 {m}（需要 {n}，除非兩者一致）', consensus: '和亞軍的重疊（IoU）{c}', gates: '證據閘門（任一成立即可）：',
+        g1: '邊緣＋局部殘差＋分離度', g2: '離散區域', g3: '色塊分布', g4: '拼貼分布'},
+      truthT: '和藏起來的答案比對', truth: [['precision', '選中的像素屬於藏起來的文字'], ['recall', '藏起來的文字被選中的比例'], ['iou', '重疊度（IoU）']], truthNote: '只有自製或產生的色盤有答案可比。召回低、精確高，代表它找到了文字的一部分。',
+      semT: '數字讀取', semNone: '沒有被接受的讀數。', semOff: '關閉。', semAccepted: '接受：{h}', semCand: '候選 #{r} 讀成 {h}（{c}）', semNote: '讀數只在像素找回之後才執行，而且永遠不會改變狀態。',
+      qualT: '拍攝品質', timeT: '時間', provT: '來源',
+      parityOk: '和本機執行相同：<b>{s}</b> · 決策 <b>{d}</b> · 假設 <b>{h}</b>', parityDiff: '和本機執行不同（{ns} · {nd}）；你的瀏覽器得到 {bs} · {bd}。',
+      recordedNote: '這是本機的執行記錄。載入引擎，就能自己再跑一次。',
+      err: '發生錯誤：', tooBig: '檔案超過 25 MB。',
+      explain: [['怎麼看結果', '青色是引擎選中的顏色類別；黃色框出它聚集的地方。證據圖是連續的支持度，結果很弱時你可以自己判斷。'], ['為什麼它會不下結論', '結構必須超過信心門檻，且至少一道證據閘門成立。互相矛盾的強勁對手會壓低信心。「不確定」是正常答案，不是錯誤。'], ['它不是什麼', '不是 OCR，不是醫療用的色覺測驗，也不代表照片裡一定藏了訊息。camera 模式仍是實驗性的，尚未校準。']],
+      foot: 'ChromaRecover {v} · commit {c} · wheel SHA-256 {w} · Apache-2.0。執行環境：Pyodide（MPL-2.0）、NumPy（BSD-3）、OpenCV（Apache-2.0）、Pillow（MIT-CMU）。範例由 ChromaRecover 自己的產生器產生。', project: '專案頁、影片與完整說明', gh: 'GitHub 原始碼',
+      ex: {'mosaic-820': '藏著「820」的拼貼', 'mosaic-820-decoy': '它的誘餌：同樣的顏色', 'mosaic-37': '藏著「37」的拼貼', 'dots-8': '藏著「8」的圓點色盤', 'dots-decoy': '沒有數字的圓點色盤', 'mosaic-2026-fragment': 'OK，但只找到「2026」的一小塊', 'camera-820': '模擬相機拍過的「820」', 'blank': '一張空白卡', 'ramp': '平滑的顏色漸層'}},
+    'zh-CN': {eyebrow: 'ChromaRecover · 在你的浏览器上运行', h1: '找出<span class="grad">只靠颜色</span>藏起来的东西。',
+      lede: '有些形状几乎只靠一点点颜色差异撑着。ChromaRecover 会找出这种空间结构、把证据摊给你看；证据不够时，它会说“不确定”，而不是靠猜。这一页在你自己的设备上运行真正的 Python 包。',
+      chip1: '真正的包，已验证哈希', chip2: '在你的设备上运行', chip3: '图片不会上传',
+      engineT: '引擎', engineP: '编译成 WebAssembly 的 Python、NumPy、OpenCV 和 Pillow（Pyodide），加上从固定 commit 构建的 ChromaRecover。约 20 MB，只下载一次，之后由浏览器缓存。',
+      load: '加载引擎 · 约 20 MB', loading: '加载中…', loaded: '引擎已就绪', retry: '再试一次',
+      stages: {runtime: 'Python 运行环境', packages: 'NumPy · OpenCV · Pillow', engine: 'ChromaRecover（已检查 SHA-256）', warm: '可以开始'},
+      tabs: {examples: '示例', make: '自制色盘', upload: '你的图片'},
+      exHint: '每个示例在构建这一页时都已在本机跑过。引擎加载前你看到的是那次记录；加载后，浏览器会重跑一次，并和本机结果比对。',
+      textL: '要藏的文字（数字最好）', styleL: '色盘样式', styles: {mosaic: '多边形拼贴', dots: '圆点色盘'}, hideL: '要生成什么', hides: {'1': '藏进文字', '0': '诱饵：同样的颜色，没有文字'},
+      sizeL: '大小', seedL: '种子', makeHint: '色盘由 ChromaRecover 自己的生成器在你的浏览器里画出。拼贴诱饵的特殊色块数量和真的色盘完全一样，只是打散了，所以光数颜色得不到答案。',
+      dropB: '把图片拖到这里，或点一下选择', dropS: 'PNG、JPEG 或 WebP · 会缩到 1024 px', uploadHint: '图片由你的浏览器解码后，以像素交给引擎，不会离开这个标签页。',
+      modeL: '模式', modes: {digital: 'digital（稳定）', auto: 'auto', camera: 'camera（实验性）'}, topkL: '候选数', semL: '也尝试读出数字（可选，保守）',
+      run: '运行 ChromaRecover', runNeedEngine: '先加载引擎，才能自己运行', running: '正在你的浏览器里运行…',
+      emptyP: '选一个示例、把自己的数字藏进色盘，或拖一张图片进来。结果会显示找回的结构、背后的证据，以及状态为什么是这样。',
+      recorded: '本机运行记录', browser: '在你的浏览器运行',
+      status: {ok: 'OK', uncertain: 'UNCERTAIN', retry_recommended: 'RETRY RECOMMENDED'},
+      meaning: {ok: '有一个一致的颜色结构通过了决策契约：决策置信度超过门槛，而且至少一道证据闸门成立。这说的是像素，不是形状代表什么。', uncertain: '没有候选通过契约，所以 ChromaRecover 选择不下结论。最好的几个猜测仍然列出来，让你看到原因。', retry_recommended: '问题出在拍摄本身（模糊、反光或过曝），重拍一张比硬猜更有用。'},
+      decision: '决策置信度', threshold: '门槛',
+      views: {overlay: ['叠图', '选中的区域（青色）和它的范围（黄色）叠在图上'], evidence: ['证据', '这个结构的连续局部支持度'], mask: ['选中的像素', '承载结构的那一类颜色'], structure: ['范围', '它在空间上的范围'], input: ['输入', '引擎收到的图']},
+      cmp: '左右拖动，和输入比较', candT: '候选', noCand: '没有候选：这张图的颜色变化太少，提不出任何结构。',
+      source: '假设', families: {global_lab: '绝对色度（Lab a*、b*）', local_lab: '去除阴影后的局部色度残差', opponent: '对立色（R−G、(R+G)/2−B）', hybrid: '所有颜色特征合起来', primitive_distribution: '某一色的色块聚集在哪里', primitive_graph: '把相邻形状分成一组', projection: '沿着主要颜色轴切一刀'},
+      conf: [['structure', '结构'], ['capture', '计入拍摄质量后'], ['decision', '决策']],
+      metrics: [['color_separation', '颜色分离度'], ['spatial_structure', '空间结构'], ['boundary_evidence', '边缘证据'], ['cross_family_agreement', '不同特征族群的一致性'], ['local_residual_support', '去除阴影后仍成立'], ['mosaic_distribution_score', '拼贴分布分数'], ['primitive_distribution_evidence', '色块分布证据']],
+      warningsT: '警告', none: '无',
+      warn: {cross_hypothesis_consensus: '亚军很接近，但两者一致', multiple_plausible_structures: '有好几个差不多可能的结构', weak_structure_evidence: '没有任何证据闸门成立', severe_blur: '严重模糊', mild_blur: '轻微模糊', low_texture_blur_indeterminate: '纹理太少，无法判断清晰度', insufficient_chromatic_variation: '几乎没有颜色变化', exposure_clipping: '曝光裁切', possible_glare: '可能有反光', low_effective_resolution: '像素太少', possible_moire: '可能有摩尔纹', possible_refresh_banding: '屏幕刷新条纹', strong_shadow: '强烈阴影', possible_fold_or_wrinkle: '折痕或皱褶', perspective_not_rectified: '透视未校正'},
+      whyT: '为什么是这个状态', why: {thr: '决策置信度 {d}，门槛 {t}', margin: '领先亚军 {m}（需要 {n}，除非两者一致）', consensus: '和亚军的重叠（IoU）{c}', gates: '证据闸门（任一成立即可）：',
+        g1: '边缘＋局部残差＋分离度', g2: '离散区域', g3: '色块分布', g4: '拼贴分布'},
+      truthT: '和藏起来的答案比对', truth: [['precision', '选中的像素属于藏起来的文字'], ['recall', '藏起来的文字被选中的比例'], ['iou', '重叠度（IoU）']], truthNote: '只有自制或生成的色盘有答案可比。召回低、精确高，代表它找到了文字的一部分。',
+      semT: '数字读取', semNone: '没有被接受的读数。', semOff: '关闭。', semAccepted: '接受：{h}', semCand: '候选 #{r} 读成 {h}（{c}）', semNote: '读数只在像素找回之后才运行，而且永远不会改变状态。',
+      qualT: '拍摄质量', timeT: '时间', provT: '来源',
+      parityOk: '和本机运行相同：<b>{s}</b> · 决策 <b>{d}</b> · 假设 <b>{h}</b>', parityDiff: '和本机运行不同（{ns} · {nd}）；你的浏览器得到 {bs} · {bd}。',
+      recordedNote: '这是本机的运行记录。加载引擎，就能自己再跑一次。',
+      err: '发生错误：', tooBig: '文件超过 25 MB。',
+      explain: [['怎么看结果', '青色是引擎选中的颜色类别；黄色框出它聚集的地方。证据图是连续的支持度，结果很弱时你可以自己判断。'], ['为什么它会不下结论', '结构必须超过置信度门槛，且至少一道证据闸门成立。互相矛盾的强劲对手会压低置信度。“不确定”是正常答案，不是错误。'], ['它不是什么', '不是 OCR，不是医疗用的色觉测验，也不代表照片里一定藏了信息。camera 模式仍是实验性的，尚未校准。']],
+      foot: 'ChromaRecover {v} · commit {c} · wheel SHA-256 {w} · Apache-2.0。运行环境：Pyodide（MPL-2.0）、NumPy（BSD-3）、OpenCV（Apache-2.0）、Pillow（MIT-CMU）。示例由 ChromaRecover 自己的生成器生成。', project: '项目页、影片与完整说明', gh: 'GitHub 源码',
+      ex: {'mosaic-820': '藏着“820”的拼贴', 'mosaic-820-decoy': '它的诱饵：同样的颜色', 'mosaic-37': '藏着“37”的拼贴', 'dots-8': '藏着“8”的圆点色盘', 'dots-decoy': '没有数字的圆点色盘', 'mosaic-2026-fragment': 'OK，但只找到“2026”的一小块', 'camera-820': '模拟相机拍过的“820”', 'blank': '一张空白卡', 'ramp': '平滑的颜色渐变'}}};
+  const pick = () => { const q = new URLSearchParams(location.search).get('lang'); if (T[q]) return q; const n = (navigator.language || '').toLowerCase(); return n.startsWith('zh') ? (/cn|sg|hans/.test(n) ? 'zh-CN' : 'zh-TW') : 'en'; };
+  const L = pick(), t = T[L];
+  document.documentElement.lang = L;
+  const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+  const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
+  const fill = (s, o) => s.replace(/\{(\w+)\}/g, (m, k) => o[k] ?? m);
+  const pct = v => v == null ? '—' : `${Math.round(v * 100)}%`;
+  const f3 = v => v == null ? '—' : Number(v).toFixed(3);
+  $$('[data-t]').forEach(el => el.textContent = t[el.dataset.t]);
+  $$('[data-t-html]').forEach(el => el.innerHTML = t[el.dataset.tHtml]);
+  $$('.langs a').forEach(a => a.setAttribute('aria-current', String(a.dataset.lang === L)));
+  $$('[data-tab]').forEach(b => b.textContent = t.tabs[b.dataset.tab]);
+  $$('[data-style]').forEach(b => b.textContent = t.styles[b.dataset.style]);
+  $$('[data-hide]').forEach(b => b.textContent = t.hides[b.dataset.hide]);
+  $$('#mode option').forEach(o => o.textContent = t.modes[o.value]);
+  $('[data-back]').href = L === 'en' ? '/#projects/chromarecover' : `/${L.toLowerCase()}/#projects/chromarecover`;
+  document.title = L === 'en' ? 'ChromaRecover · try it in your browser' : L === 'zh-TW' ? 'ChromaRecover · 在瀏覽器裡試試' : 'ChromaRecover · 在浏览器里试试';
+
+  let data = null, worker = null, ready = false, busy = false, source = null, current = null, view = 'overlay', cand = 1, cut = 50;
+  const state = {tab: 'examples', example: 'mosaic-820', style: 'mosaic', hide: '1'};
+  const urls = [];
+
+  // evidence colour map (inferno-like), applied on a canvas so recorded and live evidence look the same
+  const STOPS = [[0, [0, 0, 4]], [.25, [66, 10, 104]], [.5, [147, 38, 103]], [.75, [229, 92, 48]], [.9, [248, 173, 22]], [1, [252, 255, 164]]];
+  const LUT = new Uint8ClampedArray(256 * 3);
+  for (let i = 0; i < 256; i++) { const x = i / 255; let k = 0; while (k < STOPS.length - 2 && x > STOPS[k + 1][0]) k++;
+    const [x0, c0] = STOPS[k], [x1, c1] = STOPS[k + 1], u = (x - x0) / (x1 - x0); for (let j = 0; j < 3; j++) LUT[i * 3 + j] = c0[j] + (c1[j] - c0[j]) * u; }
+  async function colorize(url) {
+    const img = await createImageBitmap(await (await fetch(url)).blob());
+    const c = document.createElement('canvas'); c.width = img.width; c.height = img.height;
+    const g = c.getContext('2d'); g.drawImage(img, 0, 0);
+    const d = g.getImageData(0, 0, c.width, c.height), p = d.data;
+    for (let i = 0; i < p.length; i += 4) { const v = p[i]; p[i] = LUT[v * 3]; p[i + 1] = LUT[v * 3 + 1]; p[i + 2] = LUT[v * 3 + 2]; p[i + 3] = 255; }
+    g.putImageData(d, 0, 0);
+    return new Promise(r => c.toBlob(b => { const u = URL.createObjectURL(b); urls.push(u); r(u); }, 'image/png'));
+  }
+
+  function stages(active, done) {
+    $('#stages').innerHTML = Object.entries(t.stages).map(([k, v]) => `<li class="${done.includes(k) ? 'done' : k === active ? 'on' : ''}">${esc(v)}</li>`).join('');
+  }
+  function setLoad(text, disabled) { $('#load').textContent = text; $('#load').disabled = disabled; }
+  function setRun() {
+    const b = $('#run');
+    b.disabled = busy || !ready;
+    b.textContent = busy ? t.running : ready ? t.run : t.runNeedEngine;
+  }
+
+  async function init() {
+    data = await (await fetch('/assets/chromarecover/data.json')).json();
+    $('#examples').innerHTML = data.gallery.map(g => `<button type="button" class="ex" data-ex="${g.id}" aria-pressed="${g.id === state.example}"><img src="/assets/chromarecover/gallery/${g.id}/input.png" alt="" loading="lazy" width="160" height="160"><b>${esc(t.ex[g.id] || g.id)}</b><small><span class="st ${g.status}">${esc(t.status[g.status])}</span> ${g.candidates[0] ? f3(g.candidates[0].decision) : ''}</small></button>`).join('');
+    $('#explain').innerHTML = t.explain.map(([h, p]) => `<div class="box"><h3>${esc(h)}</h3><p>${esc(p)}</p></div>`).join('');
+    $('#foot').innerHTML = `${esc(fill(t.foot, {v: data.source.version, c: data.source.commit.slice(0, 7), w: data.wheel.sha256.slice(0, 16) + '…'}))}<br><a href="${L === 'en' ? '/' : '/' + L.toLowerCase() + '/'}#projects/chromarecover">${esc(t.project)}</a> · <a href="${data.source.repo}" target="_blank" rel="noopener">${esc(t.gh)}</a>`;
+    setLoad(t.load, false); stages('', []); setRun();
+    showEmpty();
+    showRecorded(state.example);
+  }
+
+  function showEmpty() {
+    $('#result').innerHTML = `<div class="empty"><div><div class="glyph">8 2 0</div><p>${esc(t.emptyP)}</p></div></div>`;
+  }
+
+  function loadEngine() {
+    if (worker || ready) return;
+    setLoad(t.loading, true); stages('runtime', []);
+    worker = new Worker('/assets/chromarecover/engine.js');
+    const order = ['runtime', 'packages', 'engine', 'warm'];
+    worker.onmessage = ({data: m}) => {
+      if (m.type === 'progress') { $('#bar').style.width = m.pct + '%'; stages(m.stage, order.slice(0, order.indexOf(m.stage))); }
+      else if (m.type === 'ready') {
+        ready = true; $('#bar').style.width = '100%'; stages('', order); setLoad('✓ ' + t.loaded, true); setRun();
+        const v = m.versions; $('#prov').textContent = `Pyodide ${v.pyodide} · Python ${v.python} · NumPy ${v.numpy} · OpenCV ${v.opencv} · Pillow ${v.pillow} · ChromaRecover ${v.chromarecover} · sha256 ${m.sha256.slice(0, 16)}… ✓`;
+        if (state.tab === 'examples' && current && current.recorded) run();
+      } else if (m.type === 'result') { busy = false; $('#result').classList.remove('busy'); render(m.summary, m.images, {live: true, ms: m.browser_ms}); setRun(); }
+      else if (m.type === 'error') {
+        busy = false; $('#result').classList.remove('busy'); setRun();
+        if (!ready) { worker.terminate(); worker = null; setLoad(t.retry, false); stages('', []); }
+        $('#inerr').innerHTML = `<div class="err">${esc(t.err + m.message)}</div>`;
+      }
+    };
+    worker.postMessage({type: 'load', expected: {file: data.wheel.file, sha256: data.wheel.sha256}});
+  }
+
+  function showRecorded(id) {
+    const g = data.gallery.find(x => x.id === id); if (!g) return;
+    const base = `/assets/chromarecover/gallery/${id}/`, images = {input: base + 'input.png'};
+    g.candidates.forEach(c => { for (const k of ['overlay', 'evidence', 'mask', 'structure']) images[`${k}_${c.rank}`] = base + `${k}_${c.rank}.${k === 'overlay' || k === 'evidence' ? 'webp' : 'png'}`; });
+    render(g, images, {recorded: true, id});
+  }
+
+  async function readFile(file) {
+    if (file.size > 25 * 1024 * 1024) throw new Error(t.tooBig);
+    const bmp = await createImageBitmap(file);
+    const scale = Math.min(1, 1024 / Math.max(bmp.width, bmp.height));
+    const w = Math.max(1, Math.round(bmp.width * scale)), h = Math.max(1, Math.round(bmp.height * scale));
+    const c = new OffscreenCanvas(w, h), g = c.getContext('2d'); g.drawImage(bmp, 0, 0, w, h);
+    const d = g.getImageData(0, 0, w, h);
+    return {kind: 'rgba', width: w, height: h, data: new Uint8Array(d.data.buffer)};
+  }
+
+  async function run() {
+    $('#inerr').innerHTML = '';
+    if (state.tab === 'examples' && !ready) { showRecorded(state.example); return; }
+    if (!ready || busy) return;
+    const options = {mode: $('#mode').value, top_k: Number($('#topk').value), semantics: $('#sem').checked ? 'auto' : 'none'};
+    let src;
+    try {
+      if (state.tab === 'examples') {
+        const g = data.gallery.find(x => x.id === state.example);
+        src = {kind: 'png', data: new Uint8Array(await (await fetch(`/assets/chromarecover/gallery/${g.id}/input.png`)).arrayBuffer())};
+        options.mode = g.mode; options.top_k = 3; options.semantics = 'auto';
+        $('#mode').value = g.mode; $('#topk').value = '3'; $('#sem').checked = true;
+      } else if (state.tab === 'make') {
+        const text = ($('#text').value || '').replace(/[^\x20-\x7e]/g, '').slice(0, 6) || '8';
+        src = {kind: 'generate', generator: state.style, text, seed: Math.max(0, Math.min(99999, Number($('#seed').value) || 0)), size: Number($('#size').value), structured: state.hide === '1'};
+      } else {
+        if (!source) { $('#file').click(); return; }
+        src = source;
+      }
+    } catch (e) { $('#inerr').innerHTML = `<div class="err">${esc(t.err + e.message)}</div>`; return; }
+    busy = true; setRun(); $('#result').classList.add('busy');
+    worker.postMessage({type: 'run', id: Date.now(), source: src, options});
+  }
+
+  async function render(summary, images, ctx) {
+    urls.splice(0).forEach(u => URL.revokeObjectURL(u));
+    const img = {};
+    for (const [k, v] of Object.entries(images)) {
+      if (typeof v === 'string') img[k] = v;
+      else { const u = URL.createObjectURL(new Blob([v], {type: 'image/png'})); urls.push(u); img[k] = u; }
+    }
+    for (const k of Object.keys(img)) if (k.startsWith('evidence_')) img[k] = await colorize(img[k]);
+    current = {summary, img, ...ctx};
+    cand = 1; view = summary.candidates.length ? 'overlay' : 'input';
+    paint();
+  }
+
+  function family(src) {
+    const s = String(src || '');
+    const keys = Object.keys(t.families).filter(k => s.includes(k));
+    return keys.map(k => t.families[k]).join(' · ');
+  }
+
+  function paint() {
+    const {summary: s, img} = current, c = s.candidates.find(x => x.rank === cand), best = s.candidates[0];
+    const thr = data.config.confidence_threshold, d = best ? best.decision : 0;
+    const head = `<div class="rhead"><div><div class="stamp ${s.status}">${esc(t.status[s.status])}</div><p class="meaning">${esc(t.meaning[s.status])}</p></div>
+      <div class="dbar"><p><span>${esc(t.decision)}</span><b>${best ? f3(d) : '—'}</b></p><div class="track"><i style="width:${Math.round(Math.min(1, d) * 100)}%"></i><u style="left:${thr * 100}%"></u><em style="left:${thr * 100}%">${esc(t.threshold)} ${thr}</em></div></div></div>`;
+    let parity = '';
+    if (current.recorded) parity = `<p class="note" style="margin:16px 0 0">${esc(t.recordedNote)}</p>`;
+    else if (current.live && state.tab === 'examples') {
+      const g = data.gallery.find(x => x.id === state.example), nb = g.candidates[0];
+      const same = g.status === s.status && (!nb && !best || nb && best && nb.decision === best.decision && nb.source === best.source);
+      parity = `<div class="parity ${same ? '' : 'diff'}" style="margin-top:16px">${same ? fill(t.parityOk, {s: esc(t.status[s.status]), d: best ? f3(best.decision) : '—', h: esc(best ? best.source : '—')}) : esc(fill(t.parityDiff, {ns: t.status[g.status], nd: nb ? f3(nb.decision) : '—', bs: t.status[s.status], bd: best ? f3(best.decision) : '—'}))}</div>`;
+    }
+    if (!c) { $('#result').innerHTML = head + parity + `<div class="viewer"><div class="stage"><img src="${img.input}" alt=""></div><div class="views"><p class="note">${esc(t.noCand)}</p></div></div>` + quality(s) + prov(s); return; }
+    const layer = view === 'input' ? img.input : img[`${view}_${c.rank}`];
+    const viewer = `<div class="viewer"><div class="stage" style="--cut:${cut}%"><img src="${img.input}" alt=""><img class="top-layer" src="${layer}" alt="${esc(t.views[view][0])}"><span class="knob"></span><span class="cap l">${esc(t.views.input[0])}</span><span class="cap r">${esc(t.views[view][0])}</span><input type="range" min="0" max="100" value="${cut}" aria-label="${esc(t.cmp)}" id="cut"></div>
+      <div class="views">${['overlay', 'evidence', 'mask', 'structure', 'input'].map(k => `<button type="button" data-view="${k}" aria-pressed="${k === view}"><b>${esc(t.views[k][0])}</b><small>${esc(t.views[k][1])}</small></button>`).join('')}<p class="note">${esc(t.cmp)}</p></div></div>`;
+    const tabs = `<div class="cands" role="tablist">${s.candidates.map(x => `<button type="button" role="tab" data-cand="${x.rank}" aria-selected="${x.rank === cand}">#${x.rank} <small>${f3(x.decision)}</small></button>`).join('')}</div>`;
+    const M = c.metrics || {};
+    const conf = t.conf.map(([k, label]) => `<div class="m"><span>${esc(label)}</span><span class="mt"><i style="width:${Math.round((c[k] || 0) * 100)}%"></i></span><em>${f3(c[k])}</em></div>`).join('');
+    const mets = t.metrics.filter(([k]) => M[k] != null && (k !== 'primitive_distribution_evidence' || M[k] > 0) && (k !== 'mosaic_distribution_score' || c.rank === 1)).map(([k, label]) => `<div class="m"><span>${esc(label)}</span><span class="mt"><i style="width:${Math.round(Math.min(1, M[k]) * 100)}%"></i></span><em>${f3(M[k])}</em></div>`).join('');
+    const warns = c.warnings.length ? c.warnings.map(w => `<span>${esc(t.warn[w] || w)}</span>`).join('') : `<span class="none">${esc(t.none)}</span>`;
+    const hyp = `<div class="box"><h3>${esc(t.candT)} #${c.rank}</h3><div class="src">${esc(c.source)}</div><div class="fam">${esc(family(c.source))}</div>${conf}<div style="height:8px"></div>${mets}<h3 style="margin-top:12px">${esc(t.warningsT)}</h3><div class="warn">${warns}</div></div>`;
+    // the decision contract, read off the top candidate's metrics (api.py): an explanation, not a second decision
+    const B = best.metrics, gate = [[B.boundary_evidence >= .55 && B.local_residual_support >= .30 && B.color_separation >= .60, t.why.g1, `edge ${f3(B.boundary_evidence)} ≥ 0.55 · residual ${f3(B.local_residual_support)} ≥ 0.30 · sep ${f3(B.color_separation)} ≥ 0.60`],
+      [B.boundary_evidence >= .80 && B.color_separation >= .70 && B.planar_explanation < .45, t.why.g2, `edge ${f3(B.boundary_evidence)} ≥ 0.80 · sep ${f3(B.color_separation)} ≥ 0.70 · planar ${f3(B.planar_explanation)} < 0.45`],
+      [B.primitive_distribution_evidence >= .42 && B.spatial_structure >= .40, t.why.g3, `tiles ${f3(B.primitive_distribution_evidence)} ≥ 0.42 · spatial ${f3(B.spatial_structure)} ≥ 0.40`],
+      [B.mosaic_distribution_score >= .77, t.why.g4, `score ${f3(B.mosaic_distribution_score)} ≥ 0.77`]];
+    const why = `<div class="box"><h3>${esc(t.whyT)}</h3><ul class="gates"><li><i class="${d >= thr ? 'y' : 'n'}">${d >= thr ? '✓' : '✕'}</i><span>${esc(fill(t.why.thr, {d: f3(d), t: thr}))}</span></li>
+      ${B.runner_up_margin != null ? `<li><i class="${B.runner_up_margin >= data.config.ambiguity_margin || B.consensus_support >= 1 ? 'y' : 'n'}">${B.runner_up_margin >= data.config.ambiguity_margin || B.consensus_support >= 1 ? '✓' : '✕'}</i><span>${esc(fill(t.why.margin, {m: f3(B.runner_up_margin), n: data.config.ambiguity_margin}))}</span><small>${esc(fill(t.why.consensus, {c: f3(B.runner_up_consensus_iou)}))}</small></li>` : ''}
+      <li><i></i><span>${esc(t.why.gates)}</span></li>${gate.map(([ok, name, detail]) => `<li><i class="${ok ? 'y' : 'n'}">${ok ? '✓' : '·'}</i><span>${esc(name)}</span><small>${esc(detail)}</small></li>`).join('')}</ul></div>`;
+    const truth = c.truth_support ? `<div class="box" style="margin-top:14px"><h3>${esc(t.truthT)}</h3><div class="truth">${t.truth.map(([k, label]) => `<div><b>${pct(c.truth_support[k])}</b><small>${esc(label)}</small></div>`).join('')}</div><p class="note" style="margin:8px 0 0">${esc(t.truthNote)}</p></div>` : '';
+    const sem = s.semantics || {};
+    const candSem = s.candidates.filter(x => x.semantics && x.semantics.hypothesis).map(x => fill(t.semCand, {r: x.rank, h: x.semantics.hypothesis, c: f3(x.semantics.confidence)})).join(' · ');
+    const semBox = `<div class="box" style="margin-top:14px"><h3>${esc(t.semT)}</h3><p class="note" style="margin:0;color:#c5ccd8">${esc(sem.mode === 'none' ? t.semOff : sem.hypothesis ? fill(t.semAccepted, {h: sem.hypothesis}) : t.semNone)}${candSem ? `<br><span style="font-family:var(--mono);font-size:11.5px">${esc(candSem)}</span>` : ''}</p><p class="note" style="margin:6px 0 0">${esc(t.semNote)}</p></div>`;
+    $('#result').innerHTML = head + parity + viewer + tabs + `<div class="cols">${hyp}${why}</div>` + truth + semBox + quality(s) + prov(s);
+  }
+
+  function quality(s) {
+    const q = s.quality || {}, w = (q.warnings || []).map(x => `<span>${esc(t.warn[x] || x)}</span>`).join('') || `<span class="none">${esc(t.none)}</span>`;
+    return `<div class="box" style="margin-top:14px"><h3>${esc(t.qualT)}</h3><div class="warn">${w}</div><p class="note" style="margin:8px 0 0;font-family:var(--mono)">blur ${f3(q.blur)} · clipping ${f3(q.clipping)} · glare ${f3(q.glare)} · colour spread ${f3(q.color_spread)}</p></div>`;
+  }
+  function prov(s) {
+    const tm = s.timing_ms || {}, ms = v => v == null ? '—' : `${Math.round(v)} ms`;
+    const where = current.recorded ? `${t.recorded} · Python ${data.native.python} · NumPy ${data.native.numpy} · OpenCV ${data.native.opencv}` : `${t.browser} · ${current.ms} ms`;
+    return `<div class="box" style="margin-top:14px"><h3>${esc(t.timeT)} · ${esc(t.provT)}</h3><dl class="kv"><dt>${esc(t.timeT)}</dt><dd>total ${ms(tm.total)} · hypotheses ${ms(tm.hypotheses_and_ranking)} · colour ${ms(tm.color_and_quality)} · presentation ${ms(tm.presentation)}</dd>
+      <dt>run</dt><dd>${esc(where)}</dd><dt>mode</dt><dd>${esc(s.mode_resolved || '')}</dd><dt>config</dt><dd>${esc(s.config_fingerprint || data.config.fingerprint)}</dd><dt>engine</dt><dd>${esc(data.wheel.file)} · ${esc(data.wheel.sha256.slice(0, 16))}…</dd></dl></div>`;
+  }
+
+  // ---- events ----
+  $('#load').addEventListener('click', loadEngine);
+  $('#run').addEventListener('click', run);
+  document.addEventListener('click', e => {
+    const tab = e.target.closest('[data-tab]');
+    if (tab) { state.tab = tab.dataset.tab; $$('[data-tab]').forEach(b => b.setAttribute('aria-selected', String(b === tab))); $$('[data-pane]').forEach(p => p.hidden = p.dataset.pane !== state.tab); setRun(); return; }
+    const ex = e.target.closest('[data-ex]');
+    if (ex) { state.example = ex.dataset.ex; $$('[data-ex]').forEach(b => b.setAttribute('aria-pressed', String(b === ex))); ready ? run() : showRecorded(state.example); return; }
+    const st = e.target.closest('[data-style]'); if (st) { state.style = st.dataset.style; $$('[data-style]').forEach(b => b.setAttribute('aria-pressed', String(b === st))); return; }
+    const hd = e.target.closest('[data-hide]'); if (hd) { state.hide = hd.dataset.hide; $$('[data-hide]').forEach(b => b.setAttribute('aria-pressed', String(b === hd))); return; }
+    const v = e.target.closest('[data-view]'); if (v && current) { view = v.dataset.view; paint(); return; }
+    const cd = e.target.closest('[data-cand]'); if (cd && current) { cand = Number(cd.dataset.cand); paint(); return; }
+  });
+  document.addEventListener('input', e => { if (e.target.id === 'cut') { cut = Number(e.target.value); e.target.closest('.stage').style.setProperty('--cut', cut + '%'); } });
+  $('#dice').addEventListener('click', () => { $('#seed').value = Math.floor(Math.random() * 100000); });
+  const drop = $('#drop');
+  const take = async file => { try { source = await readFile(file); drop.querySelector('b').textContent = file.name; if (ready) run(); } catch (err) { $('#inerr').innerHTML = `<div class="err">${esc(t.err + err.message)}</div>`; } };
+  $('#file').addEventListener('change', e => { if (e.target.files[0]) take(e.target.files[0]); });
+  ['dragenter', 'dragover'].forEach(k => drop.addEventListener(k, e => { e.preventDefault(); drop.classList.add('over'); }));
+  ['dragleave', 'drop'].forEach(k => drop.addEventListener(k, e => { e.preventDefault(); drop.classList.remove('over'); }));
+  drop.addEventListener('drop', e => { const f = e.dataTransfer.files[0]; if (f) take(f); });
+  init().catch(e => { $('#result').innerHTML = `<div class="err">${esc(t.err + e.message)}</div>`; });
+})();
+</script>
+<script defer src="/assets/js/site-stats.js?v=2"></script>
+</body>
+</html>

@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ChromaRecover · what colour alone is hiding</title>
+<meta name="description" content="ChromaRecover, visualised on one real recovery: the tiles of a matched-colour mosaic, their colours in Lab space, 156 competing hypotheses, the decision contract, the evidence behind “820”, and the decoy it refuses to call.">
+<meta name="theme-color" content="#050608">
+<link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap">
+<style>
+:root{--bg:#050608;--ink:#f2f4f7;--dim:#8a909b;--line:#ffffff26;--cyan:#39d2e6;--amber:#ffb454;--ok:#5fd49a;--unc:#f2b64c;--violet:#b69cff;}
+*{box-sizing:border-box;}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:Inter,'Noto Sans TC','Noto Sans SC',system-ui,sans-serif;overflow:hidden;}
+#gl{position:fixed;inset:0;width:100%;height:100%;display:block;}
+.ui{position:fixed;inset:0;pointer-events:none;}
+.brand{position:absolute;top:18px;left:22px;font:500 12px/1.4 'JetBrains Mono',monospace;color:var(--dim);letter-spacing:.04em;transition:opacity .5s;}
+.brand b{color:var(--ink);font-weight:500;}
+.top{position:absolute;top:14px;right:16px;display:flex;gap:8px;transition:opacity .5s;}
+.btn{pointer-events:auto;font:500 11px 'JetBrains Mono',monospace;color:var(--dim);background:transparent;border:1px solid var(--line);border-radius:999px;padding:6px 11px;cursor:pointer;text-decoration:none;}
+.btn:hover{color:var(--ink);border-color:#ffffff66;}
+.cap{position:absolute;left:50%;bottom:74px;transform:translateX(-50%);width:min(760px,90vw);text-align:center;opacity:0;transition:opacity .6s;}
+.cap.on{opacity:1;}
+.cap b{display:block;font:600 clamp(16px,1.7vw,21px)/1.45 Inter,'Noto Sans TC','Noto Sans SC',sans-serif;color:#fff;text-shadow:0 2px 18px #000;}
+.cap small{display:block;margin-top:6px;font:400 12px/1.6 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;color:#c8ced8;text-shadow:0 2px 10px #000;}
+.lab{position:absolute;left:0;top:0;transform:translate(0,-100%);white-space:nowrap;font:500 12px/1.5 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;color:#e9edf3;opacity:0;transition:opacity .45s;pointer-events:none;padding:5px 9px;border-left:2px solid var(--cyan);background:#05070bcc;}
+.lab small{display:block;color:var(--dim);font-size:11px;}
+.lab.on{opacity:1;}
+.lab.amber{border-color:var(--amber);}.lab.violet{border-color:var(--violet);}
+.stamp{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%) scale(1.3) rotate(-4deg);padding:10px 22px;border-radius:12px;font:800 clamp(26px,3.4vw,44px)/1 'JetBrains Mono',monospace;letter-spacing:.1em;opacity:0;transition:opacity .35s,transform .45s cubic-bezier(.2,1.5,.4,1);}
+.stamp.on{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(-4deg);}
+.stamp.ok{color:var(--ok);box-shadow:0 0 0 3px var(--ok) inset,0 0 60px #5fd49a55;background:#05120bcc;}
+.stamp.unc{color:var(--unc);box-shadow:0 0 0 3px var(--unc) inset,0 0 60px #f2b64c44;background:#140f05cc;}
+.hud{position:absolute;top:54px;left:22px;display:flex;gap:22px;font:500 11px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;color:var(--dim);opacity:0;transition:opacity .5s;}
+.hud.on{opacity:1;}
+.hud b{display:block;font:600 22px 'JetBrains Mono',monospace;color:var(--ink);font-variant-numeric:tabular-nums;}
+.panel{position:absolute;right:4vw;top:50%;transform:translateY(-50%);width:min(470px,92vw);padding:18px 20px;border-radius:14px;border:1px solid #ffffff1f;background:#070a10d6;backdrop-filter:blur(6px);font:500 12.5px/1.75 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;opacity:0;transition:opacity .5s;}
+.panel.on{opacity:1;}
+.panel h2{margin:0 0 10px;font:600 13px 'JetBrains Mono',monospace;color:#fff;letter-spacing:.06em;}
+.panel div{display:flex;gap:10px;justify-content:space-between;opacity:0;transform:translateY(4px);transition:opacity .35s,transform .35s;}
+.panel div.on{opacity:1;transform:none;}
+.panel div span:first-child{color:var(--dim);}
+.panel .y{color:var(--ok);}.panel .n{color:var(--unc);}.panel .x{color:#9aa3ad;}
+.panel hr{border:0;border-top:1px solid #ffffff1a;margin:9px 0;}
+.title{position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);text-align:center;opacity:0;transition:opacity 1.2s;pointer-events:none;width:92vw;}
+.title.on{opacity:1;}
+.title h1{margin:0;font:800 clamp(38px,6vw,78px)/1 Inter,sans-serif;letter-spacing:-.03em;text-shadow:0 2px 40px #000;}
+.title h1 span{background:linear-gradient(95deg,#9fd3ff,#c3a6ff 55%,#ff9fbf);-webkit-background-clip:text;background-clip:text;color:transparent;}
+.title p{margin:16px 0 0;font:500 14px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;color:#dfe4ea;text-shadow:0 2px 12px #000;}
+.title small{display:block;margin-top:9px;font:400 11px 'JetBrains Mono',monospace;color:var(--dim);}
+.bar{position:absolute;left:0;right:0;bottom:0;padding:0 22px 18px;display:flex;align-items:center;gap:14px;transition:opacity .5s;}
+.bar .play{pointer-events:auto;width:30px;height:30px;border-radius:50%;border:1px solid var(--line);background:transparent;color:var(--ink);display:grid;place-items:center;cursor:pointer;flex:none;}
+.bar svg{width:12px;height:12px;fill:currentColor;}
+.track{position:relative;flex:1;height:18px;cursor:pointer;pointer-events:auto;}
+.track:before{content:'';position:absolute;left:0;right:0;top:8px;height:2px;background:#ffffff1c;}
+.fill{position:absolute;left:0;top:8px;height:2px;background:var(--ink);}
+.time{font:400 11px 'JetBrains Mono',monospace;color:var(--dim);min-width:84px;text-align:right;}
+.start{position:absolute;inset:0;display:grid;place-items:center;background:#050608e6;pointer-events:auto;transition:opacity .6s;}
+.start.off{opacity:0;pointer-events:none;}
+.start button{background:none;border:0;color:var(--ink);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:14px;font:500 13px Inter,'Noto Sans TC',sans-serif;}
+.start .ring{width:74px;height:74px;border-radius:50%;border:1px solid #ffffff55;display:grid;place-items:center;}
+.start .ring svg{width:22px;height:22px;fill:#fff;margin-left:3px;}
+.start small{color:var(--dim);font-family:'JetBrains Mono','Noto Sans TC',monospace;font-size:11px;max-width:80vw;text-align:center;}
+.idle .bar,.idle .top,.idle .brand{opacity:0;}
+.mini .brand,.mini .top,.mini .bar,.mini .lab,.mini .hud,.mini .start,.mini .title,.mini .panel,.mini .cap,.mini .stamp{display:none;}
+.embed #back{display:none;}
+@media(max-width:720px){.lab{font-size:10px;}.lab small{font-size:9px;}.hud{gap:12px;}.hud b{font-size:15px;}.panel{right:3vw;font-size:10.5px;padding:12px 14px;top:auto;bottom:120px;transform:none;}.cap{bottom:64px;}.cap b{font-size:15px;}}
+</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
+</head>
+<body>
+<canvas id="gl"></canvas>
+<div class="ui" id="ui">
+  <div class="brand"><b>ChromaRecover</b> · <span id="sub"></span></div>
+  <div class="top"><a class="btn" id="back" href="/#projects/chromarecover">←</a><button class="btn" id="lang" type="button">EN</button><button class="btn" id="fs" type="button">⛶</button></div>
+  <div class="hud" id="hud"></div>
+  <div id="labels"></div>
+  <div class="panel" id="panel"></div>
+  <div class="stamp" id="stamp"></div>
+  <div class="cap" id="cap"><b></b><small></small></div>
+  <div class="title" id="title"><h1></h1><p></p><small></small></div>
+  <div class="bar"><button class="play" id="play" type="button" aria-label="play / pause"></button><div class="track" id="track"><div class="fill" id="fill"></div></div><span class="time" id="time"></span></div>
+  <div class="start" id="start"><button type="button" id="go"><span class="ring"><svg viewBox="0 0 24 24"><path d="M6 4l14 8-14 8z"/></svg></span><span id="go-label"></span><small id="go-sub"></small></button></div>
+</div>
+<script type="module">
+/* Every shape in this film is data from one real ChromaRecover run (assets/chromarecover/film.json and data.json, written by
+   tools/chromarecover_showcase.py from the pinned commit): the plate is the generator's own image, the tiles are the ones
+   ChromaRecover segments, their colours are its Lab values, the wall holds every scored hypothesis, the decision numbers are
+   the winner's metrics, and the evidence surface is the evidence map it returned. The decoy is the matched plate with the
+   same colours and counts. */
+import * as THREE from 'three';
+import {EffectComposer} from 'three/addons/postprocessing/EffectComposer.js';
+import {RenderPass} from 'three/addons/postprocessing/RenderPass.js';
+import {UnrealBloomPass} from 'three/addons/postprocessing/UnrealBloomPass.js';
+import {OutputPass} from 'three/addons/postprocessing/OutputPass.js';
+
+const $ = id => document.getElementById(id);
+const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
+const seg = (t, a, b) => clamp((t - a) / (b - a));
+const sm = x => x * x * (3 - 2 * x);
+const ss = (t, a, b) => sm(seg(t, a, b));
+const lerp = (a, b, k) => a + (b - a) * k;
+const V = (x, y, z) => new THREE.Vector3(x, y, z);
+const hash = n => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
+const q = new URLSearchParams(location.search), EMBED = q.get('embed') === '1', CLEAN = q.get('clean') === '1';
+let L = q.get('lang') || (/^zh-(cn|sg)/i.test(navigator.language) ? 'zh-CN' : /^zh/i.test(navigator.language) ? 'zh-TW' : 'en');
+if (!['en', 'zh-TW', 'zh-CN'].includes(L)) L = 'en';
+const [F, DATA] = await Promise.all([fetch('/assets/chromarecover/film.json?v=1').then(r => r.json()), fetch('/assets/chromarecover/data.json?v=1').then(r => r.json())]);
+
+/* ---------------- data ---------------- */
+const P = F.positive, DC = F.decoy, BEST = P.best, M = BEST.metrics, DB = DC.best;
+const G820 = DATA.gallery.find(g => g.id === 'mosaic-820'), TRUTH = G820.candidates[0].truth_support;
+const NT = P.tiles.length, IN = P.tiles.filter(t => t[6]).length, NH = P.scored.length, NF = P.families.length;
+const lab2rgb = (L_, a, b) => {   // CIELAB D65 → sRGB, the inverse of chromarecover.color
+  const fy = (L_ + 16) / 116, fx = fy + a / 500, fz = fy - b / 200, f = v => v ** 3 > .008856 ? v ** 3 : (v - 16 / 116) / 7.787;
+  const X = .95047 * f(fx), Y = f(fy), Z = 1.08883 * f(fz);
+  const r = 3.2406 * X - 1.5372 * Y - .4986 * Z, g = -.9689 * X + 1.8758 * Y + .0415 * Z, bl = .0557 * X - .204 * Y + 1.057 * Z;
+  const enc = c => clamp(c <= .0031308 ? 12.92 * c : 1.055 * c ** (1 / 2.4) - .055);
+  return new THREE.Color(enc(r), enc(g), enc(bl));
+};
+const mean = (arr, i) => arr.reduce((s, x) => s + x[i], 0) / arr.length;
+const inT = P.tiles.filter(t => t[6]), outT = P.tiles.filter(t => !t[6]);
+// the nearest other colour to the hidden colour, in ΔE*ab between cluster means
+const hidden = [mean(inT, 2), mean(inT, 3), mean(inT, 4)];
+const others = [];
+outT.forEach(t => { const c = others.find(o => Math.hypot(o[0] - t[2], o[1] - t[3], o[2] - t[4]) < 12); if (c) { c[3]++; } else others.push([t[2], t[3], t[4], 1]); });
+const nearest = others.filter(o => o[3] >= 6).reduce((m, o) => { const d = Math.hypot(o[0] - hidden[0], o[1] - hidden[1], o[2] - hidden[2]); return d < m ? d : m; }, 1e9);
+const bits = (s, side) => { const b = atob(s), out = new Uint8Array(side * side); for (let i = 0; i < side * side; i++) out[i] = (b.charCodeAt(i >> 3) >> (7 - (i & 7))) & 1; return out; };
+const u8 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+const f3 = v => Number(v).toFixed(3), pc = v => `${Math.round(v * 100)}%`;
+
+/* ---------------- copy ---------------- */
+const COPY = {
+  en: {sub: 'what colour alone is hiding', go: 'Play', goSub: '≈ 90 s · one real recovery and its decoy, recorded from the pinned commit', home: 'back',
+    c1: ['A mosaic, 480 × 480, drawn by ChromaRecover’s own generator.', 'Somewhere in it, one colour carries a number.'],
+    c2: [`${NT} tiles in a handful of colours. ${IN} of them share one colour.`, 'the decoy plate has exactly as many tiles of that colour, only scattered'],
+    c3: ['Lift every tile into colour space.', 'each tile at its CIELAB colour: the hidden colour is not rare, so counting colours cannot find the number'],
+    c4: ['No colour, polarity or size is assumed.', `${NH} competing masks from ${NF} feature families, each scored on its own`],
+    c5: ['Close is not enough. The decision has a contract.', 'threshold, margin or agreement, and at least one evidence gate'],
+    c6: ['The evidence, surfaced.', `selected pixels vs the hidden tiles · precision ${pc(TRUTH.precision)} · recall ${pc(TRUTH.recall)}`],
+    c7: [P.semantics && P.semantics.hypothesis ? `It also reads “${P.semantics.hypothesis}”.` : 'It does not claim to read “820”.', P.semantics && P.semantics.hypothesis ? 'digit reading runs after the pixels, and never changes the status' : 'the digit reader stays below its acceptance line; the pixels are the answer'],
+    c8: ['Now the decoy: the same colours, the same count, scattered.', 'colour statistics alone cannot tell the two plates apart'],
+    c9: ['No structure clears the contract.', `best decision ${f3(DB.decision)} < ${P.threshold} · no evidence gate holds`],
+    t1: 'Chroma<span>Recover</span>', t1p: 'find what colour alone is hiding',
+    t2: 'If the evidence is weak,<br><span>it says so.</span>', t2p: 'try it yourself · niansia.com/lab/chromarecover',
+    hud: [['tiles', NT], ['hidden colour', IN], ['hypotheses', NH], ['families', NF]],
+    axisA: 'a*  green ↔ red', axisB: 'b*  blue ↔ yellow', axisL: 'L*  lightness',
+    hidden: `the hidden colour · ${IN} tiles<small>Lab ${hidden.map(v => v.toFixed(0)).join(' / ')}</small>`,
+    nearestL: `nearest other colour<small>ΔE*ab ${nearest.toFixed(1)}</small>`,
+    wall: `${NH} scored hypotheses<small>sorted by structure score</small>`,
+    win: `#1 ${BEST.source}<small>structure ${f3(BEST.structure)} · decision ${f3(BEST.decision)}</small>`,
+    panelT: 'DECISION CONTRACT',
+    rows: [['decision confidence', `${f3(BEST.decision)} ≥ ${P.threshold}`, 'y'], ['lead over runner-up', `${f3(M.runner_up_margin)} < ${P.ambiguity_margin}`, 'n'], ['…but they agree (IoU)', `${f3(M.runner_up_consensus_iou)} → factor ${f3(M.decision_factor)}`, 'y'],
+      ['edge + residual gate', `edge ${f3(M.boundary_evidence)} < 0.55`, 'x'], ['mosaic distribution gate', `${f3(M.mosaic_distribution_score)} ≥ 0.77`, 'y'], ['status', 'OK', 'y']],
+    rowsD: [['decision confidence', `${f3(DB.decision)} < ${P.threshold}`, 'n'], ['warnings', (DB.warnings || []).length + ' raised', 'n'], ['evidence gates', 'none hold', 'n'], ['status', 'UNCERTAIN', 'n']],
+    ok: 'OK', unc: 'UNCERTAIN', source: `ChromaRecover ${DATA.source.version} · commit ${DATA.source.commit.slice(0, 7)} · OpenCV ${DATA.native.opencv}`},
+  'zh-TW': {sub: '只靠顏色藏起來的東西', go: '播放', goSub: '約 90 秒 · 一次真實的找回與它的誘餌，由固定的 commit 錄製', home: '返回',
+    c1: ['一張 480 × 480 的拼貼，由 ChromaRecover 自己的產生器畫出。', '其中有一種顏色，承載著一個數字。'],
+    c2: [`${NT} 個色塊、少數幾種顏色，其中 ${IN} 個是同一種顏色。`, '誘餌色盤裡這種顏色的色塊一樣多，只是打散了'],
+    c3: ['把每個色塊舉進色彩空間。', '每個色塊落在它的 CIELAB 顏色上：藏數字的顏色並不稀有，光數顏色找不到數字'],
+    c4: ['不預設顏色、極性或大小。', `來自 ${NF} 個特徵族群的 ${NH} 個候選遮罩，各自獨立評分`],
+    c5: ['接近還不夠，決定要遵守契約。', '門檻、領先或一致，外加至少一道證據閘門'],
+    c6: ['證據浮上來了。', `選中的像素對上藏起來的色塊 · 精確率 ${pc(TRUTH.precision)} · 召回率 ${pc(TRUTH.recall)}`],
+    c7: [P.semantics && P.semantics.hypothesis ? `它也讀出了「${P.semantics.hypothesis}」。` : '它不宣稱讀出了「820」。', P.semantics && P.semantics.hypothesis ? '數字讀取在像素之後才執行，永遠不改變狀態' : '數字讀取停在接受門檻之下；像素本身就是答案'],
+    c8: ['換成誘餌：同樣的顏色、同樣的數量，只是打散。', '光看顏色統計，分不出這兩張色盤'],
+    c9: ['沒有任何結構通過契約。', `最佳決策 ${f3(DB.decision)} < ${P.threshold} · 沒有證據閘門成立`],
+    t1: 'Chroma<span>Recover</span>', t1p: '找出只靠顏色藏起來的東西',
+    t2: '證據不夠的時候，<br><span>它會直說。</span>', t2p: '自己試試 · niansia.com/lab/chromarecover',
+    hud: [['色塊', NT], ['藏起來的顏色', IN], ['假設', NH], ['族群', NF]],
+    axisA: 'a*  綠 ↔ 紅', axisB: 'b*  藍 ↔ 黃', axisL: 'L*  亮度',
+    hidden: `藏起來的顏色 · ${IN} 個色塊<small>Lab ${hidden.map(v => v.toFixed(0)).join(' / ')}</small>`,
+    nearestL: `最接近的其他顏色<small>ΔE*ab ${nearest.toFixed(1)}</small>`,
+    wall: `${NH} 個評分過的假設<small>依結構分數排序</small>`,
+    win: `#1 ${BEST.source}<small>結構 ${f3(BEST.structure)} · 決策 ${f3(BEST.decision)}</small>`,
+    panelT: '決策契約',
+    rows: [['決策信心', `${f3(BEST.decision)} ≥ ${P.threshold}`, 'y'], ['領先亞軍', `${f3(M.runner_up_margin)} < ${P.ambiguity_margin}`, 'n'], ['⋯但兩者一致（IoU）', `${f3(M.runner_up_consensus_iou)} → 係數 ${f3(M.decision_factor)}`, 'y'],
+      ['邊緣＋殘差閘門', `邊緣 ${f3(M.boundary_evidence)} < 0.55`, 'x'], ['拼貼分布閘門', `${f3(M.mosaic_distribution_score)} ≥ 0.77`, 'y'], ['狀態', 'OK', 'y']],
+    rowsD: [['決策信心', `${f3(DB.decision)} < ${P.threshold}`, 'n'], ['警告', `${(DB.warnings || []).length} 個`, 'n'], ['證據閘門', '都不成立', 'n'], ['狀態', 'UNCERTAIN', 'n']],
+    ok: 'OK', unc: 'UNCERTAIN', source: `ChromaRecover ${DATA.source.version} · commit ${DATA.source.commit.slice(0, 7)} · OpenCV ${DATA.native.opencv}`},
+  'zh-CN': {sub: '只靠颜色藏起来的东西', go: '播放', goSub: '约 90 秒 · 一次真实的找回与它的诱饵，由固定的 commit 录制', home: '返回',
+    c1: ['一张 480 × 480 的拼贴，由 ChromaRecover 自己的生成器画出。', '其中有一种颜色，承载着一个数字。'],
+    c2: [`${NT} 个色块、少数几种颜色，其中 ${IN} 个是同一种颜色。`, '诱饵色盘里这种颜色的色块一样多，只是打散了'],
+    c3: ['把每个色块举进色彩空间。', '每个色块落在它的 CIELAB 颜色上：藏数字的颜色并不稀有，光数颜色找不到数字'],
+    c4: ['不预设颜色、极性或大小。', `来自 ${NF} 个特征族群的 ${NH} 个候选遮罩，各自独立评分`],
+    c5: ['接近还不够，决定要遵守契约。', '门槛、领先或一致，外加至少一道证据闸门'],
+    c6: ['证据浮上来了。', `选中的像素对上藏起来的色块 · 精确率 ${pc(TRUTH.precision)} · 召回率 ${pc(TRUTH.recall)}`],
+    c7: [P.semantics && P.semantics.hypothesis ? `它也读出了“${P.semantics.hypothesis}”。` : '它不声称读出了“820”。', P.semantics && P.semantics.hypothesis ? '数字读取在像素之后才运行，永远不改变状态' : '数字读取停在接受门槛之下；像素本身就是答案'],
+    c8: ['换成诱饵：同样的颜色、同样的数量，只是打散。', '光看颜色统计，分不出这两张色盘'],
+    c9: ['没有任何结构通过契约。', `最佳决策 ${f3(DB.decision)} < ${P.threshold} · 没有证据闸门成立`],
+    t1: 'Chroma<span>Recover</span>', t1p: '找出只靠颜色藏起来的东西',
+    t2: '证据不够的时候，<br><span>它会直说。</span>', t2p: '自己试试 · niansia.com/lab/chromarecover',
+    hud: [['色块', NT], ['藏起来的颜色', IN], ['假设', NH], ['族群', NF]],
+    axisA: 'a*  绿 ↔ 红', axisB: 'b*  蓝 ↔ 黄', axisL: 'L*  亮度',
+    hidden: `藏起来的颜色 · ${IN} 个色块<small>Lab ${hidden.map(v => v.toFixed(0)).join(' / ')}</small>`,
+    nearestL: `最接近的其他颜色<small>ΔE*ab ${nearest.toFixed(1)}</small>`,
+    wall: `${NH} 个评分过的假设<small>按结构分数排序</small>`,
+    win: `#1 ${BEST.source}<small>结构 ${f3(BEST.structure)} · 决策 ${f3(BEST.decision)}</small>`,
+    panelT: '决策契约',
+    rows: [['决策置信度', `${f3(BEST.decision)} ≥ ${P.threshold}`, 'y'], ['领先亚军', `${f3(M.runner_up_margin)} < ${P.ambiguity_margin}`, 'n'], ['⋯但两者一致（IoU）', `${f3(M.runner_up_consensus_iou)} → 系数 ${f3(M.decision_factor)}`, 'y'],
+      ['边缘＋残差闸门', `边缘 ${f3(M.boundary_evidence)} < 0.55`, 'x'], ['拼贴分布闸门', `${f3(M.mosaic_distribution_score)} ≥ 0.77`, 'y'], ['状态', 'OK', 'y']],
+    rowsD: [['决策置信度', `${f3(DB.decision)} < ${P.threshold}`, 'n'], ['警告', `${(DB.warnings || []).length} 个`, 'n'], ['证据闸门', '都不成立', 'n'], ['状态', 'UNCERTAIN', 'n']],
+    ok: 'OK', unc: 'UNCERTAIN', source: `ChromaRecover ${DATA.source.version} · commit ${DATA.source.commit.slice(0, 7)} · OpenCV ${DATA.native.opencv}`}};
+const C = COPY[L];
+
+/* ---------------- timeline (seconds) ---------------- */
+const TOTAL = 92;
+const CAPS = [[5, 12, 'c1'], [12.5, 19, 'c2'], [21, 30, 'c3'], [32, 43, 'c4'], [45, 56, 'c5'], [58.5, 65, 'c6'], [65.5, 71, 'c7'], [73, 79, 'c8'], [79.5, 85, 'c9']];
+
+/* ---------------- renderer ---------------- */
+const canvas = $('gl');
+const renderer = new THREE.WebGLRenderer({canvas, antialias: true, preserveDrawingBuffer: CLEAN});
+renderer.toneMapping = THREE.NeutralToneMapping; renderer.toneMappingExposure = 1.0;   // colours are the content: keep them faithful
+const scene = new THREE.Scene(); scene.background = new THREE.Color('#050608'); scene.fog = new THREE.FogExp2('#050608', .028);
+const camera = new THREE.PerspectiveCamera(40, 1, .05, 200);
+const composer = new EffectComposer(renderer); composer.addPass(new RenderPass(scene, camera));
+const bloom = new UnrealBloomPass(new THREE.Vector2(512, 512), .75, .6, .82); composer.addPass(bloom); composer.addPass(new OutputPass());
+scene.add(new THREE.AmbientLight('#ffffff', .95));
+const key = new THREE.DirectionalLight('#ffffff', 1.5); key.position.set(4, 9, 7); scene.add(key);
+const rim = new THREE.DirectionalLight('#8fb8ff', .7); rim.position.set(-6, 3, -6); scene.add(rim);
+
+// the plate: the generator's image on a thin slab (positive and decoy share it; the texture swaps)
+const loader = new THREE.TextureLoader();
+const texP = loader.load('/assets/chromarecover/gallery/mosaic-820/input.png'), texD = loader.load('/assets/chromarecover/gallery/mosaic-820-decoy/input.png');
+[texP, texD].forEach(t => { t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; });
+const S = 8;   // plate size in world units
+const plateMat = new THREE.MeshStandardMaterial({map: texP, roughness: .85, metalness: 0, transparent: true});
+const plate = new THREE.Mesh(new THREE.BoxGeometry(S, S, .12), [null, null, null, null, plateMat, plateMat].map(m => m || new THREE.MeshStandardMaterial({color: '#11141a'})));
+plate.rotation.x = -Math.PI / 2; scene.add(plate);
+const toBoard = (x, y) => V((x - .5) * S, .08, (y - .5) * S);
+// the reveal: ChromaRecover's own overlay for each plate (selected pixels in cyan, envelope in yellow)
+const ovP = loader.load('/assets/chromarecover/gallery/mosaic-820/overlay_1.webp'), ovD = loader.load('/assets/chromarecover/gallery/mosaic-820-decoy/overlay_1.webp');
+[ovP, ovD].forEach(t => { t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; });
+const ovMat = new THREE.MeshBasicMaterial({map: ovP, transparent: true, opacity: 0, toneMapped: false, depthWrite: false});
+const overlay = new THREE.Mesh(new THREE.PlaneGeometry(S, S), ovMat); overlay.rotation.x = -Math.PI / 2; overlay.position.y = .065; scene.add(overlay);
+
+// tiles: one instanced hexagonal chip per segmented tile, at its centroid, in its own Lab colour
+function makeTiles(tiles) {
+  const geo = new THREE.CylinderGeometry(1, 1, .12, 6);
+  const mat = new THREE.MeshStandardMaterial({roughness: .6, metalness: 0});
+  const mesh = new THREE.InstancedMesh(geo, mat, tiles.length);
+  const cols = tiles.map(t => lab2rgb(t[2], t[3], t[4]));
+  cols.forEach((c, i) => mesh.setColorAt(i, c));
+  mesh.instanceColor.needsUpdate = true;
+  scene.add(mesh);
+  return {mesh, tiles, cols, board: tiles.map(t => toBoard(t[0], t[1])), space: tiles.map(t => labPos(t[2], t[3], t[4])), r: tiles.map(t => Math.sqrt(t[5]) / 384 * S * .5)};
+}
+// colour space: a* → x, b* → z, L* → y
+const labPos = (L_, a, b) => V(a * .075, 1.2 + L_ * .048, -b * .075);
+const TP = makeTiles(P.tiles), TD = makeTiles(DC.tiles);
+const dummy = new THREE.Object3D();
+
+// colour-space frame: axes and a faint pixel cloud (2400 sampled pixels of the plate)
+const axes = new THREE.Group(); scene.add(axes);
+const axMat = new THREE.LineBasicMaterial({color: '#6b7384', transparent: true, opacity: 0});
+[[V(-3.2, 1.2, 0), V(3.2, 1.2, 0)], [V(0, 1.2, 3.2), V(0, 1.2, -3.2)], [V(0, 1.2, 0), V(0, 6.2, 0)]].forEach(([a, b]) => axes.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([a, b]), axMat)));
+const cloudGeo = new THREE.BufferGeometry(), cp = [], cc = [];
+P.pixels.forEach(p => { const v = labPos(p[0], p[1], p[2]); cp.push(v.x + (hash(cp.length) - .5) * .05, v.y, v.z); const c = lab2rgb(p[0], p[1], p[2]); cc.push(c.r, c.g, c.b); });
+cloudGeo.setAttribute('position', new THREE.Float32BufferAttribute(cp, 3)); cloudGeo.setAttribute('color', new THREE.Float32BufferAttribute(cc, 3));
+const cloud = new THREE.Points(cloudGeo, new THREE.PointsMaterial({size: .035, vertexColors: true, transparent: true, opacity: 0, depthWrite: false}));
+scene.add(cloud);
+
+// the wall: every scored hypothesis as a 24 × 24 mask tile, sorted by score (they arrive sorted from score_hypotheses)
+const wall = new THREE.Group(); scene.add(wall);
+const COLS = 13, cellW = .36, WX = -1.7, wallTiles = [];
+P.scored.forEach((h, i) => {
+  const m = bits(h.bits, 24), c = document.createElement('canvas'); c.width = c.height = 24;
+  const g = c.getContext('2d'), img = g.createImageData(24, 24);
+  for (let k = 0; k < 576; k++) { const on = m[k]; img.data.set(on ? [57, 210, 230, 255] : [16, 20, 28, 255], k * 4); }
+  g.putImageData(img, 0, 0);
+  const tex = new THREE.CanvasTexture(c); tex.magFilter = THREE.NearestFilter; tex.colorSpace = THREE.SRGBColorSpace;
+  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(cellW * .92, cellW * .92), new THREE.MeshBasicMaterial({map: tex, transparent: true, opacity: 0, toneMapped: false}));
+  const col = i % COLS, row = Math.floor(i / COLS);
+  mesh.userData = {home: V(WX + (col - (COLS - 1) / 2) * cellW, 5.6 - row * cellW, -2.5), scatter: V((hash(i) - .5) * 14, 1 + hash(i + 7) * 7, -6 - hash(i + 3) * 8), score: h.score, i};
+  wall.add(mesh); wallTiles.push(mesh);
+});
+
+// the winning mask at the resolution the film keeps (96 × 96), shown large once the ranking settles
+const heroMask = bits(P.mask, 96), heroCanvas = document.createElement('canvas'); heroCanvas.width = heroCanvas.height = 96;
+{ const g = heroCanvas.getContext('2d'), img = g.createImageData(96, 96); for (let k = 0; k < 96 * 96; k++) img.data.set(heroMask[k] ? [57, 210, 230, 255] : [10, 14, 20, 235], k * 4); g.putImageData(img, 0, 0); }
+const heroTex = new THREE.CanvasTexture(heroCanvas); heroTex.magFilter = THREE.NearestFilter; heroTex.colorSpace = THREE.SRGBColorSpace;
+const hero = new THREE.Mesh(new THREE.PlaneGeometry(2.3, 2.3), new THREE.MeshBasicMaterial({map: heroTex, transparent: true, opacity: 0, toneMapped: false}));
+scene.add(hero);
+
+// the evidence surface: the returned evidence map (96 × 96) as a glowing heightfield over the plate
+const EV = u8(P.evidence), N = 96;
+const evGeo = new THREE.PlaneGeometry(S, S, N - 1, N - 1); evGeo.rotateX(-Math.PI / 2);
+const evCol = new Float32Array(N * N * 3), STOPS = [[0, [0, 0, .02]], [.25, [.26, .04, .41]], [.5, [.58, .15, .4]], [.75, [.9, .36, .19]], [.9, [.97, .68, .09]], [1, [.99, 1, .64]]];
+const inferno = x => { let k = 0; while (k < STOPS.length - 2 && x > STOPS[k + 1][0]) k++; const [x0, c0] = STOPS[k], [x1, c1] = STOPS[k + 1], u = (x - x0) / (x1 - x0); return c0.map((v, j) => v + (c1[j] - v) * u); };
+for (let i = 0; i < N * N; i++) evCol.set(inferno(EV[i] / 255), i * 3);
+evGeo.setAttribute('color', new THREE.BufferAttribute(evCol, 3));
+const evBase = Float32Array.from(evGeo.attributes.position.array);
+const evMat = new THREE.MeshBasicMaterial({vertexColors: true, transparent: true, opacity: 0, side: THREE.DoubleSide, depthWrite: false, toneMapped: false});
+const evMesh = new THREE.Mesh(evGeo, evMat); scene.add(evMesh);
+
+/* ---------------- labels anchored in 3D ---------------- */
+const LABELS = [];
+function label(html, cls, anchor, t0, t1) { const el = document.createElement('div'); el.className = `lab ${cls}`; el.innerHTML = html; $('labels').appendChild(el); LABELS.push({el, anchor, t0, t1}); }
+const hiddenPos = labPos(...hidden);
+label(C.axisA, '', () => V(3.2, 1.2, 0), 23, 31); label(C.axisB, '', () => V(0, 1.2, -3.2), 23, 31); label(C.axisL, '', () => V(0, 6.2, 0), 23, 31);
+label(C.hidden, 'amber', () => hiddenPos.clone().add(V(.3, .35, 0)), 25, 31);
+label(C.wall, 'violet', () => V(WX - (COLS - 1) / 2 * cellW, 5.95, -2.5), 35, 43.5);
+label(C.win, '', () => V(WX - 1.15, 5.05, -.9), 45.5, 55);
+
+/* ---------------- HUD, panel, stamp, title ---------------- */
+$('hud').innerHTML = C.hud.map(([k, v]) => `<div><b>${v}</b>${k}</div>`).join('');
+const panelRows = rows => `<h2>${C.panelT}</h2>` + rows.map(([k, v, c], i) => `${i === rows.length - 1 ? '<hr>' : ''}<div data-i="${i}"><span>${k}</span><span class="${c}">${v}</span></div>`).join('');
+
+/* ---------------- the shot ---------------- */
+function update(t) {
+  // camera: over the plate → around the colour space → in front of the wall → back over the plate → decoy → wide
+  const orbit = t * .04;
+  const shots = [
+    [0, V(0, 12, 9), V(0, 0, 0)], [11, V(4, 7.5, 7.5), V(0, 0, 0)], [20, V(7, 6.5, 8), V(0, 3, 0)], [30, V(-6, 7, 7), V(0, 3.4, 0)],
+    [34, V(WX + .2, 4.0, 5.6), V(WX + .2, 3.6, -2.5)], [44, V(WX + .6, 3.95, 4.9), V(WX + .6, 3.6, -2)], [54.6, V(WX + .7, 3.9, 4.7), V(WX + .7, 3.6, -2)],
+    [57.6, V(0, 13.2, 7.6), V(0, 0, .3)], [66, V(-5.5, 9, 7), V(0, 0, 0)],
+    [72, V(5.5, 9.5, 7.5), V(0, 0, 0)], [86, V(0, 13.5, 10), V(0, 0, 0)], [TOTAL, V(0, 17, 12), V(0, 0, 0)]];
+  let k = 0; while (k < shots.length - 2 && t > shots[k + 1][0]) k++;
+  const [ta, pa, la] = shots[k], [tb, pb, lb] = shots[k + 1], u = sm(seg(t, ta, tb));
+  camera.position.lerpVectors(pa, pb, u).applyAxisAngle(V(0, 1, 0), Math.sin(orbit) * .08);
+  camera.lookAt(new THREE.Vector3().lerpVectors(la, lb, u));
+
+  // which plate: positive until 72 s, then the decoy
+  const decoy = t > 72.5;
+  plateMat.map = decoy ? texD : texP; plateMat.needsUpdate = plateMat.map !== plateMat.userData.last; plateMat.userData.last = plateMat.map;
+  const plateFade = 1 - ss(t, 19, 21.5) + ss(t, 55.5, 57.5);
+  plateMat.opacity = clamp(plateFade) * (1 - ss(t, 86.2, 88));   // the end card needs a dark field
+
+  // tiles: board → colour space → board; the hidden ones glow cyan once the winner is known
+  for (const [T, active] of [[TP, !decoy], [TD, decoy]]) {
+    const lift = active ? (decoy ? ss(t, 74, 76) * (1 - ss(t, 80, 82)) * .35 : ss(t, 15, 21)) : 0;
+    const show = active ? (decoy ? ss(t, 72.5, 73.5) * (1 - ss(t, 81, 82.5)) : ss(t, 12.5, 14.5) * (1 - ss(t, 30.5, 33))) : 0;
+    const glowOn = decoy ? ss(t, 75, 77) : 0;
+    for (let i = 0; i < T.tiles.length; i++) {
+      const tile = T.tiles[i], a = T.board[i], b = T.space[i];
+      const jitter = decoy ? 0 : Math.sin(t * 1.3 + i) * .04 * lift;
+      dummy.position.lerpVectors(a, b, decoy ? 0 : lift); dummy.position.y += (decoy ? lift * (tile[6] ? 1.4 : .2) : Math.sin(Math.PI * lift) * 1.2) + jitter;
+      const r = T.r[i] * (decoy ? 1 : lerp(1, .38, lift)) * show;
+      dummy.scale.set(r, 1 + lift * .4, r); dummy.rotation.set(0, i * .7 + t * .2 * lift, 0); dummy.updateMatrix();
+      T.mesh.setMatrixAt(i, dummy.matrix);
+      const base = T.cols[i], hot = tile[6] && glowOn > 0;
+      const c = hot ? base.clone().lerp(new THREE.Color(decoy ? '#f2b64c' : '#39d2e6'), glowOn * .85) : base;
+      T.mesh.setColorAt(i, c);
+    }
+    T.mesh.instanceMatrix.needsUpdate = true; T.mesh.instanceColor.needsUpdate = true;
+    T.mesh.material.emissive.set(active ? (decoy ? '#3a2a08' : '#0a3a44') : '#000000'); T.mesh.material.emissiveIntensity = active ? glowOn * .8 : 0;
+  }
+  axMat.opacity = ss(t, 21, 23) * (1 - ss(t, 31, 33)) * .8;
+  cloud.material.opacity = ss(t, 22, 25) * (1 - ss(t, 31, 33)) * .55;
+
+  // the wall: masks fly in, settle in score order, the winner comes forward
+  wallTiles.forEach(m => {
+    const {home, scatter, i} = m.userData, arrive = ss(t, 33 + i * .012, 36 + i * .012), leave = ss(t, 55, 57);
+    m.position.lerpVectors(scatter, home, arrive); m.position.y += leave * 6;
+    const glow = i < 3 ? ss(t, 40 + i * .4, 41.5 + i * .4) : 0;
+    m.scale.setScalar(1 + glow * .35);
+    m.material.opacity = arrive * (1 - leave) * lerp(i < 3 ? 1 : .9, i < 3 ? .55 : .16, ss(t, 44, 46));
+    m.lookAt(camera.position);
+  });
+
+  const heroOn = ss(t, 44.2, 46) * (1 - ss(t, 54.6, 56));
+  hero.position.set(WX - .05, 3.85, -1.1 + heroOn * .3); hero.material.opacity = heroOn; hero.scale.setScalar(.6 + heroOn * .4); hero.lookAt(camera.position);
+
+  // the evidence surface rises over the positive plate, collapses before the decoy
+  const evOn = ss(t, 61, 64) * (1 - ss(t, 70, 72));
+  ovMat.map = t > 72.3 ? ovD : ovP; ovMat.opacity = ss(t, 57.2, 59.5) * (1 - ss(t, 71.6, 72.3)) * (1 - .55 * evOn) + ss(t, 76.5, 78.5) * (1 - ss(t, 86.2, 88));
+  const pos = evGeo.attributes.position.array;
+  for (let i = 0; i < N * N; i++) pos[i * 3 + 1] = evBase[i * 3 + 1] + .12 + (EV[i] / 255) * .75 * evOn;
+  evGeo.attributes.position.needsUpdate = true; evMat.opacity = evOn * .72;
+
+  // captions, HUD, panel, stamp, titles
+  const cap = CAPS.find(([a, b]) => t >= a && t <= b);
+  $('cap').classList.toggle('on', !!cap);
+  if (cap && $('cap').dataset.k !== cap[2]) { $('cap').dataset.k = cap[2]; $('cap').querySelector('b').textContent = C[cap[2]][0]; $('cap').querySelector('small').textContent = C[cap[2]][1]; }
+  $('hud').classList.toggle('on', t > 13 && t < 56);
+  const panelOn = (t > 46 && t < 57) || (t > 79 && t < 86);
+  $('panel').classList.toggle('on', panelOn);
+  const which = t > 72 ? 'd' : 'p';
+  if ($('panel').dataset.w !== which) { $('panel').dataset.w = which; $('panel').innerHTML = panelRows(which === 'p' ? C.rows : C.rowsD); }
+  $('panel').querySelectorAll('div[data-i]').forEach(d => d.classList.toggle('on', t >= (which === 'p' ? 47 : 80) + Number(d.dataset.i) * (which === 'p' ? 1.3 : .9)));
+  const okOn = t > 54.5 && t < 58.5, uncOn = t > 83.5 && t < 87.5;
+  $('stamp').className = `stamp ${okOn ? 'ok on' : uncOn ? 'unc on' : ''}`; $('stamp').textContent = okOn ? C.ok : C.unc;
+  const t1 = t < 5, t2 = t > 87.4;
+  $('title').classList.toggle('on', t1 || t2);
+  const tk = t2 ? 't2' : 't1';
+  if ($('title').dataset.k !== tk) { $('title').dataset.k = tk; $('title').querySelector('h1').innerHTML = C[tk]; $('title').querySelector('p').textContent = C[tk + 'p']; $('title').querySelector('small').textContent = C.source; }
+  bloom.strength = .45 + evOn * .15 + (t > 33 && t < 56 ? .15 : 0);
+
+  const w = innerWidth, h = innerHeight;
+  LABELS.forEach(l => { const on = t >= l.t0 && t <= l.t1; l.el.classList.toggle('on', on); if (!on) return;
+    const p = l.anchor().project(camera); if (p.z > 1) { l.el.classList.remove('on'); return; }
+    const lw = l.el.offsetWidth; l.el.style.left = `${clamp((p.x * .5 + .5) * w, 10, w - lw - 10)}px`;
+    l.el.style.top = `${clamp((-p.y * .5 + .5) * h, 96, h - 60)}px`; });
+}
+
+/* ---------------- playback (same controls and dock protocol as the other films) ---------------- */
+let time = clamp(Number(q.get('t')) || 0, 0, TOTAL), playing = false, last = 0, idleT;
+const fmt = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+const post = type => { if (EMBED) parent.postMessage({source: 'propaganda-film', type}, '*'); };
+function paint() { $('fill').style.width = `${time / TOTAL * 100}%`; $('time').textContent = `${fmt(time)} / ${fmt(TOTAL)}`;
+  $('play').innerHTML = playing ? '<svg viewBox="0 0 24 24"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>' : '<svg viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z"/></svg>'; }
+function loop(ts) {
+  const dt = last ? Math.min(.05, (ts - last) / 1000) : 0; last = ts;
+  if (playing) { time += dt; if (time >= TOTAL) { time = TOTAL; playing = false; post('ended'); } }
+  update(time); composer.render(); paint(); requestAnimationFrame(loop);
+}
+function play(on = !playing) { if (on && time >= TOTAL) time = 0; playing = on; last = 0; $('start').classList.add('off'); paint(); post(on ? 'play' : 'pause'); }
+function seek(t) { time = clamp(t, 0, TOTAL); paint(); }
+function render(t) { time = clamp(t, 0, TOTAL); update(time); composer.render(); }
+function resize() {
+  const w = innerWidth, h = innerHeight, pr = Math.min(document.body.classList.contains('mini') ? 1 : 2, devicePixelRatio || 1);
+  renderer.setPixelRatio(pr); renderer.setSize(w, h, false); composer.setPixelRatio(pr); composer.setSize(w, h); bloom.setSize(w * pr / 2, h * pr / 2);
+  camera.aspect = w / h; camera.fov = w / h < 1 ? 64 : w / h < 1.4 ? 50 : 40; camera.updateProjectionMatrix();
+}
+document.documentElement.lang = L === 'en' ? 'en' : L === 'zh-CN' ? 'zh-Hans' : 'zh-Hant';
+$('sub').textContent = C.sub; $('go-label').textContent = C.go; $('go-sub').textContent = C.goSub;
+$('lang').textContent = {en: 'EN', 'zh-TW': '繁', 'zh-CN': '简'}[L];
+$('back').href = `${L === 'en' ? '/' : L === 'zh-CN' ? '/zh-cn/' : '/zh-tw/'}#projects/chromarecover`; $('back').title = C.home;
+$('go').addEventListener('click', () => play(true)); $('play').addEventListener('click', () => play());
+$('track').addEventListener('click', e => { const r = e.currentTarget.getBoundingClientRect(); seek((e.clientX - r.left) / r.width * TOTAL); });
+$('lang').addEventListener('click', () => { const p = new URLSearchParams(q); p.set('lang', {en: 'zh-TW', 'zh-TW': 'zh-CN', 'zh-CN': 'en'}[L]); p.set('t', time.toFixed(1)); p.set('autoplay', playing ? '1' : '0'); location.search = p.toString(); });
+$('fs').addEventListener('click', () => document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen?.());
+canvas.addEventListener('click', () => { if (document.body.classList.contains('mini')) play(); });
+addEventListener('keydown', e => {
+  if (e.key === ' ') { e.preventDefault(); play(); } else if (e.key === 'ArrowRight') seek(time + 5); else if (e.key === 'ArrowLeft') seek(time - 5);
+  else if (e.key.toLowerCase() === 'f') $('fs').click(); else if (e.key.toLowerCase() === 'r') { seek(0); play(true); }
+  else if (e.key === 'Escape' && EMBED) post('escape');
+});
+addEventListener('pointermove', () => { document.body.classList.remove('idle'); clearTimeout(idleT); idleT = setTimeout(() => playing && document.body.classList.add('idle'), 2400); });
+addEventListener('resize', () => { clearTimeout(resize.t); resize.t = setTimeout(resize, 120); });
+addEventListener('message', e => { const m = e.data; if (!m || m.source !== 'niansia-dock') return; if (m.type === 'mode') { document.body.classList.toggle('mini', !!m.mini); resize(); } if (m.type === 'play') play(true); if (m.type === 'pause') play(false); });
+window.__film = {seek, play, render, get time() { return time; }, TOTAL};
+if (EMBED) document.body.classList.add('embed');
+if (CLEAN) $('ui').style.display = 'none';
+resize();
+if (q.has('t') || EMBED) { $('start').classList.add('off'); if (q.get('autoplay') === '1' || (EMBED && q.get('autoplay') !== '0')) play(true); }
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
