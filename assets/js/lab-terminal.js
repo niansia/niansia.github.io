@@ -850,6 +850,231 @@
     event.preventDefault(); const n=csData.products.length;
     csState.p=event.key==='Home'?0:event.key==='End'?n-1:(csState.p+(event.key==='ArrowRight'?1:n-1))%n; csPaint(); $(`[data-cs-p="${csState.p}"]`)?.focus();
   });
+  /* AI Repo Gardener: how it decides, then its real output on the cases of its labeled corpus and one recorded review → apply → restore
+     session (assets/gardener/showcase.json, built by tools/gardener_showcase.py from a clean checkout). */
+  const RG_EV={en:{ast_similarity:'AST similarity',call_site_migration:'call site moved',inbound_imports:'imports of the old file',iteration_naming:'iteration-style name',replacement_newer:'replacement is newer',replacement_reachable:'replacement is reachable',symbol_overlap:'shared symbols',token_similarity:'token similarity',unreachable_from_entrypoints:'unreachable from entry points',public_surface_missing_from_replacement:'public names missing',symbols_missing_from_replacement:'symbols missing',public_contract_changed_in_replacement:'public contract changed',
+      deployment_runtime_uncertainty:'templated deploy command: {x}',opaque_dynamic_module_discovery:'opaque dynamic loading: {x}',repository_parse_errors:'file that does not parse: {x}',possible_external_package_module:'package module: outside code may import it',replacement_changed_public_contract:'replacement changes the public contract',replacement_missing_public_surface:'replacement drops public names',replacement_missing_symbols:'replacement drops symbols',dynamic_or_external_symbol_use_may_be_unknown:'dynamic or external use may be invisible',public_symbol_may_be_external_api:'public name may be an external API',
+      yes:'yes',no:'no',review_only:'review only',review:'review',safe_delete_candidate:'delete candidate'},
+    'zh-TW':{ast_similarity:'AST 相似度',call_site_migration:'呼叫點已搬走',inbound_imports:'仍 import 舊檔的地方',iteration_naming:'迭代式命名（_old、_v2…）',replacement_newer:'取代檔比較新',replacement_reachable:'取代檔可達',symbol_overlap:'共同符號比例',token_similarity:'token 相似度',unreachable_from_entrypoints:'從進入點到不了',public_surface_missing_from_replacement:'少掉的公開名稱',symbols_missing_from_replacement:'少掉的符號',public_contract_changed_in_replacement:'改變的公開契約',
+      deployment_runtime_uncertainty:'部署指令是樣板：{x}',opaque_dynamic_module_discovery:'追蹤不到的動態載入：{x}',repository_parse_errors:'無法解析的檔案：{x}',possible_external_package_module:'套件內模組：外部程式可能會 import',replacement_changed_public_contract:'取代檔改變了公開契約',replacement_missing_public_surface:'取代檔少了公開名稱',replacement_missing_symbols:'取代檔少了符號',dynamic_or_external_symbol_use_may_be_unknown:'可能有看不到的動態或外部使用',public_symbol_may_be_external_api:'公開名稱可能是外部 API',
+      yes:'是',no:'否',review_only:'僅供審查',review:'審查',safe_delete_candidate:'可刪候選'},
+    'zh-CN':{ast_similarity:'AST 相似度',call_site_migration:'调用点已迁走',inbound_imports:'仍 import 旧文件的地方',iteration_naming:'迭代式命名（_old、_v2…）',replacement_newer:'替代文件更新',replacement_reachable:'替代文件可达',symbol_overlap:'共同符号比例',token_similarity:'token 相似度',unreachable_from_entrypoints:'从入口到达不了',public_surface_missing_from_replacement:'缺少的公开名称',symbols_missing_from_replacement:'缺少的符号',public_contract_changed_in_replacement:'改变的公开契约',
+      deployment_runtime_uncertainty:'部署命令是模板：{x}',opaque_dynamic_module_discovery:'无法追踪的动态加载：{x}',repository_parse_errors:'无法解析的文件：{x}',possible_external_package_module:'包内模块：外部代码可能会 import',replacement_changed_public_contract:'替代文件改变了公开契约',replacement_missing_public_surface:'替代文件缺少公开名称',replacement_missing_symbols:'替代文件缺少符号',dynamic_or_external_symbol_use_may_be_unknown:'可能有看不到的动态或外部使用',public_symbol_may_be_external_api:'公开名称可能是外部 API',
+      yes:'是',no:'否',review_only:'仅供审查',review:'审查',safe_delete_candidate:'可删候选'}};
+  const rgCopy=()=>({
+    en:{note:'Everything below is the real output of AI Repo Gardener {v}, re-run for this page: the cases of its labeled corpus and one full review-to-restore session. It is static analysis for Python repositories. It never calls a model, uploads code or runs your program, except the validation command you give it, and only in a throwaway copy.',
+      archTitle:'How it decides',
+      arch:[['Iteration diff','Compares the commit before the agent’s work with everything after it: committed, staged, unstaged and untracked.'],
+        ['Reachability','Builds the import graph from real roots: entry points, framework apps, Dockerfile, Compose or Procfile commands, packaging entry points.'],
+        ['Replacement evidence','For an old file, finds the new one that took over: AST, symbol and token similarity, moved call sites, public names kept.'],
+        ['Risk gate','Only a stale file with a replacement, confidence ≥ 0.85 and risk ≤ 0.20 is proposed. eval, dynamic imports, parse errors or templated deploy commands switch deletion off for the whole repository.'],
+        ['Reviewed plan','Deleting needs the exact JSON plan a person reviewed, a validation command that passes in an isolated copy, and hashes that still match. A snapshot allows a restore.']],
+      skillT:'As an Agent Skill',skill:'Codex, Claude Code and Cursor can load it. The agent runs diff, reads the JSON and explains what it found. SKILL.md forbids apply unless you asked for changes and reviewed that exact plan, and commands from the repository’s own config stay untrusted.',
+      rules:[['Looks unused ≠ dead','A Dockerfile line, a plugin entry point or a string import keeps a file alive.'],['Confident ≠ safe','Confidence and risk are separate numbers, and both must pass.'],['Tests pass ≠ unused','A green test run does not prove a plugin or public API has no users.'],['Reviewed ≠ permission','The plan is a preview; apply refuses if anything changed since.']],
+      demoTitle:'Same rename, different verdicts',demoLede:'Eleven cases from its labeled corpus. In each one the agent renamed a module and moved the call site; one extra fact decides whether the old file may go. Every verdict below is what the tool printed, and each matches the case’s label.',
+      verdict:{safe_delete_candidate:['DELETE CANDIDATE','Goes into the deletion plan for review.'],review:['REVIEW ONLY','Reported, never deleted automatically.'],keep:['KEEP','No finding: the old file is still live.']},
+      label:'Label',labels:{DELETE:'delete',KEEP:'keep',REVIEW:'review'},match:'matches',
+      repoT:'The repository after the agent’s change',state:{added:'new',modified:'changed',unchanged:'untouched',removed:'removed'},decides:'decides it',old:'old file',
+      sawT:'What it measured',conf:'Confidence',risk:'Risk',needC:'needs ≥ {v}',needR:'needs ≤ {v}',evT:'Evidence',risksT:'Risk flags',blockT:'Blocks every deletion in the repository',
+      keepT:'Why it stays',why:{ref:'{m} is started by {f}',entry:'{m} is an entry point',reach:'{r} of {p} modules are reachable, {m} among them'},
+      plan:n=>n?`Deletion plan: ${n} operation`:'Deletion plan: empty',also:'Also reported',cli:'CLI output',
+      cases:{'delete-parser-old':['Plain rename','The agent copied parser_old.py to parser.py and pointed app.py at it. Nothing else refers to the old file.'],
+        'keep-docker-python-module':['Dockerfile still runs it','The container still starts with python -m worker_old, so the old module is a live runtime root.'],
+        'keep-compose-uvicorn-module':['Compose still serves it','compose.yaml runs uvicorn web_old:app: production still imports the old file.'],
+        'keep-pyproject-entrypoint':['Registered plugin','pyproject.toml registers plugin_old:run as an entry point, so other packages can load it by name.'],
+        'keep-runtime-import-module':['Imported by a string','app.py moved its import, but import_module(\'handler_old\') still loads the old module at run time.'],
+        'review-partial-replacement':['Replacement lost a function','parser.py kept parse() but dropped legacy(). Deleting the old file would delete a public function.'],
+        'review-public-contract-change':['Contract changed','client.py changed MODE and dropped fetch’s timeout parameter: similar code, different behaviour.'],
+        'review-package-public-surface':['Inside a package','pkg/format_old.py sits in an importable package. Code outside this repository may import it, so by default it is review-only.'],
+        'review-repository-parse-error':['A file that does not parse','broken.py has a syntax error. With part of the repository unreadable, automatic deletion is off everywhere.'],
+        'review-dynamic-deployment-command':['Templated start command','The Dockerfile starts ${APP_MODULE}:app. The module is only known at deploy time, so no file can be proven dead.'],
+        'review-eval-runtime-loader':['eval() loads a module','app.py loads the old module inside eval(). Reachability becomes opaque, so deletion is switched off for the whole repository.']},
+      sessT:'Review first, apply exactly what you reviewed',sessLede:'One real session on the plain-rename case, recorded command by command. The plan ID binds both commits, the configuration and the hash of every file involved.',
+      steps:{review:['Review','diff finds the rename; the dry-run writes the plan a person reviews. Nothing changes on disk.'],
+        'failed-validation':['Validation fails','Apply first deletes parser_old.py in a throwaway copy and runs the validation there. This check still needs the old module, so it fails and the real repository is left alone.'],
+        'stale-plan':['Changed after review','After the review someone edits parser.py ({from} → {to}). The plan no longer matches the repository, so apply refuses before validating anything. (The edit is undone before the next step.)'],
+        apply:['Apply','The same reviewed plan with a passing validation: the file is deleted and a snapshot is kept. A new diff finds nothing left to clean.'],
+        restore:['Restore','fix --restore brings parser_old.py back from the snapshot, byte for byte.']},
+      filesT:'Files',same:'as reviewed',changed:'changed',gone:'deleted',statusT:'git status',clean:'clean',exit:'exit {n}',pinT:'What the plan ID pins',
+      pins:{base_sha:'base commit',head_sha:'HEAD commit',config_sha256:'effective config',accepted_sha256:'accepted-findings ledger',candidate:'candidate',replacement:'replacement',evidence:'call site'},
+      benchTitle:'Published gates',
+      bench:[['{tp}/{pos}','deletable files found in the labeled corpus, with {fp} of {neg} live or uncertain files proposed (re-run for this page)'],['{fp} / {n}','adversarial variants where live code looks unused became deletion candidates'],['{ok}/{all}','tests passed on Python {py} for this page; {sk} symlink tests skipped for lack of a Windows privilege'],['{c}','automatic-deletion candidates in {n} pinned real repositories ({files} Python files): {names}; {v}, measured {d}']],
+      benchNote:'The corpus and the adversarial variants are written by the maintainer, so they show that the gates hold and do not regress, not accuracy on every Python repository.',
+      src:'Data: AI Repo Gardener {v} · commit {c} · run {d}'},
+    'zh-TW':{note:'以下全部是 AI Repo Gardener {v} 為這一頁重新執行的真實輸出：它的標註語料裡的案例，加上一次從審查到還原的完整操作。它是針對 Python repo 的靜態分析，不呼叫模型、不上傳程式碼，也不執行你的程式；唯一會執行的是你指定的驗證指令，而且只在拋棄式副本裡跑。',
+      archTitle:'它怎麼判斷',
+      arch:[['迭代差異','比對 AI 動手前的 commit 和之後的一切：已提交、已暫存、未暫存和未追蹤的檔案。'],
+        ['可達性','從真正的入口建 import 圖：程式進入點、框架 app、Dockerfile／Compose／Procfile 的啟動指令、套件的 entry point。'],
+        ['取代證據','替舊檔找出接手的新檔：AST、符號與 token 相似度、呼叫點有沒有搬過去、公開名稱有沒有保留。'],
+        ['風險閘門','只有「有取代檔的過期檔案、信心 ≥ 0.85、風險 ≤ 0.20」會被提議刪除。只要出現 eval、動態 import、解析錯誤或樣板化的部署指令，整個 repo 的自動刪除都會關閉。'],
+        ['審過的計畫','刪除需要人審過的那份 JSON 計畫、在隔離副本裡通過的驗證指令，以及仍然吻合的雜湊；另外留有快照可以還原。']],
+      skillT:'當成 Agent Skill 使用',skill:'Codex、Claude Code、Cursor 都能載入它。代理執行 diff、讀 JSON，再把發現講給你聽。SKILL.md 規定：除非你要求修改、而且審過那份計畫，否則不能 apply；repo 自己設定檔裡的指令一律視為不可信。',
+      rules:[['看起來沒用 ≠ 死碼','一行 Dockerfile、一個 plugin 註冊或一個字串 import，都能讓檔案繼續活著。'],['有信心 ≠ 安全','信心和風險是兩個分開的數字，兩個都要過門檻。'],['測試通過 ≠ 沒人用','測試全綠，不代表外掛或公開 API 沒有使用者。'],['審過 ≠ 可以刪','計畫只是預覽；審完之後只要有任何變動，apply 就會拒絕。']],
+      demoTitle:'同樣的改名，不同的判斷',demoLede:'標註語料裡的 11 個案例。每個案例裡，AI 都把模組改了名、把呼叫點搬過去；決定舊檔能不能刪的，是多出來的那一個事實。下面每個判斷都是工具實際印出來的，也都和案例的標註一致。',
+      verdict:{safe_delete_candidate:['可刪候選','進入刪除計畫，等人審查。'],review:['僅供審查','會回報，但永遠不會自動刪除。'],keep:['保留','沒有發現：舊檔仍然在用。']},
+      label:'標註',labels:{DELETE:'刪除',KEEP:'保留',REVIEW:'審查'},match:'一致',
+      repoT:'AI 改完之後的 repo',state:{added:'新增',modified:'修改',unchanged:'未動',removed:'刪除'},decides:'關鍵',old:'舊檔',
+      sawT:'它量到什麼',conf:'信心',risk:'風險',needC:'需要 ≥ {v}',needR:'需要 ≤ {v}',evT:'證據',risksT:'風險標記',blockT:'擋下整個 repo 的所有刪除',
+      keepT:'為什麼留著',why:{ref:'{m} 由 {f} 啟動',entry:'{m} 是進入點',reach:'{p} 個模組中有 {r} 個可達，{m} 也在其中'},
+      plan:n=>n?`刪除計畫：${n} 項操作`:'刪除計畫：空的',also:'另外回報',cli:'CLI 輸出',
+      cases:{'delete-parser-old':['單純改名','AI 把 parser_old.py 複製成 parser.py，並讓 app.py 改用新檔。沒有其他地方再用到舊檔。'],
+        'keep-docker-python-module':['Dockerfile 還在跑它','容器仍然用 python -m worker_old 啟動，所以舊模組是正在運作的入口。'],
+        'keep-compose-uvicorn-module':['Compose 還在服務它','compose.yaml 執行 uvicorn web_old:app：正式環境還在 import 舊檔。'],
+        'keep-pyproject-entrypoint':['已註冊的外掛','pyproject.toml 把 plugin_old:run 註冊成 entry point，其他套件可以用名字載入它。'],
+        'keep-runtime-import-module':['用字串 import','app.py 的 import 已經換掉，但 import_module(\'handler_old\') 執行時仍會載入舊模組。'],
+        'review-partial-replacement':['取代檔少了一個函式','parser.py 保留了 parse()，卻少了 legacy()。刪掉舊檔等於刪掉一個公開函式。'],
+        'review-public-contract-change':['契約變了','client.py 改了 MODE，也拿掉 fetch 的 timeout 參數：程式碼很像，行為卻不同。'],
+        'review-package-public-surface':['在套件裡面','pkg/format_old.py 位於可被 import 的套件中，repo 外的程式可能在用，所以預設只能審查。'],
+        'review-repository-parse-error':['有檔案無法解析','broken.py 有語法錯誤。repo 有一部分讀不懂，自動刪除就全面關閉。'],
+        'review-dynamic-deployment-command':['樣板化的啟動指令','Dockerfile 啟動的是 ${APP_MODULE}:app，要到部署時才知道是哪個模組，所以沒有檔案能被證明已死。'],
+        'review-eval-runtime-loader':['用 eval() 載入模組','app.py 在 eval() 裡載入舊模組，可達性變得無法追蹤，所以整個 repo 的刪除都關閉。']},
+      sessT:'先審查，只套用你審過的那一份',sessLede:'用「單純改名」案例實際操作一次，逐條指令記錄下來。計畫 ID 綁定了兩個 commit、設定，以及每個相關檔案的雜湊。',
+      steps:{review:['審查','diff 找到改名；dry-run 寫出給人審查的計畫。磁碟上什麼都沒變。'],
+        'failed-validation':['驗證失敗','apply 會先在拋棄式副本裡刪掉 parser_old.py，再在那裡跑驗證。這個檢查還需要舊模組，所以失敗，真正的 repo 完全沒被動到。'],
+        'stale-plan':['審完又被改','審查之後有人改了 parser.py（{from} → {to}）。計畫和 repo 對不上，apply 在驗證之前就拒絕。（進下一步前已把修改還原。）'],
+        apply:['套用','同一份審過的計畫，加上會通過的驗證：檔案被刪除，並留下快照。重新 diff，已經沒有要清的東西。'],
+        restore:['還原','fix --restore 從快照把 parser_old.py 放回來，一個位元組都不差。']},
+      filesT:'檔案',same:'與審查時相同',changed:'已改變',gone:'已刪除',statusT:'git status',clean:'乾淨',exit:'結束碼 {n}',pinT:'計畫 ID 綁定了什麼',
+      pins:{base_sha:'基準 commit',head_sha:'HEAD commit',config_sha256:'實際設定',accepted_sha256:'已接受發現清單',candidate:'候選檔',replacement:'取代檔',evidence:'呼叫點'},
+      benchTitle:'公開的關卡',
+      bench:[['{tp}/{pos}','標註語料中該刪的檔案全部找到；{neg} 個仍在用或不確定的檔案，被提議刪除的有 {fp} 個（為這一頁重跑）'],['{fp} / {n}','「活的程式看起來沒用」的對抗變體中，變成刪除候選的數量'],['{ok}/{all}','測試在 Python {py} 上為這一頁重跑通過；{sk} 個 symlink 測試因 Windows 權限不足而跳過'],['{c}','{n} 個釘選版本的真實 repo（共 {files} 個 Python 檔）中的自動刪除候選：{names}；{v} 於 {d} 測量']],
+      benchNote:'語料和對抗變體都是維護者自己寫的，證明的是關卡守得住、不會退步，不是對所有 Python repo 的準確率。',
+      src:'資料：AI Repo Gardener {v} · commit {c} · 執行於 {d}'},
+    'zh-CN':{note:'以下全部是 AI Repo Gardener {v} 为这一页重新运行的真实输出：它的标注语料里的案例，加上一次从审查到还原的完整操作。它是针对 Python 仓库的静态分析，不调用模型、不上传代码，也不运行你的程序；唯一会运行的是你指定的验证命令，而且只在一次性副本里跑。',
+      archTitle:'它怎么判断',
+      arch:[['迭代差异','比对 AI 动手前的 commit 和之后的一切：已提交、已暂存、未暂存和未跟踪的文件。'],
+        ['可达性','从真正的入口建 import 图：程序入口、框架 app、Dockerfile／Compose／Procfile 的启动命令、包的 entry point。'],
+        ['替代证据','为旧文件找出接手的新文件：AST、符号与 token 相似度、调用点有没有迁过去、公开名称有没有保留。'],
+        ['风险闸门','只有“有替代文件的过期文件、置信度 ≥ 0.85、风险 ≤ 0.20”会被提议删除。只要出现 eval、动态 import、解析错误或模板化的部署命令，整个仓库的自动删除都会关闭。'],
+        ['审过的计划','删除需要人审过的那份 JSON 计划、在隔离副本里通过的验证命令，以及仍然吻合的哈希；另外留有快照可以还原。']],
+      skillT:'作为 Agent Skill 使用',skill:'Codex、Claude Code、Cursor 都能加载它。代理运行 diff、读 JSON，再把发现讲给你听。SKILL.md 规定：除非你要求修改、而且审过那份计划，否则不能 apply；仓库自己配置文件里的命令一律视为不可信。',
+      rules:[['看起来没用 ≠ 死代码','一行 Dockerfile、一个插件注册或一个字符串 import，都能让文件继续活着。'],['有把握 ≠ 安全','置信度和风险是两个分开的数字，两个都要过门槛。'],['测试通过 ≠ 没人用','测试全绿，不代表插件或公开 API 没有使用者。'],['审过 ≠ 可以删','计划只是预览；审完之后只要有任何变动，apply 就会拒绝。']],
+      demoTitle:'同样的改名，不同的判断',demoLede:'标注语料里的 11 个案例。每个案例里，AI 都把模块改了名、把调用点迁过去；决定旧文件能不能删的，是多出来的那一个事实。下面每个判断都是工具实际打印出来的，也都和案例的标注一致。',
+      verdict:{safe_delete_candidate:['可删候选','进入删除计划，等人审查。'],review:['仅供审查','会报告，但永远不会自动删除。'],keep:['保留','没有发现：旧文件仍然在用。']},
+      label:'标注',labels:{DELETE:'删除',KEEP:'保留',REVIEW:'审查'},match:'一致',
+      repoT:'AI 改完之后的仓库',state:{added:'新增',modified:'修改',unchanged:'未动',removed:'删除'},decides:'关键',old:'旧文件',
+      sawT:'它量到什么',conf:'置信度',risk:'风险',needC:'需要 ≥ {v}',needR:'需要 ≤ {v}',evT:'证据',risksT:'风险标记',blockT:'挡下整个仓库的所有删除',
+      keepT:'为什么留着',why:{ref:'{m} 由 {f} 启动',entry:'{m} 是入口',reach:'{p} 个模块中有 {r} 个可达，{m} 也在其中'},
+      plan:n=>n?`删除计划：${n} 项操作`:'删除计划：空的',also:'另外报告',cli:'CLI 输出',
+      cases:{'delete-parser-old':['单纯改名','AI 把 parser_old.py 复制成 parser.py，并让 app.py 改用新文件。没有其他地方再用到旧文件。'],
+        'keep-docker-python-module':['Dockerfile 还在跑它','容器仍然用 python -m worker_old 启动，所以旧模块是正在运行的入口。'],
+        'keep-compose-uvicorn-module':['Compose 还在服务它','compose.yaml 运行 uvicorn web_old:app：生产环境还在 import 旧文件。'],
+        'keep-pyproject-entrypoint':['已注册的插件','pyproject.toml 把 plugin_old:run 注册成 entry point，其他包可以用名字加载它。'],
+        'keep-runtime-import-module':['用字符串 import','app.py 的 import 已经换掉，但 import_module(\'handler_old\') 运行时仍会加载旧模块。'],
+        'review-partial-replacement':['替代文件少了一个函数','parser.py 保留了 parse()，却少了 legacy()。删掉旧文件等于删掉一个公开函数。'],
+        'review-public-contract-change':['契约变了','client.py 改了 MODE，也去掉了 fetch 的 timeout 参数：代码很像，行为却不同。'],
+        'review-package-public-surface':['在包里面','pkg/format_old.py 位于可被 import 的包中，仓库外的代码可能在用，所以默认只能审查。'],
+        'review-repository-parse-error':['有文件无法解析','broken.py 有语法错误。仓库有一部分读不懂，自动删除就全面关闭。'],
+        'review-dynamic-deployment-command':['模板化的启动命令','Dockerfile 启动的是 ${APP_MODULE}:app，要到部署时才知道是哪个模块，所以没有文件能被证明已死。'],
+        'review-eval-runtime-loader':['用 eval() 加载模块','app.py 在 eval() 里加载旧模块，可达性变得无法追踪，所以整个仓库的删除都关闭。']},
+      sessT:'先审查，只应用你审过的那一份',sessLede:'用“单纯改名”案例实际操作一次，逐条命令记录下来。计划 ID 绑定了两个 commit、配置，以及每个相关文件的哈希。',
+      steps:{review:['审查','diff 找到改名；dry-run 写出给人审查的计划。磁盘上什么都没变。'],
+        'failed-validation':['验证失败','apply 会先在一次性副本里删掉 parser_old.py，再在那里跑验证。这个检查还需要旧模块，所以失败，真正的仓库完全没被动到。'],
+        'stale-plan':['审完又被改','审查之后有人改了 parser.py（{from} → {to}）。计划和仓库对不上，apply 在验证之前就拒绝。（进下一步前已把修改还原。）'],
+        apply:['应用','同一份审过的计划，加上会通过的验证：文件被删除，并留下快照。重新 diff，已经没有要清的东西。'],
+        restore:['还原','fix --restore 从快照把 parser_old.py 放回来，一个字节都不差。']},
+      filesT:'文件',same:'与审查时相同',changed:'已改变',gone:'已删除',statusT:'git status',clean:'干净',exit:'退出码 {n}',pinT:'计划 ID 绑定了什么',
+      pins:{base_sha:'基准 commit',head_sha:'HEAD commit',config_sha256:'实际配置',accepted_sha256:'已接受发现清单',candidate:'候选文件',replacement:'替代文件',evidence:'调用点'},
+      benchTitle:'公开的关卡',
+      bench:[['{tp}/{pos}','标注语料中该删的文件全部找到；{neg} 个仍在用或不确定的文件，被提议删除的有 {fp} 个（为这一页重跑）'],['{fp} / {n}','“活的代码看起来没用”的对抗变体中，变成删除候选的数量'],['{ok}/{all}','测试在 Python {py} 上为这一页重跑通过；{sk} 个 symlink 测试因 Windows 权限不足而跳过'],['{c}','{n} 个固定版本的真实仓库（共 {files} 个 Python 文件）中的自动删除候选：{names}；{v} 于 {d} 测量']],
+      benchNote:'语料和对抗变体都是维护者自己写的，证明的是关卡守得住、不会退步，不是对所有 Python 仓库的准确率。',
+      src:'数据：AI Repo Gardener {v} · commit {c} · 运行于 {d}'}}[locale]);
+  let rgData=null;
+  const rgState={c:0,s:0};
+  const rgEv=()=>RG_EV[locale]||RG_EV.en;
+  const rgMod=path=>path.replace(/\.py$/,'').replace(/\//g,'.');
+  // line diff (LCS) for the few-line files of a case
+  function rgDiff(a,b) {
+    const x=a.split('\n'),y=b.split('\n'),L=x.map(()=>Array(y.length+1).fill(0)).concat([Array(y.length+1).fill(0)]),out=[];
+    for(let i=x.length-1;i>=0;i--) for(let j=y.length-1;j>=0;j--) L[i][j]=x[i]===y[j]?L[i+1][j+1]+1:Math.max(L[i+1][j],L[i][j+1]);
+    let i=0,j=0;
+    while(i<x.length&&j<y.length){ if(x[i]===y[j]){out.push([' ',x[i]]);i++;j++;} else if(L[i+1][j]>=L[i][j+1]) out.push(['-',x[i++]]); else out.push(['+',y[j++]]); }
+    while(i<x.length) out.push(['-',x[i++]]); while(j<y.length) out.push(['+',y[j++]]);
+    return out;
+  }
+  const rgTerm=text=>esc(text).split('\n').map(l=>`<span class="${/^error:/.test(l)?'t-err':/^WARNING/.test(l)?'t-warn':/^\[(HIGH|MEDIUM|LOW)\]/.test(l)?'t-find':/^(Applied|Restored)/.test(l)?'t-ok':/^\s+!/.test(l)?'t-risk':''}">${l||' '}</span>`).join('\n');
+  function rgShowcase() {
+    const c=rgCopy();
+    return `<section class="rg-show"><p class="rg-note"><b translate="no"></b><span class="rg-note-t"></span></p>
+      <h2>${esc(c.archTitle)}</h2><ol class="rg-flow">${c.arch.map(([t,d],i)=>`<li style="--i:${i}"><span class="rg-n">${i+1}</span><b>${esc(t)}</b><small>${esc(d)}</small></li>`).join('')}</ol>
+      <p class="rg-skill"><b>${esc(c.skillT)}</b><span>${esc(c.skill)}</span></p>
+      <div class="rg-rules">${c.rules.map(([t,d])=>`<div><b>${esc(t)}</b><small>${esc(d)}</small></div>`).join('')}</div>
+      <h2>${esc(c.demoTitle)}</h2><p class="screen-intro">${esc(c.demoLede)}</p>
+      <div class="rg-demo"><div class="rg-cases" role="tablist" aria-label="${esc(c.demoTitle)}"></div><div class="rg-stage" role="tabpanel" aria-live="polite"></div><p class="rg-src"></p></div>
+      <h2>${esc(c.sessT)}</h2><p class="screen-intro">${esc(c.sessLede)}</p>
+      <div class="rg-demo rg-sess"><div class="rg-steps" role="tablist" aria-label="${esc(c.sessT)}"></div><div class="rg-sstage" role="tabpanel" aria-live="polite"></div></div>
+      <h2>${esc(c.benchTitle)}</h2><div class="rg-bench"></div><p class="comment-line">${esc(c.benchNote)}</p></section>`;
+  }
+  function rgPaint() {
+    const box=$('.rg-show'); if(!box||!rgData) return;
+    const c=rgCopy(), E=rgEv(), D=rgData, C=D.cases[rgState.c], F=C.finding, G=D.gate;
+    const verdictOf=k=>k.finding?.recommendation||'keep';
+    box.querySelector('.rg-cases').innerHTML=D.cases.map((k,i)=>`<button type="button" role="tab" data-rg-c="${i}" aria-selected="${i===rgState.c}" tabindex="${i===rgState.c?0:-1}"><i class="v-${esc(verdictOf(k))}" aria-hidden="true"></i>${esc((c.cases[k.id]||[k.id])[0])}</button>`).join('');
+    const v=verdictOf(C), [vt,vs]=c.verdict[v]||[v,''], [name,desc]=c.cases[C.id]||[C.id,''];
+    const files=C.files.map(f=>{
+      const lines=f.state==='modified'?rgDiff(f.was,f.code):f.code.split('\n').map(l=>[' ',l]);
+      const tags=[f.path===C.key?`<em class="rg-key">${esc(c.decides)}</em>`:'',f.path===C.target?`<em class="rg-old">${esc(c.old)}</em>`:''].join('');
+      return `<div class="rg-file s-${esc(f.state)}${f.path===C.key?' is-key':''}"><p><code translate="no">${esc(f.path)}</code><span>${esc(c.state[f.state]||f.state)}</span>${tags}</p><pre translate="no"><code>${lines.map(([m,l])=>`<span class="${m==='+'?'d-add':m==='-'?'d-del':''}">${m===' '?'  ':m+' '}${esc(l)}</span>`).join('')}</code></pre></div>`; }).join('');
+    const fmt=val=>typeof val==='boolean'?E[val?'yes':'no']:Array.isArray(val)?val.join(', '):typeof val==='number'?String(val):val;
+    const riskText=r=>{ const [k,...rest]=r.split(':'); const x=rest.join(':').replace(/^\d+:/,''); return (E[k]||k).replace('{x}',x); };
+    let saw;
+    if(F){
+      const meter=(label,val,lim,ok,need)=>`<div class="rg-meter${ok?' is-ok':' is-no'}"><p><b>${esc(label)}</b><em>${Math.round(val*100)}%</em><small>${esc(need)}</small><i aria-hidden="true">${ok?'✓':'✕'}</i></p><span class="rg-bar"><span style="--v:${val}"></span><u style="--t:${lim}"></u></span></div>`;
+      saw=`${meter(c.conf,F.confidence,G.confidence,F.confidence>=G.confidence,csFill(c.needC,{v:G.confidence}))}${meter(c.risk,F.risk,G.risk,F.risk<=G.risk,csFill(c.needR,{v:G.risk.toFixed(2)}))}
+        <h3>${esc(c.evT)}</h3><ul class="rg-ev">${F.evidence.map(([k,val])=>`<li><span>${esc(E[k]||k)}</span><code translate="no">${esc(fmt(val))}</code></li>`).join('')}</ul>
+        ${F.risks.length?`<h3>${esc(c.risksT)}</h3><ul class="rg-risks">${F.risks.map(r=>`<li>${esc(riskText(r))}</li>`).join('')}</ul>`:''}`;
+    } else {
+      const m=rgMod(C.target), M=C.metrics, refs=M.runtime_refs[m];
+      const why=refs?csFill(c.why.ref,{m,f:refs.join(', ')}):M.entrypoints.includes(m)?csFill(c.why.entry,{m}):csFill(c.why.reach,{r:M.reachable,p:M.python_files,m});
+      saw=`<p class="rg-keep"><code translate="no">${esc(C.target)}</code><span>${esc(why)}</span></p>`;
+    }
+    // the plan states its blockers in English; map the known ones onto the translated risk wording
+    const blockers=[...C.plan.blockers.map(b=>{ const m=b.match(/could not be parsed: (.+)$/)||b.match(/^opaque runtime module discovery: (.+)$/); return m?riskText((/parsed/.test(b)?'repository_parse_errors:':'opaque_dynamic_module_discovery:')+m[1]):b; }),...C.metrics.uncertainty.map(u=>riskText('deployment_runtime_uncertainty:'+u))];
+    const others=C.others.map(o=>`<li><code translate="no">${esc(o.rule)} · ${esc(o.path)}</code><span>${esc(E[o.recommendation]||o.recommendation)}</span></li>`).join('');
+    box.querySelector('.rg-stage').innerHTML=`<div class="rg-head"><div><b>${esc(name)}</b><small>${esc(desc)}</small><span class="rg-meta">${esc(c.label)} <b translate="no">${esc(c.labels[C.label]||C.label)}</b> · ${esc(c.match)} ✓</span></div>
+      <div class="rg-verdict v-${esc(v)}"><em>${esc(vt)}</em><small>${esc(vs)}</small></div></div>
+      <div class="rg-cols v-${esc(v)}"><div><h3>${esc(c.repoT)}</h3><div class="rg-files">${files}</div></div>
+      <div><h3>${esc(F?c.sawT:c.keepT)}</h3>${saw}${blockers.length?`<p class="rg-block"><b>${esc(c.blockT)}</b>${blockers.map(b=>`<code translate="no">${esc(b)}</code>`).join('')}</p>`:''}
+        <p class="rg-plan${C.plan.operations?' has-ops':''}">${esc(c.plan(C.plan.operations))}</p>${others?`<h3>${esc(c.also)}</h3><ul class="rg-others">${others}</ul>`:''}</div></div>
+      <details class="rg-cli"><summary>${esc(c.cli)} · <code translate="no">repo-gardener diff . --base HEAD~1</code></summary><pre translate="no"><code>${rgTerm(C.pretty)}</code></pre></details>`;
+    box.querySelector('.rg-src').textContent=csFill(c.src,{v:D.source.version,c:D.source.commit.slice(0,7),d:D.source.run});
+  }
+  function rgPaintStep() {
+    const box=$('.rg-show'); if(!box||!rgData) return;
+    const c=rgCopy(), S=rgData.session, st=S.steps[rgState.s], P=S.plan, op=P.operations[0];
+    box.querySelector('.rg-steps').innerHTML=S.steps.map((s,i)=>`<button type="button" role="tab" data-rg-s="${i}" aria-selected="${i===rgState.s}" tabindex="${i===rgState.s?0:-1}" class="${s.runs.some(r=>r.code)?'is-refused':''}"><span>${i+1}</span>${esc((c.steps[s.id]||[s.id])[0])}</button>`).join('');
+    const [title,text]=c.steps[st.id]||[st.id,''];
+    const runs=st.runs.map(r=>`<div class="rg-run"><p><code translate="no">$ ${esc(r.cmd)}</code><em class="${r.code?'is-bad':'is-ok'}">${esc(csFill(c.exit,{n:r.code}))}</em></p><pre translate="no"><code>${rgTerm(r.out)}</code></pre></div>`).join('');
+    const files=st.files.map(f=>`<li class="${!f.sha?'is-gone':f.same?'':'is-changed'}"><code translate="no">${esc(f.path)}</code><small translate="no">${f.sha?esc(f.sha):'—'}</small><em>${esc(!f.sha?c.gone:f.same?c.same:c.changed)}</em></li>`).join('');
+    const pins=st.id==='review'?`<h3>${esc(c.pinT)} · <code translate="no">${esc(P.plan_id)}</code></h3><ul class="rg-pins">${[['base_sha',P.base_sha],['head_sha',P.head_sha],['config_sha256',P.config_sha256],['accepted_sha256',P.accepted_sha256],['candidate',op.candidate_sha256,op.path],['replacement',op.replacement_sha256,op.replacement],['evidence',op.evidence_files[0].sha256,op.evidence_files[0].path]].map(([k,h,p])=>`<li><span>${esc(c.pins[k])}${p?` <code translate="no">${esc(p)}</code>`:''}</span><code translate="no">${esc(h.slice(0,12))}</code></li>`).join('')}</ul>`:'';
+    box.querySelector('.rg-sstage').innerHTML=`<div class="rg-shead"><b>${esc(title)}</b><small>${esc(csFill(text,{from:S.tampered.from,to:S.tampered.to}))}</small></div>
+      <div class="rg-scols"><div class="rg-term">${runs}</div><div><h3>${esc(c.filesT)}</h3><ul class="rg-sfiles">${files}</ul>
+        <h3>${esc(c.statusT)}</h3><pre class="rg-status" translate="no"><code>${esc(st.status||c.clean)}</code></pre>${pins}</div></div>`;
+  }
+  function rgStatic() {
+    const box=$('.rg-show'); if(!box||!rgData) return;
+    const c=rgCopy(), D=rgData, K=D.corpus, T=D.tests, R=D.real;
+    box.querySelector('.rg-note b').textContent='v'+D.source.version; box.querySelector('.rg-note-t').textContent=csFill(c.note,{v:D.source.version});
+    const vals=[{tp:K.TP,pos:K.TP+K.FN,fp:K.FP,neg:K.FP+K.TN},{fp:D.safety.false_positives,n:D.safety.variants},{ok:T.passed,all:T.collected,py:T.python,sk:T.skipped},
+      {c:R.candidates,n:R.repos.length,files:R.python_files.toLocaleString('en-US'),names:R.repos.join(', '),v:R.version,d:R.measured}];
+    box.querySelector('.rg-bench').innerHTML=c.bench.map(([big,small],i)=>`<div style="--i:${i}"><b>${esc(csFill(big,vals[i]))}</b><small>${esc(csFill(small,vals[i]))}</small></div>`).join('');
+  }
+  function initGardener() {
+    const box=$('.rg-show'); if(!box) return;
+    box.classList.toggle('no-motion',!motion());
+    const go=()=>{ rgStatic(); rgPaint(); rgPaintStep(); };
+    if(rgData) go(); else fetch('/assets/gardener/showcase.json?v=1').then(r=>r.json()).then(d=>{rgData=d;go();}).catch(()=>{});
+  }
+  root.addEventListener('click',event=>{
+    const b=event.target.closest('[data-rg-c]'); if(b){ rgState.c=Number(b.dataset.rgC); rgPaint(); return; }
+    const s=event.target.closest('[data-rg-s]'); if(s){ rgState.s=Number(s.dataset.rgS); rgPaintStep(); }
+  });
+  root.addEventListener('keydown',event=>{
+    const b=event.target.closest?.('[data-rg-c],[data-rg-s]'); if(!b||!['ArrowLeft','ArrowRight','Home','End'].includes(event.key)||!rgData) return;
+    event.preventDefault();
+    const [key,n,paint,attr]=b.dataset.rgC!==undefined?['c',rgData.cases.length,rgPaint,'data-rg-c']:['s',rgData.session.steps.length,rgPaintStep,'data-rg-s'];
+    rgState[key]=event.key==='Home'?0:event.key==='End'?n-1:(rgState[key]+(event.key==='ArrowRight'?1:n-1))%n; paint(); $(`[${attr}="${rgState[key]}"]`)?.focus();
+  });
   /* Merriv: the film (assets/film/merriv.html), then what problem it solves, for whom, how, and what a real run produced.
      Numbers come from assets/merriv/summary.json, written by tools/merriv_film.py from a fresh run of Merriv's demos. */
   const mvCopy=()=>({
@@ -1267,7 +1492,7 @@
     if (view==='blog') html=blogScreen();
     if (view==='help') html=`${commandTitle('help')}<h1>${c.guideTitle}</h1><p>${c.guideIntro}</p><dl class="keyboard-guide">${c.keys.map(([key,description])=>`<div><dt><kbd>${key}</kbd></dt><dd>${description}</dd></div>`).join('')}</dl><h2>${c.commands}</h2>${commandCatalogue()}<p class="comment-line">${c.simulation}</p>`;
     if (view==='projects' && !item) html=`${commandTitle('ls ./projects/')}${directoryHTML(c)}`;
-    if (view==='projects' && item) html=`${commandTitle('cat projects/'+esc(item.id)+'/README.md')}<button class="back-link" data-view="projects">← ${c.all}</button><div class="project-detail"><p class="detail-meta">${esc(item.category)}<span>${esc(item.status)}</span></p><h1 translate="no">${esc(item.name)}</h1><p class="project-description">${esc(item.description)}</p>${item.id==='taiwan-exam'?'<img class="project-art" src="/assets/work/taiwan-exam-social-preview.png" width="1280" height="640" alt="Taiwan Exam" loading="lazy">'+teFilmCard()+examsCard():''}${item.id==='lumigrid'?lumigridShowcase():''}${item.id==='kcrashlab'?kcShowcase():''}${item.id==='contextsec'?csShowcase():''}${item.id==='merriv'?mvShowcase():''}${item.id==='adversarial-lab'?'<img class="project-art" src="/assets/og/adversarial-demo.jpg" width="1200" height="630" alt="Adversarial Lab" loading="lazy">'+advCard():''}<h2>${c.evidence}</h2><p>${esc(item.evidence)}</p><div class="output-actions"><a class="action-button primary" href="${esc(item.url)}" target="_blank" rel="noopener noreferrer"><span>${c.source}</span>${icon('link')}</a><a class="action-button" href="${esc(item.reference)}" target="_blank" rel="noopener noreferrer"><span>${esc(item.referenceLabel)}</span>${icon('link')}</a><button class="action-button" data-ask="${esc(item.name)}">${icon('chat')}<span>${c.askTitle}</span></button><button class="action-button" data-action="share" data-share="/p/${esc(item.id)}/${locale==='en'?'':locale.toLowerCase()+'/'}">${icon('link')}<span>${esc(noteCopy().share)}</span></button></div><div class="project-pagination"><button data-project-step="-1">← ${c.prev}</button><span>${items.indexOf(item)+1} / ${items.length}</span><button data-project-step="1">${c.next} →</button></div></div>`;
+    if (view==='projects' && item) html=`${commandTitle('cat projects/'+esc(item.id)+'/README.md')}<button class="back-link" data-view="projects">← ${c.all}</button><div class="project-detail"><p class="detail-meta">${esc(item.category)}<span>${esc(item.status)}</span></p><h1 translate="no">${esc(item.name)}</h1><p class="project-description">${esc(item.description)}</p>${item.id==='taiwan-exam'?'<img class="project-art" src="/assets/work/taiwan-exam-social-preview.png" width="1280" height="640" alt="Taiwan Exam" loading="lazy">'+teFilmCard()+examsCard():''}${item.id==='lumigrid'?lumigridShowcase():''}${item.id==='kcrashlab'?kcShowcase():''}${item.id==='contextsec'?csShowcase():''}${item.id==='merriv'?mvShowcase():''}${item.id==='ai-repo-gardener'?rgShowcase():''}${item.id==='adversarial-lab'?'<img class="project-art" src="/assets/og/adversarial-demo.jpg" width="1200" height="630" alt="Adversarial Lab" loading="lazy">'+advCard():''}<h2>${c.evidence}</h2><p>${esc(item.evidence)}</p><div class="output-actions"><a class="action-button primary" href="${esc(item.url)}" target="_blank" rel="noopener noreferrer"><span>${c.source}</span>${icon('link')}</a><a class="action-button" href="${esc(item.reference)}" target="_blank" rel="noopener noreferrer"><span>${esc(item.referenceLabel)}</span>${icon('link')}</a><button class="action-button" data-ask="${esc(item.name)}">${icon('chat')}<span>${c.askTitle}</span></button><button class="action-button" data-action="share" data-share="/p/${esc(item.id)}/${locale==='en'?'':locale.toLowerCase()+'/'}">${icon('link')}<span>${esc(noteCopy().share)}</span></button></div><div class="project-pagination"><button data-project-step="-1">← ${c.prev}</button><span>${items.indexOf(item)+1} / ${items.length}</span><button data-project-step="1">${c.next} →</button></div></div>`;
     const output=$('.terminal-output'); output.dataset.view=view; output.innerHTML=html; output.scrollTop=0; renderJournal();
     if (view==='research') initCapstone();
     if (view==='guestbook') window.NIANSIA_GUESTBOOK?.mount(output,locale);
@@ -1275,6 +1500,7 @@
     if (view==='projects' && projectId==='kcrashlab') initKcrash();
     if (view==='projects' && projectId==='contextsec') initContextsec();
     if (view==='projects' && projectId==='merriv') initMerriv();
+    if (view==='projects' && projectId==='ai-repo-gardener') initGardener();
     output.classList.remove('screen-enter'); if (animate && motion()) { void output.offsetWidth; output.classList.add('screen-enter'); }
     root.querySelectorAll('[data-nav-index]').forEach((el,i)=>{el.classList.toggle('is-current',i===paths.indexOf(view));el.classList.toggle('is-selected',i===selectedNav);el.setAttribute('aria-current',i===paths.indexOf(view)?'page':'false');});
     moveIndicator();
