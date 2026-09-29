@@ -563,6 +563,9 @@ def build_blog(posts: dict, cfg: dict) -> tuple[list[str], dict]:
 # validated here again and escaped, downloads point at huggingface.co, and previews are images this site rendered itself.
 EXAM_SUBJECTS = {"chinese": "國綜", "writing": "國寫", "english": "英文", "math-a": "數 A", "math-b": "數 B", "social": "社會", "science": "自然"}
 EXAM_AIS = ("ChatGPT", "Claude", "Gemini", "其他")
+# other ways people write each subject, so the gallery search finds "數學" or "國文" too
+EXAM_ALIASES = {"chinese": "國文 國語文 國語文綜合能力", "writing": "國文 國語文寫作 作文 寫作", "english": "英語 English",
+                "math-a": "數學 數學A 數甲 math", "math-b": "數學 數學B 數乙 math", "social": "社會科 公民 歷史 地理", "science": "自然科 物理 化學 生物 地科"}
 EXAM_UI = {
     "zh-TW": {"title": "Taiwan Exam 考卷分享區", "lede": "用 Taiwan Exam 讓 AI 出的原創學測模擬考，大家一人分享一份；沒有付費 AI 的同學也能下載來練習。",
               "upload": "分享你生成的考卷", "upload_sub": "需要用 Google 帳號登入；我檢查過檔案與內容之後才會公開。", "upload_btn": "上傳考卷",
@@ -573,7 +576,7 @@ EXAM_UI = {
                        "送出即同意以 CC BY-NC 4.0 授權公開：可以分享、改作，要標示來源，不能用於商業用途。",
                        "每份檔案都會先掃毒、移除連結與隱藏內容、檢查個資；不符合的會直接刪除，公開後也可能下架。"],
               "warn": "題目和詳解都是 AI 生成的，可能有錯；請搭配課本和老師的說明使用。發現錯誤、侵權或個資，請按每份考卷下方的「回報問題」來信告訴我。",
-              "all": "全部", "none": "還沒有人分享考卷，歡迎當第一個！", "none_subject": "這一科還沒有考卷。", "q": "題本", "s": "詳解",
+              "all": "全部", "all_subjects": "全部科目", "all_ai": "全部 AI", "search": "搜尋考卷：科目、AI、日期或編號", "search_ph": "搜尋考卷…", "sort": "排序", "sort_new": "最新在前", "sort_old": "最早在前", "shown": "顯示 {n} / {t} 份", "nomatch": "找不到符合的考卷。", "reset": "清除篩選", "subject_nav": "依科目篩選", "ai_nav": "依 AI 篩選", "none": "還沒有人分享考卷，歡迎當第一個！", "none_subject": "這一科還沒有考卷。", "q": "題本", "s": "詳解",
               "pages": "頁", "by": "分享者", "preview": "預覽", "download": "下載", "folder": "開啟資料夾", "set": "第 {n} 份", "report": "回報問題", "sha": "檔案校驗碼（SHA-256）", "dataset": "所有檔案都放在 Hugging Face 資料集",
               "license": "授權：CC BY-NC 4.0", "count": "共 {n} 份", "back": "Taiwan Exam 作品頁", "te": "Taiwan Exam 原始碼", "author_note": "若對作者的作品與研究有興趣，歡迎到個人網站逛逛。",
               "report_subject": "[考卷回報] {id}", "report_body": "考卷編號：{id}\n問題類型（侵權／個資／答案錯誤／其他）：\n說明："},
@@ -641,6 +644,26 @@ EXAM_CSS = """
 .ex details code{display:block;margin-top:4px;font-size:10.5px;word-break:break-all;}
 @media (max-width:520px){.exams{grid-template-columns:1fr;}.ex{grid-template-columns:60px minmax(0,1fr);gap:12px;padding:12px;}.ex .thumb{width:60px;}.ex .act a{padding:9px 14px;}.ex .exf a{padding:6px 0;}}
 .fine{margin-top:34px;font-size:13px;color:var(--muted);}
+.exfilter{position:sticky;top:8px;z-index:5;margin:26px 0 4px;padding:12px 14px;border:1px solid var(--line);border-radius:16px;
+  background:color-mix(in srgb,var(--paper) 90%,transparent);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);box-shadow:0 10px 24px -20px #000;}
+.exfilter [hidden],.ex[hidden],.subject[hidden],.exf-empty[hidden]{display:none!important;}
+.exf-top{display:flex;gap:10px;margin-bottom:10px;}
+.exf-search{flex:1;min-width:0;display:flex;align-items:center;gap:8px;padding:0 12px;border:1px solid var(--line);border-radius:12px;background:var(--bg);transition:border-color .2s;}
+.exf-search:focus-within{border-color:var(--accent);}
+.exf-search svg{flex:none;width:17px;height:17px;color:var(--muted);}
+.exf-search input{flex:1;min-width:0;padding:9px 0;border:0;outline:0;background:transparent;color:var(--ink);font-family:inherit;font-size:14px;line-height:1.4;}
+.exf-top select{flex:none;padding:0 10px;border:1px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink);font-family:inherit;font-size:13.5px;cursor:pointer;}
+.exfilter .subjects{margin:0;}
+.exf-ai{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;}
+.exf-ai button{padding:5px 13px;border-radius:99px;border:1px solid var(--line);background:none;color:var(--ink);font-family:inherit;font-size:13.5px;cursor:pointer;}
+.exf-ai button em{font-style:normal;color:var(--muted);margin-left:6px;font-size:12px;}
+.subjects a[aria-pressed=true],.exf-ai button[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:var(--paper);}
+.subjects a[aria-pressed=true] em,.exf-ai button[aria-pressed=true] em{color:inherit;opacity:.8;}
+.exf-ai button:hover{border-color:var(--accent);}
+.exf-status{margin:8px 0 0;font-size:12.5px;color:var(--muted);}
+.exf-empty{margin:22px 0 0;padding:26px 16px;border:1px dashed var(--line);border-radius:16px;text-align:center;color:var(--muted);}
+.exf-empty button{margin-left:10px;padding:6px 14px;border-radius:99px;border:1px solid var(--accent);background:none;color:var(--accent);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;}
+@media (max-width:520px){.exfilter{position:static;}.exf-top select{padding:9px 8px;}}
 """
 
 
@@ -713,7 +736,8 @@ def build_exams(data: dict) -> list[str]:
                    f'<div class="cm-list">{cm}</div></section>' if (cm := community_cards(loc)) else '')
                 + f'<details class="rules"><summary>{e(U["rules"])}</summary><ol>{"".join(f"<li>{e(r)}</li>" for r in U["rule"])}</ol></details>'
                 f'<p class="warnbox">{e(U["warn"])}</p>')
-        nav = "".join(f'<a href="#{k}">{e(EXAM_SUBJECTS[k] if loc == "zh-TW" else T2S.convert(EXAM_SUBJECTS[k]))}<em>{len(v)}</em></a>' for k, v in by_subject.items() if v)
+        nav = (f'<a href="#top" data-subj="" hidden>{e(U["all_subjects"])}<em>{len(data["exams"])}</em></a>'
+               if data["exams"] else "") + "".join(f'<a href="#{k}" data-subj="{k}">{e(EXAM_SUBJECTS[k] if loc == "zh-TW" else T2S.convert(EXAM_SUBJECTS[k]))}<em>{len(v)}</em></a>' for k, v in by_subject.items() if v)
         sections = []
         for k, items in by_subject.items():
             if not items:
@@ -721,7 +745,7 @@ def build_exams(data: dict) -> list[str]:
             name = EXAM_SUBJECTS[k] if loc == "zh-TW" else T2S.convert(EXAM_SUBJECTS[k])
             cards = []
             base = f'https://huggingface.co/datasets/{data["dataset"]}'
-            for n, x in enumerate(items, 1):
+            for n, x in reversed(list(enumerate(items, 1))):   # newest first; "set n" keeps the upload order
                 files = {fl["role"]: fl for fl in x["files"]}
                 acts = "".join(
                     f'<div class="act"><span class="al">{e(U["q" if r == "questions" else "s"])}<small>{files[r]["pages"]} {e(U["pages"])} · {size(files[r]["bytes"])}</small></span>'
@@ -736,14 +760,28 @@ def build_exams(data: dict) -> list[str]:
                 img = (f'<img class="thumb" src="{e(x["preview"])}" alt="" loading="lazy" width="76" height="108">'
                        if (ROOT / x["preview"].lstrip("/")).exists() else '<span class="thumb" aria-hidden="true"></span>')
                 folder = f'{base}/tree/main/exams/{x["subject"]}/{x["id"]}'
-                cards.append(f'<article class="ex" id="{x["id"]}">{img}<div class="exb">'
+                words = " ".join((EXAM_SUBJECTS[k], T2S.convert(EXAM_SUBJECTS[k]), k, EXAM_ALIASES[k], T2S.convert(EXAM_ALIASES[k]), x["ai"], x["id"], x["date"], x["credit"],
+                                  x["te_version"], U["set"].format(n=n), T2S.convert(U["set"].format(n=n))))
+                cards.append(f'<article class="ex" id="{x["id"]}" data-ai="{e(x["ai"])}" data-o="{data["exams"].index(x)}" data-q="{e(words)}">{img}<div class="exb">'
                              f'<div class="exh"><b>{e(name)} · {e(U["set"].format(n=n))}</b><span class="ai {ai_cls}">{e(x["ai"])}</span></div>'
                              f'<p class="exm">{e(meta)}</p>{acts}'
                              f'<div class="exf"><a href="{e(folder)}" target="_blank" rel="noopener noreferrer">{e(U["folder"])} ↗</a>'
                              f'<a href="{e(mail)}">{e(U["report"])}</a><details><summary>SHA-256</summary>{sha}</details></div></div></article>')
-            sections.append(f'<section class="subject" id="{k}"><h2>{e(name)} <small class="note">{e(U["count"].format(n=len(items)))}</small></h2>'
+            sections.append(f'<section class="subject" id="{k}" data-subj="{k}"><h2>{e(name)} <small class="note">{e(U["count"].format(n=len(items)))}</small></h2>'
                             f'<div class="exams">{"".join(cards)}</div></section>')
-        body = (head + (f'<nav class="subjects" aria-label="{e(U["all"])}">{nav}</nav>' if nav else "")
+        ai_counts = {a: sum(x["ai"] == a for x in data["exams"]) for a in EXAM_AIS}
+        ai_chips = (f'<button type="button" data-ai="">{e(U["all_ai"])}</button>'
+                    + "".join(f'<button type="button" data-ai="{e(a)}">{e(a if loc == "zh-TW" else T2S.convert(a))}<em>{c}</em></button>'
+                              for a, c in ai_counts.items() if c))
+        bar = (f'<div class="exfilter" data-shown="{e(U["shown"])}" data-count="{e(U["count"])}">'
+               f'<div class="exf-top" hidden><label class="exf-search"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" aria-hidden=\"true\"><circle cx=\"11\" cy=\"11\" r=\"7\"/><path d=\"m20 20-3.5-3.5\"/></svg>'
+               f'<input type="search" maxlength="40" autocomplete="off" spellcheck="false" placeholder="{e(U["search_ph"])}" aria-label="{e(U["search"])}"></label>'
+               f'<select aria-label="{e(U["sort"])}"><option value="new">{e(U["sort_new"])}</option><option value="old">{e(U["sort_old"])}</option></select></div>'
+               f'<nav class="subjects" aria-label="{e(U["subject_nav"])}">{nav}</nav>'
+               f'<div class="exf-ai" role="group" aria-label="{e(U["ai_nav"])}" hidden>{ai_chips}</div>'
+               f'<p class="exf-status" aria-live="polite" hidden></p></div>'
+               f'<p class="exf-empty" hidden>{e(U["nomatch"])}<button type="button">{e(U["reset"])}</button></p>')
+        body = (head + (bar if nav else "")
                 + ("".join(sections) or f'<p class="note">{e(U["none"])}</p>')
                 + f'<p class="fine">{e(U["license"])} · <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener noreferrer">CC BY-NC 4.0</a>'
                   f' · <a href="https://huggingface.co/datasets/{e(data["dataset"])}" target="_blank" rel="noopener noreferrer">{e(U["dataset"])} ↗</a></p>'
@@ -755,7 +793,7 @@ def build_exams(data: dict) -> list[str]:
         out.parent.mkdir(parents=True, exist_ok=True)
         out.write_text(shell(loc=loc, title=f'{U["title"]} · Niansia', desc=U["lede"], url=f"/exams/{seg}/", og=f"/assets/og/exams-{seg}.jpg",
                              alternates={l: f"/exams/{s}/" for s, l in segs.items()}, body=body, jsonld=ld, crumbs=" / exams", og_type="website",
-                             extra_css=EXAM_CSS, author_note=U["author_note"]), encoding="utf-8")
+                             extra_css=EXAM_CSS, author_note=U["author_note"], scripts=("/assets/js/exam-filter.js?v=1",)), encoding="utf-8")
         urls.append(f"/exams/{seg}/")
     (ROOT / "exams" / "index.html").write_text(
         '<!doctype html><html><head><meta charset="utf-8"><title>Taiwan Exam · Niansia</title><link rel="canonical" href="' + SITE + '/exams/zh-tw/">'
