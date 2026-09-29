@@ -27,7 +27,7 @@ tags: [mlc-llm, web-llm, qlora, zh, en]
 ---
 # Yuki (Qwen2.5-1.5B-Instruct, QLoRA) — q4f16_1 for WebLLM
 
-The desktop companion of [niansia.github.io](https://niansia.github.io). QLoRA fine-tune of
+The desktop companion of [niansia.com](https://niansia.com). QLoRA fine-tune of
 Qwen2.5-1.5B-Instruct that answers questions about the portfolio placed in its system prompt,
 refuses what the prompt doesn't contain, and emits whitelisted `@command` lines that control the page.
 Weights are quantised to 4 bit (q4f16_1) and run in the browser with WebGPU through WebLLM,
