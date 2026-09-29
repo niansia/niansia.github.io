@@ -81,6 +81,22 @@ window.NIANSIA_NOTES = {
 window.NIANSIA_LOG = {
  "en": [
   {
+   "slug": "2026-09-29-exam-gallery",
+   "title": "The Taiwan Exam gallery is open",
+   "date": "2026-09-29",
+   "url": "/log/en/#2026-09-29-exam-gallery",
+   "thumb": "/assets/media/2f902a362bab90c9-t.webp",
+   "alt": "The exam gallery: search and subject/AI filters on top; every exam can be previewed or downloaded, questions and solutions alike"
+  },
+  {
+   "slug": "2026-09-29-domain",
+   "title": "The site moves to niansia.com",
+   "date": "2026-09-29",
+   "url": "/log/en/#2026-09-29-domain",
+   "thumb": "",
+   "alt": ""
+  },
+  {
    "slug": "2026-09-28-taiwan-exam-launch",
    "title": "Taiwan Exam goes public",
    "date": "2026-09-28",
@@ -99,6 +115,22 @@ window.NIANSIA_LOG = {
  ],
  "zh-TW": [
   {
+   "slug": "2026-09-29-exam-gallery",
+   "title": "Taiwan Exam 考卷分享區上線",
+   "date": "2026-09-29",
+   "url": "/log/zh-tw/#2026-09-29-exam-gallery",
+   "thumb": "/assets/media/2f902a362bab90c9-t.webp",
+   "alt": "考卷分享區：上方可以搜尋、依科目和 AI 篩選，每份考卷都能預覽或下載題本與詳解"
+  },
+  {
+   "slug": "2026-09-29-domain",
+   "title": "個人網站搬到 niansia.com",
+   "date": "2026-09-29",
+   "url": "/log/zh-tw/#2026-09-29-domain",
+   "thumb": "",
+   "alt": ""
+  },
+  {
    "slug": "2026-09-28-taiwan-exam-launch",
    "title": "Taiwan Exam 正式公開",
    "date": "2026-09-28",
@@ -116,6 +148,22 @@ window.NIANSIA_LOG = {
   }
  ],
  "zh-CN": [
+  {
+   "slug": "2026-09-29-exam-gallery",
+   "title": "Taiwan Exam 考卷分享区上线",
+   "date": "2026-09-29",
+   "url": "/log/zh-cn/#2026-09-29-exam-gallery",
+   "thumb": "/assets/media/2f902a362bab90c9-t.webp",
+   "alt": "考卷分享区：上方可以搜索、依科目和 AI 筛选，每份考卷都能预览或下载题本与详解"
+  },
+  {
+   "slug": "2026-09-29-domain",
+   "title": "个人网站搬到 niansia.com",
+   "date": "2026-09-29",
+   "url": "/log/zh-cn/#2026-09-29-domain",
+   "thumb": "",
+   "alt": ""
+  },
   {
    "slug": "2026-09-28-taiwan-exam-launch",
    "title": "Taiwan Exam 正式公开",
