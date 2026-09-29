@@ -529,6 +529,129 @@ def build_blog(posts: dict, cfg: dict) -> tuple[list[str], dict]:
     return urls, data
 
 
+# ------------------------------------------------------------------------------------------------ Taiwan Exam gallery
+# Shared mock exams, published by tools/exam_gallery.py. The page has no script; every value from the manifest is
+# validated here again and escaped, downloads point at huggingface.co, and previews are images this site rendered itself.
+EXAM_SUBJECTS = {"chinese": "國綜", "writing": "國寫", "english": "英文", "math-a": "數 A", "math-b": "數 B", "social": "社會", "science": "自然"}
+EXAM_AIS = ("ChatGPT", "Claude", "Gemini", "其他")
+EXAM_UI = {
+    "zh-TW": {"title": "Taiwan Exam 考卷分享區", "lede": "用 Taiwan Exam 讓 AI 出的原創學測模擬考，大家一人分享一份；沒有付費 AI 的同學也能下載來練習。",
+              "upload": "分享你生成的考卷", "upload_sub": "需要用 Google 帳號登入；我檢查過檔案與內容之後才會公開。", "upload_btn": "上傳考卷",
+              "upload_soon": "上傳表單即將開放", "rules": "上傳須知",
+              "rule": ["只接受用 Taiwan Exam 讓 AI 生成的原創考卷（PDF）。",
+                       "不要上傳大考中心的歷屆試題，也不要上傳補習班、出版社的講義或題本。",
+                       "考卷裡不要有姓名、學校、班級、座號等個人資料。",
+                       "送出即同意以 CC BY-NC 4.0 授權公開：可以分享、改作，要標示來源，不能用於商業用途。",
+                       "每份檔案都會先掃毒、移除連結與隱藏內容、檢查個資；不符合的會直接刪除，公開後也可能下架。"],
+              "warn": "題目和詳解都是 AI 生成的，可能有錯；請搭配課本和老師的說明使用。發現錯誤、侵權或個資，請按每份考卷下方的「回報問題」來信告訴我。",
+              "all": "全部", "none": "還沒有人分享考卷，歡迎當第一個！", "none_subject": "這一科還沒有考卷。", "q": "題本", "s": "詳解",
+              "pages": "頁", "by": "分享者", "report": "回報問題", "sha": "檔案校驗碼（SHA-256）", "dataset": "所有檔案都放在 Hugging Face 資料集",
+              "license": "授權：CC BY-NC 4.0", "count": "共 {n} 份", "back": "回到作品集", "te": "Taiwan Exam 專案",
+              "report_subject": "[考卷回報] {id}", "report_body": "考卷編號：{id}\n問題類型（侵權／個資／答案錯誤／其他）：\n說明："},
+}
+EXAM_UI["zh-CN"] = {k: (T2S.convert(v) if isinstance(v, str) else [T2S.convert(x) for x in v]) for k, v in EXAM_UI["zh-TW"].items()}
+EXAM_CSS = """
+.upload{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:22px 0 14px;padding:16px 18px;border-radius:16px;background:var(--code);}
+.upload b{display:block;font-size:15.5px;}.upload small{display:block;color:var(--muted);font-size:13px;}
+.upload .btn{flex:none;margin:0;}.upload .btn[aria-disabled]{opacity:.55;pointer-events:none;}
+.rules{margin:0 0 14px;padding:12px 18px;border:1px solid var(--line);border-radius:14px;}
+.rules summary{cursor:pointer;font-weight:700;}.rules ol{margin:10px 0 2px;padding-left:22px;font-size:14px;line-height:1.75;}
+.warnbox{margin:0 0 26px;padding:12px 16px;border-radius:12px;border-left:4px solid #c9853a;background:var(--paper);font-size:13.5px;line-height:1.7;}
+.subjects{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 8px;}
+.subjects a{padding:5px 13px;border-radius:99px;border:1px solid var(--line);text-decoration:none;font-size:13.5px;}
+.subjects a:hover{border-color:var(--accent);}.subjects em{font-style:normal;color:var(--muted);margin-left:6px;font-size:12px;}
+.subject{margin-top:34px;scroll-margin-top:16px;}
+.exams{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px;margin-top:12px;}
+.ex{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:var(--paper);scroll-margin-top:16px;}
+.ex img{display:block;width:100%;aspect-ratio:520/740;object-fit:cover;object-position:top;border-bottom:1px solid var(--line);background:#fff;}
+.ex .exb{display:flex;flex-direction:column;gap:8px;padding:12px 14px 14px;}
+.ex .exm{margin:0;font:500 12px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;color:var(--muted);}
+.ex .dl{display:flex;flex-wrap:wrap;gap:8px;}
+.ex .dl a{padding:6px 12px;border-radius:10px;background:var(--accent);color:#fff;text-decoration:none;font-size:13px;font-weight:600;}
+.ex .dl a.sol{background:transparent;color:var(--accent);border:1px solid var(--accent);}
+.ex .dl small{font-weight:400;opacity:.85;margin-left:4px;}
+.ex details{font-size:12px;color:var(--muted);}.ex details code{display:block;margin-top:4px;font-size:10.5px;word-break:break-all;}
+.ex .rep{align-self:flex-start;font-size:12px;color:var(--muted);}
+.fine{margin-top:34px;font-size:13px;color:var(--muted);}
+"""
+
+
+def load_exams() -> dict:
+    f = ROOT / "exam_src" / "gallery.json"
+    data = json.loads(f.read_text(encoding="utf-8")) if f.exists() else {"dataset": "", "form": "", "exams": []}
+    if data.get("form") and not re.match(r"^https://(docs\.google\.com/forms/|forms\.gle/)[\w/?=&.-]+$", data["form"]):
+        sys.exit("exam_src/gallery.json: form must be a Google Forms https:// link")
+    if not re.fullmatch(r"[\w.-]+/[\w.-]+", data.get("dataset", "")):
+        sys.exit("exam_src/gallery.json: dataset must look like owner/name")
+    for x in data["exams"]:   # written by tools/exam_gallery.py, checked again before anything reaches a page
+        ok = (re.fullmatch(r"\d{8}-[0-9a-f]{6}", x.get("id", "")) and x.get("subject") in EXAM_SUBJECTS and x.get("ai") in EXAM_AIS
+              and re.fullmatch(r"\d{4}-\d{2}-\d{2}", x.get("date", "")) and re.fullmatch(r"(\d{4}\.\d{2}\.\d{2}\.\d{1,3})?", x.get("te_version", ""))
+              and len(x.get("credit", "")) <= 20 and x.get("files")
+              and all(re.fullmatch(rf"exams/{re.escape(x['subject'])}/{re.escape(x['id'])}/(questions|solutions)\.pdf", fl.get("path", ""))
+                      and re.fullmatch(r"[0-9a-f]{64}", fl.get("sha256", "")) and fl.get("role") in ("questions", "solutions")
+                      and isinstance(fl.get("pages"), int) and isinstance(fl.get("bytes"), int) for fl in x["files"]))
+        if not ok:
+            sys.exit(f"exam_src/gallery.json: entry {x.get('id', '?')!r} failed validation")
+    return data
+
+
+def build_exams(data: dict) -> list[str]:
+    from urllib.parse import quote
+    urls = []
+    segs = {"zh-tw": "zh-TW", "zh-cn": "zh-CN"}
+    size = lambda b: f"{b / 1048576:.1f} MB" if b >= 1048576 else f"{max(1, round(b / 1024))} KB"
+    for seg, loc in segs.items():
+        U = EXAM_UI[loc]
+        by_subject = {k: [x for x in data["exams"] if x["subject"] == k] for k in EXAM_SUBJECTS}
+        up = (f'<a class="btn primary" href="{e(data["form"])}" target="_blank" rel="noopener noreferrer">{e(U["upload_btn"])} ↗</a>' if data["form"]
+              else f'<span class="btn" aria-disabled="true">{e(U["upload_soon"])}</span>')
+        head = (f'<main><p class="kicker">~/niansia/exams</p><h1>{e(U["title"])}</h1><p class="lede">{e(U["lede"])}</p>'
+                f'<div class="upload"><div><b>{e(U["upload"])}</b><small>{e(U["upload_sub"])}</small></div>{up}</div>'
+                f'<details class="rules"><summary>{e(U["rules"])}</summary><ol>{"".join(f"<li>{e(r)}</li>" for r in U["rule"])}</ol></details>'
+                f'<p class="warnbox">{e(U["warn"])}</p>')
+        nav = "".join(f'<a href="#{k}">{e(EXAM_SUBJECTS[k] if loc == "zh-TW" else T2S.convert(EXAM_SUBJECTS[k]))}<em>{len(v)}</em></a>' for k, v in by_subject.items() if v)
+        sections = []
+        for k, items in by_subject.items():
+            if not items:
+                continue
+            name = EXAM_SUBJECTS[k] if loc == "zh-TW" else T2S.convert(EXAM_SUBJECTS[k])
+            cards = []
+            for x in items:
+                files = {fl["role"]: fl for fl in x["files"]}
+                dl = "".join(f'<a class="{"sol" if r == "solutions" else "q"}" href="https://huggingface.co/datasets/{e(data["dataset"])}/resolve/main/{e(files[r]["path"])}?download=true" '
+                             f'rel="noopener noreferrer" download>{e(U["q" if r == "questions" else "s"])} PDF<small>{files[r]["pages"]} {e(U["pages"])} · {size(files[r]["bytes"])}</small></a>'
+                             for r in ("questions", "solutions") if r in files)
+                meta = " · ".join(v for v in (x["date"], x["ai"], f'Taiwan Exam {x["te_version"]}' if x["te_version"] else "") if v)
+                credit = f'<span>{e(U["by"])}：{e(x["credit"])}</span>' if x["credit"] else ""
+                sha = "".join(f'<code>{e(U["q" if fl["role"] == "questions" else "s"])}  {fl["sha256"]}</code>' for fl in x["files"])
+                mail = f'mailto:{EMAIL}?subject={quote(U["report_subject"].format(id=x["id"]))}&body={quote(U["report_body"].format(id=x["id"]))}'
+                img = f'<img src="{e(x["preview"])}" alt="" loading="lazy" width="520" height="740">' if (ROOT / x["preview"].lstrip("/")).exists() else ""
+                cards.append(f'<article class="ex" id="{x["id"]}">{img}<div class="exb"><p class="exm">{e(meta)}</p>{credit}<div class="dl">{dl}</div>'
+                             f'<details><summary>{e(U["sha"])}</summary>{sha}</details><a class="rep" href="{e(mail)}">{e(U["report"])}</a></div></article>')
+            sections.append(f'<section class="subject" id="{k}"><h2>{e(name)} <small class="note">{e(U["count"].format(n=len(items)))}</small></h2>'
+                            f'<div class="exams">{"".join(cards)}</div></section>')
+        body = (head + (f'<nav class="subjects" aria-label="{e(U["all"])}">{nav}</nav>' if nav else "")
+                + ("".join(sections) or f'<p class="note">{e(U["none"])}</p>')
+                + f'<p class="fine">{e(U["license"])} · <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener noreferrer">CC BY-NC 4.0</a>'
+                  f' · <a href="https://huggingface.co/datasets/{e(data["dataset"])}" target="_blank" rel="noopener noreferrer">{e(U["dataset"])} ↗</a></p>'
+                + f'<div class="btns"><a class="btn" href="https://github.com/niansia/taiwan-exam" target="_blank" rel="noopener noreferrer">{e(U["te"])} ↗</a>'
+                  f'<a class="btn primary" href="{HOME[loc]}#projects/taiwan-exam">{e(U["back"])}</a></div></main>')
+        ld = {"@context": "https://schema.org", "@type": "CollectionPage", "name": U["title"], "url": f"{SITE}/exams/{seg}/", "inLanguage": HTML_LANG[loc],
+              "author": PERSON, "license": "https://creativecommons.org/licenses/by-nc/4.0/"}
+        out = ROOT / "exams" / seg / "index.html"
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(shell(loc=loc, title=f'{U["title"]} · Niansia', desc=U["lede"], url=f"/exams/{seg}/", og=f"/assets/og/exams-{seg}.jpg",
+                             alternates={l: f"/exams/{s}/" for s, l in segs.items()}, body=body, jsonld=ld, crumbs=" / exams", og_type="website",
+                             extra_css=EXAM_CSS), encoding="utf-8")
+        urls.append(f"/exams/{seg}/")
+    (ROOT / "exams" / "index.html").write_text(
+        '<!doctype html><html><head><meta charset="utf-8"><title>Taiwan Exam · Niansia</title><link rel="canonical" href="' + SITE + '/exams/zh-tw/">'
+        '<meta name="robots" content="noindex,follow"><script>var l=(navigator.language||"").toLowerCase();'
+        'location.replace("/exams/"+(/^zh-(cn|sg)/.test(l)?"zh-cn":"zh-tw")+"/");</script></head>'
+        '<body><a href="/exams/zh-tw/">繁體中文</a> · <a href="/exams/zh-cn/">简体中文</a></body></html>', encoding="utf-8")
+    return urls
+
+
 # ------------------------------------------------------------------------------------------------ shared data for brief / papers
 def load_js(rel: str, var: str):
     js = f"global.window={{}};require(process.argv[1]);process.stdout.write(JSON.stringify(window.{var}||null))"
@@ -1046,6 +1169,8 @@ def og_jobs(projects: dict, notes: dict, pubs: dict | None = None) -> list[tuple
                                                   chips=[p.get("venue", ""), PAPER_UI["en"]["status"].get(p.get("status"), "")],
                                                   desc=PAPER_UI["en"]["blindBody"] if hidden else pick(p.get("tldr"), "en"),
                                                   img=uri(teaser) if teaser and not hidden else None, cover=True)))
+    for seg, loc in (("zh-tw", "zh-TW"), ("zh-cn", "zh-CN")):
+        jobs.append((f"exams-{seg}", og_page("note", title=EXAM_UI[loc]["title"], desc=EXAM_UI[loc]["lede"], date=str(date.today()), label=f"{HOST}/exams", path="exams")))
     blog_posts, _ = load_blog()
     for seg, loc in LANGS.items():
         jobs.append((f"blog-{seg}", og_page("note", title=f'Niansia · {BLOG_UI[loc]["blog"]}', desc=BLOG_UI[loc]["lede"], date=str(date.today()), label=f"{HOST}/blog", path="blog")))
@@ -1114,6 +1239,7 @@ if __name__ == "__main__":
         urls += paper_urls
         blog_urls, _ = build_blog(blog, blog_cfg)
         urls += blog_urls
+        urls += build_exams(load_exams())
         data_file = ROOT / "assets/js/notes-data.js"
         data_file.write_text(data_file.read_text(encoding="utf-8")
                              + "window.NIANSIA_LOG = " + json.dumps(log_data, ensure_ascii=False, indent=1) + ";\n"

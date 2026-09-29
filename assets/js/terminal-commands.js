@@ -25,6 +25,7 @@ window.NIANSIA_TERMINAL = {
     ['status','status','status','Show this terminal’s settings','查看目前終端設定','查看当前终端设置'],
     ['contact','contact','contact','Open contact information','開啟聯絡資訊','打开联系信息'],
     ['hobbies','hobbies','hobbies','Off the clock: cosplay, music and fandoms','研究以外：cos、音樂與各種坑','研究以外：cos、音乐与各种坑'],
+    ['exams','exams','exams','Open the shared Taiwan Exam mock exams (in Chinese)','開啟 Taiwan Exam 考卷分享區','打开 Taiwan Exam 考卷分享区'],
     ['guestbook','guestbook','guestbook','Open the guestbook: leave a note (shown after review)','開啟留言板：留下一句話（審核後公開）','打开留言板：留下一句话（审核后公开）'],
     ['email','email','email','Show the email address and link','顯示電子郵件與連結','显示电子邮件与链接'],
     ['github','github [project]','github taiwan-exam','Show GitHub source links','顯示 GitHub 原始碼連結','显示 GitHub 源代码链接'],
