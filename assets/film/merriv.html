@@ -1,0 +1,576 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Merriv · one release, end to end</title>
+<meta name="description" content="Merriv, visualised on one real ONNX FP16 → INT8 release: the holdout digits, the clipped inputs, the saturated hidden layer, the paired statistics, the first bad build and the Model Change Report.">
+<meta name="theme-color" content="#040507">
+<link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+TC:wght@400;500;700&display=swap">
+<style>
+:root{--bg:#040507;--ink:#f2f4f7;--dim:#8a8f99;--line:#ffffff26;--blue:#7cc4ff;--amber:#ffb454;--red:#ff5d6c;--green:#4ade80;}
+*{box-sizing:border-box;}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:Inter,'Noto Sans TC',system-ui,sans-serif;overflow:hidden;}
+#gl{position:fixed;inset:0;width:100%;height:100%;display:block;}
+.ui{position:fixed;inset:0;pointer-events:none;}
+.brand{position:absolute;top:18px;left:22px;font:500 12px/1.4 'JetBrains Mono',monospace;color:var(--dim);letter-spacing:.04em;transition:opacity .5s;}
+.brand b{color:var(--ink);font-weight:500;}
+.top{position:absolute;top:14px;right:16px;display:flex;gap:8px;transition:opacity .5s;}
+.btn{pointer-events:auto;font:500 11px 'JetBrains Mono',monospace;color:var(--dim);background:transparent;border:1px solid var(--line);border-radius:999px;padding:6px 11px;cursor:pointer;text-decoration:none;}
+.btn:hover{color:var(--ink);border-color:#ffffff66;}
+.lab{position:absolute;left:0;top:0;transform:translate(0,-100%);white-space:nowrap;font:500 12px/1.5 'JetBrains Mono','Noto Sans TC',monospace;color:#e9edf3;opacity:0;transition:opacity .45s;pointer-events:none;padding:4px 10px;border-left:1px solid var(--blue);background:linear-gradient(90deg,#070a10d9,#070a1000);}
+.lab i{font-family:'Times New Roman',serif;font-size:14px;color:#fff;}
+.lab small{display:block;color:var(--dim);font-size:11px;}
+.lab b{color:#fff;font-weight:600;}
+.lab.on{opacity:1;}
+.lab.amber{border-color:var(--amber);}.lab.red{border-color:var(--red);}.lab.ok{border-color:var(--green);}
+.lab.dg{padding:0;border:0;background:none;transform:translate(-50%,0);font:600 13px 'JetBrains Mono',monospace;color:#cfd6df;}
+.lab.dg.hot{color:#fff;text-shadow:0 0 12px #7cc4ff;}.lab.dg.bad{color:var(--red);text-shadow:0 0 12px #ff5d6c88;}
+.lab.stamp{border:0;padding:3px 10px;border-radius:6px;transform:translate(-50%,-100%);font-weight:700;letter-spacing:.06em;color:#08090c;background:var(--green);}
+.lab.stamp.block{background:var(--red);}.lab.stamp.ref{background:#9aa3ad;}
+.hud{position:absolute;top:52px;left:22px;display:flex;gap:18px;font:500 11px 'JetBrains Mono','Noto Sans TC',monospace;color:var(--dim);opacity:0;transition:opacity .5s;}
+.hud.on{opacity:1;}
+.hud b{display:block;font:600 20px 'JetBrains Mono',monospace;color:var(--ink);font-variant-numeric:tabular-nums;}
+.hud .r b{color:var(--red);}.hud .g b{color:var(--green);}
+.mcr{position:absolute;right:4vw;top:50%;transform:translateY(-50%);width:min(560px,92vw);padding:18px 20px;border-radius:14px;border:1px solid #ffffff1f;background:#070a10d0;backdrop-filter:blur(6px);font:500 12px/1.75 'JetBrains Mono','Noto Sans TC',monospace;color:#cfd6df;opacity:0;transition:opacity .6s;}
+.mcr.on{opacity:1;}
+.mcr h2{margin:0 0 8px;font:600 13px 'JetBrains Mono',monospace;color:#fff;letter-spacing:.04em;}
+.mcr div{display:flex;gap:12px;opacity:0;transform:translateY(4px);transition:opacity .35s,transform .35s;}
+.mcr div.on{opacity:1;transform:none;}
+.mcr div span:first-child{flex:none;width:188px;color:var(--dim);}
+.mcr div span:last-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.mcr .id{color:var(--amber);}.mcr .bad{color:var(--red);}.mcr .ok{color:var(--green);}.mcr .no{color:#9aa3ad;}
+.mcr hr{border:0;border-top:1px solid #ffffff1a;margin:10px 0;}
+.title{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);text-align:center;opacity:0;transition:opacity 1.2s;pointer-events:none;}
+.title.on{opacity:1;}
+.title h1{margin:0;font:600 clamp(34px,5vw,64px)/1 Inter,sans-serif;letter-spacing:-.02em;text-shadow:0 2px 30px #000c;}
+.title p{margin:14px 0 0;font:400 13px 'JetBrains Mono','Noto Sans TC',monospace;color:#dfe4ea;text-shadow:0 2px 12px #000;}
+.title small{display:block;margin-top:8px;font:400 11px 'JetBrains Mono','Noto Sans TC',monospace;color:var(--dim);}
+.bar{position:absolute;left:0;right:0;bottom:0;padding:0 22px 18px;display:flex;align-items:center;gap:14px;transition:opacity .5s;}
+.bar .play{pointer-events:auto;width:30px;height:30px;border-radius:50%;border:1px solid var(--line);background:transparent;color:var(--ink);display:grid;place-items:center;cursor:pointer;flex:none;}
+.bar svg{width:12px;height:12px;fill:currentColor;}
+.track{position:relative;flex:1;height:18px;cursor:pointer;pointer-events:auto;}
+.track:before{content:'';position:absolute;left:0;right:0;top:8px;height:2px;background:#ffffff1c;}
+.fill{position:absolute;left:0;top:8px;height:2px;background:var(--ink);}
+.time{font:400 11px 'JetBrains Mono',monospace;color:var(--dim);min-width:84px;text-align:right;}
+.start{position:absolute;inset:0;display:grid;place-items:center;background:#040507e6;pointer-events:auto;transition:opacity .6s;}
+.start.off{opacity:0;pointer-events:none;}
+.start button{background:none;border:0;color:var(--ink);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:14px;font:500 13px Inter,'Noto Sans TC',sans-serif;}
+.start .ring{width:74px;height:74px;border-radius:50%;border:1px solid #ffffff55;display:grid;place-items:center;}
+.start .ring svg{width:22px;height:22px;fill:#fff;margin-left:3px;}
+.start small{color:var(--dim);font-family:'JetBrains Mono','Noto Sans TC',monospace;font-size:11px;}
+.idle .bar,.idle .top,.idle .brand{opacity:0;}
+.mini .brand,.mini .top,.mini .bar,.mini .lab,.mini .hud,.mini .start,.mini .title,.mini .mcr{display:none;}
+.embed #back{display:none;}
+@media(max-width:720px){.lab{font-size:10px;}.lab small{font-size:9px;}.lab i{font-size:12px;}.hud{gap:12px;}.hud b{font-size:15px;}.mcr{right:3vw;font-size:10px;padding:12px 14px;}.mcr div span:first-child{width:120px;}}
+</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
+</head>
+<body>
+<canvas id="gl"></canvas>
+<div class="ui" id="ui">
+  <div class="brand"><b>Merriv</b> · <span id="sub"></span></div>
+  <div class="top"><a class="btn" id="back" href="/#projects/merriv">←</a><button class="btn" id="lang" type="button">EN</button><button class="btn" id="fs" type="button">⛶</button></div>
+  <div class="hud" id="hud"></div>
+  <div id="labels"></div>
+  <div class="mcr" id="mcr"></div>
+  <div class="title" id="title"><h1>Merriv</h1><p id="title-sub"></p><small id="title-note"></small></div>
+  <div class="bar"><button class="play" id="play" type="button" aria-label="play / pause"></button><div class="track" id="track"><div class="fill" id="fill"></div></div><span class="time" id="time"></span></div>
+  <div class="start" id="start"><button type="button" id="go"><span class="ring"><svg viewBox="0 0 24 24"><path d="M6 4l14 8-14 8z"/></svg></span><span id="go-label"></span><small id="go-sub"></small></button></div>
+</div>
+<script type="module">
+/* Every shape in this film is data from one run of Merriv's ONNX quantization demo (assets/merriv/film.json, written by
+   tools/merriv_film.py): the holdout digits, the FP16 weights, the inputs and activations each INT8 build really computes,
+   the paired outcomes, the report statistics and identifiers, the bisect probes and `merriv mcr verify`. */
+import * as THREE from 'three';
+import {EffectComposer} from 'three/addons/postprocessing/EffectComposer.js';
+import {RenderPass} from 'three/addons/postprocessing/RenderPass.js';
+import {UnrealBloomPass} from 'three/addons/postprocessing/UnrealBloomPass.js';
+import {ShaderPass} from 'three/addons/postprocessing/ShaderPass.js';
+import {OutputPass} from 'three/addons/postprocessing/OutputPass.js';
+import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
+import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js';
+
+const $ = id => document.getElementById(id);
+const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
+const seg = (t, a, b) => clamp((t - a) / (b - a));
+const sm = x => x * x * (3 - 2 * x);
+const ss = (t, a, b) => sm(seg(t, a, b));
+const lerp = (a, b, k) => a + (b - a) * k;
+const V = (x, y, z) => new THREE.Vector3(x, y, z);
+const hash = n => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
+const q = new URLSearchParams(location.search), EMBED = q.get('embed') === '1', CLEAN = q.get('clean') === '1';
+let L = q.get('lang') || (/^zh-(cn|sg)/i.test(navigator.language) ? 'zh-CN' : /^zh/i.test(navigator.language) ? 'zh-TW' : 'en');
+if (!['en', 'zh-TW', 'zh-CN'].includes(L)) L = 'en';
+const D = await fetch('/assets/merriv/film.json?v=1').then(r => r.json());
+
+/* ---------------- data ---------------- */
+const N = D.cases, B = D.builds, B1 = B[1], B2 = B[2];
+const PIX = new Float32Array(N * 64); for (let i = 0; i < PIX.length; i++) PIX[i] = (D.digits.charCodeAt(i) - 97) / 16;
+const HIGH = [...D.highmask].map(c => c === '1');
+const dec16 = s => { const b = atob(s), a = new Int16Array(b.length / 2); for (let i = 0; i < a.length; i++) a[i] = (b.charCodeAt(2 * i) | (b.charCodeAt(2 * i + 1) << 8)) << 16 >> 16; return Float32Array.from(a, v => v / 100); };
+const ACT2 = dec16(B2.hidden_linear);
+const H = D.hero, HI = H.index, CEIL = B2.input_range[1];
+const hv = p => PIX[HI * 64 + p];
+const pp = x => (x * 100).toFixed(1), pct = x => (x * 100).toFixed(1);
+const argmax = a => a.reduce((m, v, i) => v > a[m] ? i : m, 0);
+const LOG0 = H.logits[B[0].id], LOG2 = H.logits[B2.id], PRED2 = argmax(LOG2);
+const clippedHero = [...Array(64).keys()].filter(p => hv(p) > CEIL + 1e-6).length;
+const ruleOf = (b, id) => b.rules.find(r => r.rule === id);
+const R2o = ruleOf(B2, 'overall-quality'), R2h = ruleOf(B2, 'high-ink-quality'), R1o = ruleOf(B1, 'overall-quality'), R1h = ruleOf(B1, 'high-ink-quality');
+const NUM = Object.fromEntries(D.numerical.map(r => [r.tensor, r]));
+const COMMIT = D.source.commit.slice(0, 7), RT = B2.runtime;
+const sh = id => id.replace('mcr:sha256:', 'sha256:').slice(0, 19) + '…';
+
+/* ---------------- copy ---------------- */
+const COPY = {
+  en: {sub: 'one release, end to end', go: 'Play', goSub: '≈ 100 s · one real ONNX FP16 → INT8 release, recorded end to end', home: 'back',
+    hero: `holdout case ${H.case_id} · a handwritten ${H.label}<small>8 × 8 pixels · height = ink intensity</small>`,
+    change: 'the change under review: FP16 → INT8<small>can the quantized candidate replace the deployed baseline?</small>',
+    field: `${N} paired holdout cases · UCI handwritten digits<small>both builds run every case, so each comparison is paired</small>`,
+    cohort: `high-ink cohort · ink sum ≥ 19 → ${D.high} cases<small>declared from the inputs, never from model outcomes</small>`,
+    model: 'MLP · 64 → 32 → 10 · FP16 weights<small>each tile is one hidden unit’s learned 8 × 8 receptive field</small>',
+    pred: `FP16 reads it as ${argmax(LOG0)} · logit ${LOG0[argmax(LOG0)].toFixed(1)}`,
+    balanced: 'INT8 balanced · input range [0, 1]<small>calibrated on unscaled inputs: every pixel fits under the ceiling</small>',
+    clip: `INT8 ×0.55 · input range [0, ${CEIL.toFixed(2)}]<small>calibration inputs scaled by 0.55 → every brighter pixel saturates</small>`,
+    clipHero: `${clippedHero} of 64 pixels of this ${H.label} are cut`,
+    fixture: 'engineering fixture<small>×0.55 and ×0.50 are deliberate negative controls, not an estimate of real-world regressions</small>',
+    clipField: `${pct(B2.clipped_pixels)}% of all holdout pixels are cut<small>high-ink ${pct(B2.clipped_pixels_high)}% · common ${pct(B2.clipped_pixels_common)}%: more ink, more damage</small>`,
+    hist: `hidden_linear in build-02 · ${(N * 32).toLocaleString('en-US')} activations<small>${N} cases × 32 units, read back from the quantized graph</small>`,
+    eq: `<i>q</i> = clamp(round(<i>x</i> / <i>s</i>) + <i>z</i>, −128, 127)<small><i>s</i> = ${B2.hidden_scale.toFixed(4)} (balanced ${B1.hidden_scale.toFixed(4)}) · <i>z</i> = ${B2.hidden_zero}</small>`,
+    sat: `${pct(B2.saturated_hidden)}% saturate at the edges<small>window [${B2.hidden_range[0].toFixed(2)}, ${B2.hidden_range[1].toFixed(2)}] instead of [${B1.hidden_range[0].toFixed(2)}, ${B1.hidden_range[1].toFixed(2)}]</small>`,
+    first: `first shared tensor outside tolerance: ${D.numerical_first}<small>ONNX numerical diff over ${D.numerical_cases} cases</small>`,
+    tensor: r => `${r.tensor}<small>cos ${r.cosine_similarity.toFixed(3)} · max |Δ| ${r.max_abs_error.toFixed(1)}</small>`,
+    flip: `build-02 reads this ${H.label} as a ${PRED2}<small>logit ${H.label}: ${LOG0[H.label].toFixed(1)} → ${LOG2[H.label].toFixed(1)} · logit ${PRED2}: ${LOG0[PRED2].toFixed(1)} → ${LOG2[PRED2].toFixed(1)}</small>`,
+    pairs: 'paired outcomes · build-02 against FP16<small>red: right before, wrong now · green: the reverse</small>',
+    lost: 'lost', gained: 'gained', lostH: 'lost · high-ink', gainedH: 'gained · high-ink',
+    ruleO: `overall · margin −${pp(R2o.margin)} pp · <b>${R2o.status}</b><small>95% Tango score interval [${pp(R2o.lo)}, ${pp(R2o.hi)}] pp, Holm-adjusted</small>`,
+    ruleH: `high-ink · margin −${pp(R2h.margin)} pp · <b>${R2h.status}</b><small>[${pp(R2h.lo)}, ${pp(R2h.hi)}] pp: the whole interval is past the margin</small>`,
+    ref: `faint green: INT8 balanced, [${pp(R1h.lo)}, ${pp(R1h.hi)}] pp high-ink · PASS`,
+    gate: `gate · <b>${B2.status}</b><small>${B2.holm} across ${B2.rules.length} rules · family-wise α = ${B2.alpha}</small>`,
+    build: b => `${b.id}<small>high-ink Δ ${pp(b.acc_high - B[0].acc_high)} pp</small>`,
+    bisect: 'bisect · monotonic binary search<small>probes 00 → 03 → 01 → 02, each an audited evaluation</small>',
+    firstBad: `first conclusive bad build: ${D.bisect.first.slice(0, 8)}<small>${D.bisect.reason}</small>`,
+    mcrTitle: 'Model Change Report · MCR 0.4', verifyTitle: 'merriv mcr verify --strict',
+    rows: [['baseline snapshot', sh(B2.baseline_snapshot), 'id'], ['candidate snapshot', sh(B2.candidate_snapshot), 'id'], ['release plan', sh(B2.release_plan), 'id'],
+      ['runtime', RT, ''], ['policy', `overall ≥ −${pp(R2o.margin)} pp · high-ink ≥ −${pp(R2h.margin)} pp`, ''], ['statistics', `Tango score · ${B2.holm} · α ${B2.alpha}`, ''],
+      ['decision', B2.status, 'bad'], ['evidence', `${B2.evidence_count.toLocaleString('en-US')} content-addressed items`, ''], ['evidence id', sh(B2.evidence_id), 'id'], ['report id', sh(B2.report_id), 'id']],
+    trust: [['integrity verified', 'integrity_verified'], ['bundle complete', 'bundle_complete'], ['producer authenticated', 'producer_authenticated'], ['independently reproduced', 'independently_reproduced'], ['deployment authorization', 'deployment_authorization']],
+    yes: 'yes', no: 'not claimed', notEval: 'not evaluated',
+    titleSub: 'release evidence for deployable models', titleNote: `engineering fixture · Merriv ${COMMIT} · ${RT.split(' · ')[0]} · CPU`},
+  'zh-TW': {sub: '一次發布，從頭到尾', go: '播放', goSub: '約 100 秒 · 一次真實的 ONNX FP16 → INT8 發布，完整記錄', home: '返回',
+    hero: `測試案例 ${H.case_id} · 一個手寫的 ${H.label}<small>8 × 8 像素 · 高度 = 墨水濃度</small>`,
+    change: '要審查的變更：FP16 → INT8<small>量化後的候選版本，能不能取代已部署的基準？</small>',
+    field: `${N} 個配對測試案例 · UCI 手寫數字<small>兩個版本都跑過每一個案例，所以每一次比較都是配對的</small>`,
+    cohort: `高墨量族群 · 墨量總和 ≥ 19 → ${D.high} 個案例<small>由輸入決定，從不看模型結果</small>`,
+    model: 'MLP · 64 → 32 → 10 · FP16 權重<small>每一格是一個隱藏單元學到的 8 × 8 感受野</small>',
+    pred: `FP16 判讀為 ${argmax(LOG0)} · logit ${LOG0[argmax(LOG0)].toFixed(1)}`,
+    balanced: 'INT8 balanced · 輸入範圍 [0, 1]<small>用未縮放的輸入校準：每個像素都在上限之下</small>',
+    clip: `INT8 ×0.55 · 輸入範圍 [0, ${CEIL.toFixed(2)}]<small>校準輸入被乘上 0.55 → 比它亮的像素全部飽和</small>`,
+    clipHero: `這個 ${H.label} 的 64 個像素裡，有 ${clippedHero} 個被削平`,
+    fixture: '工程測試夾具<small>×0.55 和 ×0.50 是刻意設計的負對照，不代表真實世界的回歸機率</small>',
+    clipField: `所有測試像素中 ${pct(B2.clipped_pixels)}% 被削平<small>高墨量 ${pct(B2.clipped_pixels_high)}% · 一般 ${pct(B2.clipped_pixels_common)}%：墨越多，傷越重</small>`,
+    hist: `build-02 的 hidden_linear · ${(N * 32).toLocaleString('en-US')} 個激活值<small>${N} 個案例 × 32 個單元，直接從量化後的計算圖讀出</small>`,
+    eq: `<i>q</i> = clamp(round(<i>x</i> / <i>s</i>) + <i>z</i>, −128, 127)<small><i>s</i> = ${B2.hidden_scale.toFixed(4)}（balanced 為 ${B1.hidden_scale.toFixed(4)}）· <i>z</i> = ${B2.hidden_zero}</small>`,
+    sat: `${pct(B2.saturated_hidden)}% 在邊緣飽和<small>窗口 [${B2.hidden_range[0].toFixed(2)}, ${B2.hidden_range[1].toFixed(2)}]，原本是 [${B1.hidden_range[0].toFixed(2)}, ${B1.hidden_range[1].toFixed(2)}]</small>`,
+    first: `第一個超出容許誤差的共同張量：${D.numerical_first}<small>在 ${D.numerical_cases} 個案例上做 ONNX 數值比對</small>`,
+    tensor: r => `${r.tensor}<small>cos ${r.cosine_similarity.toFixed(3)} · 最大 |Δ| ${r.max_abs_error.toFixed(1)}</small>`,
+    flip: `build-02 把這個 ${H.label} 讀成 ${PRED2}<small>${H.label} 的 logit：${LOG0[H.label].toFixed(1)} → ${LOG2[H.label].toFixed(1)} · ${PRED2} 的 logit：${LOG0[PRED2].toFixed(1)} → ${LOG2[PRED2].toFixed(1)}</small>`,
+    pairs: '配對結果 · build-02 對上 FP16<small>紅：原本對、現在錯 · 綠：反過來</small>',
+    lost: '變錯', gained: '變對', lostH: '變錯 · 高墨量', gainedH: '變對 · 高墨量',
+    ruleO: `整體 · 邊界 −${pp(R2o.margin)} pp · <b>${R2o.status}</b><small>95% Tango 分數區間 [${pp(R2o.lo)}, ${pp(R2o.hi)}] pp，經 Holm 校正</small>`,
+    ruleH: `高墨量 · 邊界 −${pp(R2h.margin)} pp · <b>${R2h.status}</b><small>[${pp(R2h.lo)}, ${pp(R2h.hi)}] pp：整個區間都越過邊界</small>`,
+    ref: `淡綠色：INT8 balanced，高墨量 [${pp(R1h.lo)}, ${pp(R1h.hi)}] pp · PASS`,
+    gate: `閘門 · <b>${B2.status}</b><small>兩條規則以 ${B2.holm} 校正 · 族系錯誤率 α = ${B2.alpha}</small>`,
+    build: b => `${b.id}<small>高墨量 Δ ${pp(b.acc_high - B[0].acc_high)} pp</small>`,
+    bisect: '二分定位 · 單調二分搜尋<small>依序探測 00 → 03 → 01 → 02，每一次都是可稽核的評估</small>',
+    firstBad: `第一個確定有問題的 build：${D.bisect.first.slice(0, 8)}<small>在 01 和 02 之間找到相鄰的 PASS／BLOCK 邊界</small>`,
+    mcrTitle: 'Model Change Report · MCR 0.4', verifyTitle: 'merriv mcr verify --strict',
+    rows: [['基準快照', sh(B2.baseline_snapshot), 'id'], ['候選快照', sh(B2.candidate_snapshot), 'id'], ['發布計畫', sh(B2.release_plan), 'id'],
+      ['執行環境', RT, ''], ['政策', `整體 ≥ −${pp(R2o.margin)} pp · 高墨量 ≥ −${pp(R2h.margin)} pp`, ''], ['統計', `Tango 分數 · ${B2.holm} · α ${B2.alpha}`, ''],
+      ['判定', B2.status, 'bad'], ['證據', `${B2.evidence_count.toLocaleString('en-US')} 筆內容定址的證據`, ''], ['evidence id', sh(B2.evidence_id), 'id'], ['report id', sh(B2.report_id), 'id']],
+    trust: [['完整性已驗證', 'integrity_verified'], ['證據包完整', 'bundle_complete'], ['發布者身分已驗證', 'producer_authenticated'], ['已獨立重現', 'independently_reproduced'], ['部署授權', 'deployment_authorization']],
+    yes: '是', no: '未宣稱', notEval: '未評估',
+    titleSub: '可部署模型的發布證據', titleNote: `工程測試夾具 · Merriv ${COMMIT} · ${RT.split(' · ')[0]} · CPU`},
+  'zh-CN': {sub: '一次发布，从头到尾', go: '播放', goSub: '约 100 秒 · 一次真实的 ONNX FP16 → INT8 发布，完整记录', home: '返回',
+    hero: `测试案例 ${H.case_id} · 一个手写的 ${H.label}<small>8 × 8 像素 · 高度 = 墨水浓度</small>`,
+    change: '要审查的变更：FP16 → INT8<small>量化后的候选版本，能不能替代已部署的基准？</small>',
+    field: `${N} 个配对测试案例 · UCI 手写数字<small>两个版本都跑过每一个案例，所以每一次比较都是配对的</small>`,
+    cohort: `高墨量群组 · 墨量总和 ≥ 19 → ${D.high} 个案例<small>由输入决定，从不看模型结果</small>`,
+    model: 'MLP · 64 → 32 → 10 · FP16 权重<small>每一格是一个隐藏单元学到的 8 × 8 感受野</small>',
+    pred: `FP16 判读为 ${argmax(LOG0)} · logit ${LOG0[argmax(LOG0)].toFixed(1)}`,
+    balanced: 'INT8 balanced · 输入范围 [0, 1]<small>用未缩放的输入校准：每个像素都在上限之下</small>',
+    clip: `INT8 ×0.55 · 输入范围 [0, ${CEIL.toFixed(2)}]<small>校准输入被乘以 0.55 → 比它亮的像素全部饱和</small>`,
+    clipHero: `这个 ${H.label} 的 64 个像素里，有 ${clippedHero} 个被削平`,
+    fixture: '工程测试夹具<small>×0.55 和 ×0.50 是刻意设计的负对照，不代表真实世界的回归概率</small>',
+    clipField: `所有测试像素中 ${pct(B2.clipped_pixels)}% 被削平<small>高墨量 ${pct(B2.clipped_pixels_high)}% · 一般 ${pct(B2.clipped_pixels_common)}%：墨越多，伤越重</small>`,
+    hist: `build-02 的 hidden_linear · ${(N * 32).toLocaleString('en-US')} 个激活值<small>${N} 个案例 × 32 个单元，直接从量化后的计算图读出</small>`,
+    eq: `<i>q</i> = clamp(round(<i>x</i> / <i>s</i>) + <i>z</i>, −128, 127)<small><i>s</i> = ${B2.hidden_scale.toFixed(4)}（balanced 为 ${B1.hidden_scale.toFixed(4)}）· <i>z</i> = ${B2.hidden_zero}</small>`,
+    sat: `${pct(B2.saturated_hidden)}% 在边缘饱和<small>窗口 [${B2.hidden_range[0].toFixed(2)}, ${B2.hidden_range[1].toFixed(2)}]，原本是 [${B1.hidden_range[0].toFixed(2)}, ${B1.hidden_range[1].toFixed(2)}]</small>`,
+    first: `第一个超出容许误差的共同张量：${D.numerical_first}<small>在 ${D.numerical_cases} 个案例上做 ONNX 数值比对</small>`,
+    tensor: r => `${r.tensor}<small>cos ${r.cosine_similarity.toFixed(3)} · 最大 |Δ| ${r.max_abs_error.toFixed(1)}</small>`,
+    flip: `build-02 把这个 ${H.label} 读成 ${PRED2}<small>${H.label} 的 logit：${LOG0[H.label].toFixed(1)} → ${LOG2[H.label].toFixed(1)} · ${PRED2} 的 logit：${LOG0[PRED2].toFixed(1)} → ${LOG2[PRED2].toFixed(1)}</small>`,
+    pairs: '配对结果 · build-02 对比 FP16<small>红：原本对、现在错 · 绿：反过来</small>',
+    lost: '变错', gained: '变对', lostH: '变错 · 高墨量', gainedH: '变对 · 高墨量',
+    ruleO: `整体 · 边界 −${pp(R2o.margin)} pp · <b>${R2o.status}</b><small>95% Tango 分数区间 [${pp(R2o.lo)}, ${pp(R2o.hi)}] pp，经 Holm 校正</small>`,
+    ruleH: `高墨量 · 边界 −${pp(R2h.margin)} pp · <b>${R2h.status}</b><small>[${pp(R2h.lo)}, ${pp(R2h.hi)}] pp：整个区间都越过边界</small>`,
+    ref: `淡绿色：INT8 balanced，高墨量 [${pp(R1h.lo)}, ${pp(R1h.hi)}] pp · PASS`,
+    gate: `闸门 · <b>${B2.status}</b><small>两条规则以 ${B2.holm} 校正 · 族系错误率 α = ${B2.alpha}</small>`,
+    build: b => `${b.id}<small>高墨量 Δ ${pp(b.acc_high - B[0].acc_high)} pp</small>`,
+    bisect: '二分定位 · 单调二分搜索<small>依次探测 00 → 03 → 01 → 02，每一次都是可审计的评估</small>',
+    firstBad: `第一个确定有问题的 build：${D.bisect.first.slice(0, 8)}<small>在 01 和 02 之间找到相邻的 PASS／BLOCK 边界</small>`,
+    mcrTitle: 'Model Change Report · MCR 0.4', verifyTitle: 'merriv mcr verify --strict',
+    rows: [['基准快照', sh(B2.baseline_snapshot), 'id'], ['候选快照', sh(B2.candidate_snapshot), 'id'], ['发布计划', sh(B2.release_plan), 'id'],
+      ['运行环境', RT, ''], ['策略', `整体 ≥ −${pp(R2o.margin)} pp · 高墨量 ≥ −${pp(R2h.margin)} pp`, ''], ['统计', `Tango 分数 · ${B2.holm} · α ${B2.alpha}`, ''],
+      ['判定', B2.status, 'bad'], ['证据', `${B2.evidence_count.toLocaleString('en-US')} 条内容寻址的证据`, ''], ['evidence id', sh(B2.evidence_id), 'id'], ['report id', sh(B2.report_id), 'id']],
+    trust: [['完整性已验证', 'integrity_verified'], ['证据包完整', 'bundle_complete'], ['发布者身份已验证', 'producer_authenticated'], ['已独立复现', 'independently_reproduced'], ['部署授权', 'deployment_authorization']],
+    yes: '是', no: '未声明', notEval: '未评估',
+    titleSub: '可部署模型的发布证据', titleNote: `工程测试夹具 · Merriv ${COMMIT} · ${RT.split(' · ')[0]} · CPU`},
+};
+const C = COPY[L];
+
+/* ---------------- renderer: physically based, filmic ---------------- */
+const canvas = $('gl');
+const renderer = new THREE.WebGLRenderer({canvas, antialias: true});
+renderer.setClearColor(0x000000, 1);
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = .92;
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(0x040507, .0105);
+{ const pm = new THREE.PMREMGenerator(renderer); scene.environment = pm.fromScene(new RoomEnvironment(), .04).texture; scene.environmentIntensity = .42; }
+const key = new THREE.DirectionalLight(0xdfe9ff, 1.0); key.position.set(-8, 20, 14); scene.add(key);
+const rim = new THREE.DirectionalLight(0xffc68a, .7); rim.position.set(12, 6, -18); scene.add(rim);
+const camera = new THREE.PerspectiveCamera(40, 1, .1, 600);
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), .36, .5, .9); composer.addPass(bloom);
+const lens = new ShaderPass({uniforms: {tDiffuse: {value: null}, uTime: {value: 0}, uRes: {value: new THREE.Vector2(1, 1)}, uFade: {value: 1}, uGrain: {value: CLEAN ? 0 : .03}},
+  vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.); }',
+  fragmentShader: `uniform sampler2D tDiffuse; uniform float uTime, uFade, uGrain; uniform vec2 uRes; varying vec2 vUv;
+    float h(vec2 p){ return fract(sin(dot(p, vec2(12.9898,78.233))) * 43758.5453); }
+    void main(){ vec2 d = vUv - .5; float ca = dot(d,d) * .0035;
+      vec3 c = vec3(texture2D(tDiffuse, vUv + d * ca).r, texture2D(tDiffuse, vUv).g, texture2D(tDiffuse, vUv - d * ca).b);
+      c *= 1. - dot(d,d) * .75; c += (h(vUv * uRes + fract(uTime) * 57.) - .5) * uGrain; gl_FragColor = vec4(c * uFade, 1.); }`});
+composer.addPass(new OutputPass()); composer.addPass(lens);
+
+const CBLUE = new THREE.Color('#7cc4ff'), CAMB = new THREE.Color('#ffb454'), CRED = new THREE.Color('#ff4d5e'), CGRN = new THREE.Color('#3ddc84');
+const RA = new THREE.Color('#0e2c47'), RB = new THREE.Color('#27a9c4'), RC = new THREE.Color('#eaf7ff');
+const ramp = (v, out) => v < .62 ? out.copy(RA).lerp(RB, v / .62) : out.copy(RB).lerp(RC, (v - .62) / .38);
+
+/* ---------------- ground: a fine measuring grid that fades into the fog ---------------- */
+{ const g = new THREE.Mesh(new THREE.PlaneGeometry(600, 600), new THREE.ShaderMaterial({transparent: true, depthWrite: false,
+    vertexShader: 'varying vec3 vW; void main(){ vec4 w = modelMatrix * vec4(position,1.); vW = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }',
+    fragmentShader: `varying vec3 vW; uniform vec3 uCam;
+      float line(float x, float w){ float f = abs(fract(x - .5) - .5); return 1. - smoothstep(0., w * fwidth(x), f); }
+      void main(){ float a = max(line(vW.x / 1.4, 1.), line(vW.z / 1.4, 1.)) * .07 + max(line(vW.x / 7., 1.2), line(vW.z / 7., 1.2)) * .06;
+        float d = length(vW.xz - uCam.xz); a *= exp(-d * .018); gl_FragColor = vec4(vec3(.62,.72,.86), a); }`,
+    uniforms: {uCam: {value: V(0, 0, 0)}}}));
+  g.rotation.x = -Math.PI / 2; g.position.y = -.01; g.renderOrder = -1; scene.add(g); var ground = g; }
+
+/* ---------------- 1 · the hero digit, large, as physically based voxels ---------------- */
+const HP = 1.0, HH = 2.4, VOX = new RoundedBoxGeometry(.9, 1, .9, 3, .07).translate(0, .5, 0);
+const pxPos = (p, pitch, cx = 0, cz = 0) => V(cx + (p % 8 - 3.5) * pitch, 0, cz + (Math.floor(p / 8) - 3.5) * pitch);
+const heroMat = new THREE.MeshPhysicalMaterial({roughness: .34, metalness: .04, clearcoat: .35, clearcoatRoughness: .3});
+const hero = new THREE.InstancedMesh(VOX, heroMat, 64); hero.frustumCulled = false; scene.add(hero);
+const capMat = new THREE.MeshStandardMaterial({color: CRED, emissive: CRED, emissiveIntensity: 1.6, roughness: .4, transparent: true, opacity: .9});
+const caps = new THREE.InstancedMesh(VOX, capMat, 64); caps.frustumCulled = false; scene.add(caps);
+{ const c = new THREE.Color(); for (let p = 0; p < 64; p++) { ramp(hv(p), c); hero.setColorAt(p, c.multiplyScalar(.55 + hv(p) * .45)); } hero.instanceColor.needsUpdate = true; }
+const ceilPlane = new THREE.Mesh(new THREE.PlaneGeometry(9.6, 9.6), new THREE.MeshBasicMaterial({color: CAMB, transparent: true, opacity: 0, side: THREE.DoubleSide, depthWrite: false}));
+ceilPlane.rotation.x = -Math.PI / 2; scene.add(ceilPlane);
+const ceilEdge = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.PlaneGeometry(9.6, 9.6)), new THREE.LineBasicMaterial({color: CAMB.clone().multiplyScalar(2), transparent: true, opacity: 0}));
+ceilEdge.rotation.x = -Math.PI / 2; scene.add(ceilEdge);
+
+/* ---------------- 2 · the 629 holdout digits as a landscape ---------------- */
+const FP = 1.4, VP = .13, FH = .38, FCOLS = 37, FZ = -32;
+const tileC = i => V((i % FCOLS - (FCOLS - 1) / 2) * FP, 0, FZ + (Math.floor(i / FCOLS) - 8) * FP);
+const fv = []; for (let i = 0; i < N; i++) { const c = tileC(i); for (let p = 0; p < 64; p++) { const v = PIX[i * 64 + p]; if (v > 0) { const q0 = pxPos(p, VP, c.x, c.z); fv.push({i, p, v, x: q0.x, z: q0.z}); } } }
+const field = new THREE.InstancedMesh(new THREE.BoxGeometry(.112, 1, .112).translate(0, .5, 0), new THREE.MeshStandardMaterial({roughness: .38, metalness: .05}), fv.length);
+field.frustumCulled = false; scene.add(field);
+const fcaps = fv.map((e, k) => e.v > CEIL + 1e-6 ? k : -1).filter(k => k >= 0);
+const fieldCap = new THREE.InstancedMesh(new THREE.BoxGeometry(.112, 1, .112).translate(0, .5, 0), capMat, fcaps.length); fieldCap.frustumCulled = false; scene.add(fieldCap);
+const OUT = [...(B2.outcome || '')];   // per case: s both right · L lost · g gained · n neither
+const fcol = new THREE.Color(), tmpC = new THREE.Color();
+let fieldColorKey = '';
+function paintField(cohort, outcome) {
+  const k = `${cohort.toFixed(2)}|${outcome.toFixed(2)}`; if (k === fieldColorKey) return; fieldColorKey = k;
+  fv.forEach((e, n) => { ramp(e.v, fcol); fcol.multiplyScalar(.6 + e.v * .5);
+    if (cohort > 0) { if (HIGH[e.i]) fcol.lerp(tmpC.copy(CAMB).multiplyScalar(.5 + e.v * .7), .55 * cohort); else fcol.multiplyScalar(1 - .55 * cohort); }
+    if (outcome > 0) { const o = OUT[e.i];
+      if (o === 'L') tmpC.copy(CRED).multiplyScalar(1.1 + e.v * .8); else if (o === 'g') tmpC.copy(CGRN).multiplyScalar(1 + e.v * .8); else if (o === 'n') tmpC.setRGB(.05, .055, .065); else tmpC.copy(fcol).multiplyScalar(.28);
+      fcol.lerp(tmpC, outcome); }
+    field.setColorAt(n, fcol); });
+  field.instanceColor.needsUpdate = true;
+}
+
+/* ---------------- 3 · the model: 32 real receptive fields, the hidden vector and 10 logits ---------------- */
+const MZ = -7, wmax = Math.max(...D.w0.map(Math.abs));
+const W = (p, u) => D.w0[p * 32 + u];
+const tilePos = u => V((u % 16 - 7.5) * 2.3, 7.4 + (u < 16 ? 2.6 : 0), MZ);
+const tiles = [...Array(32).keys()].map(u => {
+  const data = new Uint8Array(64 * 4);
+  for (let p = 0; p < 64; p++) { const w = W(p, u) / wmax, a = Math.min(1, Math.abs(w) * 1.6), c = w < 0 ? [47, 155, 255] : [255, 180, 84];
+    const idx = ((7 - Math.floor(p / 8)) * 8 + p % 8) * 4;   // flip rows: texture row 0 is the bottom
+    data[idx] = 8 + (c[0] - 8) * a; data[idx + 1] = 10 + (c[1] - 10) * a; data[idx + 2] = 16 + (c[2] - 16) * a; data[idx + 3] = 255; }
+  const tex = new THREE.DataTexture(data, 8, 8); tex.magFilter = THREE.NearestFilter; tex.colorSpace = THREE.SRGBColorSpace; tex.needsUpdate = true;
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.MeshBasicMaterial({map: tex, transparent: true, opacity: 0, toneMapped: false}));
+  m.position.copy(tilePos(u)); scene.add(m);
+  const e = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.PlaneGeometry(2.06, 2.06)), new THREE.LineBasicMaterial({color: 0xcfe0ff, transparent: true, opacity: 0}));
+  e.position.copy(m.position); scene.add(e); return {m, e};
+});
+const links = (() => { const pos = [], col = [];
+  for (let u = 0; u < 32; u++) { const top = [...Array(64).keys()].sort((a, b) => Math.abs(W(b, u)) - Math.abs(W(a, u))).slice(0, 3);
+    top.forEach(p => { const a = pxPos(p, HP); a.y = Math.max(.2, hv(p)) * HH; const b = tilePos(u); const c = W(p, u) < 0 ? CBLUE : CAMB;
+      pos.push(a.x, a.y, a.z, b.x, b.y - 1, b.z); col.push(c.r, c.g, c.b, c.r * .5, c.g * .5, c.b * .5); }); }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+  const l = new THREE.LineSegments(g, new THREE.LineBasicMaterial({vertexColors: true, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false})); scene.add(l); return l; })();
+const barMat = () => new THREE.MeshStandardMaterial({roughness: .3, metalness: .1, emissive: new THREE.Color(0xffffff), emissiveIntensity: .6, transparent: true, opacity: 0});
+const BOXG = new THREE.BoxGeometry(1, 1, 1).translate(0, .5, 0);
+const hidBars = [...Array(32).keys()].map(u => { const m = new THREE.Mesh(BOXG, barMat()); m.position.set((u - 15.5) * 1.15, 11.5, MZ); scene.add(m); return m; });
+const outBars = [...Array(10).keys()].map(k => { const m = new THREE.Mesh(BOXG, barMat()); m.position.set((k - 4.5) * 2.3, 15.9, MZ); scene.add(m); return m; });
+
+/* ---------------- 4 · build-02's hidden_linear as 20,128 particles ---------------- */
+const HS = V(56, 0, 0), HXk = .95, HX = v => HS.x + v * HXk;
+const NP = ACT2.length, s2 = B2.hidden_scale, z2 = B2.hidden_zero;
+const DK = .0108 * 8 / 8;   // height per particle × bin width
+const partA = new Float32Array(NP * 3), partB = new Float32Array(NP * 3), partS = new Float32Array(NP * 3), sat = new Uint8Array(NP);
+{ const binA = new Map(), binB = new Map();
+  for (let k = 0; k < NP; k++) { const v = ACT2[k], ci = Math.floor(k / 32), src = tileC(ci);
+    // stacked as a density: 8 layers deep, each particle adding K / bin width, so both histograms share one scale
+    const ba = Math.floor(v / .22); const na = binA.get(ba) || 0; binA.set(ba, na + 1);
+    partA.set([HX((ba + .5) * .22) + (hash(k) - .5) * .12, .05 + Math.floor(na / 8) * DK / .22, (na % 8 - 3.5) * .14], k * 3);
+    const qv = Math.max(-128, Math.min(127, Math.round(v / s2) + z2)); sat[k] = (qv === -128 || qv === 127) && (v / s2 + z2 < -128.5 || v / s2 + z2 > 127.5) ? 1 : 0;
+    const nb = binB.get(qv) || 0; binB.set(qv, nb + 1);
+    partB.set([HX((qv - z2) * s2), .05 + Math.floor(nb / 8) * DK / s2, (nb % 8 - 3.5) * .14], k * 3);
+    partS.set([src.x + (hash(k + 7) - .5) * 1.1, .4 + hash(k + 3) * .6, src.z + (hash(k + 11) - .5) * 1.1], k * 3); } }
+const pgeo = new THREE.BufferGeometry(); pgeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(NP * 3), 3)); pgeo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(NP * 3), 3));
+const pmat = new THREE.PointsMaterial({size: .1, vertexColors: true, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending});
+const parts = new THREE.Points(pgeo, pmat); parts.frustumCulled = false; scene.add(parts);
+const levels = (() => { const pos = []; for (let qv = -128; qv <= 127; qv++) { const x = HX((qv - z2) * s2); pos.push(x, 0, -.8, x, 7.5, -.8); }
+  const l = new THREE.LineSegments(new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)), new THREE.LineBasicMaterial({color: 0x9fc4ff, transparent: true, opacity: 0, depthWrite: false})); scene.add(l); return l; })();
+const edgeLine = (x, c) => { const l = new THREE.Line(new THREE.BufferGeometry().setFromPoints([V(x, 0, -.8), V(x, 11, -.8)]), new THREE.LineBasicMaterial({color: c, transparent: true, opacity: 0})); scene.add(l); return l; };
+const win2 = [edgeLine(HX(B2.hidden_range[0]), CRED.clone().multiplyScalar(2)), edgeLine(HX(B2.hidden_range[1]), CRED.clone().multiplyScalar(2))];
+const win1 = [edgeLine(HX(B1.hidden_range[0]), CGRN), edgeLine(HX(B1.hidden_range[1]), CGRN)];
+const axis = new THREE.Line(new THREE.BufferGeometry().setFromPoints([V(HX(-16), 0, 0), V(HX(22), 0, 0)]), new THREE.LineBasicMaterial({color: 0xcfd6df, transparent: true, opacity: 0})); scene.add(axis);
+
+/* ---------------- 5 · the statistical ruler above the landscape ---------------- */
+const RY = 12, RZ = FZ - 1, RX = d => (d * 100 + 4) * 2.25;   // d as a fraction; x in world units
+const ruler = new THREE.Group(); scene.add(ruler);
+const rmats = [];
+const rline = (pts, c, o) => { const m = new THREE.LineBasicMaterial({color: c, transparent: true, opacity: 0}); m.userData.o = o; rmats.push(m); ruler.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), m)); };
+rline([V(RX(-.115), RY, RZ), V(RX(.03), RY, RZ)], 0xcfd6df, .6);
+for (let d = -11; d <= 3; d++) rline([V(RX(d / 100), RY - (d % 5 ? .15 : .35), RZ), V(RX(d / 100), RY + (d % 5 ? .15 : .35), RZ)], 0xcfd6df, d % 5 ? .3 : .7);
+rline([V(RX(0), RY - 1, RZ), V(RX(0), RY + 3.6, RZ)], 0xffffff, .8);
+const marginWall = (d, y0, y1) => { const m = new THREE.Mesh(new THREE.BoxGeometry(.12, y1 - y0, .12), new THREE.MeshBasicMaterial({color: CAMB.clone().multiplyScalar(1.8), transparent: true, opacity: 0})); m.position.set(RX(-d), (y0 + y1) / 2, RZ); m.userData.o = 1; ruler.add(m); rmats.push(m.material); return m; };
+marginWall(R2o.margin, RY + 1.9, RY + 3.4); marginWall(R2h.margin, RY + .3, RY + 1.8);
+const ciBar = (r, y, c, o) => { const len = RX(r.hi) - RX(r.lo);
+  const m = new THREE.Mesh(new THREE.CylinderGeometry(.16, .16, len, 20).rotateZ(Math.PI / 2), new THREE.MeshStandardMaterial({color: c, emissive: c, emissiveIntensity: o < 1 ? .25 : 1.2, transparent: true, opacity: 0, roughness: .3}));
+  m.position.set((RX(r.lo) + RX(r.hi)) / 2, y, RZ); m.userData.o = o; ruler.add(m); rmats.push(m.material);
+  const d = new THREE.Mesh(new THREE.SphereGeometry(.3, 24, 16), new THREE.MeshStandardMaterial({color: 0xffffff, emissive: 0xffffff, emissiveIntensity: .8, transparent: true, opacity: 0}));
+  d.position.set(RX(r.delta), y, RZ); d.userData.o = o; ruler.add(d); rmats.push(d.material); return m; };
+const scol = s => s === 'BLOCK' ? CRED : s === 'WARN' ? CAMB : CGRN;
+ciBar(R2o, RY + 2.65, scol(R2o.status), 1); ciBar(R2h, RY + 1.05, scol(R2h.status), 1);
+ciBar(R1o, RY + 2.15, CGRN, .3); ciBar(R1h, RY + .55, CGRN, .3);
+
+/* ---------------- 6 · four builds as the hero digit each one really sees, and the bisect probe ---------------- */
+const MP = .5, MH = 1.5;
+const bX = k => HS.x + (k - 1.5) * 6.6;
+const minis = B.map((b, k) => { const ceil = b.input_range ? b.input_range[1] : 1;
+  const m = new THREE.InstancedMesh(VOX, heroMat.clone(), 64); const g = new THREE.InstancedMesh(VOX, capMat.clone(), 64); const c = new THREE.Color(), mx = new THREE.Matrix4();
+  for (let p = 0; p < 64; p++) { const v = hv(p), kept = Math.min(v, ceil), at = pxPos(p, MP, bX(k), 0);
+    mx.compose(at, new THREE.Quaternion(), V(MP, Math.max(.001, kept * MH), MP)); m.setMatrixAt(p, mx); ramp(kept, c); m.setColorAt(p, c.multiplyScalar(.55 + kept * .45));
+    const cut = Math.max(0, v - ceil); mx.compose(V(at.x, kept * MH, at.z), new THREE.Quaternion(), V(MP * .98, Math.max(.001, cut * MH), MP * .98)); g.setMatrixAt(p, mx); }
+  m.material.transparent = true; m.material.opacity = 0; g.material.opacity = 0; g.material.emissiveIntensity = .6;
+  m.frustumCulled = g.frustumCulled = false; scene.add(m); scene.add(g); return {m, g}; });
+const probe = new THREE.Mesh(new THREE.TorusGeometry(2.7, .05, 12, 96).rotateX(Math.PI / 2), new THREE.MeshBasicMaterial({color: 0xffffff, transparent: true, opacity: 0}));
+scene.add(probe);
+
+/* ---------------- labels anchored in 3-D ---------------- */
+const LABELS = [];
+function label(html, t0, t1, anchor, cls = '') { const el = document.createElement('div'); el.className = `lab ${cls}`; el.innerHTML = html; $('labels').append(el); LABELS.push({el, t0, t1, anchor}); return el; }
+label(C.hero, 1.4, 7.4, () => V(-4.1, HH + .4, -4.2));
+label(C.change, 3.6, 8.6, () => V(1.2, HH * .55, 4.4), 'amber');
+label(C.field, 9.4, 13.4, () => V(tileC(0).x, 1.2, tileC(0).z - .8));
+label(C.cohort, 12.4, 16.2, () => V(tileC(FCOLS - 1).x - 12, 1.4, tileC(FCOLS - 1).z - .8), 'amber');
+label(C.model, 18.2, 26.6, () => V(-18.8, 11.6, MZ));
+label(C.pred, 22.4, 26.6, () => V(outBars[argmax(LOG0)].position.x + 1, 16.1 + Math.max(.2, LOG0[argmax(LOG0)] * .1), MZ), 'ok');
+[...Array(10).keys()].forEach(k => { const el = label(String(k), 19.2, 26.8, () => V((k - 4.5) * 2.3, 15.45, MZ), 'dg'); el.dataset.k = k; });
+[...Array(10).keys()].forEach(k => { const el = label(String(k), 54, 60.2, () => V((k - 4.5) * 2.3, 15.45, MZ), 'dg'); el.dataset.k2 = k; });
+label(C.balanced, 27.4, 30.6, () => V(-4.8, HH + .3, -4.8), 'ok');
+label(C.clip, 30.8, 35.6, () => V(-4.8, CEIL * HH + .3, -4.8), 'red');
+label(C.clipHero, 32.8, 35.6, () => V(1.4, CEIL * HH + 1.6, 4.4));
+label(C.fixture, 33.6, 39.4, () => V(3.2, .4, 4.8), 'amber');
+label(C.clipField, 36.4, 40.6, () => V(tileC(0).x, 1.6, tileC(0).z - .8), 'red');
+label(C.hist, 42.2, 47.6, () => V(HX(-15), 6.6, 0));
+label(C.eq, 45.2, 51.8, () => V(HX(B2.hidden_range[0]) - 1, 9.2, -.8), 'amber');
+label(C.sat, 48.4, 52.4, () => V(HX(B2.hidden_range[1]) + .4, 5.2, -.8), 'red');
+label(C.tensor(NUM.hidden_linear), 54.6, 60.2, () => V(-18.8, 9.2, MZ), 'amber');
+label(C.tensor(NUM.hidden), 55.4, 60.2, () => V(-19.6, 12.6, MZ), 'amber');
+label(C.tensor(NUM.logits), 56.2, 60.2, () => V(-12.8, 17.6, MZ), 'amber');
+label(C.first, 54.8, 60.2, () => V(6.4, 6.4, MZ), 'red');
+label(C.flip, 57.4, 60.4, () => V(outBars[PRED2].position.x + 1, 16.4 + Math.max(.2, LOG2[PRED2] * .1), MZ), 'red');
+label(C.pairs, 61.2, 67.6, () => V(tileC(0).x, 2, tileC(0).z - .8));
+label(C.ruleO, 65.2, 74.2, () => V(RX(.004), RY + 3.4, RZ), R2o.status === 'BLOCK' ? 'red' : 'amber');
+label(C.ruleH, 66.2, 74.2, () => V(RX(.004), RY + 1.7, RZ), 'red');
+label(C.ref, 68.2, 74.2, () => V(RX(-.115), RY + .1, RZ), 'ok');
+label(C.gate, 70.2, 74.4, () => V(RX(-.115), RY + 4.8, RZ), 'red');
+B.forEach((b, k) => label(C.build(b), 75.6, 84.4, () => V(bX(k) - 2, .2, 2.6)));
+const STAMP = {pass: 'PASS', block: 'BLOCK'};
+const probeAt = [76.6, 78.1, 79.6, 81.1];
+D.bisect.probes.forEach(([k, st], n) => label(k === 0 ? 'REFERENCE' : STAMP[st] || st, probeAt[n] + .4, 84.4, () => V(bX(k), 3.4, 0), `stamp ${k === 0 ? 'ref' : st === 'block' ? 'block' : ''}`));
+label(C.bisect, 75.8, 80.6, () => V(bX(0) - 3, 5.2, 0));
+label(C.firstBad, 81.6, 84.6, () => V(bX(2) - 3, 5.6, 0), 'red');
+
+/* HUD for the paired outcomes */
+const P2 = B2.pairs;
+$('hud').innerHTML = [[C.lost, P2.overall.lost, 'r'], [C.gained, P2.overall.gained, 'g'], [C.lostH, P2.high.lost, 'r'], [C.gainedH, P2.high.gained, 'g']].map(([l, n, c]) => `<span class="${c}"><b data-n="${n}">0</b>${l}</span>`).join('');
+
+/* the report card */
+$('mcr').innerHTML = `<h2>${C.mcrTitle}</h2>` + C.rows.map(([k, v, c], n) => `<div data-t="${86.4 + n * .42}"><span>${k}</span><span class="${c}">${v}</span></div>`).join('')
+  + `<hr><h2>${C.verifyTitle}</h2>` + C.trust.map(([k, f], n) => { const v = D.verify.trust[f]; const txt = v === true ? `✓ ${C.yes}` : v === false ? `– ${C.no}` : C.notEval;
+    return `<div data-t="${91 + n * .45}"><span>${k}</span><span class="${v === true ? 'ok' : 'no'}">${txt}</span></div>`; }).join('');
+
+/* ---------------- one continuous camera path ---------------- */
+const KEYS = [
+  [0, V(0, 9.6, 10.4), V(0, .5, 0)], [5.5, V(3.6, 11, 9), V(0, .5, -.4)], [9, V(5, 24, 2), V(0, 0, -24)], [13.5, V(-6, 31, -12), V(0, 0, -31)],
+  [17, V(0, 12, 23.5), V(0, 9, -5)], [22.5, V(0, 14.6, 24.5), V(0, 11.2, -6)], [26.5, V(4, 8, 10.4), V(0, 1.1, -1)],
+  [29.5, V(4.4, 6.4, 8.6), V(0, 1, 0)], [34, V(-3.4, 6.8, 8.4), V(0, 1, 0)], [38.2, V(0, 31, -12), V(0, 0, -31)],
+  [42.2, V(HS.x - 9, 12, 25), V(HS.x, 4, 0)], [47, V(HS.x, 10, 24), V(HS.x, 4.4, 0)], [51.4, V(HS.x + 7, 7.4, 20), V(HS.x + 2, 3.6, 0)],
+  [54.6, V(0, 14.4, 24.5), V(0, 11.2, -6)], [59.6, V(2, 15, 23.5), V(0, 11.6, -7)],
+  [62.6, V(0, 31, -12), V(0, 0, -31)], [67, V(-6, 20, -4), V(0, 9, -32)], [72.6, V(2, 18.5, -2), V(0, 12, -32)],
+  [76, V(HS.x - 6, 8, 21), V(HS.x, 1.2, 0)], [83, V(HS.x + 6, 7, 18), V(HS.x, 1.2, 0)],
+  [89, V(28, 52, 38), V(24, 0, -14)], [96, V(24, 58, 44), V(24, 0, -14)], [102, V(24, 59, 45), V(24, 0, -14)]];
+const posCurve = new THREE.CatmullRomCurve3(KEYS.map(k => k[1]), false, 'centripetal'), tgtCurve = new THREE.CatmullRomCurve3(KEYS.map(k => k[2]), false, 'centripetal');
+function camAt(t) {
+  let i = 0; while (i < KEYS.length - 2 && KEYS[i + 1][0] <= t) i++;
+  const u = (i + sm(clamp((t - KEYS[i][0]) / (KEYS[i + 1][0] - KEYS[i][0])))) / (KEYS.length - 1);
+  const tgt = tgtCurve.getPoint(u), pos = posCurve.getPoint(u), k = clamp(.7 / (Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2) * camera.aspect), 1, 2.4);
+  camera.position.copy(pos.sub(tgt).multiplyScalar(k).add(tgt)); camera.lookAt(tgt);
+}
+const TOTAL = 102;
+
+/* ---------------- the whole story as a function of time ---------------- */
+const m4 = new THREE.Matrix4(), q0 = new THREE.Quaternion(), s3 = V(1, 1, 1), p3 = V(0, 0, 0);
+function update(t) {
+  camAt(t); ground.material.uniforms.uCam.value.copy(camera.position);
+  // hero: rises row by row, then the input ceiling descends and shaves what INT8 ×0.55 cannot represent
+  const heroOn = 1 - ss(t, 84, 87) * .7;
+  const ceilNow = t < 30.6 ? 1 : lerp(1, CEIL, ss(t, 30.6, 32.8));
+  ceilPlane.position.y = ceilEdge.position.y = ceilNow * HH + .02;
+  ceilPlane.material.opacity = ss(t, 27.2, 28.2) * (1 - ss(t, 35.4, 36.6)) * .16; ceilEdge.material.opacity = ceilPlane.material.opacity * 5;
+  for (let p = 0; p < 64; p++) { const v = hv(p), r = Math.floor(p / 8), c = p % 8, rise = ss(t, .6 + r * .28 + c * .04, 1.6 + r * .28 + c * .04);
+    const cutAt = 30.6 + (1 - (v - CEIL) / (1 - CEIL)) * 2.2, cut = t > 30.6 && v > CEIL && ceilNow < v;
+    const kept = cut ? Math.max(ceilNow, CEIL) : v;
+    const at = pxPos(p, HP); s3.set(HP, Math.max(.001, kept * HH * rise * heroOn), HP); m4.compose(at, q0, s3); hero.setMatrixAt(p, m4);
+    const lift = cut ? ss(t, cutAt, cutAt + 2.4) : 0, capH = cut ? (v - kept) * HH : 0, fade = 1 - lift;
+    p3.set(at.x, kept * HH + lift * 2.6, at.z); if (capH * fade > .002) s3.set(HP * (.98 - .3 * lift), capH * fade, HP * (.98 - .3 * lift)); else s3.set(0, 0, 0); m4.compose(p3, q0, s3); caps.setMatrixAt(p, m4); }
+  hero.instanceMatrix.needsUpdate = caps.instanceMatrix.needsUpdate = true;
+  // landscape: a wave raises every digit, then the same ceiling sweeps across it; paired outcomes lift the lost cases
+  const wave = t < 16.5 ? 1 : 0, clipW = seg(t, 35.4, 39.2), outK = ss(t, 61, 63.2);
+  let n = 0;
+  for (const e of fv) { const c0 = tileC(e.i), d = Math.hypot(c0.x, c0.z - FZ + 12) / 32;
+    const rise = wave ? ss(t, 7 + d * 3.4, 8.4 + d * 3.4) : 1, cutK = clipW > (Math.abs(c0.x) / 26 * .5 + (FZ + 12 - c0.z) / 24 * .5) ? 1 : 0;
+    const h = (cutK ? Math.min(e.v, CEIL) : e.v) * FH * rise, lift = OUT[e.i] === 'L' ? outK * 1.3 : OUT[e.i] === 'g' ? outK * .9 : 0;
+    p3.set(e.x, lift, e.z); s3.set(1, Math.max(.001, h), 1); m4.compose(p3, q0, s3); field.setMatrixAt(n++, m4); }
+  field.instanceMatrix.needsUpdate = true;
+  fcaps.forEach((k, j) => { const e = fv[k], c0 = tileC(e.i), gate = Math.abs(c0.x) / 26 * .5 + (FZ + 12 - c0.z) / 24 * .5, cut = clipW > gate, l = cut ? ss(t, 35.4 + gate * 3.8, 36.8 + gate * 3.8) : 0;
+    p3.set(e.x, CEIL * FH + l * 1.2, e.z); const hc = cut ? (e.v - CEIL) * FH * (1 - l) : 0; if (hc > .002) s3.set(1 - .4 * l, hc, 1 - .4 * l); else s3.set(0, 0, 0); m4.compose(p3, q0, s3); fieldCap.setMatrixAt(j, m4); });
+  fieldCap.instanceMatrix.needsUpdate = true;
+  paintField(Math.round(ss(t, 12.2, 13.4) * (1 - ss(t, 15.6, 16.8)) * 20) / 20, Math.round(outK * (1 - ss(t, 84, 87) * .5) * 20) / 20);
+  // model stage
+  const mOn = ss(t, 17.4, 19.2) * (1 - ss(t, 26.6, 28)) + ss(t, 53.4, 55) * (1 - ss(t, 60.2, 61.6));
+  const late = t > 50;   // the second visit shows everything at once
+  tiles.forEach(({m, e}, u) => { m.material.opacity = mOn * (late ? 1 : ss(t, 17.6 + u * .04, 18.6 + u * .04)); e.material.opacity = m.material.opacity * .22; });
+  links.material.opacity = ss(t, 19.4, 20.6) * (1 - ss(t, 25.8, 27)) * .55 + ss(t, 54.4, 55.2) * (1 - ss(t, 59.6, 60.6)) * .3;
+  links.geometry.setDrawRange(0, late ? 192 : Math.round(ss(t, 19.4, 22.4) * 192));
+  const morph = ss(t, 55.6, 57.6), hid0 = H.hidden[B[0].id], hid2 = H.hidden[B2.id];
+  hidBars.forEach((m, u) => { const v = lerp(hid0[u], hid2[u], morph); m.scale.set(.82, Math.max(.02, v * .14), .3);
+    m.material.opacity = mOn * (late ? 1 : ss(t, 20.8 + u * .03, 21.6 + u * .03));
+    m.material.color.copy(CBLUE).lerp(CAMB, morph); m.material.emissive.copy(m.material.color).multiplyScalar(.5); });
+  const lg = LOG0.map((v, k) => lerp(v, LOG2[k], ss(t, 56.4, 58.2))), am = argmax(lg);
+  outBars.forEach((m, k) => { m.scale.set(1.4, Math.max(.04, lg[k] * .1), .4); m.material.opacity = mOn * (late ? 1 : ss(t, 21.6 + k * .06, 22.4 + k * .06));
+    const hot = k === am, right = am === H.label; m.material.color.copy(hot ? (right ? CBLUE : CRED) : new THREE.Color(0x5b6472)); m.material.emissive.copy(m.material.color).multiplyScalar(hot ? 1.3 : .2); });
+  document.querySelectorAll('.lab.dg').forEach(el => { const k = Number(el.dataset.k ?? el.dataset.k2); el.classList.toggle('hot', k === am && am === H.label); el.classList.toggle('bad', k === am && am !== H.label); });
+  // particles: from their digits in the landscape into a histogram, then onto the INT8 grid of build-02
+  const pOn = ss(t, 40.2, 41.2) * (1 - ss(t, 52.6, 53.8)), fly = ss(t, 40.4, 44.2), snap = ss(t, 47.4, 49.6);
+  pmat.opacity = pOn * .9;
+  if (pOn > 0) { const P = pgeo.attributes.position.array, Cl = pgeo.attributes.color.array;
+    for (let k = 0; k < NP; k++) { const o = k * 3, f = clamp(fly * 1.25 - hash(k + 5) * .25), g = sm(f), h = snap;
+      const ax = lerp(partS[o], partA[o], g), ay = lerp(partS[o + 1], partA[o + 1], g) + Math.sin(g * Math.PI) * 3.2, az = lerp(partS[o + 2], partA[o + 2], g);
+      P[o] = lerp(ax, partB[o], h); P[o + 1] = lerp(ay, partB[o + 1], h); P[o + 2] = lerp(az, partB[o + 2], h);
+      const r = sat[k] ? h : 0; Cl[o] = lerp(.42, 1.6, r); Cl[o + 1] = lerp(.72, .25, r); Cl[o + 2] = lerp(1.1, .3, r); }
+    pgeo.attributes.position.needsUpdate = pgeo.attributes.color.needsUpdate = true; }
+  levels.material.opacity = ss(t, 45.4, 46.6) * (1 - ss(t, 52.4, 53.4)) * .1;
+  win2.forEach(l => { l.material.opacity = ss(t, 46.2, 47) * (1 - ss(t, 52.4, 53.4)); });
+  win1.forEach(l => { l.material.opacity = ss(t, 46.6, 47.4) * (1 - ss(t, 52.4, 53.4)) * .45; });
+  axis.material.opacity = pOn * .5;
+  // statistics over the landscape
+  const rOn = ss(t, 64.4, 65.6) * (1 - ss(t, 74.2, 75.4));
+  rmats.forEach(m => { m.opacity = rOn * (m.userData.o ?? 1); });
+  ruler.traverse(o => { if (o.isMesh && o.geometry.type === 'CylinderGeometry') { const g = ss(t, 65.4, 66.8); o.scale.set(Math.max(.001, g), 1, 1); } });
+  $('hud').classList.toggle('on', t > 61.4 && t < 74.4);
+  $('hud').querySelectorAll('b').forEach(b => { b.textContent = Math.round(Number(b.dataset.n) * ss(t, 61.4, 63.6)); });
+  // builds and the bisect probe
+  const bOn = ss(t, 74.8, 76) * (1 - ss(t, 84.4, 86));
+  minis.forEach(({m, g}, k) => { m.material.opacity = bOn; g.material.opacity = bOn * .5; m.material.transparent = bOn < .99; });
+  let pk = -1; probeAt.forEach((ta, n) => { if (t >= ta) pk = n; });
+  if (pk >= 0 && bOn > 0) { const cur = D.bisect.probes[pk][0], prev = pk ? D.bisect.probes[pk - 1][0] : cur, mv = ss(t, probeAt[pk], probeAt[pk] + .5);
+    probe.position.set(lerp(bX(prev), bX(cur), mv), .06, 0); probe.material.opacity = bOn * .9;
+    probe.material.color.copy(D.bisect.probes[pk][1] === 'block' ? CRED : CGRN).multiplyScalar(1.6); } else probe.material.opacity = 0;
+  // report and title
+  const mOn2 = t > 85.6 && t < 96.4; $('mcr').classList.toggle('on', mOn2);
+  $('mcr').querySelectorAll('div[data-t]').forEach(d => d.classList.toggle('on', t >= Number(d.dataset.t)));
+  $('title').classList.toggle('on', t > 97);
+  lens.uniforms.uFade.value = ss(t, 0, 1.2) * (1 - ss(t, 85.4, 87) * .45) * (1 - ss(t, 96.4, 97.6) * .2);
+  // labels follow their anchors
+  const w = innerWidth, h = innerHeight;
+  LABELS.forEach(l => { const on = t >= l.t0 && t <= l.t1; l.el.classList.toggle('on', on); if (!on) return;
+    const p = l.anchor().project(camera); if (p.z > 1) { l.el.classList.remove('on'); return; }
+    const lw = l.el.offsetWidth; l.el.style.left = `${clamp((p.x * .5 + .5) * w, 10, w - lw - 10)}px`;
+    l.el.style.top = `${clamp((-p.y * .5 + .5) * h, 96, h - 60)}px`; });
+}
+
+/* ---------------- playback (same controls and dock protocol as the other films) ---------------- */
+let time = clamp(Number(q.get('t')) || 0, 0, TOTAL), playing = false, last = 0, idleT;
+const fmt = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+const post = type => { if (EMBED) parent.postMessage({source: 'propaganda-film', type}, '*'); };
+function paint() { $('fill').style.width = `${time / TOTAL * 100}%`; $('time').textContent = `${fmt(time)} / ${fmt(TOTAL)}`;
+  $('play').innerHTML = playing ? '<svg viewBox="0 0 24 24"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>' : '<svg viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z"/></svg>'; }
+function loop(ts) {
+  const dt = last ? Math.min(.05, (ts - last) / 1000) : 0; last = ts;
+  if (playing) { time += dt; if (time >= TOTAL) { time = TOTAL; playing = false; post('ended'); } }
+  update(time); lens.uniforms.uTime.value = ts / 1000; composer.render(); paint(); requestAnimationFrame(loop);
+}
+function play(on = !playing) { if (on && time >= TOTAL) time = 0; playing = on; last = 0; $('start').classList.add('off'); paint(); post(on ? 'play' : 'pause'); }
+function seek(t) { time = clamp(t, 0, TOTAL); fieldColorKey = ''; paint(); }
+function resize() {
+  const w = innerWidth, h = innerHeight, pr = Math.min(document.body.classList.contains('mini') ? 1 : 2, devicePixelRatio || 1);
+  renderer.setPixelRatio(pr); renderer.setSize(w, h, false); composer.setPixelRatio(pr); composer.setSize(w, h); bloom.setSize(w * pr / 2, h * pr / 2);
+  lens.uniforms.uRes.value.set(w * pr, h * pr); camera.aspect = w / h; camera.fov = w / h < 1 ? 66 : w / h < 1.4 ? 52 : 40; camera.updateProjectionMatrix();
+}
+document.documentElement.lang = L === 'en' ? 'en' : L === 'zh-CN' ? 'zh-Hans' : 'zh-Hant';
+$('sub').textContent = C.sub; $('go-label').textContent = C.go; $('go-sub').textContent = C.goSub; $('title-sub').textContent = C.titleSub; $('title-note').textContent = C.titleNote;
+$('lang').textContent = {en: 'EN', 'zh-TW': '繁', 'zh-CN': '简'}[L];
+$('back').href = `${L === 'en' ? '/' : L === 'zh-CN' ? '/zh-cn/' : '/zh-tw/'}#projects/merriv`; $('back').title = C.home;
+$('go').addEventListener('click', () => play(true)); $('play').addEventListener('click', () => play());
+$('track').addEventListener('click', e => { const r = e.currentTarget.getBoundingClientRect(); seek((e.clientX - r.left) / r.width * TOTAL); });
+$('lang').addEventListener('click', () => { const p = new URLSearchParams(q); p.set('lang', {en: 'zh-TW', 'zh-TW': 'zh-CN', 'zh-CN': 'en'}[L]); p.set('t', time.toFixed(1)); p.set('autoplay', playing ? '1' : '0'); location.replace(`?${p}`); });
+$('fs').addEventListener('click', () => document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen?.());
+canvas.addEventListener('click', () => { if (document.body.classList.contains('mini')) play(); });
+addEventListener('keydown', e => {
+  if (e.key === ' ') { e.preventDefault(); play(); } else if (e.key === 'ArrowRight') seek(time + 5); else if (e.key === 'ArrowLeft') seek(time - 5);
+  else if (e.key.toLowerCase() === 'f') $('fs').click(); else if (e.key.toLowerCase() === 'r') { seek(0); play(true); }
+  else if (e.key === 'Escape' && EMBED) post('escape');
+});
+addEventListener('pointermove', () => { document.body.classList.remove('idle'); clearTimeout(idleT); idleT = setTimeout(() => playing && document.body.classList.add('idle'), 2400); });
+addEventListener('resize', () => { clearTimeout(resize.t); resize.t = setTimeout(resize, 120); });
+addEventListener('message', e => { const m = e.data; if (!m || m.source !== 'niansia-dock') return; if (m.type === 'mode') { document.body.classList.toggle('mini', !!m.mini); resize(); } if (m.type === 'play') play(true); if (m.type === 'pause') play(false); });
+window.__film = {seek, play, get time() { return time; }, TOTAL};
+if (EMBED) document.body.classList.add('embed');
+if (CLEAN) $('ui').style.display = 'none';
+resize();
+if (q.has('t') || EMBED) { $('start').classList.add('off'); if (q.get('autoplay') === '1' || (EMBED && q.get('autoplay') !== '0')) play(true); }
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>

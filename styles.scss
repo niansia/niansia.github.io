@@ -1650,6 +1650,11 @@ button.brain-badge:disabled{cursor:default;transform:none;border-color:var(--lin
 @media(prefers-reduced-motion:reduce){.cs-show *{animation:none!important;}}
 @media(max-width:900px){.cs-flow{grid-template-columns:1fr;gap:16px;}.cs-flow li:not(:last-child):after{top:auto;bottom:-14px;right:auto;left:50%;margin:0 0 0 -6px;transform:rotate(90deg);}.cs-rules,.cs-bench{grid-template-columns:repeat(2,minmax(0,1fr));}.cs-cols,.cs-cols-b{grid-template-columns:1fr;}}
 @media(max-width:560px){.cs-stage{padding:14px 12px 6px;}.cs-head{flex-direction:column;}.cs-gate{align-items:flex-start;text-align:left;max-width:none;}.cs-board{grid-template-columns:repeat(2,minmax(0,1fr));}.cs-twins{grid-template-columns:1fr;}.cs-products{flex-wrap:nowrap;overflow-x:auto;}}
+/* ============ Merriv project page: the film card ============ */
+.mv-show{margin:22px 0 8px;}
+.mv-show .comment-line{max-width:860px;padding-top:0;margin-top:-10px;}
+.mv-film{box-shadow:0 18px 50px -20px #123a5a;}
+.mv-film .cap-film-play{background:linear-gradient(135deg,#27a9c4,#ff4d5e);}
 /* ============ guestbook.md: a note form and the approved notes, newest first, always as plain text ============ */
 .gb-form{display:grid;grid-template-columns:minmax(0,200px) minmax(0,1fr);gap:12px 14px;margin:22px 0 26px;padding:16px;border-radius:16px;border:1px solid var(--line);background:var(--surface);}
 .gb-field{display:flex;flex-direction:column;gap:6px;min-width:0;}
