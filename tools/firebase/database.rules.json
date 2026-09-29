@@ -21,6 +21,41 @@
         ".write": "$id.matches(/^[a-z0-9]{12}$/)",
         ".validate": "newData.isNumber() && newData.val() === now"
       }
+    },
+    "guestbook": {
+      "approved": {
+        ".read": true,
+        ".indexOn": ["at"],
+        "$id": {
+          ".write": "auth != null && auth.token.email === 'niansia930202@gmail.com' && auth.token.email_verified === true",
+          ".validate": "newData.hasChildren(['name', 'text', 'lang', 't', 'at'])",
+          "name": { ".validate": "newData.isString() && newData.val().length <= 40" },
+          "text": { ".validate": "newData.isString() && newData.val().length >= 2 && newData.val().length <= 500" },
+          "lang": { ".validate": "newData.val() === 'en' || newData.val() === 'zh-TW' || newData.val() === 'zh-CN'" },
+          "t": { ".validate": "newData.isNumber()" },
+          "at": { ".validate": "newData.isNumber() && newData.val() === now" },
+          "$other": { ".validate": false }
+        }
+      },
+      "pending": {
+        ".read": "auth != null && auth.token.email === 'niansia930202@gmail.com' && auth.token.email_verified === true",
+        "$id": {
+          ".write": "(auth != null && auth.token.email === 'niansia930202@gmail.com' && auth.token.email_verified === true && !newData.exists()) || (auth != null && !data.exists() && newData.exists() && $id.matches(/^[-_A-Za-z0-9]{20}$/) && newData.child('uid').val() === auth.uid && newData.parent().parent().child('last').child(auth.uid).val() === now)",
+          ".validate": "newData.hasChildren(['uid', 'name', 'text', 'lang', 't'])",
+          "uid": { ".validate": "newData.isString()" },
+          "name": { ".validate": "newData.isString() && newData.val().length <= 40" },
+          "text": { ".validate": "newData.isString() && newData.val().length >= 2 && newData.val().length <= 500" },
+          "lang": { ".validate": "newData.val() === 'en' || newData.val() === 'zh-TW' || newData.val() === 'zh-CN'" },
+          "t": { ".validate": "newData.isNumber() && newData.val() === now" },
+          "$other": { ".validate": false }
+        }
+      },
+      "last": {
+        "$uid": {
+          ".write": "auth != null && auth.uid === $uid && newData.exists() && (!data.exists() || data.val() < now - 60000)",
+          ".validate": "newData.isNumber() && newData.val() === now"
+        }
+      }
     }
   }
 }

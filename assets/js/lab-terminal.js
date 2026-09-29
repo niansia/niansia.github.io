@@ -5,9 +5,9 @@
   if (!root || !window.NIANSIA_COPY || !window.NIANSIA_PROJECTS || !window.NIANSIA_TERMINAL) return;
   const esc = value => String(value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
   const store = { get(key, fallback) { try { return localStorage.getItem(`niansia-${key}`) ?? fallback; } catch { return fallback; } }, set(key,value) { try { localStorage.setItem(`niansia-${key}`,value); } catch {} } };
-  const BASE_PATHS = ['home','about','projects','research','papers','blog','contact','hobbies','cv','help'];
-  const BASE_FILES = ['start.sh','about.md','projects/','research.md','papers.bib','blog/','contact.txt','hobbies.md','cv.pdf','help'];
-  const NAV_ICONS = {home:'terminal',about:'file',projects:'folder',research:'research',papers:'paper',blog:'pen',contact:'mail',hobbies:'heart',cv:'badge',help:'help'};
+  const BASE_PATHS = ['home','about','projects','research','papers','blog','contact','hobbies','guestbook','cv','help'];
+  const BASE_FILES = ['start.sh','about.md','projects/','research.md','papers.bib','blog/','contact.txt','hobbies.md','guestbook.md','cv.pdf','help'];
+  const NAV_ICONS = {home:'terminal',about:'file',projects:'folder',research:'research',papers:'paper',blog:'pen',contact:'mail',hobbies:'heart',guestbook:'chat',cv:'badge',help:'help'};
   const cvState = () => { const s = window.NIANSIA_CV?.status || 'hidden'; return s === 'locked' && new URLSearchParams(location.search).get('cv') === 'preview' ? 'preview' : s; };
   const paths = BASE_PATHS.filter(p => p !== 'cv' || cvState() !== 'hidden');
   const files = paths.map(p => BASE_FILES[BASE_PATHS.indexOf(p)]);
@@ -718,6 +718,7 @@
     if (view==='research') html=`${commandTitle('cat research.md')}<h1>${c.researchTitle}</h1><p class="screen-intro">${c.researchIntro}</p>${capCopy()?`<button type="button" class="cap-jump" data-cap-jump>✦ ${esc(capCopy().open)} ↓</button>`:''}<div class="research-entry"><span>01</span><div><h2>${c.researchA}</h2><p>${c.researchABody}</p><small>security / robustness / evaluation</small></div></div>${advCard()}<div class="research-entry"><span>02</span><div><h2>${c.researchB}</h2><p>${c.researchBBody}</p><small>vision / reasoning / grounding</small></div></div>${statementLink()}${notesBlock()}${logBlock()}${capstoneBlock()}${teBlock()}${submissionsBlock()}<p class="comment-line">${c.researchNote}</p>`;
     if (view==='contact') html=`${commandTitle('cat contact.txt')}<h1>${c.contactTitle}</h1><div class="reading"><p>${c.contactBody}</p><div class="contact-address"><span translate="no">email:</span><a href="mailto:niansia930202@gmail.com" translate="no">niansia930202@gmail.com</a></div><div class="output-actions"><a class="action-button primary" href="mailto:niansia930202@gmail.com">${icon('mail')}<span>${c.send}</span></a><button class="action-button" data-action="copy">${icon('copy')}<span>${c.copy}</span></button></div><a class="github-link" href="https://github.com/niansia" target="_blank" rel="noopener noreferrer">github.com/niansia ${icon('link')}</a></div>`;
     if (view==='hobbies') html=hobbiesScreen();
+    if (view==='guestbook') html=window.NIANSIA_GUESTBOOK?window.NIANSIA_GUESTBOOK.screen(locale,commandTitle('cat guestbook.md')):`${commandTitle('cat guestbook.md')}<p>${t().noMatches}</p>`;
     if (view==='cv') html=cvScreen();
     if (view==='papers') html=papersScreen();
     if (view==='blog') html=blogScreen();
@@ -726,6 +727,7 @@
     if (view==='projects' && item) html=`${commandTitle('cat projects/'+esc(item.id)+'/README.md')}<button class="back-link" data-view="projects">← ${c.all}</button><div class="project-detail"><p class="detail-meta">${esc(item.category)}<span>${esc(item.status)}</span></p><h1 translate="no">${esc(item.name)}</h1><p class="project-description">${esc(item.description)}</p>${item.id==='taiwan-exam'?'<img class="project-art" src="/assets/work/taiwan-exam-social-preview.png" width="1280" height="640" alt="Taiwan Exam" loading="lazy">'+teFilmCard():''}${item.id==='lumigrid'?lumigridShowcase():''}${item.id==='adversarial-lab'?'<img class="project-art" src="/assets/og/adversarial-demo.jpg" width="1200" height="630" alt="Adversarial Lab" loading="lazy">'+advCard():''}<h2>${c.evidence}</h2><p>${esc(item.evidence)}</p><div class="output-actions"><a class="action-button primary" href="${esc(item.url)}" target="_blank" rel="noopener noreferrer"><span>${c.source}</span>${icon('link')}</a><a class="action-button" href="${esc(item.reference)}" target="_blank" rel="noopener noreferrer"><span>${esc(item.referenceLabel)}</span>${icon('link')}</a><button class="action-button" data-ask="${esc(item.name)}">${icon('chat')}<span>${c.askTitle}</span></button><button class="action-button" data-action="share" data-share="/p/${esc(item.id)}/${locale==='en'?'':locale.toLowerCase()+'/'}">${icon('link')}<span>${esc(noteCopy().share)}</span></button></div><div class="project-pagination"><button data-project-step="-1">← ${c.prev}</button><span>${items.indexOf(item)+1} / ${items.length}</span><button data-project-step="1">${c.next} →</button></div></div>`;
     const output=$('.terminal-output'); output.dataset.view=view; output.innerHTML=html; output.scrollTop=0; renderJournal();
     if (view==='research') initCapstone();
+    if (view==='guestbook') window.NIANSIA_GUESTBOOK?.mount(output,locale);
     if (view==='projects' && projectId==='lumigrid') initLumigrid();
     output.classList.remove('screen-enter'); if (animate && motion()) { void output.offsetWidth; output.classList.add('screen-enter'); }
     root.querySelectorAll('[data-nav-index]').forEach((el,i)=>{el.classList.toggle('is-current',i===paths.indexOf(view));el.classList.toggle('is-selected',i===selectedNav);el.setAttribute('aria-current',i===paths.indexOf(view)?'page':'false');});
@@ -802,7 +804,7 @@
     const split=value.indexOf(' '),head=split<0?value:value.slice(0,split),tail=split<0?'':value.slice(split+1).toLowerCase();
     if(split<0)return catalogue.map(c=>c.name).filter(name=>name.startsWith(head.toLowerCase()));
     const values={festival:['list','auto','off',...(window.NIANSIA_FESTIVAL?.list||[]).map(f=>f.id)],accessory:['list','auto','none',...Object.keys(window.YukiWardrobe?.accessories||{})],outfit:['list','auto',...(window.YukiWardrobe?.outfits()||[]).map(o=>o.id)],theme:themes,style:themes,lang:['en','zh-tw','zh-cn'],tour:['research','builder','fun'],trick:['spin','dance','piano','violin','encore'],play:['yarn','wand','chase'],feed:['fish','taiyaki','cake'],projects:PROJECT_FILTERS.map(([k])=>k),motion:['on','off'],follow:['on','off'],trail:['hearts','paws','stars','petals','off'],cursor:['s','m','l'],help:catalogue.map(c=>c.name)};
-    const destinations=['home','about.md','research.md','papers.bib','contact.txt','hobbies.md','projects/',...projects().map(p=>p.id),...projects().map(p=>'projects/'+p.id+'/README.md')];
+    const destinations=['home','about.md','research.md','papers.bib','contact.txt','hobbies.md','guestbook.md','projects/',...projects().map(p=>p.id),...projects().map(p=>'projects/'+p.id+'/README.md')];
     return (values[head]||(['cd','cat','open','github'].includes(head)?destinations:[])).filter(item=>item.startsWith(tail)).map(item=>head+' '+item);
   }
   let tabCycle=null;
@@ -831,7 +833,7 @@
   }
   function resolveTarget(value) {
     const name=value.toLowerCase().replace(/^(~\/|\.\/|\/)/,'').replace(/\/readme\.md$/,'').replace(/\/$/,'');
-    const aliases={'':'home','~':'home','start.sh':'home','about.md':'about','profile':'about','research.md':'research','contact.txt':'contact','hobbies.md':'hobbies','cv.pdf':'cv','papers.bib':'papers','blog/':'blog','now':'blog','qa':'blog','publications':'papers','pubs':'papers','bib':'papers','hobby':'hobbies','cosplay':'hobbies','work':'projects','portfolio':'projects'};
+    const aliases={'':'home','~':'home','start.sh':'home','about.md':'about','profile':'about','research.md':'research','contact.txt':'contact','hobbies.md':'hobbies','guestbook.md':'guestbook','cv.pdf':'cv','papers.bib':'papers','blog/':'blog','now':'blog','qa':'blog','publications':'papers','pubs':'papers','bib':'papers','hobby':'hobbies','cosplay':'hobbies','work':'projects','portfolio':'projects'};
     const path=aliases[name]||name;
     if(paths.includes(path))return {view:path};
     const item=projects().find(p=>p.id===name.replace(/^projects\//,'')||p.name.toLowerCase()===name);
@@ -853,7 +855,7 @@
     commandHistory.push(value);if(commandHistory.length>50)commandHistory.shift();historyIndex=commandHistory.length;
     const parsed=window.NIANSIA_TERMINAL.parse(value);
     if(parsed.error){record(value,t().quoteError);return;}
-    const aliases={'?':'help',resume:'cv',linkedin:'cv','cv.pdf':'cv','履歷':'cv','简历':'cv',work:'projects',portfolio:'projects',profile:'about','./start.sh':'home','start.sh':'home',meow:'pet',search:'find','作品':'projects','研究':'research','聯絡':'contact','联系':'contact',ddl:'deadlines',countdown:'deadlines',publications:'papers',pubs:'papers',bib:'papers','部落格':'blog','博客':'blog',now:'blog',posts:'blog','論文':'papers','论文':'papers',paper:'papers',quick:'brief','快速瀏覽':'brief','快速浏览':'brief','簡介':'brief','简介':'brief',guide:'tour','導覽':'tour','导览':'tour',cmdk:'palette','ctrl+k':'palette',adversarial:'attack',adv:'attack',fgsm:'attack',pgd:'attack','對抗':'attack','对抗':'attack','專題':'capstone','专题':'capstone','投稿':'deadlines','截止':'deadlines',hobby:'hobbies',cosplay:'hobbies',cos:'hobbies',fun:'hobbies','興趣':'hobbies','兴趣':'hobbies','日常':'hobbies','關於':'about','关于':'about'};
+    const aliases={'?':'help',gb:'guestbook','留言板':'guestbook','留言':'guestbook',resume:'cv',linkedin:'cv','cv.pdf':'cv','履歷':'cv','简历':'cv',work:'projects',portfolio:'projects',profile:'about','./start.sh':'home','start.sh':'home',meow:'pet',search:'find','作品':'projects','研究':'research','聯絡':'contact','联系':'contact',ddl:'deadlines',countdown:'deadlines',publications:'papers',pubs:'papers',bib:'papers','部落格':'blog','博客':'blog',now:'blog',posts:'blog','論文':'papers','论文':'papers',paper:'papers',quick:'brief','快速瀏覽':'brief','快速浏览':'brief','簡介':'brief','简介':'brief',guide:'tour','導覽':'tour','导览':'tour',cmdk:'palette','ctrl+k':'palette',adversarial:'attack',adv:'attack',fgsm:'attack',pgd:'attack','對抗':'attack','对抗':'attack','專題':'capstone','专题':'capstone','投稿':'deadlines','截止':'deadlines',hobby:'hobbies',cosplay:'hobbies',cos:'hobbies',fun:'hobbies','興趣':'hobbies','兴趣':'hobbies','日常':'hobbies','關於':'about','关于':'about'};
     const name=aliases[parsed.name]||parsed.name,args=parsed.args,arg=args.join(' '),lower=arg.toLowerCase();
     const definition=catalogue.find(c=>c.name===name);
     const usage=()=>record(value,`${t().usage}: ${definition?.usage||'help'}\n${definition?.description[locale]||t().unknown}`);
@@ -904,7 +906,7 @@
         break;
       }
       case 'pwd':finish(view==='projects'?'~/projects/'+projectId:'~/');break;
-      case 'tree':finish('~/\n├── start.sh\n├── about.md\n├── research.md\n├── papers.bib\n├── blog/\n├── contact.txt\n├── hobbies.md\n└── projects/\n'+projects().map((p,i)=>`    ${i===projects().length-1?'└':'├'}── ${p.id}/`).join('\n'));break;
+      case 'tree':finish('~/\n├── start.sh\n├── about.md\n├── research.md\n├── papers.bib\n├── blog/\n├── contact.txt\n├── hobbies.md\n├── guestbook.md\n└── projects/\n'+projects().map((p,i)=>`    ${i===projects().length-1?'└':'├'}── ${p.id}/`).join('\n'));break;
       case 'find':case 'skills': {
         if(name==='find'&&!arg){usage();break;}
         const matches=projects().filter(p=>name==='skills'?/skill/i.test(p.description):`${p.name} ${p.id} ${p.description} ${p.category}`.toLowerCase().includes(lower));

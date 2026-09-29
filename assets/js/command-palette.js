@@ -44,11 +44,11 @@
   const EMAIL = 'niansia930202@gmail.com';
 
   /* ---------- items ---------- */
-  const allNav = p => ['en', 'zh-TW', 'zh-CN'].map(l => window.NIANSIA_COPY[l]?.nav[['home', 'about', 'projects', 'research', 'papers', 'blog', 'contact', 'hobbies', 'cv', 'help'].indexOf(p)] || '').join(' ');
+  const allNav = p => ['en', 'zh-TW', 'zh-CN'].map(l => window.NIANSIA_COPY[l]?.nav[['home', 'about', 'projects', 'research', 'papers', 'blog', 'contact', 'hobbies', 'guestbook', 'cv', 'help'].indexOf(p)] || '').join(' ');
   const go = url => { location.href = url; };
   function items() {
     const c = C(), out = [], add = (group, it) => out.push({group, ...it, key: `${group}:${it.id}`});
-    const paths = app.paths(), files = app.files(), NAV = {home: 'terminal', about: 'file', projects: 'folder', research: 'research', papers: 'paper', blog: 'pen', contact: 'mail', hobbies: 'heart', cv: 'badge', help: 'help'};
+    const paths = app.paths(), files = app.files(), NAV = {home: 'terminal', about: 'file', projects: 'folder', research: 'research', papers: 'paper', blog: 'pen', contact: 'mail', hobbies: 'heart', guestbook: 'chat', cv: 'badge', help: 'help'};
     paths.forEach((p, i) => add('pages', {id: p, title: app.navLabel(p), sub: files[i], icon: NAV[p], words: `${files[i]} ${allNav(p)}`, hint: c.page, run: () => app.navigate(p)}));
     app.projects().forEach(p => add('projects', {id: p.id, title: p.name, sub: `${p.category} · ${p.status}`, icon: 'folder', words: `${p.id} ${p.category} ${p.description}`, run: () => app.navigate('projects', p.id)}));
     app.pubList().filter(p => !app.pubHidden(p)).forEach(p => add('papers', {id: p.id, title: app.pubText(p.title), sub: `${p.venue || ''} · ${app.pubCopy().status[p.status] || p.status}`, icon: 'paper', words: (p.topics || []).join(' '),
