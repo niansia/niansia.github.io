@@ -779,7 +779,7 @@ html.film-open .yuki,html.film-open .yuki-chat{visibility:hidden;}
 .menu-stats{display:flex;flex-direction:column;gap:6px;padding:10px;border-radius:12px;background:var(--rail);margin-bottom:10px;}
 .stat{display:grid;grid-template-columns:44px 1fr 24px;align-items:center;gap:8px;font-size:10.5px;color:var(--muted);}
 .stat i{height:7px;border-radius:99px;background:var(--line);overflow:hidden;}
-.stat b{display:block;height:100%;border-radius:99px;transition:width .6s var(--ease);}
+.stat b{display:block;height:100%;border-radius:99px;}
 .stat em{font:10px var(--mono);font-style:normal;text-align:right;}
 .stat.is-food b{background:linear-gradient(90deg,#f5c58a,#f0a35e);}.stat.is-mood b{background:linear-gradient(90deg,var(--fx-2),var(--fx-1));}.stat.is-energy b{background:linear-gradient(90deg,#9ee6c5,#3fb58a);}
 .menu-actions{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;}
@@ -1808,7 +1808,7 @@ button.brain-badge:disabled{cursor:default;transform:none;border-color:var(--lin
 .menu-title{margin-left:6px;padding:1px 7px;border-radius:99px;font:600 10px var(--sans);font-style:normal;color:#5a3a06;background:linear-gradient(135deg,#fff1b8,#f5c542);vertical-align:2px;}
 .menu-xp{display:grid;grid-template-columns:1fr auto;gap:3px 8px;width:100%;margin-top:8px;padding:6px 0 0;border:0;border-top:1px dashed var(--line);background:none;text-align:left;cursor:pointer;color:var(--muted);font:500 10.5px var(--mono);}
 .xp-bar{grid-column:1/-1;height:6px;border-radius:99px;background:color-mix(in srgb,var(--accent) 12%,transparent);overflow:hidden;}
-.xp-bar b{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--accent-2),var(--accent));transition:width .5s var(--ease);}
+.xp-bar b{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--accent-2),var(--accent));}
 .xp-next{text-align:right;color:var(--accent);font-family:var(--sans);}
 .menu-rewards{display:grid;gap:4px;margin:8px 0 2px;max-height:220px;overflow:auto;padding-right:2px;scrollbar-width:thin;}
 .reward{display:grid;grid-template-columns:26px 1fr auto;gap:8px;align-items:center;padding:6px 8px;border-radius:10px;background:var(--rail);opacity:.55;}

@@ -35,7 +35,7 @@
   S.food = clamp(S.food - awayMin * 1.2, 20, 100); S.energy = clamp(S.energy + awayMin * 1.5, 0, 100); S.mood = clamp(S.mood - awayMin * .5, 30, 100);
   S.visits += 1;
   const save = () => { S.t = now(); app.store.set('yuki', JSON.stringify({...S, seen: S.seen.slice(-20)})); };
-  const level = () => Math.floor(Math.sqrt(S.xp / 12)) + 1;
+  const levelAt = xp => Math.floor(Math.sqrt(xp / 12)) + 1, level = () => levelAt(S.xp);
   function gain(food = 0, mood = 0, energy = 0, xp = 0) {
     const before = level();
     S.food = clamp(S.food + food, 0, 100); S.mood = clamp(S.mood + mood, 0, 100); S.energy = clamp(S.energy + energy, 0, 100); S.xp += xp;
@@ -858,8 +858,45 @@
   hit.addEventListener('click', event => { if (event.detail === 0) toggleMenu(); });
 
   /* ---------- action menu ---------- */
-  function statBar(key, value, cls) {
-    return `<div class="stat ${cls}"><span>${t().stats[key]}</span><i><b style="width:${Math.round(value)}%"></b></i><em>${Math.round(value)}</em></div>`;
+  /* The bars start from what the menu showed last and glide to the current needs: gains that land after an
+     animation (eating, playing, a performance) show up at once instead of on the next click. */
+  const NEEDS = ['food', 'mood', 'energy', 'xp'];
+  let shown = null, glide = 0;
+  const shownOf = key => (shown || S)[key];
+  function xpParts(xp) {
+    const lv = levelAt(xp), span = xpFor(lv + 1) - xpFor(lv);
+    return {span, into: clamp(xp - xpFor(lv), 0, span)};
+  }
+  function statBar(key, cls) {
+    const v = shownOf(key);
+    return `<div class="stat ${cls}" data-need="${key}"><span>${t().stats[key]}</span><i><b style="width:${v}%"></b></i><em>${Math.round(v)}</em></div>`;
+  }
+  function drawNeeds() {
+    menu.querySelectorAll('[data-need]').forEach(el => { const v = shown[el.dataset.need]; el.querySelector('b').style.width = `${v}%`; el.querySelector('em').textContent = Math.round(v); });
+    const {into, span} = xpParts(shown.xp);
+    menu.querySelectorAll('.menu-xp').forEach(el => { el.querySelector('.xp-bar b').style.width = `${into / span * 100}%`; el.querySelector('.xp-text').textContent = rc().xp(Math.round(into), span); });
+  }
+  function paintMenu() {
+    const sw = menu.querySelector('[data-pet-act="sleep"], [data-pet-act="wake"]');
+    if (sw && sw.dataset.petAct !== (asleep ? 'wake' : 'sleep')) {
+      const had = document.activeElement === sw;
+      renderMenu(); placeMenu();
+      if (had) menu.querySelector(`[data-pet-act="${asleep ? 'wake' : 'sleep'}"]`)?.focus({preventScroll: true});
+      return;
+    }
+    const head = menu.querySelector('.menu-head small');
+    if (head) head.textContent = t().moodWords[moodKey()];
+    menu.querySelector('.menu-avatar')?.setAttribute('data-face', asleep ? 2 : S.mood > 70 ? 1 : 0);
+    if (!menu.querySelector('[data-need], .menu-xp')) return;   // outfit / settings tabs keep `shown`, so the bars glide on the way back
+    const from = {...(shown || S)}, ms = app.motion('ui') ? 700 : 0, t0 = performance.now();
+    cancelAnimationFrame(glide);
+    const step = stamp => {
+      const k = ms ? clamp((stamp - t0) / ms, 0, 1) : 1, e = 1 - (1 - k) ** 3;
+      shown = {}; NEEDS.forEach(n => { shown[n] = from[n] + (S[n] - from[n]) * e; });
+      drawNeeds();
+      if (k < 1) glide = requestAnimationFrame(step);
+    };
+    glide = requestAnimationFrame(step);
   }
   /* The menu keeps one compact height: four tabs instead of sections that expand downwards. */
   const TABS = {en: {act: 'Play', lv: 'Levels', wear: 'Outfits', set: 'Settings'}, 'zh-TW': {act: '互動', lv: '等級', wear: '換裝', set: '設定'}, 'zh-CN': {act: '互动', lv: '等级', wear: '换装', set: '设置'}};
@@ -868,12 +905,12 @@
     const acts = [['pat', 'heart', a.pat], ['feed', 'fish', a.feed], ['play', 'yarn', a.play], ['lie', 'bed', a.lie],
       [asleep ? 'wake' : 'sleep', asleep ? 'sun' : 'moon', asleep ? a.wake : a.sleep], ['trick', 'star', a.trick], ['chat', 'chat', a.chat], ['hide', 'hide', a.hide]];
     const lv = level(), r = rc(), next = REWARDS.find(x => x.lv > lv), tier = lv >= 10 ? 'gold' : lv >= 7 ? 3 : lv >= 4 ? 2 : 1;
-    const span = xpFor(lv + 1) - xpFor(lv), into = clamp(S.xp - xpFor(lv), 0, span);
+    const {span, into} = xpParts(shownOf('xp'));
     const xp = `<button type="button" class="menu-xp" data-tab="lv"><span class="xp-bar"><b style="width:${(into / span * 100).toFixed(1)}%"></b></span><span class="xp-text">${esc(r.xp(Math.round(into), span))}</span><span class="xp-next">${next ? `${esc(r.next)} ${next.icon} ${esc(r.name[next.id])} · ${r.at(next.lv)}` : esc(r.all)}</span></button>`;
     const sw = (attr, on, ic, label) => `<button type="button" class="menu-wardrobe menu-stay" ${attr} aria-pressed="${on}">${svg(ic)}<span>${label}</span><b class="stay-switch" aria-hidden="true"><i></i></b></button>`;
     const body = {
       act: `<p class="menu-say" aria-live="polite">${esc(bubble.hidden ? line('pet_pat') : bubble.querySelector('p').textContent)}</p>
-        <div class="menu-stats">${statBar('food', S.food, 'is-food')}${statBar('mood', S.mood, 'is-mood')}${statBar('energy', S.energy, 'is-energy')}${xp}</div>
+        <div class="menu-stats">${statBar('food', 'is-food')}${statBar('mood', 'is-mood')}${statBar('energy', 'is-energy')}${xp}</div>
         <div class="menu-actions">${acts.map(([key, ic, label]) => `<button type="button" role="menuitem" data-pet-act="${key}">${svg(ic)}<span>${label}</span>${key === 'chat' && unread ? `<em>${unread}</em>` : ''}</button>`).join('')}</div>`,
       lv: `<div class="menu-stats menu-lvbox"><div class="lv-big"><b>Lv ${lv}</b><span>${esc(r.title)}</span></div>${xp}</div>
         <div class="menu-rewards">${REWARDS.map(x => `<div class="reward${lv >= x.lv ? ' is-on' : ''}${next === x ? ' is-next' : ''}"><span class="reward-icon">${lv >= x.lv ? x.icon : '🔒'}</span><span><b>${esc(r.name[x.id])}</b><small>${esc(r.desc[x.id])}</small></span><em>${r.at(x.lv)}</em></div>`).join('')}</div>`,
@@ -883,6 +920,7 @@
     menu.innerHTML = `<div class="menu-head"><span class="menu-avatar" data-face="${asleep ? 2 : S.mood > 70 ? 1 : 0}"></span><div><strong>Yuki${unlocked('gold') ? `<i class="menu-title">${esc(r.best)}</i>` : ''}</strong><small>${t().moodWords[moodKey()]}</small></div><button type="button" class="menu-level tier-${tier}" data-tab="lv" title="${esc(r.title)}">♡ ${t().stats.level} ${lv}</button></div>
       <div class="menu-tabs" role="tablist">${Object.entries(tabs).map(([k, label]) => `<button type="button" role="tab" data-tab="${k}" aria-selected="${k === menuTab}">${esc(label)}${k === 'act' && unread ? '<i></i>' : ''}</button>`).join('')}</div>
       <div class="menu-body" data-body="${menuTab}">${body}</div>`;
+    paintMenu();
   }
   function renderWardrobe() {
     const c = t(), L = app.locale(), list = wardrobe()?.outfits() || [], accs = wardrobe()?.accessories || {};
@@ -928,7 +966,8 @@
     const text = act(key);
     if (key !== 'hide') renderMenu(); else closeMenu();
     if (text) say(text);
-    menu.querySelector(`[data-pet-act="${key === 'sleep' ? 'wake' : key === 'wake' ? 'sleep' : key}"]`)?.focus({preventScroll: true});
+    // She only falls asleep after her yawn, so the sleep button may not have turned into wake yet.
+    (menu.querySelector(`[data-pet-act="${key === 'sleep' ? 'wake' : key === 'wake' ? 'sleep' : key}"]`) || menu.querySelector(`[data-pet-act="${key}"]`))?.focus({preventScroll: true});
   });
   menu.addEventListener('keydown', event => {
     const items = [...menu.querySelectorAll('button')], i = items.indexOf(document.activeElement);
@@ -1353,6 +1392,7 @@
     if (status) status.textContent = `${word} · ${t().stats.level} ${level()}`;
     chat.querySelector('.chat-avatar')?.setAttribute('data-face', asleep ? '2' : S.mood > 70 ? '1' : '0');
     window.dispatchEvent(new CustomEvent('yuki:state', {detail: {asleep, mood: key, level: level()}}));
+    if (!menu.hidden) paintMenu();
   }
   window.addEventListener('niansia:navigate', event => {
     const {view, id, quiet} = event.detail;
