@@ -119,6 +119,22 @@ def pdf_tokens(doc) -> dict[str, int]:
     return {t: n for t in REFUSE + STRIP if (n := len(re.findall(re.escape(t) + r"(?![A-Za-z])(?!\s*null\b)", blob)))}
 
 
+def c2pa_only(doc) -> bool:
+    """True when the only embedded files are C2PA "Content Credentials" manifests (ChatGPT adds one to every PDF it makes).
+    They are provenance data, not active content; the cleaning step removes them like any other attachment."""
+    names = doc.embfile_names()
+    if not names or set(names) != {"Content Credentials"}:
+        return False
+    blob = "\n".join(doc.xref_object(x, compressed=True) for x in range(1, doc.xref_length()))
+    if "/FileAttachment" in blob or len(re.findall(r"/EmbeddedFile(?![A-Za-z])", blob)) != len(names):
+        return False
+    for n in names:
+        data = doc.embfile_get(n)
+        if len(data) > 200_000 or data[4:8] != b"jumb" or b"c2pa" not in data[:512]:
+            return False
+    return True
+
+
 def open_pdf(path: Path):
     import pymupdf as fitz
     try:
@@ -138,6 +154,9 @@ def clean(src: Path, out: Path) -> dict:
     doc = open_pdf(src)
     found = pdf_tokens(doc)
     bad = sorted(t for t in found if t in REFUSE)
+    c2pa = set(bad) <= {"/EmbeddedFile", "/EmbeddedFiles"} and bool(bad) and c2pa_only(doc)
+    if c2pa:
+        bad = []
     if bad:
         raise Refused("the PDF carries active or embedded content, which an exam never needs: " + ", ".join(bad))
     pages, text_before = doc.page_count, sum(len(p.get_text()) for p in doc)
@@ -152,9 +171,11 @@ def clean(src: Path, out: Path) -> dict:
             page.delete_annot(annot)
         doc.xref_set_key(page.xref, "Annots", "null")
         doc.xref_set_key(page.xref, "AA", "null")
+        doc.xref_set_key(page.xref, "AF", "null")
     cat = doc.pdf_catalog()
     # Outlines go too: a bookmark can carry an action. The structure tree stays, for screen readers.
-    for key in ("OpenAction", "AA", "AcroForm", "Names", "Metadata", "Outlines", "PieceInfo"):
+    # AF (PDF 2.0 associated files) is where ChatGPT hangs its C2PA manifest; it can carry any attachment, so it goes.
+    for key in ("OpenAction", "AA", "AcroForm", "Names", "Metadata", "Outlines", "PieceInfo", "AF"):
         doc.xref_set_key(cat, key, "null")
     doc.set_metadata({})
     doc.del_xml_metadata()
@@ -173,6 +194,8 @@ def clean(src: Path, out: Path) -> dict:
     if meta:
         raise Refused(f"metadata survived cleaning: {meta}")
     info = {"pages": pages, "removed": {t: n for t, n in found.items() if t in STRIP}}
+    if c2pa:
+        info["removed"]["C2PA Content Credentials"] = 1
     after.close()
     return info
 
