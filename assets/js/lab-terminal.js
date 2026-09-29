@@ -1075,6 +1075,388 @@
     const [key,n,paint,attr]=b.dataset.rgC!==undefined?['c',rgData.cases.length,rgPaint,'data-rg-c']:['s',rgData.session.steps.length,rgPaintStep,'data-rg-s'];
     rgState[key]=event.key==='Home'?0:event.key==='End'?n-1:(rgState[key]+(event.key==='ArrowRight'?1:n-1))%n; paint(); $(`[${attr}="${rgState[key]}"]`)?.focus();
   });
+  /* PSG: how a Task Contract bounds an agent, then one governed task recorded command by command on a demo repository,
+     and PSG's review-boundary benchmark (assets/psg/showcase.json, built by tools/psg_showcase.py from a clean checkout). */
+  const psCopy=()=>({
+    en:{note:'Everything below is PSG {v} running on a small demo repository for this page. The script that built it plays the coding agent and writes the edits, including three nobody asked for; every decision you see is PSG’s own output.',
+      archTitle:'How it bounds a task',
+      arch:[['Task Contract','Opening a task records the intent, acceptance criteria, constraints and non-goals. It starts as a draft with no write authority.'],
+        ['Sealed boundary','Context routing seals what may be written, what is read-only and what is forbidden. Reading may grow later; write authority never does.'],
+        ['The real diff','PSG reads the final change set from Git itself, not from the agent, and checks it against the boundary, locks and policies.'],
+        ['Attested checks','Only checks named in the project config run. Results are runtime-attested and tied to the worktree, so any later edit makes them stale.'],
+        ['Bounded review','A finding blocks only if the patch caused it, it breaks an acceptance criterion or a constraint, and the evidence holds. Then the gate says SHIPPABLE and review stops.']],
+      skillT:'As an Agent Skill with an MCP server',skill:'Codex, Claude Code and Gemini CLI load the Skill and call PSG through MCP. An agent cannot widen its own write scope, send arbitrary shell commands, decide whether its own finding blocks, or mint approval: approvals need an interactive terminal and a typed APPROVE.',
+      rules:[['Review the task, not the universe','Unrelated findings become follow-up work instead of reopening the task.'],['Reading ≠ write authority','Context can expand; the sealed write boundary cannot.'],['Claimed ≠ attested','Agent statements stay CLAIMED until the runtime or the user attests them.'],['Severity ≠ scope','A major bug outside the task is recorded, not blocking.']],
+      demoTitle:'One task, from contract to SHIPPABLE',demoLede:'A shop with a rounding bug in src/pricing.py, a partner API whose signatures are frozen, and a legacy export nobody may touch. Step through what PSG answered at each command.',
+      steps:[['Open','A draft contract'],['Seal','The boundary'],['Agent edits','Rejected'],['Only the fix','Allowed'],['Verify','Attested'],['Ship too early','Blocked'],['Review','Three findings'],['Ship','SHIPPABLE']],
+      texts:['The task opens as a draft: it records what was asked, but holds no write authority yet, so any change against it would be rejected.',
+        'Building context seals the contract. Only src/pricing.py may be written; the partner API is read-only and the legacy export is forbidden. The check that tests the fix is pulled in as reading context.',
+        'The agent fixed the bug, and also added a currency parameter to the partner API, modernised the legacy export and created a helper module. PSG read the real diff from Git and rejected all three extras.',
+        'With the extras reverted, the diff holds only the requested fix, and the same validation passes.',
+        'PSG runs the one check named in the project config, not a command the agent chose. The result is runtime-attested and bound to this exact worktree.',
+        'Asking to ship before the acceptance criterion has evidence: the gate says BLOCKED and recommends a targeted fix, not a new review.',
+        'The criterion now points at the attested check. A reviewer reports three findings; PSG derives whether each blocks from its relation to the task and its evidence.',
+        'One review round of two used, no current-task blockers: the gate returns SHIPPABLE and takes a snapshot. The three findings stay visible as follow-up work.'],
+      board:'Repository',role:{write:'write',read_only:'read-only',forbidden:'forbidden',read:'context',other:'untouched',new:'new file'},
+      contract:'Task Contract',intent:'Intent',ac:'Acceptance criterion',constraint:'Constraint',nongoal:'Non-goal',state:'State',requested:'Requested scope',
+      seal:'Sealed',hash:'Contract hash',tokens:'{n} of {b} tokens',tokensT:'Context',approvalT:'Scope approval needed',yes:'yes',no:'no',
+      viol:{read_only:'read-only file changed',forbidden_or_frozen:'forbidden file changed',outside_write_scope:'outside the write scope: request context expansion first'},
+      allowed:'allowed',rejected:'rejected',checkOut:'Check output',tier:'Trust',
+      gateT:'Ship gate',gate:[['policy','Final diff within the boundary'],['verification','Trusted, fresh functional check'],['acceptance','Acceptance criteria passed'],['issues','No current-task blocker or major'],['review','Independent review (high risk only)'],['budgets','Within review and fix budgets']],
+      pending:'not evaluated yet',na:'not required at low risk',
+      issueT:'Findings',rel:{caused_by_patch:'caused by the patch',violates_acceptance:'breaks an acceptance criterion',violates_project_constraint:'breaks a constraint',pre_existing:'pre-existing',unrelated:'unrelated',future_improvement:'future improvement'},
+      why:{pre_existing:'already true before the task',future_improvement:'desirable later, not this task',insufficient:'no concrete evidence',severity:'minor severity',blocks:'blocks the task'},
+      blocks:'blocks',follow:'follow-up',sufficient:'evidence sufficient',insufficient:'evidence insufficient',
+      reviewRound:'Review round {u} of {b}',snapshot:'Snapshot {s}',followUps:'{n} follow-up findings kept',
+      benchTitle:'Which findings may block?',benchLede:'PSG’s review-boundary benchmark, re-run for this page: ten findings with different severity, relation and evidence. PSG must block exactly the four that should block.',
+      cols:['Finding','Severity','Relation','Evidence','Expected','PSG'],blockWord:'block',passWord:'follow-up',
+      benchSum:'{c}/{n} correct · precision {p} · recall {r} · false reopenings {f}',
+      numTitle:'Numbers',
+      nums:[['{ok}/{all}','tests passed on Python {py} for this page (the version its Windows CI runs)'],['{c}/{n}','review-boundary scenarios decided correctly'],['{a} → {b}','file reads over {t} sequential tasks, with PSG routing ({pct}% fewer)'],['−{tk}%','context tokens in the same run; frozen-file edits blocked, review stopped at its budget']],
+      numNote:'The mechanics benchmark uses a small generated repository where the target is already known: it measures routing, not end-to-end agent savings. A historical agent A/B run is kept in the repository but marked superseded, so it is not used here.',
+      src:'Data: PSG {v} · commit {c} · run {d}'},
+    'zh-TW':{note:'以下全部是 PSG {v} 為這一頁在一個小型示範 repo 上的實際執行結果。產生資料的腳本扮演寫程式的代理、負責改程式，其中還包括三處沒人要求的修改；你看到的每一個判斷都是 PSG 自己的輸出。',
+      archTitle:'它怎麼框住一個任務',
+      arch:[['任務契約','開任務時記下意圖、驗收條件、限制與非目標。一開始是草稿，沒有任何寫入權限。'],
+        ['封存邊界','建立脈絡時封存「哪些檔案能寫、哪些唯讀、哪些禁止」。之後能讀的範圍可以擴大，寫入權限永遠不會。'],
+        ['真正的 diff','PSG 自己從 Git 讀最後的變更，而不是聽代理說，再拿去比對邊界、鎖定和政策。'],
+        ['可證明的檢查','只會執行專案設定裡列名的檢查。結果由執行環境證明，並綁定當下的工作目錄，之後任何修改都會讓它失效。'],
+        ['有邊界的審查','只有「這次修改造成的、違反驗收條件或限制，而且證據成立」的發現能擋下任務。閘門說 SHIPPABLE 時，審查就停。']],
+      skillT:'Agent Skill 加上 MCP 伺服器',skill:'Codex、Claude Code、Gemini CLI 會載入這個 Skill，並透過 MCP 呼叫 PSG。代理不能自己擴大寫入範圍、不能送任意 shell 指令、不能自己決定自己的發現會不會擋、也不能自行核准：核准需要互動式終端機，而且要親手輸入 APPROVE。',
+      rules:[['審任務，不審整個宇宙','和任務無關的發現會變成後續工作，而不是把任務重新打開。'],['能讀 ≠ 能寫','脈絡可以擴大，封存的寫入邊界不行。'],['宣稱 ≠ 證明','代理說的話一律是 CLAIMED，要由執行環境或使用者證明才算數。'],['嚴重度 ≠ 範圍','任務外的嚴重 bug 會被記錄，但不會擋下這個任務。']],
+      demoTitle:'一個任務，從契約到 SHIPPABLE',demoLede:'一個小商店：src/pricing.py 有四捨五入的 bug，合作夥伴 API 的函式簽名已凍結，還有一個誰都不能動的舊匯出模組。逐步看 PSG 在每個指令回了什麼。',
+      steps:[['開任務','草稿契約'],['封存','邊界'],['代理修改','被拒絕'],['只留修正','通過'],['驗證','已證明'],['太早出貨','被擋下'],['審查','三個發現'],['出貨','SHIPPABLE']],
+      texts:['任務以草稿開啟：記下了要做什麼，但還沒有任何寫入權限，這時候任何修改都會被拒絕。',
+        '建立脈絡時封存契約：只有 src/pricing.py 能寫；合作夥伴 API 唯讀，舊匯出模組禁止。用來檢驗修正的檢查腳本被納入閱讀脈絡。',
+        '代理修好了 bug，但順手在合作夥伴 API 加了 currency 參數、把舊匯出模組「現代化」，還新增了一個輔助模組。PSG 從 Git 讀出真正的 diff，三處額外修改全部被擋。',
+        '把額外修改還原後，diff 只剩要求的修正，同樣的驗證就通過了。',
+        'PSG 執行的是專案設定裡列名的那一個檢查，不是代理自己挑的指令。結果由執行環境證明，並綁定這個工作目錄。',
+        '驗收條件還沒有證據就要求出貨：閘門回 BLOCKED，建議做針對性修正，而不是再審一輪。',
+        '驗收條件改為指向那次已證明的檢查。審查者回報三個發現；PSG 依照它們和任務的關係與證據，自己推導會不會擋。',
+        '用了兩輪審查中的一輪，沒有屬於這個任務的阻擋項：閘門回 SHIPPABLE 並建立快照。三個發現保留為後續工作。'],
+      board:'Repo',role:{write:'可寫',read_only:'唯讀',forbidden:'禁止',read:'脈絡',other:'未涉及',new:'新檔案'},
+      contract:'任務契約',intent:'意圖',ac:'驗收條件',constraint:'限制',nongoal:'非目標',state:'狀態',requested:'申請的範圍',
+      seal:'已封存',hash:'契約雜湊',tokens:'{n} / {b} tokens',tokensT:'脈絡',approvalT:'需要範圍核准',yes:'是',no:'否',
+      viol:{read_only:'改了唯讀檔案',forbidden_or_frozen:'改了禁止的檔案',outside_write_scope:'超出寫入範圍：要先申請擴大脈絡'},
+      allowed:'通過',rejected:'拒絕',checkOut:'檢查輸出',tier:'信任層級',
+      gateT:'出貨閘門',gate:[['policy','最終 diff 在邊界內'],['verification','有可信、未過期的功能檢查'],['acceptance','驗收條件已通過'],['issues','沒有屬於本任務的阻擋或重大問題'],['review','獨立審查（只有高風險需要）'],['budgets','在審查與修正次數上限內']],
+      pending:'尚未評估',na:'低風險不需要',
+      issueT:'審查發現',rel:{caused_by_patch:'修改造成',violates_acceptance:'違反驗收條件',violates_project_constraint:'違反限制',pre_existing:'原本就有',unrelated:'無關',future_improvement:'未來改善'},
+      why:{pre_existing:'任務開始前就存在',future_improvement:'值得以後做，但不是這個任務',insufficient:'沒有具體證據',severity:'嚴重度只是 minor',blocks:'會擋下任務'},
+      blocks:'阻擋',follow:'後續工作',sufficient:'證據充分',insufficient:'證據不足',
+      reviewRound:'審查第 {u} / {b} 輪',snapshot:'快照 {s}',followUps:'保留 {n} 個後續發現',
+      benchTitle:'哪些發現能擋下任務？',benchLede:'PSG 的審查邊界評測，為這一頁重新執行：十個嚴重度、關係和證據各不相同的發現，PSG 必須剛好擋下該擋的那四個。',
+      cols:['發現','嚴重度','關係','證據','預期','PSG'],blockWord:'擋',passWord:'後續',
+      benchSum:'{c}/{n} 正確 · 精確率 {p} · 召回率 {r} · 誤開 {f}',
+      numTitle:'數字',
+      nums:[['{ok}/{all}','測試在 Python {py} 上為這一頁重跑通過（它的 Windows CI 用的版本）'],['{c}/{n}','審查邊界情境判斷正確'],['{a} → {b}','{t} 個連續任務的讀檔次數，用 PSG 路由後（少 {pct}%）'],['−{tk}%','同一次執行的脈絡 token；凍結檔案的修改被擋、審查在上限停下']],
+      numNote:'機制評測用的是一個自動生成的小 repo，而且目標檔案已知：它衡量的是路由機制，不是代理端到端省下多少。repo 裡保留了一次歷史性的代理 A/B 實驗，但已標記為作廢，這裡不採用。',
+      src:'資料：PSG {v} · commit {c} · 執行於 {d}'},
+    'zh-CN':{note:'以下全部是 PSG {v} 为这一页在一个小型示范仓库上的实际运行结果。生成数据的脚本扮演写代码的代理、负责改代码，其中还包括三处没人要求的修改；你看到的每一个判断都是 PSG 自己的输出。',
+      archTitle:'它怎么框住一个任务',
+      arch:[['任务契约','开任务时记下意图、验收条件、限制与非目标。一开始是草稿，没有任何写入权限。'],
+        ['封存边界','构建上下文时封存“哪些文件能写、哪些只读、哪些禁止”。之后能读的范围可以扩大，写入权限永远不会。'],
+        ['真正的 diff','PSG 自己从 Git 读取最终的变更，而不是听代理说，再拿去比对边界、锁定和策略。'],
+        ['可证明的检查','只会运行项目配置里列名的检查。结果由运行环境证明，并绑定当前的工作目录，之后任何修改都会让它失效。'],
+        ['有边界的审查','只有“这次修改造成的、违反验收条件或限制，而且证据成立”的发现能挡下任务。闸门说 SHIPPABLE 时，审查就停止。']],
+      skillT:'Agent Skill 加上 MCP 服务器',skill:'Codex、Claude Code、Gemini CLI 会加载这个 Skill，并通过 MCP 调用 PSG。代理不能自己扩大写入范围、不能发送任意 shell 命令、不能自己决定自己的发现会不会挡、也不能自行批准：批准需要交互式终端，而且要亲手输入 APPROVE。',
+      rules:[['审任务，不审整个宇宙','和任务无关的发现会变成后续工作，而不是把任务重新打开。'],['能读 ≠ 能写','上下文可以扩大，封存的写入边界不行。'],['声称 ≠ 证明','代理说的话一律是 CLAIMED，要由运行环境或用户证明才算数。'],['严重度 ≠ 范围','任务外的严重 bug 会被记录，但不会挡下这个任务。']],
+      demoTitle:'一个任务，从契约到 SHIPPABLE',demoLede:'一个小商店：src/pricing.py 有四舍五入的 bug，合作伙伴 API 的函数签名已冻结，还有一个谁都不能动的旧导出模块。逐步看 PSG 在每个命令回了什么。',
+      steps:[['开任务','草稿契约'],['封存','边界'],['代理修改','被拒绝'],['只留修正','通过'],['验证','已证明'],['太早发布','被挡下'],['审查','三个发现'],['发布','SHIPPABLE']],
+      texts:['任务以草稿开启：记下了要做什么，但还没有任何写入权限，这时候任何修改都会被拒绝。',
+        '构建上下文时封存契约：只有 src/pricing.py 能写；合作伙伴 API 只读，旧导出模块禁止。用来检验修正的检查脚本被纳入阅读上下文。',
+        '代理修好了 bug，但顺手在合作伙伴 API 加了 currency 参数、把旧导出模块“现代化”，还新增了一个辅助模块。PSG 从 Git 读出真正的 diff，三处额外修改全部被挡。',
+        '把额外修改还原后，diff 只剩要求的修正，同样的验证就通过了。',
+        'PSG 运行的是项目配置里列名的那一个检查，不是代理自己挑的命令。结果由运行环境证明，并绑定这个工作目录。',
+        '验收条件还没有证据就要求发布：闸门回 BLOCKED，建议做针对性修正，而不是再审一轮。',
+        '验收条件改为指向那次已证明的检查。审查者报告三个发现；PSG 依照它们和任务的关系与证据，自己推导会不会挡。',
+        '用了两轮审查中的一轮，没有属于这个任务的阻挡项：闸门回 SHIPPABLE 并创建快照。三个发现保留为后续工作。'],
+      board:'仓库',role:{write:'可写',read_only:'只读',forbidden:'禁止',read:'上下文',other:'未涉及',new:'新文件'},
+      contract:'任务契约',intent:'意图',ac:'验收条件',constraint:'限制',nongoal:'非目标',state:'状态',requested:'申请的范围',
+      seal:'已封存',hash:'契约哈希',tokens:'{n} / {b} tokens',tokensT:'上下文',approvalT:'需要范围批准',yes:'是',no:'否',
+      viol:{read_only:'改了只读文件',forbidden_or_frozen:'改了禁止的文件',outside_write_scope:'超出写入范围：要先申请扩大上下文'},
+      allowed:'通过',rejected:'拒绝',checkOut:'检查输出',tier:'信任层级',
+      gateT:'发布闸门',gate:[['policy','最终 diff 在边界内'],['verification','有可信、未过期的功能检查'],['acceptance','验收条件已通过'],['issues','没有属于本任务的阻挡或重大问题'],['review','独立审查（只有高风险需要）'],['budgets','在审查与修正次数上限内']],
+      pending:'尚未评估',na:'低风险不需要',
+      issueT:'审查发现',rel:{caused_by_patch:'修改造成',violates_acceptance:'违反验收条件',violates_project_constraint:'违反限制',pre_existing:'原本就有',unrelated:'无关',future_improvement:'未来改进'},
+      why:{pre_existing:'任务开始前就存在',future_improvement:'值得以后做，但不是这个任务',insufficient:'没有具体证据',severity:'严重度只是 minor',blocks:'会挡下任务'},
+      blocks:'阻挡',follow:'后续工作',sufficient:'证据充分',insufficient:'证据不足',
+      reviewRound:'审查第 {u} / {b} 轮',snapshot:'快照 {s}',followUps:'保留 {n} 个后续发现',
+      benchTitle:'哪些发现能挡下任务？',benchLede:'PSG 的审查边界评测，为这一页重新运行：十个严重度、关系和证据各不相同的发现，PSG 必须刚好挡下该挡的那四个。',
+      cols:['发现','严重度','关系','证据','预期','PSG'],blockWord:'挡',passWord:'后续',
+      benchSum:'{c}/{n} 正确 · 精确率 {p} · 召回率 {r} · 误开 {f}',
+      numTitle:'数字',
+      nums:[['{ok}/{all}','测试在 Python {py} 上为这一页重跑通过（它的 Windows CI 用的版本）'],['{c}/{n}','审查边界情境判断正确'],['{a} → {b}','{t} 个连续任务的读文件次数，用 PSG 路由后（少 {pct}%）'],['−{tk}%','同一次运行的上下文 token；冻结文件的修改被挡、审查在上限停下']],
+      numNote:'机制评测用的是一个自动生成的小仓库，而且目标文件已知：它衡量的是路由机制，不是代理端到端省下多少。仓库里保留了一次历史性的代理 A/B 实验，但已标记为作废，这里不采用。',
+      src:'数据：PSG {v} · commit {c} · 运行于 {d}'}}[locale]);
+  let psData=null;
+  const psState={s:0};
+  const psDiff=text=>esc(text).split('\n').filter(l=>!/^(index |diff --git)/.test(l)).map(l=>`<span class="${/^\+(?!\+\+)/.test(l)?'d-add':/^-(?!--)/.test(l)?'d-del':/^(@@|new file|---|\+\+\+)/.test(l)?'d-meta':''}">${l||' '}</span>`).join('');
+  function psShowcase() {
+    const c=psCopy();
+    return `<section class="ps-show"><p class="ps-note"><b translate="no"></b><span class="ps-note-t"></span></p>
+      <h2>${esc(c.archTitle)}</h2><ol class="ps-flow">${c.arch.map(([t,d],i)=>`<li style="--i:${i}"><span class="ps-n">${i+1}</span><b>${esc(t)}</b><small>${esc(d)}</small></li>`).join('')}</ol>
+      <p class="ps-skill"><b>${esc(c.skillT)}</b><span>${esc(c.skill)}</span></p>
+      <div class="ps-rules">${c.rules.map(([t,d])=>`<div><b>${esc(t)}</b><small>${esc(d)}</small></div>`).join('')}</div>
+      <h2>${esc(c.demoTitle)}</h2><p class="screen-intro">${esc(c.demoLede)}</p>
+      <div class="ps-demo"><div class="ps-steps" role="tablist" aria-label="${esc(c.demoTitle)}"></div><div class="ps-stage" role="tabpanel" aria-live="polite"></div><p class="ps-src"></p></div>
+      <h2>${esc(c.benchTitle)}</h2><p class="screen-intro">${esc(c.benchLede)}</p><div class="ps-bench"></div>
+      <h2>${esc(c.numTitle)}</h2><div class="ps-nums"></div><p class="comment-line">${esc(c.numNote)}</p></section>`;
+  }
+  function psPaint() {
+    const box=$('.ps-show'); if(!box||!psData) return;
+    const c=psCopy(), S=psData.session, i=psState.s, T=S.task, W=S.context.working_set;
+    const ORDER=['open','seal','rejected','allowed','verify','ship_early','review','ship'];
+    box.querySelector('.ps-steps').innerHTML=c.steps.map(([t,s],k)=>`<button type="button" role="tab" data-ps-s="${k}" aria-selected="${k===i}" tabindex="${k===i?0:-1}" class="${k===2||k===5?'is-no':k===7?'is-ok':''}"><span>${k+1}</span><b>${esc(t)}</b><small>${esc(s)}</small></button>`).join('');
+    const id=ORDER[i];
+    // the repository board: every file with its sealed role; the rejected step marks the files PSG refused
+    const files=[...Object.keys(S.files),'src/money.py'].filter(f=>f!=='src/money.py'||id==='rejected');
+    const roleOf=f=>f==='src/money.py'?'new':i===0?'other':W.write.includes(f)?'write':W.read_only.includes(f)?'read_only':W.forbidden.includes(f)?'forbidden':W.read.includes(f)?'read':'other';
+    const hit=f=>id==='rejected'?S.rejected.violations.find(v=>v.path===f):null;
+    const changed=f=>id==='rejected'?/^(src\/(pricing|api|legacy_export|money)\.py)$/.test(f):['allowed','verify','ship_early','review','ship'].includes(id)&&f==='src/pricing.py';
+    const board=`<div class="ps-board"><h3>${esc(c.board)}</h3><ul>${files.map(f=>{ const v=hit(f), r=roleOf(f);
+      return `<li class="r-${r}${v?' is-hit':''}${changed(f)?' is-changed':''}"><code translate="no">${esc(f)}</code><em>${esc(c.role[r])}</em>${v?`<small>✕ ${esc(c.viol[v.kind]||v.kind)}</small>`:changed(f)&&id!=='rejected'?'<small class="ok">✓</small>':''}</li>`; }).join('')}</ul></div>`;
+    const runLine=cmd=>`<p class="ps-cmd"><code translate="no">$ ${esc(cmd)}</code></p>`;
+    let main='';
+    if(id==='open') main=`${runLine(T.cmd)}<dl class="ps-contract"><div><dt>${esc(c.intent)}</dt><dd>${esc(T.intent)}</dd></div>${T.criteria.map(a=>`<div><dt>${esc(c.ac)} <code translate="no">${esc(a.id)}</code></dt><dd>${esc(a.text)} <em class="st-${esc(a.status)}" translate="no">${esc(a.status)}</em></dd></div>`).join('')}
+      <div><dt>${esc(c.constraint)}</dt><dd>${T.constraints.map(esc).join('<br>')}</dd></div><div><dt>${esc(c.nongoal)}</dt><dd>${T.non_goals.map(esc).join('<br>')}</dd></div>
+      <div><dt>${esc(c.requested)}</dt><dd translate="no">write ${T.requested.write.map(esc).join(', ')} · read-only ${T.requested.read_only.map(esc).join(', ')} · forbidden ${T.requested.forbidden.map(esc).join(', ')}</dd></div>
+      <div><dt>${esc(c.state)}</dt><dd><em class="ps-draft" translate="no">${esc(String(T.state).toUpperCase())}</em> <span translate="no">authorized_write: []</span></dd></div></dl>`;
+    if(id==='seal'){ const s=S.context.seal;
+      main=`${runLine(S.context.cmd)}<dl class="ps-contract"><div><dt>${esc(c.state)}</dt><dd><em class="ps-sealed" translate="no">${esc(String(s.contract_state).toUpperCase())}</em> <span translate="no">authorized_write: [${s.authorized_write.map(esc).join(', ')}]</span></dd></div>
+        <div><dt>${esc(c.hash)}</dt><dd><code translate="no">${esc(s.contract_hash.slice(0,23))}…</code></dd></div><div><dt>${esc(c.approvalT)}</dt><dd>${esc(s.requires_scope_approval?c.yes:c.no)}</dd></div>
+        <div><dt>${esc(c.tokensT)}</dt><dd><span class="ps-meter"><i style="--v:${Math.min(1,S.context.token_estimate/S.context.context_budget)}"></i></span> ${esc(csFill(c.tokens,{n:S.context.token_estimate,b:S.context.context_budget.toLocaleString('en-US')}))}</dd></div></dl>`; }
+    if(id==='rejected') main=`<pre class="ps-diff" translate="no"><code>${psDiff(S.agent_diff)}</code></pre>${runLine(S.rejected.cmd)}<p class="ps-verdict is-no"><b translate="no">allowed: false</b> · ${esc(c.rejected)}</p>
+      <ul class="ps-viol">${S.rejected.violations.map(v=>`<li><code translate="no">${esc(v.kind)}</code><b translate="no">${esc(v.path)}</b><small>${esc(c.viol[v.kind]||v.kind)}</small></li>`).join('')}</ul>`;
+    if(id==='allowed') main=`<pre class="ps-diff" translate="no"><code>${psDiff(S.allowed.diff)}</code></pre>${runLine(S.allowed.cmd)}<p class="ps-verdict is-ok"><b translate="no">allowed: true</b> · ${esc(c.allowed)} · <span translate="no">violations: []</span></p>`;
+    if(id==='verify'){ const v=S.verify;
+      main=`${runLine(v.cmd)}<p class="ps-verdict is-ok"><b translate="no">${esc(v.id)} · ${esc(v.name)} · ${esc(v.result)}</b> · ${esc(c.tier)} <code translate="no">${esc(v.trust_tier)}</code> · <span translate="no">exit ${esc(v.exit_code)}</span></p>
+        <h3>${esc(c.checkOut)}</h3><pre class="ps-log" translate="no"><code>${esc(v.log)}</code></pre>`; }
+    if(id==='ship_early'||id==='ship'){ const g=S[id];
+      main=`${id==='ship'?runLine(S.review.cmd)+`<p class="ps-verdict"><b>${esc(csFill(c.reviewRound,{u:S.review.review_rounds_used,b:S.review.review_budget}))}</b> · <span translate="no">derived_new_blocking_issues: ${esc(S.review.derived_new_blocking_issues)} · ${esc(S.review.invariant)}</span></p>`:''}
+        ${runLine(g.cmd)}<div class="ps-shipres ${g.status==='SHIPPABLE'?'is-ok':'is-no'}"><em translate="no">${esc(g.status)}</em><span translate="no">recommendation: ${esc(g.recommendation)}</span>${g.stable_snapshot?`<small>${esc(csFill(c.snapshot,{s:g.stable_snapshot}))} · ${esc(csFill(c.followUps,{n:g.follow_up_issue_summary.total}))}</small>`:`<small translate="no">failed_or_pending: [${g.acceptance.failed_or_pending.map(esc).join(', ')}]</small>`}</div>`; }
+    if(id==='review') main=`${runLine(S.criterion.cmd)}<p class="ps-verdict is-ok"><b translate="no">${esc(S.criterion.id)} · pass</b> → <code translate="no">${esc(S.criterion.reference)}</code></p>
+      <h3>${esc(c.issueT)}</h3><ul class="ps-issues">${S.issues.map(x=>{ const why=x.blocks_current_task?c.why.blocks:!x.evidence_sufficient?c.why.insufficient:c.why[x.relation_to_task]||c.why.severity;
+        return `<li class="${x.blocks_current_task?'is-block':''}"><p><code translate="no">${esc(x.id)}</code><em class="sev-${esc(x.severity)}" translate="no">${esc(x.severity)}</em><b>${esc(x.claim)}</b></p><small>${esc(c.rel[x.relation_to_task]||x.relation_to_task)} · ${esc(x.evidence_sufficient?c.sufficient:c.insufficient)} <code translate="no">${esc(JSON.stringify(x.evidence))}</code></small><span class="ps-derived"><b translate="no">blocks_current_task: ${esc(x.blocks_current_task)}</b> — ${esc(why)}</span></li>`; }).join('')}</ul>`;
+    // the ship gate as PSG evaluated it, known only at the two ship steps
+    const g=id==='ship'?S.ship:id==='ship_early'?S.ship_early:null;
+    const okOf={policy:g&&g.policy_allowed,verification:g&&g.verification.functional_trusted.length&&!g.verification.failed.length&&!g.verification.missing&&!g.verification.stale.length,
+      acceptance:g&&!g.acceptance.failed_or_pending.length&&!g.acceptance.stale.length,issues:g&&!g.current_task_issue_summary.total,
+      review:g&&(!g.independent_review_required||g.independent_review_satisfied),budgets:g&&g.review_rounds_used<=g.review_budget&&g.fix_cycles_used<=g.fix_budget};
+    const detail={policy:g&&'violations: []',verification:g&&`functional_trusted: [${g.verification.functional_trusted.join(', ')}]`,acceptance:g&&`${g.acceptance.passed}/${g.acceptance.mandatory_total}`,
+      issues:g&&`current: ${g.current_task_issue_summary.total} · follow-up: ${g.follow_up_issue_summary.total}`,review:g&&(g.independent_review_required?'':c.na),budgets:g&&`review ${g.review_rounds_used}/${g.review_budget} · fix ${g.fix_cycles_used}/${g.fix_budget}`};
+    const gate=`<div class="ps-gate${g?'':' is-idle'}"><h3>${esc(c.gateT)}</h3><ul>${c.gate.map(([k,label])=>`<li class="${!g?'':okOf[k]?'is-ok':'is-no'}"><i aria-hidden="true">${!g?'·':okOf[k]?'✓':'✕'}</i><span>${esc(label)}</span><small translate="no">${esc(g?detail[k]:c.pending)}</small></li>`).join('')}</ul></div>`;
+    box.querySelector('.ps-stage').innerHTML=`<p class="ps-text">${esc(c.texts[i])}</p><div class="ps-cols"><div class="ps-main">${main}</div><div class="ps-side">${board}${gate}</div></div>`;
+    box.querySelector('.ps-src').textContent=csFill(c.src,{v:psData.source.version,c:psData.source.commit.slice(0,7),d:psData.source.run});
+  }
+  function psStatic() {
+    const box=$('.ps-show'); if(!box||!psData) return;
+    const c=psCopy(), D=psData, B=D.boundary, M=D.mechanics, T=D.tests;
+    box.querySelector('.ps-note b').textContent='v'+D.source.version; box.querySelector('.ps-note-t').textContent=csFill(c.note,{v:D.source.version});
+    const ev=e=>e.kind+(e.path?' · '+e.path:'');
+    box.querySelector('.ps-bench').innerHTML=`<table class="ps-table"><thead><tr>${c.cols.map(h=>`<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${B.scenarios.map(s=>`<tr class="${s.expected_block?'is-block':''}"><td>${esc(s.name)}</td><td><em class="sev-${esc(s.severity)}" translate="no">${esc(s.severity)}</em></td><td>${esc(c.rel[s.relation]||s.relation)}</td><td><code translate="no">${esc(ev(s.evidence))}</code>${s.evidence_sufficient?'':` <small>(${esc(c.insufficient)})</small>`}</td><td>${esc(s.expected_block?c.blockWord:c.passWord)}</td><td class="${s.correct?'ok':'bad'}">${esc(s.actual_block?c.blockWord:c.passWord)} ${s.correct?'✓':'✕'}</td></tr>`).join('')}</tbody></table>
+      <p class="ps-benchsum">${esc(csFill(c.benchSum,{c:B.summary.correct,n:B.scenarios.length,p:B.summary.blocking_precision.toFixed(1),r:B.summary.blocking_recall.toFixed(1),f:B.summary.false_reopening_rate}))}</p>`;
+    const vals=[{ok:T.passed,all:T.collected,py:T.python},{c:B.summary.correct,n:B.scenarios.length},{a:M.baseline_file_reads,b:M.psg_file_reads,t:M.tasks_shippable,pct:M.file_read_reduction_percent.toFixed(1)},{tk:M.total_context_token_reduction_percent.toFixed(1)}];
+    box.querySelector('.ps-nums').innerHTML=c.nums.map(([big,small],k)=>`<div style="--i:${k}"><b>${esc(csFill(big,vals[k]))}</b><small>${esc(csFill(small,vals[k]))}</small></div>`).join('');
+  }
+  function initPsg() {
+    const box=$('.ps-show'); if(!box) return;
+    box.classList.toggle('no-motion',!motion());
+    const go=()=>{ psStatic(); psPaint(); };
+    if(psData) go(); else fetch('/assets/psg/showcase.json?v=1').then(r=>r.json()).then(d=>{psData=d;go();}).catch(()=>{});
+  }
+  root.addEventListener('click',event=>{ const b=event.target.closest('[data-ps-s]'); if(b){ psState.s=Number(b.dataset.psS); psPaint(); } });
+  root.addEventListener('keydown',event=>{
+    const b=event.target.closest?.('[data-ps-s]'); if(!b||!['ArrowLeft','ArrowRight','Home','End'].includes(event.key)||!psData) return;
+    event.preventDefault(); const n=8;
+    psState.s=event.key==='Home'?0:event.key==='End'?n-1:(psState.s+(event.key==='ArrowRight'?1:n-1))%n; psPaint(); $(`[data-ps-s="${psState.s}"]`)?.focus();
+  });
+  /* NoveltyAudit: how an audit is built, then its own offline code on the synthetic report committed with its tests (the
+     cutoff moved through time, the validator given dishonest copies) and a public claim decomposed
+     (assets/noveltyaudit/showcase.json, built by tools/noveltyaudit_showcase.py from a clean checkout). */
+  const NA_CLS={en:{DIRECT_PRECEDENT:'One earlier paper already covers every critical facet.',STRONG_COMPOSITION_RISK:'A small set of earlier papers covers the claim, and text before the cutoff explicitly connects them.',
+      PLAUSIBLE_COMPOSITION_RISK:'A small set covers the claim, and the citation graph links them, but no verified text does.',FRAGMENTED_PRECEDENT:'The pieces exist in separate papers with no historical link between them.',
+      RESIDUAL_NOVELTY:'No set of three or fewer eligible papers covers every critical facet.',INCONCLUSIVE:'The evidence is too incomplete to say.'},
+    'zh-TW':{DIRECT_PRECEDENT:'一篇更早的論文就涵蓋了所有關鍵面向。',STRONG_COMPOSITION_RISK:'幾篇更早的論文合起來涵蓋了主張，而且截止日前就有文字明確把它們連在一起。',
+      PLAUSIBLE_COMPOSITION_RISK:'幾篇論文合起來涵蓋了主張，引用圖也把它們連起來，但沒有經過驗證的文字連結。',FRAGMENTED_PRECEDENT:'各個部分散在不同論文裡，歷史上沒有任何連結。',
+      RESIDUAL_NOVELTY:'找不到三篇以內、截止日前已公開的論文能涵蓋所有關鍵面向。',INCONCLUSIVE:'證據不完整，無法下結論。'},
+    'zh-CN':{DIRECT_PRECEDENT:'一篇更早的论文就涵盖了所有关键方面。',STRONG_COMPOSITION_RISK:'几篇更早的论文合起来涵盖了主张，而且截止日前就有文字明确把它们连在一起。',
+      PLAUSIBLE_COMPOSITION_RISK:'几篇论文合起来涵盖了主张，引用图也把它们连起来，但没有经过验证的文字连接。',FRAGMENTED_PRECEDENT:'各个部分散在不同论文里，历史上没有任何连接。',
+      RESIDUAL_NOVELTY:'找不到三篇以内、截止日前已公开的论文能涵盖所有关键方面。',INCONCLUSIVE:'证据不完整，无法下结论。'}};
+  const naCopy=()=>({
+    en:{note:'Everything below is NoveltyAudit {v}’s own offline code, run for this page on the synthetic report committed with its tests (papers A, B and C are fictional) and on one public case. A live audit also searches arXiv, OpenAlex, Semantic Scholar and Crossref; this page makes no such calls.',
+      archTitle:'How an audit is built',
+      arch:[['Freeze the claim','Split the claim into facets and hash it before any search, so it cannot drift towards what was found.'],
+        ['Search five ways','Literal, mechanism, problem, ancestor and composition queries across several providers; coverage describes this protocol, never recall.'],
+        ['Date gate','Only work public before the cutoff counts, dated by its earliest public version.'],
+        ['Minimal Prior Set','The smallest set of at most three eligible papers whose cited evidence covers every critical facet.'],
+        ['Bridge test','Were those papers already connected before the cutoff? Verified text first, then the citation graph.'],
+        ['Three-axis verdict','Novelty risk, search coverage and evidence confidence stay separate; missing evidence means INCONCLUSIVE.']],
+      skillT:'Who does what',skill:'The host agent reads the papers and writes the judgments: facets, which evidence covers what, the residual novelty. NoveltyAudit’s scripts never call a model. They recompute everything that can be recomputed, the claim hash, dates, the smallest covering set, bridges and search coverage, and reject a report that disagrees.',
+      rules:[['Most similar ≠ killer','A near match that misses one critical facet is not a precedent.'],['No single killer ≠ novel','Three papers together can cover what none covers alone.'],['Coverage ≠ recall','“Broad” means the search protocol ran completely, not that nothing was missed.'],['No novelty scores','A percentage would look precise and mean nothing; the report refuses to print one.']],
+      demoTitle:'Move the cutoff',demoLede:'One claim, three earlier papers. The verdict depends on what was public on the cutoff date. Each stop below is the tool’s date gate, set search, bridge detection and classification run on the same papers.',
+      claimT:'Claim',facetsT:'Facets (frozen)',critical:'critical',papersT:'Papers',eligible:'public before the cutoff',post:'after the cutoff',
+      covT:'Evidence coverage',cov:{EXACT:'covers',FUNCTIONAL:'covers',PARTIAL:'partial',NO:'—'},before:'{d} days before the cutoff',cites:'cites {x}',
+      mpsT:'Minimal Prior Set',none:'none',bridgesT:'Bridges between the set',usable:'usable',notYet:'source not yet public',
+      btype:{TAXONOMY_BRIDGE:'text: a taxonomy names both',DIRECT_CITATION:'graph: one cites the other',CO_CITATION:'graph: cited together',LANDSCAPE_BRIDGE:'after the cutoff: landscape only'},
+      whatIf:'Same set, other bridge evidence',ifGraph:'graph links only',ifNone:'no bridge at all',
+      window:'Observation window A × B: {d} days ({s}; threshold {t})',wstatus:{MEETS_DIAGNOSTIC_THRESHOLD:'long enough to expect a trail',BELOW_DIAGNOSTIC_THRESHOLD:'too short to expect a trail'},
+      axes:'The fixture’s verdict',axis:['Novelty risk','Search coverage','Evidence confidence'],protocol:'{r} query runs · providers {p} · families {f}',
+      reportT:'The report it writes',residualT:'Residual novelty',rewriteT:'Defensible rewrite',gapsT:'Search gaps',
+      refTitle:'What the validator refuses',refLede:'The same report, edited to overclaim. Each card is one edit and the validator’s actual answer (exit code 40 means rejected).',
+      refs:{reworded_after_freeze:['Reworded after searching','A facet was rephrased after the search had run.'],prior_after_cutoff:['A prior from after the cutoff','Paper B’s date was moved past the cutoff but it stays in the set.'],
+        uncited_killer_marked_cited:['A killer passed off as cited','Paper A is not in the manuscript’s bibliography, but the report says it is.'],bridge_without_text:['A bridge with no text','The taxonomy bridge lost its evidence span.'],
+        graph_not_searched:['The citation graph not searched','The graph expansion for A and B was dropped.'],strong_verdict_weak_evidence:['Strong verdict, weak evidence','Evidence confidence lowered to WEAK, verdict kept.'],
+        reassuring_risk:['A reassuring risk level','Novelty risk set to LOW on a composition verdict.'],novelty_percentage:['A novelty percentage','“Estimated novelty: 35%” added to the summary.'],
+        broad_search_after_timeout:['“Broad” after a failed query','One arXiv query failed; the verdict still says BROAD.']},
+      more:'+{n} more',
+      ragTitle:'A real claim, decomposed',ragLede:'A public case from the repository: the claim of the RAG paper, split into facets and matched to earlier work. It is a curated hypothesis, not an audit the tool has run end to end.',
+      facetStatus:{PUBLIC_PRIOR_CANDIDATE:'prior candidate',ANCESTOR_SCOPE_REQUIRES_COMPARISON:'ancestor: needs comparison',RESIDUAL_NOVELTY_HYPOTHESIS:'may be the novel part'},
+      candidate:'Candidate set to test',windowsT:'Time the priors had to meet before the cutoff',days:'{d} days',
+      ragNote:'All three pairs had well under the {t}-day window, so an empty citation graph between them would say almost nothing about whether the idea was “in the air”.',
+      numTitle:'Numbers',
+      nums:[['{ok}/{all}','tests passed offline for this page, {adv} of them adversarial validator tests'],['{m}/{a}','reviewer-annotated cases name two or more prior works'],['{b}/{c}','complete multi-prior cases show a pre-cutoff bridge (95% interval {lo}–{hi}%)'],['{u}/{p}','prior pairs had under 18 months before the cutoff (median {med} days)']],
+      numNote:'The last three are aggregates from {ds} ({lic}), snapshot {snap}. They describe how prior work and bridges look in reviewer data, not NoveltyAudit’s accuracy: no complete reviewer-grounded end-to-end audit has been run yet.',
+      src:'Data: NoveltyAudit {v} · commit {c} · run {d}'},
+    'zh-TW':{note:'以下全部是 NoveltyAudit {v} 自己的離線程式碼，為這一頁在它測試附帶的合成報告上執行（論文 A、B、C 都是虛構的），外加一個公開案例。實際審查還會查詢 arXiv、OpenAlex、Semantic Scholar 和 Crossref；這一頁完全不連網。',
+      archTitle:'一次審查怎麼組成',
+      arch:[['凍結主張','把主張拆成幾個面向，並在搜尋前算好雜湊，避免主張被搜尋結果牽著走。'],
+        ['五種搜尋','字面、機制、問題、祖先與組合五類查詢，跨多個來源；「覆蓋度」描述的是這套流程，不是召回率。'],
+        ['日期關卡','只有截止日前公開的研究才算，日期以最早公開的版本為準。'],
+        ['最小先前集合','最多三篇、截止日前已公開，而且引用的證據能涵蓋所有關鍵面向的最小論文組合。'],
+        ['橋接檢驗','這些論文在截止日前就已經被連在一起了嗎？先看經驗證的文字，再看引用圖。'],
+        ['三軸判斷','新穎性風險、搜尋覆蓋度、證據信心分開呈現；證據不足就是 INCONCLUSIVE。']],
+      skillT:'誰負責什麼',skill:'代理負責讀論文並寫下判斷：面向、哪段證據涵蓋什麼、剩下的新穎之處。NoveltyAudit 的腳本從不呼叫模型，它們重新計算所有能算的東西：主張雜湊、日期、最小涵蓋集合、橋接、搜尋覆蓋度，對不上的報告一律拒絕。',
+      rules:[['最相似 ≠ 致命','很像但漏掉一個關鍵面向的論文，不算先例。'],['沒有單一致命論文 ≠ 有新意','三篇合起來，可能涵蓋任何一篇單獨涵蓋不了的東西。'],['覆蓋度 ≠ 召回率','「廣」代表搜尋流程完整執行，不代表沒有遺漏。'],['不給新穎度分數','百分比看起來很精確，其實沒有意義；報告拒絕印出任何百分比。']],
+      demoTitle:'移動截止日',demoLede:'一個主張、三篇更早的論文。判斷取決於截止日那天有哪些已經公開。下面每一站，都是工具的日期關卡、集合搜尋、橋接偵測和分類在同一批論文上的實際結果。',
+      claimT:'主張',facetsT:'面向（已凍結）',critical:'關鍵',papersT:'論文',eligible:'截止日前已公開',post:'截止日之後',
+      covT:'證據涵蓋',cov:{EXACT:'涵蓋',FUNCTIONAL:'涵蓋',PARTIAL:'部分',NO:'—'},before:'截止日前 {d} 天',cites:'引用 {x}',
+      mpsT:'最小先前集合',none:'無',bridgesT:'集合之間的橋接',usable:'可用',notYet:'來源尚未公開',
+      btype:{TAXONOMY_BRIDGE:'文字：一份分類同時提到兩者',DIRECT_CITATION:'引用圖：一篇引用另一篇',CO_CITATION:'引用圖：被一起引用',LANDSCAPE_BRIDGE:'截止日之後：只能當背景'},
+      whatIf:'同一個集合，換成其他橋接證據',ifGraph:'只有引用圖連結',ifNone:'完全沒有橋接',
+      window:'A × B 的觀察期：{d} 天（{s}；門檻 {t} 天）',wstatus:{MEETS_DIAGNOSTIC_THRESHOLD:'夠長，照理會留下痕跡',BELOW_DIAGNOSTIC_THRESHOLD:'太短，不太可能留下痕跡'},
+      axes:'合成報告的結論',axis:['新穎性風險','搜尋覆蓋度','證據信心'],protocol:'{r} 次查詢 · 來源 {p} · 查詢類型 {f}',
+      reportT:'它寫出的報告',residualT:'剩下的新穎之處',rewriteT:'站得住腳的改寫',gapsT:'搜尋缺口',
+      refTitle:'驗證器會拒絕什麼',refLede:'同一份報告，被改成誇大其詞的版本。每張卡是一種修改，以及驗證器實際的回答（結束碼 40 代表拒絕）。',
+      refs:{reworded_after_freeze:['搜尋後改寫主張','搜尋跑完之後，把某個面向換了說法。'],prior_after_cutoff:['截止日之後的先前研究','論文 B 的日期被移到截止日之後，卻還留在集合裡。'],
+        uncited_killer_marked_cited:['把沒引用的致命論文說成有引用','論文 A 不在稿件的參考文獻裡，報告卻說有。'],bridge_without_text:['沒有文字的橋接','分類橋接的證據段落被拿掉了。'],
+        graph_not_searched:['沒查引用圖','A 和 B 的引用圖擴展被刪掉了。'],strong_verdict_weak_evidence:['結論強、證據弱','證據信心降成 WEAK，結論卻不變。'],
+        reassuring_risk:['讓人安心的風險等級','在組合型的結論上，把新穎性風險設成 LOW。'],novelty_percentage:['新穎度百分比','在摘要加上「估計新穎度：35%」。'],
+        broad_search_after_timeout:['查詢失敗還說「廣」','一次 arXiv 查詢失敗了，結論卻仍寫 BROAD。']},
+      more:'還有 {n} 條',
+      ragTitle:'拆解一個真實的主張',ragLede:'repo 裡的公開案例：把 RAG 論文的主張拆成幾個面向，對應到更早的研究。這是整理出來的假設，不是工具完整跑過的審查。',
+      facetStatus:{PUBLIC_PRIOR_CANDIDATE:'先前研究候選',ANCESTOR_SCOPE_REQUIRES_COMPARISON:'祖先：需要比對',RESIDUAL_NOVELTY_HYPOTHESIS:'可能是新的部分'},
+      candidate:'待檢驗的候選集合',windowsT:'截止日前，兩篇先前研究有多少時間彼此交會',days:'{d} 天',
+      ragNote:'三組配對都遠低於 {t} 天的觀察期，所以就算它們之間的引用圖是空的，也幾乎無法說明這個想法當時是否「呼之欲出」。',
+      numTitle:'數字',
+      nums:[['{ok}/{all}','測試為這一頁離線重跑通過，其中 {adv} 個是驗證器的對抗測試'],['{m}/{a}','審稿人標註的案例提到兩篇以上的先前研究'],['{b}/{c}','完整的多先前研究案例在截止日前有橋接（95% 區間 {lo}–{hi}%）'],['{u}/{p}','先前研究配對在截止日前相處不到 18 個月（中位數 {med} 天）']],
+      numNote:'後三個是 {ds}（{lic}）的彙總數字，快照日期 {snap}。它們描述審稿資料裡先前研究和橋接的樣貌，不是 NoveltyAudit 的準確率：目前還沒有任何一次以審稿人為基準的完整端到端審查。',
+      src:'資料：NoveltyAudit {v} · commit {c} · 執行於 {d}'},
+    'zh-CN':{note:'以下全部是 NoveltyAudit {v} 自己的离线代码，为这一页在它测试附带的合成报告上运行（论文 A、B、C 都是虚构的），外加一个公开案例。实际审查还会查询 arXiv、OpenAlex、Semantic Scholar 和 Crossref；这一页完全不联网。',
+      archTitle:'一次审查怎么组成',
+      arch:[['冻结主张','把主张拆成几个方面，并在搜索前算好哈希，避免主张被搜索结果牵着走。'],
+        ['五种搜索','字面、机制、问题、祖先与组合五类查询，跨多个来源；“覆盖度”描述的是这套流程，不是召回率。'],
+        ['日期关卡','只有截止日前公开的研究才算，日期以最早公开的版本为准。'],
+        ['最小先前集合','最多三篇、截止日前已公开，而且引用的证据能涵盖所有关键方面的最小论文组合。'],
+        ['桥接检验','这些论文在截止日前就已经被连在一起了吗？先看经验证的文字，再看引用图。'],
+        ['三轴判断','新颖性风险、搜索覆盖度、证据置信度分开呈现；证据不足就是 INCONCLUSIVE。']],
+      skillT:'谁负责什么',skill:'代理负责读论文并写下判断：方面、哪段证据涵盖什么、剩下的新颖之处。NoveltyAudit 的脚本从不调用模型，它们重新计算所有能算的东西：主张哈希、日期、最小涵盖集合、桥接、搜索覆盖度，对不上的报告一律拒绝。',
+      rules:[['最相似 ≠ 致命','很像但漏掉一个关键方面的论文，不算先例。'],['没有单一致命论文 ≠ 有新意','三篇合起来，可能涵盖任何一篇单独涵盖不了的东西。'],['覆盖度 ≠ 召回率','“广”代表搜索流程完整执行，不代表没有遗漏。'],['不给新颖度分数','百分比看起来很精确，其实没有意义；报告拒绝打印任何百分比。']],
+      demoTitle:'移动截止日',demoLede:'一个主张、三篇更早的论文。判断取决于截止日那天有哪些已经公开。下面每一站，都是工具的日期关卡、集合搜索、桥接检测和分类在同一批论文上的实际结果。',
+      claimT:'主张',facetsT:'方面（已冻结）',critical:'关键',papersT:'论文',eligible:'截止日前已公开',post:'截止日之后',
+      covT:'证据涵盖',cov:{EXACT:'涵盖',FUNCTIONAL:'涵盖',PARTIAL:'部分',NO:'—'},before:'截止日前 {d} 天',cites:'引用 {x}',
+      mpsT:'最小先前集合',none:'无',bridgesT:'集合之间的桥接',usable:'可用',notYet:'来源尚未公开',
+      btype:{TAXONOMY_BRIDGE:'文字：一份分类同时提到两者',DIRECT_CITATION:'引用图：一篇引用另一篇',CO_CITATION:'引用图：被一起引用',LANDSCAPE_BRIDGE:'截止日之后：只能当背景'},
+      whatIf:'同一个集合，换成其他桥接证据',ifGraph:'只有引用图连接',ifNone:'完全没有桥接',
+      window:'A × B 的观察期：{d} 天（{s}；门槛 {t} 天）',wstatus:{MEETS_DIAGNOSTIC_THRESHOLD:'够长，照理会留下痕迹',BELOW_DIAGNOSTIC_THRESHOLD:'太短，不太可能留下痕迹'},
+      axes:'合成报告的结论',axis:['新颖性风险','搜索覆盖度','证据置信度'],protocol:'{r} 次查询 · 来源 {p} · 查询类型 {f}',
+      reportT:'它写出的报告',residualT:'剩下的新颖之处',rewriteT:'站得住脚的改写',gapsT:'搜索缺口',
+      refTitle:'验证器会拒绝什么',refLede:'同一份报告，被改成夸大其词的版本。每张卡是一种修改，以及验证器实际的回答（退出码 40 代表拒绝）。',
+      refs:{reworded_after_freeze:['搜索后改写主张','搜索跑完之后，把某个方面换了说法。'],prior_after_cutoff:['截止日之后的先前研究','论文 B 的日期被移到截止日之后，却还留在集合里。'],
+        uncited_killer_marked_cited:['把没引用的致命论文说成有引用','论文 A 不在稿件的参考文献里，报告却说有。'],bridge_without_text:['没有文字的桥接','分类桥接的证据段落被拿掉了。'],
+        graph_not_searched:['没查引用图','A 和 B 的引用图扩展被删掉了。'],strong_verdict_weak_evidence:['结论强、证据弱','证据置信度降成 WEAK，结论却不变。'],
+        reassuring_risk:['让人安心的风险等级','在组合型的结论上，把新颖性风险设成 LOW。'],novelty_percentage:['新颖度百分比','在摘要加上“估计新颖度：35%”。'],
+        broad_search_after_timeout:['查询失败还说“广”','一次 arXiv 查询失败了，结论却仍写 BROAD。']},
+      more:'还有 {n} 条',
+      ragTitle:'拆解一个真实的主张',ragLede:'仓库里的公开案例：把 RAG 论文的主张拆成几个方面，对应到更早的研究。这是整理出来的假设，不是工具完整跑过的审查。',
+      facetStatus:{PUBLIC_PRIOR_CANDIDATE:'先前研究候选',ANCESTOR_SCOPE_REQUIRES_COMPARISON:'祖先：需要比对',RESIDUAL_NOVELTY_HYPOTHESIS:'可能是新的部分'},
+      candidate:'待检验的候选集合',windowsT:'截止日前，两篇先前研究有多少时间彼此交会',days:'{d} 天',
+      ragNote:'三组配对都远低于 {t} 天的观察期，所以就算它们之间的引用图是空的，也几乎无法说明这个想法当时是否“呼之欲出”。',
+      numTitle:'数字',
+      nums:[['{ok}/{all}','测试为这一页离线重跑通过，其中 {adv} 个是验证器的对抗测试'],['{m}/{a}','审稿人标注的案例提到两篇以上的先前研究'],['{b}/{c}','完整的多先前研究案例在截止日前有桥接（95% 区间 {lo}–{hi}%）'],['{u}/{p}','先前研究配对在截止日前相处不到 18 个月（中位数 {med} 天）']],
+      numNote:'后三个是 {ds}（{lic}）的汇总数字，快照日期 {snap}。它们描述审稿数据里先前研究和桥接的样貌，不是 NoveltyAudit 的准确率：目前还没有任何一次以审稿人为基准的完整端到端审查。',
+      src:'数据：NoveltyAudit {v} · commit {c} · 运行于 {d}'}}[locale]);
+  let naData=null;
+  const naState={k:-1};
+  const naDay=d=>Date.parse(d+'T00:00:00Z')/864e5;
+  function naShowcase() {
+    const c=naCopy();
+    return `<section class="na-show"><p class="na-note"><b translate="no"></b><span class="na-note-t"></span></p>
+      <h2>${esc(c.archTitle)}</h2><ol class="na-flow">${c.arch.map(([t,d],i)=>`<li style="--i:${i}"><span class="na-n">${i+1}</span><b>${esc(t)}</b><small>${esc(d)}</small></li>`).join('')}</ol>
+      <p class="na-skill"><b>${esc(c.skillT)}</b><span>${esc(c.skill)}</span></p>
+      <div class="na-rules">${c.rules.map(([t,d])=>`<div><b>${esc(t)}</b><small>${esc(d)}</small></div>`).join('')}</div>
+      <h2>${esc(c.demoTitle)}</h2><p class="screen-intro">${esc(c.demoLede)}</p>
+      <div class="na-demo"><div class="na-time"></div><div class="na-stage" aria-live="polite"></div><p class="na-src"></p></div>
+      <h2>${esc(c.refTitle)}</h2><p class="screen-intro">${esc(c.refLede)}</p><div class="na-refs"></div>
+      <h2>${esc(c.ragTitle)}</h2><p class="screen-intro">${esc(c.ragLede)}</p><div class="na-rag"></div>
+      <h2>${esc(c.numTitle)}</h2><div class="na-nums"></div><p class="comment-line na-numnote"></p></section>`;
+  }
+  function naPaint() {
+    const box=$('.na-show'); if(!box||!naData) return;
+    const c=naCopy(), L=NA_CLS[locale]||NA_CLS.en, D=naData, F=D.fixture, k=naState.k<0?D.sweep.length-1:naState.k, X=D.sweep[k];
+    // the timeline: papers by date, one button per cutoff stop
+    const days=[...F.papers.map(p=>naDay(p.date)),...D.sweep.map(s=>naDay(s.cutoff))], lo=Math.min(...days)-60, hi=Math.max(...days)+60, pos=d=>((naDay(d)-lo)/(hi-lo)*100).toFixed(2);
+    box.querySelector('.na-time').innerHTML=`<div class="na-axis" style="--cut:${pos(X.cutoff)}%"><i class="na-before"></i>${F.papers.map(p=>`<span class="na-dot ${X.status[p.id]==='ELIGIBLE'?'is-in':''}" style="left:${pos(p.date)}%"><b translate="no">${esc(p.id)}</b><small translate="no">${esc(p.date)}</small></span>`).join('')}<span class="na-cut" style="left:${pos(X.cutoff)}%"></span></div>
+      <div class="na-stops" role="tablist" aria-label="${esc(c.demoTitle)}">${D.sweep.map((s,j)=>`<button type="button" role="tab" data-na-k="${j}" aria-selected="${j===k}" tabindex="${j===k?0:-1}" class="c-${esc(s.classification.toLowerCase())}"><span translate="no">${esc(s.cutoff)}</span><i translate="no">${esc(s.classification.replace(/_/g,' '))}</i></button>`).join('')}</div>`;
+    const inSet=new Set((X.mps[0]||{}).paper_ids||[]);
+    const papers=F.papers.map(p=>`<li class="${X.status[p.id]==='ELIGIBLE'?'is-in':'is-out'}${inSet.has(p.id)?' in-set':''}"><b translate="no">${esc(p.id)}</b><span>${esc(p.title)}</span><small translate="no">${esc(p.date)}</small><em>${esc(X.status[p.id]==='ELIGIBLE'?c.eligible:c.post)}</em>${p.references.length?`<small>${esc(csFill(c.cites,{x:p.references.join(', ')}))}</small>`:''}</li>`).join('');
+    const facets=F.facets.map(f=>f.id);
+    const cov=`<table class="na-cov"><thead><tr><th></th>${F.facets.map(f=>`<th><b translate="no">${esc(f.id)}</b><small>${esc(f.text)}</small></th>`).join('')}</tr></thead><tbody>${F.papers.map(p=>`<tr class="${X.status[p.id]==='ELIGIBLE'?'':'is-out'}${inSet.has(p.id)?' in-set':''}"><th translate="no">${esc(p.id)}</th>${facets.map(f=>{ const v=p.coverage[f]||'NO'; return `<td class="v-${esc(v.toLowerCase())}">${esc(c.cov[v]||v)}</td>`; }).join('')}</tr>`).join('')}</tbody></table>`;
+    const mps=X.mps.length?X.mps.map(m=>`<p class="na-set">{ ${m.paper_ids.map(x=>`<b translate="no">${esc(x)}</b>`).join(' + ')} } → <span translate="no">${m.covered_facets.map(esc).join(', ')}</span> <small translate="no">${esc(m.evidence_ids.join(', '))}</small></p>`).join(''):`<p class="na-set is-none">${esc(c.none)}<small>${esc(X.no_result||'')}</small></p>`;
+    const bridges=[...X.textual.map(b=>({...b,kind:'text'})),...X.graph.map(b=>({...b,usable:true,kind:'graph'})),...X.landscape.map(b=>({...b,type:'LANDSCAPE_BRIDGE',usable:false,kind:'land'}))];
+    const br=X.mps.length?`<ul class="na-bridges">${bridges.map(b=>`<li class="${b.usable?'is-ok':'is-off'}"><code translate="no">${esc(b.type)}</code><span>${esc(c.btype[b.type]||b.type)}</span><small translate="no">via ${esc(b.source_paper_id)}${b.base_rate_status&&b.base_rate_status!=='NOT_APPLICABLE'?' · base rate '+esc(b.base_rate_status):''}${b.evidence_ids?.length?' · '+esc(b.evidence_ids.join(', ')):''}</small><em>${esc(b.usable?c.usable:c.notYet)}</em></li>`).join('')}</ul>`:'';
+    const last=k===D.sweep.length-1;
+    const whatIf=last?`<div class="na-whatif"><h3>${esc(c.whatIf)}</h3><p><span>${esc(c.ifGraph)}</span><b translate="no" class="c-${esc(X.if_graph_only.toLowerCase())}">${esc(X.if_graph_only)}</b></p><p><span>${esc(c.ifNone)}</span><b translate="no" class="c-${esc(X.if_no_bridge.toLowerCase())}">${esc(X.if_no_bridge)}</b></p>
+      <p class="na-window">${esc(csFill(c.window,{d:D.preflight.observation_window_days,s:c.wstatus[D.preflight.observation_window_status]||D.preflight.observation_window_status,t:D.preflight.observation_window_threshold_days}))}</p></div>`:'';
+    const V=F.verdict;
+    const axes=last?`<div class="na-axes"><h3>${esc(c.axes)}</h3><div>${[V.novelty_risk,V.search_coverage,V.evidence_confidence].map((v,j)=>`<p><small>${esc(c.axis[j])}</small><b translate="no">${esc(v)}</b></p>`).join('')}</div>
+      <p class="na-proto" translate="no">${esc(csFill(c.protocol,{r:F.search.runs,p:F.search.providers.join(', '),f:F.search.families.length}))}</p>
+      <details class="na-report"><summary>${esc(c.reportT)} · <code translate="no">cli.py export --format markdown</code></summary><pre translate="no"><code>${esc(F.report_md)}</code></pre></details></div>`:'';
+    box.querySelector('.na-stage').innerHTML=`<div class="na-head"><div><small>${esc(c.claimT)} · cutoff <b translate="no">${esc(X.cutoff)}</b></small><b>${esc(F.claim)}</b><span class="na-facets">${F.facets.map(f=>`<i><b translate="no">${esc(f.id)}</b> ${esc(f.text)}${f.critical?` · ${esc(c.critical)}`:''}</i>`).join('')}</span></div>
+      <div class="na-verdict c-${esc(X.classification.toLowerCase())}"><em translate="no">${esc(X.classification.replace(/_/g,' '))}</em><small>${esc(L[X.classification]||'')}</small></div></div>
+      <div class="na-cols"><div><h3>${esc(c.papersT)}</h3><ul class="na-papers">${papers}</ul><h3>${esc(c.covT)}</h3>${cov}</div>
+      <div><h3>${esc(c.mpsT)}</h3>${mps}${br?`<h3>${esc(c.bridgesT)}</h3>${br}`:''}${whatIf}</div></div>${axes}`;
+    box.querySelector('.na-src').textContent=csFill(c.src,{v:D.source.version,c:D.source.commit.slice(0,7),d:D.source.run});
+  }
+  function naStatic() {
+    const box=$('.na-show'); if(!box||!naData) return;
+    const c=naCopy(), D=naData, R=D.rag, E=D.empirical, T=D.tests;
+    box.querySelector('.na-note b').textContent='v'+D.source.version; box.querySelector('.na-note-t').textContent=csFill(c.note,{v:D.source.version});
+    box.querySelector('.na-refs').innerHTML=D.refusals.map((r,j)=>{ const [t,d]=c.refs[r.id]||[r.id,''];
+      return `<div class="na-ref" style="--i:${j}"><b>${esc(t)}</b><small>${esc(d)}</small><pre translate="no"><code><span class="t-exit">exit ${esc(r.exit)}</span>\n${r.errors.slice(0,2).map(e=>`<span class="t-err">ERROR:</span> ${esc(e)}`).join('\n')}${r.errors.length>2?`\n<span class="t-more">${esc(csFill(c.more,{n:r.errors.length-2}))}</span>`:''}</code></pre></div>`; }).join('');
+    const d0=naDay(R.target.cutoff);
+    box.querySelector('.na-rag').innerHTML=`<div class="na-raghead"><b>${esc(R.target.title)}</b><small translate="no">arXiv ${esc(R.arxiv)} · cutoff ${esc(R.target.cutoff)} · ${esc(R.status.case_type)} · ${esc(R.status.performance_status)}</small></div>
+      <div class="na-cols"><div><ul class="na-ragfacets">${R.facets.map(f=>`<li class="s-${esc(f.status.toLowerCase())}"><b translate="no">${esc(f.facet_id)}</b><span>${esc(f.description)}</span><small>${esc(c.facetStatus[f.status]||f.status)}${f.candidate_prior_ids.length?` · <span translate="no">${esc(f.candidate_prior_ids.join(', '))}</span>`:''}</small></li>`).join('')}</ul>
+        <p class="na-set"><span>${esc(c.candidate)}</span> ${R.candidate_mps.map(s=>`{ ${s.map(x=>`<b translate="no">${esc(x)}</b>`).join(' + ')} }`).join(' ')}</p></div>
+      <div><ul class="na-priors">${R.priors.map(p=>`<li><b translate="no">${esc(p.id)}</b><span>${esc(p.title)}</span><small><span translate="no">${esc(p.date)} · arXiv ${esc(p.arxiv)}</span> · ${esc(csFill(c.before,{d:Math.round(d0-naDay(p.date))}))}</small></li>`).join('')}</ul>
+        <h3>${esc(c.windowsT)}</h3><div class="na-windows">${R.windows.map(w=>`<p><span translate="no">${esc(w.pair.join(' × '))}</span><i><b style="--v:${Math.min(1,w.days/R.threshold_days)}"></b><u></u></i><small>${esc(csFill(c.days,{d:w.days}))}</small></p>`).join('')}<p class="na-thr"><span></span><i><u></u></i><small>${esc(csFill(c.days,{d:R.threshold_days}))}</small></p></div>
+        <p class="na-ragnote">${esc(csFill(c.ragNote,{t:R.threshold_days}))}</p></div></div>`;
+    const vals=[{ok:T.passed,all:T.collected,adv:T.adversarial},{m:E.multi_prior,a:E.annotated},{b:E.bridged_cases,c:E.complete_multi,lo:Math.round(E.bridged_ci[0]*100),hi:Math.round(E.bridged_ci[1]*100)},{u:E.under_18,p:E.pairs,med:Math.round(E.median_window)}];
+    box.querySelector('.na-nums').innerHTML=c.nums.map(([big,small],j)=>`<div style="--i:${j}"><b>${esc(csFill(big,vals[j]))}</b><small>${esc(csFill(small,vals[j]))}</small></div>`).join('');
+    box.querySelector('.na-numnote').textContent=csFill(c.numNote,{ds:E.dataset,lic:E.license,snap:E.snapshot});
+  }
+  function initNovelty() {
+    const box=$('.na-show'); if(!box) return;
+    box.classList.toggle('no-motion',!motion());
+    const go=()=>{ naStatic(); naPaint(); };
+    if(naData) go(); else fetch('/assets/noveltyaudit/showcase.json?v=1').then(r=>r.json()).then(d=>{naData=d;go();}).catch(()=>{});
+  }
+  root.addEventListener('click',event=>{ const b=event.target.closest('[data-na-k]'); if(b){ naState.k=Number(b.dataset.naK); naPaint(); } });
+  root.addEventListener('keydown',event=>{
+    const b=event.target.closest?.('[data-na-k]'); if(!b||!['ArrowLeft','ArrowRight','Home','End'].includes(event.key)||!naData) return;
+    event.preventDefault(); const n=naData.sweep.length, cur=naState.k<0?n-1:naState.k;
+    naState.k=event.key==='Home'?0:event.key==='End'?n-1:(cur+(event.key==='ArrowRight'?1:n-1))%n; naPaint(); $(`[data-na-k="${naState.k}"]`)?.focus();
+  });
   /* Merriv: the film (assets/film/merriv.html), then what problem it solves, for whom, how, and what a real run produced.
      Numbers come from assets/merriv/summary.json, written by tools/merriv_film.py from a fresh run of Merriv's demos. */
   const mvCopy=()=>({
@@ -1493,7 +1875,7 @@
     if (view==='blog') html=blogScreen();
     if (view==='help') html=`${commandTitle('help')}<h1>${c.guideTitle}</h1><p>${c.guideIntro}</p><dl class="keyboard-guide">${c.keys.map(([key,description])=>`<div><dt><kbd>${key}</kbd></dt><dd>${description}</dd></div>`).join('')}</dl><h2>${c.commands}</h2>${commandCatalogue()}<p class="comment-line">${c.simulation}</p>`;
     if (view==='projects' && !item) html=`${commandTitle('ls ./projects/')}${directoryHTML(c)}`;
-    if (view==='projects' && item) html=`${commandTitle('cat projects/'+esc(item.id)+'/README.md')}<button class="back-link" data-view="projects">← ${c.all}</button><div class="project-detail"><p class="detail-meta">${esc(item.category)}<span>${esc(item.status)}</span></p><h1 translate="no">${esc(item.name)}</h1><p class="project-description">${esc(item.description)}</p>${item.id==='taiwan-exam'?'<img class="project-art" src="/assets/work/taiwan-exam-social-preview.png" width="1280" height="640" alt="Taiwan Exam" loading="lazy">'+teFilmCard()+examsCard():''}${item.id==='lumigrid'?lumigridShowcase():''}${item.id==='kcrashlab'?kcShowcase():''}${item.id==='contextsec'?csShowcase():''}${item.id==='merriv'?mvShowcase():''}${item.id==='ai-repo-gardener'?rgShowcase():''}${item.id==='adversarial-lab'?'<img class="project-art" src="/assets/og/adversarial-demo.jpg" width="1200" height="630" alt="Adversarial Lab" loading="lazy">'+advCard():''}<h2>${c.evidence}</h2><p>${esc(item.evidence)}</p><div class="output-actions"><a class="action-button primary" href="${esc(item.url)}" target="_blank" rel="noopener noreferrer"><span>${c.source}</span>${icon('link')}</a><a class="action-button" href="${esc(item.reference)}" target="_blank" rel="noopener noreferrer"><span>${esc(item.referenceLabel)}</span>${icon('link')}</a><button class="action-button" data-ask="${esc(item.name)}">${icon('chat')}<span>${c.askTitle}</span></button><button class="action-button" data-action="share" data-share="/p/${esc(item.id)}/${locale==='en'?'':locale.toLowerCase()+'/'}">${icon('link')}<span>${esc(noteCopy().share)}</span></button></div><div class="project-pagination"><button data-project-step="-1">← ${c.prev}</button><span>${items.indexOf(item)+1} / ${items.length}</span><button data-project-step="1">${c.next} →</button></div></div>`;
+    if (view==='projects' && item) html=`${commandTitle('cat projects/'+esc(item.id)+'/README.md')}<button class="back-link" data-view="projects">← ${c.all}</button><div class="project-detail"><p class="detail-meta">${esc(item.category)}<span>${esc(item.status)}</span></p><h1 translate="no">${esc(item.name)}</h1><p class="project-description">${esc(item.description)}</p>${item.id==='taiwan-exam'?'<img class="project-art" src="/assets/work/taiwan-exam-social-preview.png" width="1280" height="640" alt="Taiwan Exam" loading="lazy">'+teFilmCard()+examsCard():''}${item.id==='lumigrid'?lumigridShowcase():''}${item.id==='kcrashlab'?kcShowcase():''}${item.id==='contextsec'?csShowcase():''}${item.id==='merriv'?mvShowcase():''}${item.id==='ai-repo-gardener'?rgShowcase():''}${item.id==='psg'?psShowcase():''}${item.id==='noveltyaudit'?naShowcase():''}${item.id==='adversarial-lab'?'<img class="project-art" src="/assets/og/adversarial-demo.jpg" width="1200" height="630" alt="Adversarial Lab" loading="lazy">'+advCard():''}<h2>${c.evidence}</h2><p>${esc(item.evidence)}</p><div class="output-actions"><a class="action-button primary" href="${esc(item.url)}" target="_blank" rel="noopener noreferrer"><span>${c.source}</span>${icon('link')}</a><a class="action-button" href="${esc(item.reference)}" target="_blank" rel="noopener noreferrer"><span>${esc(item.referenceLabel)}</span>${icon('link')}</a><button class="action-button" data-ask="${esc(item.name)}">${icon('chat')}<span>${c.askTitle}</span></button><button class="action-button" data-action="share" data-share="/p/${esc(item.id)}/${locale==='en'?'':locale.toLowerCase()+'/'}">${icon('link')}<span>${esc(noteCopy().share)}</span></button></div><div class="project-pagination"><button data-project-step="-1">← ${c.prev}</button><span>${items.indexOf(item)+1} / ${items.length}</span><button data-project-step="1">${c.next} →</button></div></div>`;
     const output=$('.terminal-output'); output.dataset.view=view; output.innerHTML=html; output.scrollTop=0; renderJournal();
     if (view==='research') initCapstone();
     if (view==='guestbook') window.NIANSIA_GUESTBOOK?.mount(output,locale);
@@ -1502,6 +1884,8 @@
     if (view==='projects' && projectId==='contextsec') initContextsec();
     if (view==='projects' && projectId==='merriv') initMerriv();
     if (view==='projects' && projectId==='ai-repo-gardener') initGardener();
+    if (view==='projects' && projectId==='psg') initPsg();
+    if (view==='projects' && projectId==='noveltyaudit') initNovelty();
     output.classList.remove('screen-enter'); if (animate && motion()) { void output.offsetWidth; output.classList.add('screen-enter'); }
     root.querySelectorAll('[data-nav-index]').forEach((el,i)=>{el.classList.toggle('is-current',i===paths.indexOf(view));el.classList.toggle('is-selected',i===selectedNav);el.setAttribute('aria-current',i===paths.indexOf(view)?'page':'false');});
     moveIndicator();
