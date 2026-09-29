@@ -1,7 +1,7 @@
 ---
-title: "Niansia | Terminal portfolio"
-pagetitle: "Niansia | Terminal portfolio"
-description: "An interactive terminal portfolio exploring AI security, computer vision and evidence-oriented tools."
+title: "Niansia | AI Security & Computer Vision Portfolio"
+pagetitle: "Niansia | AI Security & Computer Vision Portfolio"
+description: "Niansia is an NYCU master's student working on AI security and computer vision. An interactive terminal portfolio of research tools, live demos and notes."
 lang: en
 page-layout: full
 title-block-style: none

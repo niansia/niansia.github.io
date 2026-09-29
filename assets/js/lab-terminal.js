@@ -1480,7 +1480,8 @@
     const c=t(), items=projects(), item=items.find(p=>p.id===projectId);
     let html='';
     $('.pane-path').textContent=`~/ ${view === 'home'?'start.sh':view === 'projects'?'projects/'+(item ? item.id : ''):files[paths.indexOf(view)]}`;
-    document.title = `${item?.name || navLabel(view,c)} | Niansia terminal`;
+    // the home view keeps the pagetitle of index.qmd, which leads with the name people search for
+    document.title = view==='home' ? ({en:'Niansia | AI Security & Computer Vision Portfolio','zh-TW':'Niansia｜AI 安全與電腦視覺作品集','zh-CN':'Niansia｜AI 安全与计算机视觉作品集'}[locale]) : `${item?.name || navLabel(view,c)} | Niansia terminal`;
     if (view==='home') html=homeScreen(c);
     if (view==='about') html=`${commandTitle('cat about.md')}<h1>${c.aboutTitle}</h1><div class="reading"><p>${c.bio}</p><p>${c.bio2}</p><p>${c.bio3}</p><h2>${c.education}</h2><ul class="education-list"><li><span class="edu-dot" aria-hidden="true"></span>${c.undergrad}</li><li><span class="edu-dot is-now" aria-hidden="true"></span>${c.graduate}<small>${c.leave}</small></li></ul><div class="interest-tags">${c.interests.split(' / ').map(tag=>`<span>${tag}</span>`).join('')}</div></div>${communityBlock()}${button('research',c.nav[3],true)}`;
     if (view==='research') html=`${commandTitle('cat research.md')}<h1>${c.researchTitle}</h1><p class="screen-intro">${c.researchIntro}</p>${capCopy()?`<button type="button" class="cap-jump" data-cap-jump>✦ ${esc(capCopy().open)} ↓</button>`:''}<div class="research-entry"><span>01</span><div><h2>${c.researchA}</h2><p>${c.researchABody}</p><small>security / robustness / evaluation</small></div></div>${advCard()}<div class="research-entry"><span>02</span><div><h2>${c.researchB}</h2><p>${c.researchBBody}</p><small>vision / reasoning / grounding</small></div></div>${statementLink()}${notesBlock()}${logBlock()}${capstoneBlock()}${teBlock()}${submissionsBlock()}<p class="comment-line">${c.researchNote}</p>`;

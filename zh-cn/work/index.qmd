@@ -1,7 +1,7 @@
 ---
-title: "Niansia | Terminal portfolio"
-pagetitle: "Niansia | Terminal portfolio"
-description: "Niansia 的交互式终端作品集：AI 安全、计算机视觉、可复现研究，以及一位猫耳伙伴。"
+title: "作品 | Niansia"
+pagetitle: "作品 | Niansia"
+description: "Niansia 的作品：AI 安全、计算机视觉与重视证据的研究工具，每一个都附在线演示或真实运行的重放。"
 image: "/assets/og/site-zh-cn.jpg"
 lang: zh-CN
 page-layout: full

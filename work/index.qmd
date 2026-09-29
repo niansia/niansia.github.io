@@ -1,7 +1,7 @@
 ---
-title: "Niansia | Terminal portfolio"
-pagetitle: "Niansia | Terminal portfolio"
-description: "An interactive terminal portfolio exploring AI security, computer vision and evidence-oriented tools."
+title: "Projects | Niansia"
+pagetitle: "Projects | Niansia"
+description: "Projects by Niansia: AI security, computer vision and evidence-oriented research tools, each with a live demo or a replay of real runs."
 lang: en
 page-layout: full
 title-block-style: none
