@@ -33,10 +33,10 @@
 
   // A puff of smoke over an element: soft clouds swell, hide the change at their thickest, then drift off.
   // Resolves at the thickest moment, which is when the caller swaps the figure.
-  function smoke(host, {count = 12, ms = 1150} = {}) {
+  function smoke(host, {count = 15, ms = 1150} = {}) {
     const box = host.getBoundingClientRect(), layer = document.createElement('div');
     layer.className = 'cat-smoke-layer';
-    Object.assign(layer.style, {left: `${box.left + box.width / 2}px`, top: `${box.top + box.height * .55}px`});
+    Object.assign(layer.style, {left: `${box.left + box.width / 2}px`, top: `${box.top + box.height * .66}px`});
     document.body.append(layer);
     const size = Math.max(box.width, box.height);
     for (let i = 0; i < count; i++) {
@@ -44,7 +44,7 @@
       puff.className = i % 4 ? 'cat-smoke' : 'cat-smoke is-violet';
       Object.assign(puff.style, {width: `${s}px`, height: `${s}px`, left: `${-s / 2}px`, top: `${-s / 2}px`});
       layer.append(puff);
-      const dx = Math.cos(a) * r, dy = Math.sin(a) * r * .7;
+      const dx = Math.cos(a) * r * .8, dy = Math.sin(a) * r * 1.15;   // taller than wide: it has to hide a standing catgirl
       puff.animate([
         {opacity: 0, transform: 'translate(0,0) scale(.2)'},
         {opacity: .96, transform: `translate(${dx * .6}px,${dy * .6}px) scale(1)`, offset: .32},
@@ -80,7 +80,9 @@
 .yuki[data-pose='walk'][data-gait='run'] .yuki-cat{animation-duration:.2s;}
 .yuki.is-flipping .yuki-cat{animation:cat-flip .44s ease-in-out;}
 .yuki[data-form='cat'] .yuki-bed{left:calc(var(--w) * -.08);width:calc(var(--w) * 1.16);height:calc(var(--w) * .36);}
-.yuki[data-form='cat'][data-pose='sleep'] .yuki-figure{bottom:calc(var(--w) * .13);transform:scaleX(var(--dir));animation:none;}   /* curled up in the bed, not behind its rim */
+.yuki[data-form='cat'][data-pose='sleep'] .yuki-figure{height:100%;bottom:calc(var(--h) * .17);clip-path:none;transform:scaleX(var(--dir));animation:none;}   /* curled up in the bed, the rim hiding only her underside */
+.yuki[data-form='cat'][data-pose='sleep'] .yuki-hit{top:30%;}.yuki[data-form='cat'][data-pose='sleep'] .yuki-shadow{width:calc(var(--w) * 1.1);}
+.yuki[data-form='cat'] .yuki-blanket{display:none;}
 .yuki[data-form='cat'] .yuki-shadow{width:calc(var(--w) * .8);}
 @keyframes cat-breathe{50%{transform:scale(1.01,1.022);}}
 @keyframes cat-kick{from{transform:rotate(-2.5deg);}to{transform:rotate(2.5deg) translateY(-1.5%);}}
