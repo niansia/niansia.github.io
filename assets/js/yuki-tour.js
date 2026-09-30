@@ -126,7 +126,8 @@
 
   /* ---------- steps ---------- */
   const wait = ms => new Promise(r => setTimeout(r, ms));
-  async function find(sel, ms = 1400) {
+  // Project showcases load on demand (assets/js/showcases.js), so a target on a project page can take a moment on a slow line.
+  async function find(sel, ms = 3500) {
     const t0 = performance.now();
     while (performance.now() - t0 < ms) {
       const el = document.querySelector(sel);

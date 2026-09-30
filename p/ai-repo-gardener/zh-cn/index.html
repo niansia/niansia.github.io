@@ -18,7 +18,7 @@
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml">
 <script src="/assets/js/page-transition.js?v=3"></script>
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;500;700&display=swap">
 <style>
 :root{--bg:#fbf6ee;--paper:#fffdf9;--ink:#2a2230;--muted:#766b73;--line:#2a22301a;--accent:#c0673a;--accent2:#8f6bb3;--code:#f3ece2;}
 @media(prefers-color-scheme:dark){:root{--bg:#15142a;--paper:#1c1a36;--ink:#f1ebe2;--muted:#aaa3bd;--line:#ffffff1a;--accent:#f0a878;--accent2:#b69ae6;--code:#26234a;}}
@@ -50,7 +50,7 @@ article blockquote{margin:18px 0;padding:4px 18px;border-left:3px solid var(--ac
 .card:hover{transform:translateY(-2px);border-color:var(--accent);}
 .card b{display:block;font-size:18px;line-height:1.4;margin-bottom:4px;}.card small{display:block;color:var(--muted);font-size:14px;line-height:1.6;}
 .card i{display:block;font:normal 500 12px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;color:var(--accent);margin-top:8px;}
-.hero{width:100%;border-radius:16px;border:1px solid var(--line);display:block;margin:6px 0 18px;}
+.hero{width:100%;height:auto;border-radius:16px;border:1px solid var(--line);display:block;margin:6px 0 18px;}
 .chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px;}.chips span{font:500 12px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;padding:4px 11px;border-radius:99px;background:var(--code);}
 .btns{display:flex;flex-wrap:wrap;gap:10px;margin:22px 0;}
 .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:12px;border:1px solid var(--line);background:var(--paper);color:var(--ink);text-decoration:none;font-weight:600;font-size:14px;}
@@ -81,6 +81,18 @@ figure.fig figcaption{margin-top:8px;font-size:13.5px;color:var(--muted);line-he
 .author .an-go{margin:0;white-space:nowrap;}
 @media (max-width:760px){.author{margin:40px 16px 0;}}@media (max-width:600px){.author{flex-wrap:wrap;padding:16px;}.author .an-text{flex-basis:calc(100% - 72px);}.author .an-go{flex:1 1 100%;justify-content:center;text-align:center;}}
 footer{max-width:760px;margin:0 auto;padding:26px 20px 50px;border-top:1px solid var(--line);font-size:14px;color:var(--muted);}
+
+.show pre{font:13px/1.6 'JetBrains Mono',monospace;background:var(--code);padding:12px 14px;border-radius:12px;overflow-x:auto;white-space:pre;}
+.show li{margin:6px 0;}
+.show table.wrap td,.show table.wrap th{white-space:normal;text-align:left;min-width:7em;}
+.show .x-cta{margin:14px 0 22px;}
+.show .x-cta a{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:12px;border:1px dashed var(--accent);text-decoration:none;font-weight:600;font-size:14px;}
+.show .x-cta a:hover{background:var(--code);}
+.full-note{margin:34px 0 0;padding:18px 20px;border-radius:16px;background:var(--code);border:1px solid var(--line);}
+.full-note p{margin:0 0 12px;}.full-note .btns{margin:0;}
+main>h2{font-size:23px;margin:40px 0 12px;letter-spacing:-.01em;}
+.more-p{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;}
+.more-p .card{margin:0;padding:14px 16px;}.more-p .card b{font-size:16px;}
 </style>
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "SoftwareSourceCode", "name": "AI Repo Gardener", "description": "面向 AI 编辑 Python 代码仓库的静态分析工具与可移植 Agent Skill。薄弱判断仅供审查；删除前必须具备经过审阅、绑定哈希的计划与隔离验证。", "codeRepository": "https://github.com/niansia/ai-repo-gardener", "author": {"@type": "Person", "name": "Niansia", "url": "https://niansia.com/", "email": "mailto:niansia930202@gmail.com", "sameAs": ["https://github.com/niansia"]}, "inLanguage": "zh-Hans", "url": "https://niansia.com/p/ai-repo-gardener/zh-cn/"}</script>
 <script defer src="/assets/js/site-stats.js?v=2"></script>
@@ -89,7 +101,42 @@ footer{max-width:760px;margin:0 auto;padding:26px 20px 50px;border-top:1px solid
 </head>
 <body>
 <header class="top"><a class="me" href="/zh-cn/" title="回到 Niansia 的个人网站" data-nz-title="Niansia"><img src="/assets/icons/author.webp" alt="" width="24" height="24"><b>~/niansia</b></a> / <a href="/zh-cn/#projects">projects</a><span class="sp"></span><span class="langs"><a href="/p/ai-repo-gardener/" hreflang="en">EN</a><a href="/p/ai-repo-gardener/zh-tw/" hreflang="zh-Hant">繁</a><a href="/p/ai-repo-gardener/zh-cn/" aria-current="page" hreflang="zh-Hans">简</a></span></header>
-<main><p class="kicker">projects/ai-repo-gardener</p><h1>AI Repo Gardener</h1><div class="chips"><span>代码仓库分析</span><span>Public alpha</span></div><img class="hero" src="/assets/work/ai-repo-gardener-demo.gif" alt="AI Repo Gardener" loading="lazy"><p class="lede">面向 AI 编辑 Python 代码仓库的静态分析工具与可移植 Agent Skill。薄弱判断仅供审查；删除前必须具备经过审阅、绑定哈希的计划与隔离验证。</p><h2>佐证</h2><p>导入可达性、Git 时序、规范化 AST 证据、25 个对抗式安全场景、真实代码仓库冒烟测试，以及跨平台 CI。</p><div class="btns"><a class="btn primary" href="/zh-cn/#projects/ai-repo-gardener">打开交互式作品集 →</a><a class="btn" href="https://github.com/niansia/ai-repo-gardener">原代码 ↗</a><a class="btn" href="https://github.com/niansia/ai-repo-gardener/blob/main/benchmarks/safety-benchmark.md">安全基准 ↗</a></div><p class="note">这是方便分享的精简页面；完整、可交互的版本在终端作品集里。</p></main>
+<main><p class="kicker">projects/ai-repo-gardener</p><h1>AI Repo Gardener</h1><div class="chips"><span>代码仓库分析</span><span>Public alpha</span></div><img class="hero" src="/assets/work/ai-repo-gardener-demo.gif" alt="AI Repo Gardener" width="1200" height="650" fetchpriority="high"><p class="lede">面向 AI 编辑 Python 代码仓库的静态分析工具与可移植 Agent Skill。薄弱判断仅供审查；删除前必须具备经过审阅、绑定哈希的计划与隔离验证。</p><div class="btns"><a class="btn primary" href="/zh-cn/#projects/ai-repo-gardener">打开交互式作品集 →</a><a class="btn" href="https://github.com/niansia/ai-repo-gardener">原代码 ↗</a><a class="btn" href="https://github.com/niansia/ai-repo-gardener/blob/main/benchmarks/safety-benchmark.md">安全基准 ↗</a></div><article class="show"><p><strong>v0.1.0a12</strong> — 以下全部是 AI Repo Gardener 0.1.0a12 为这一页重新运行的真实输出：它的标注语料里的案例，加上一次从审查到还原的完整操作。它是针对 Python 仓库的静态分析，不调用模型、不上传代码，也不运行你的程序；唯一会运行的是你指定的验证命令，而且只在一次性副本里跑。</p><h2>它怎么判断</h2><ol><li><strong>迭代差异</strong> — 比对 AI 动手前的 commit 和之后的一切：已提交、已暂存、未暂存和未跟踪的文件。</li><li><strong>可达性</strong> — 从真正的入口建 import 图：程序入口、框架 app、Dockerfile／Compose／Procfile 的启动命令、包的 entry point。</li><li><strong>替代证据</strong> — 为旧文件找出接手的新文件：AST、符号与 token 相似度、调用点有没有迁过去、公开名称有没有保留。</li><li><strong>风险闸门</strong> — 只有“有替代文件的过期文件、置信度 ≥ 0.85、风险 ≤ 0.20”会被提议删除。只要出现 eval、动态 import、解析错误或模板化的部署命令，整个仓库的自动删除都会关闭。</li><li><strong>审过的计划</strong> — 删除需要人审过的那份 JSON 计划、在隔离副本里通过的验证命令，以及仍然吻合的哈希；另外留有快照可以还原。</li></ol><p><strong>作为 Agent Skill 使用</strong> — Codex、Claude Code、Cursor 都能加载它。代理运行 diff、读 JSON，再把发现讲给你听。SKILL.md 规定：除非你要求修改、而且审过那份计划，否则不能 apply；仓库自己配置文件里的命令一律视为不可信。</p><ul><li><strong>看起来没用 ≠ 死代码</strong> — 一行 Dockerfile、一个插件注册或一个字符串 import，都能让文件继续活着。</li><li><strong>有把握 ≠ 安全</strong> — 置信度和风险是两个分开的数字，两个都要过门槛。</li><li><strong>测试通过 ≠ 没人用</strong> — 测试全绿，不代表插件或公开 API 没有使用者。</li><li><strong>审过 ≠ 可以删</strong> — 计划只是预览；审完之后只要有任何变动，apply 就会拒绝。</li></ul><h2>同样的改名，不同的判断</h2><p>标注语料里的 11 个案例。每个案例里，AI 都把模块改了名、把调用点迁过去；决定旧文件能不能删的，是多出来的那一个事实。下面每个判断都是工具实际打印出来的，也都和案例的标注一致。</p><p><strong>单纯改名</strong> — AI 把 parser_old.py 复制成 parser.py，并让 app.py 改用新文件。没有其他地方再用到旧文件。 · 标注 <strong>删除</strong> · 一致 ✓</p><p>可删候选 · 进入删除计划，等人审查。</p><h3>AI 改完之后的仓库</h3><p><code>app.py</code> · 修改</p><pre>- import parser_old
++ import parser
+  
+  if __name__ == &#x27;__main__&#x27;:
+-     print(parser_old.parse(&#x27;x&#x27;))
++     print(parser.parse(&#x27;x&#x27;))</pre><p><code>parser.py</code> · 新增</p><pre>  def parse(value):
+      return value.strip()</pre><p><code>parser_old.py</code> · 未动 · 旧文件</p><pre>  def parse(value):
+      return value.strip()</pre><h3>它量到什么</h3><p><strong>置信度</strong> — 100% · 需要 ≥ 0.85</p><p><strong>风险</strong> — 0% · 需要 ≤ 0.20</p><h3>证据</h3><ul><li>AST 相似度 · <code>1</code></li><li>调用点已迁走 · <code>app.py</code></li><li>仍 import 旧文件的地方 · <code>0</code></li><li>迭代式命名（_old、_v2…） · <code>是</code></li><li>替代文件更新 · <code>是</code></li><li>替代文件可达 · <code>是</code></li><li>共同符号比例 · <code>1</code></li><li>token 相似度 · <code>1</code></li><li>从入口到达不了 · <code>是</code></li></ul><p>删除计划：1 项操作</p><p>CLI 输出 · <code>repo-gardener diff . --base HEAD~1</code></p><p>数据：AI Repo Gardener 0.1.0a12 · commit 282bb54 · 运行于 2026-09-29</p><h2>先审查，只应用你审过的那一份</h2><p>用“单纯改名”案例实际操作一次，逐条命令记录下来。计划 ID 绑定了两个 commit、配置，以及每个相关文件的哈希。</p><p><strong>审查</strong> — diff 找到改名；dry-run 写出给人审查的计划。磁盘上什么都没变。</p><p><code>$ repo-gardener diff . --base HEAD~1</code> · 退出码 0</p><pre>AI Repo Gardener
+========================================================================
+Command: diff  Python files: 3  Findings shown: 1
+Iteration base: HEAD~1  Changed files: 2
+ 
+[HIGH] stale-file  parser_old.py -&gt; parser.py
+  confidence 100%  risk 0%  action safe_delete_candidate
+  - ast_similarity: 1.0
+  - call_site_migration: app.py
+  - inbound_imports: 0
+  - iteration_naming: True
+  - replacement_newer: True
+  - replacement_reachable: True
+  - symbol_overlap: 1.0
+…</pre><p><code>$ repo-gardener fix . --base HEAD~1 --dry-run --format json &gt; ../reviewed-plan.json</code> · 退出码 0</p><pre>{
+  &quot;accepted_sha256&quot;: &quot;4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945&quot;,
+  &quot;automatic_deletion_blockers&quot;: [],
+  &quot;base&quot;: &quot;HEAD~1&quot;,
+  &quot;base_ref&quot;: &quot;HEAD~1&quot;,
+  &quot;base_sha&quot;: &quot;58e31fb6dc0db21c02e88b6e50257198ecb5714b&quot;,
+  &quot;command&quot;: &quot;fix&quot;,
+  &quot;config_sha256&quot;: &quot;43c6a07358c6ad4426db08e6f8171be6aeacb3fbb723088d263434f892efb811&quot;,
+  &quot;head_sha&quot;: &quot;6bb5778cfac0b927b68754f440329c3e877eeb60&quot;,
+  &quot;mode&quot;: &quot;dry-run&quot;,
+  &quot;operations&quot;: [
+    {
+      &quot;candidate_sha256&quot;: &quot;7a2085093d082e2732cdace7384dc271b03ed6ef6756dcac8f9d0b13f82d458a&quot;,
+      &quot;confidence&quot;: 1.0,
+…</pre><h3>文件</h3><ul><li><code>app.py</code> · 167706869385 · 与审查时相同</li><li><code>parser.py</code> · 7a2085093d08 · 与审查时相同</li><li><code>parser_old.py</code> · 7a2085093d08 · 与审查时相同</li></ul><h3>git status</h3><pre>干净</pre><h3>计划 ID 绑定了什么 · <code>a64974e7a85a4815</code></h3><ul><li>基准 commit · <code>58e31fb6dc0d</code></li><li>HEAD commit · <code>6bb5778cfac0</code></li><li>实际配置 · <code>43c6a07358c6</code></li><li>已接受发现清单 · <code>4f53cda18c2b</code></li><li>候选文件 <code>parser_old.py</code> · <code>7a2085093d08</code></li><li>替代文件 <code>parser.py</code> · <code>7a2085093d08</code></li><li>调用点 <code>app.py</code> · <code>167706869385</code></li></ul><h2>公开的关卡</h2><ul><li><strong>10/10</strong> — 标注语料中该删的文件全部找到；10 个仍在用或不确定的文件，被提议删除的有 0 个（为这一页重跑）</li><li><strong>0 / 59</strong> — “活的代码看起来没用”的对抗变体中，变成删除候选的数量</li><li><strong>195/200</strong> — 测试在 Python 3.12.3 上为这一页重跑通过；5 个 symlink 测试因 Windows 权限不足而跳过</li><li>7 个固定版本的真实仓库（共 6,417 个 Python 文件）中的自动删除候选：django, fastapi, flask, pandas, pydantic, pytest, requests；0.1.0a11 于 2026-08-31 测量</li></ul><p>语料和对抗变体都是维护者自己写的，证明的是关卡守得住、不会退步，不是对所有 Python 仓库的准确率。</p></article><article><h2>佐证</h2><p>导入可达性、Git 时序、规范化 AST 证据、25 个对抗式安全场景、真实代码仓库冒烟测试，以及跨平台 CI。</p></article><div class="full-note"><p>这一页的终端版有交互的部分：可以一步步播放的重播、滑杆和动画。</p><div class="btns"><a class="btn primary" href="/zh-cn/#projects/ai-repo-gardener">打开交互式作品集 →</a></div></div><h2>其他作品</h2><nav class="more-p" aria-label="其他作品"><a class="card" href="/p/adversarial-lab/zh-cn/"><b>Adversarial Lab</b><small>AI 安全</small></a><a class="card" href="/p/lumigrid/zh-cn/"><b>LumiGrid</b><small>电脑视觉</small></a><a class="card" href="/p/taiwan-exam/zh-cn/"><b>Taiwan Exam</b><small>Agent Skill</small></a><a class="card" href="/p/kcrashlab/zh-cn/"><b>KCrashLab</b><small>系统可靠性</small></a><a class="card" href="/p/contextsec/zh-cn/"><b>ContextSec</b><small>AI 安全</small></a><a class="card" href="/p/merriv/zh-cn/"><b>Merriv</b><small>模型发布</small></a><a class="card" href="/p/psg/zh-cn/"><b>PSG - Project State Graph</b><small>代理治理</small></a><a class="card" href="/p/noveltyaudit/zh-cn/"><b>NoveltyAudit</b><small>学术推理</small></a><a class="card" href="/p/research-meeting-coach/zh-cn/"><b>Research Meeting Coach</b><small>研究工作流程</small></a><a class="card" href="/p/chromarecover/zh-cn/"><b>ChromaRecover</b><small>计算机视觉</small></a></nav></main>
 <aside class="author" aria-label="由 Niansia 制作"><a class="an-face" href="/zh-cn/" tabindex="-1" aria-hidden="true" data-nz-title="Niansia"><img src="/assets/icons/author.webp" alt="" width="56" height="56" loading="lazy"></a><div class="an-text"><b>由 Niansia 制作</b><small>阳明交大资工硕士生，研究 AI 安全、电脑视觉与视觉语言模型。</small></div><a class="btn primary an-go" href="/zh-cn/" data-nz-title="Niansia">前往 niansia.com →</a></aside>
 <footer>有问题或想法？写信到 <a href="mailto:niansia930202@gmail.com">niansia930202@gmail.com</a> · <a href="/zh-cn/">niansia.com</a> · <a href="https://github.com/niansia">github.com/niansia</a><span class="stats" data-stats hidden> · <i class="live-dot"></i> <b data-stat="online">–</b> 人在线 · <b data-stat="total">–</b> 次造访</span></footer>
 </body>

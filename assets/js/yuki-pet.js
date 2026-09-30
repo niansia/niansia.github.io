@@ -1472,6 +1472,9 @@
     setTimeout(() => { if (!tucked) say(greet, {ms: 6000}); pushMessage({who: 'yuki', text: greet}); }, 1400);
   });
   save();
+  // Warm the chat model (~80 KB) once the page has finished loading, so it never competes with the first paint; with
+  // Save-Data on it loads only when someone actually talks to Yuki (openChat and every reply call brain.load()).
   const warm = () => brain?.load().catch(() => {});
-  if ('requestIdleCallback' in window) requestIdleCallback(warm, {timeout: 4000}); else setTimeout(warm, 2500);
+  const idle = () => { if ('requestIdleCallback' in window) requestIdleCallback(warm, {timeout: 4000}); else setTimeout(warm, 2500); };
+  if (!navigator.connection?.saveData) { if (document.readyState === 'complete') idle(); else addEventListener('load', idle, {once: true}); }
 })();

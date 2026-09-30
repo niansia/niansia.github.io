@@ -15,7 +15,22 @@ The public site has three language editions:
 - Manuscripts in preparation come from `assets/js/submissions-data.js` (venue, research area and deadline only).
 - **One-page brief** (`/brief/`, `/brief/zh-tw/`, `/brief/zh-cn/`) is a fast, printable page for professors and interviewers, generated from the same data as the terminal (profile copy, CV data, projects, papers, notes). It is linked from the top bar, the home screen, the no-JavaScript fallback, the palette and the `brief` command.
 
-`python tools/build_static.py --og-missing` rebuilds the static pages (notes, log, statement, share pages, brief, papers) and renders only the Open Graph images that do not exist yet.
+`python tools/build_static.py --og-missing` rebuilds the static pages (notes, log, statement, project pages, brief, papers) and renders only the Open Graph images that do not exist yet.
+
+## Project pages (`/p/<id>/`) and showcases
+
+Each project's long-form part (architecture, a replay of real runs, measured results) is written once, as a showcase in `assets/js/showcases.js` with its styles in `assets/css/showcases.css`. The terminal loads both the first time the projects are opened or a project link is pointed at, so the home screen does not download them.
+
+The terminal's project views are `#hash` routes that search engines do not index, so every project also has a static page in three languages, and the terminal's project rows are real links to them (a plain click still opens the project in the terminal). After changing a showcase or its data, read the showcases back and rebuild:
+
+```powershell
+quarto render                        # the extractor reads the terminal from _site/
+python tools/project_pages.py        # -> projects_src/showcase.json (headings, text, lists, tables; never raw HTML)
+python tools/build_static.py --no-og # -> p/<id>/index.html (+ zh-tw/, zh-cn/)
+quarto render
+```
+
+Interactive parts (replays, sliders, galleries) are listed in `WIDGETS` in `tools/project_pages.py` and become a link to the interactive version.
 
 ## Adversarial Lab (`/lab/adversarial/`)
 

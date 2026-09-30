@@ -18,7 +18,7 @@
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml">
 <script src="/assets/js/page-transition.js?v=3"></script>
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&display=swap">
 <style>
 :root{--bg:#fbf6ee;--paper:#fffdf9;--ink:#2a2230;--muted:#766b73;--line:#2a22301a;--accent:#c0673a;--accent2:#8f6bb3;--code:#f3ece2;}
 @media(prefers-color-scheme:dark){:root{--bg:#15142a;--paper:#1c1a36;--ink:#f1ebe2;--muted:#aaa3bd;--line:#ffffff1a;--accent:#f0a878;--accent2:#b69ae6;--code:#26234a;}}
@@ -50,7 +50,7 @@ article blockquote{margin:18px 0;padding:4px 18px;border-left:3px solid var(--ac
 .card:hover{transform:translateY(-2px);border-color:var(--accent);}
 .card b{display:block;font-size:18px;line-height:1.4;margin-bottom:4px;}.card small{display:block;color:var(--muted);font-size:14px;line-height:1.6;}
 .card i{display:block;font:normal 500 12px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;color:var(--accent);margin-top:8px;}
-.hero{width:100%;border-radius:16px;border:1px solid var(--line);display:block;margin:6px 0 18px;}
+.hero{width:100%;height:auto;border-radius:16px;border:1px solid var(--line);display:block;margin:6px 0 18px;}
 .chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px;}.chips span{font:500 12px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;padding:4px 11px;border-radius:99px;background:var(--code);}
 .btns{display:flex;flex-wrap:wrap;gap:10px;margin:22px 0;}
 .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:12px;border:1px solid var(--line);background:var(--paper);color:var(--ink);text-decoration:none;font-weight:600;font-size:14px;}
@@ -81,6 +81,18 @@ figure.fig figcaption{margin-top:8px;font-size:13.5px;color:var(--muted);line-he
 .author .an-go{margin:0;white-space:nowrap;}
 @media (max-width:760px){.author{margin:40px 16px 0;}}@media (max-width:600px){.author{flex-wrap:wrap;padding:16px;}.author .an-text{flex-basis:calc(100% - 72px);}.author .an-go{flex:1 1 100%;justify-content:center;text-align:center;}}
 footer{max-width:760px;margin:0 auto;padding:26px 20px 50px;border-top:1px solid var(--line);font-size:14px;color:var(--muted);}
+
+.show pre{font:13px/1.6 'JetBrains Mono',monospace;background:var(--code);padding:12px 14px;border-radius:12px;overflow-x:auto;white-space:pre;}
+.show li{margin:6px 0;}
+.show table.wrap td,.show table.wrap th{white-space:normal;text-align:left;min-width:7em;}
+.show .x-cta{margin:14px 0 22px;}
+.show .x-cta a{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:12px;border:1px dashed var(--accent);text-decoration:none;font-weight:600;font-size:14px;}
+.show .x-cta a:hover{background:var(--code);}
+.full-note{margin:34px 0 0;padding:18px 20px;border-radius:16px;background:var(--code);border:1px solid var(--line);}
+.full-note p{margin:0 0 12px;}.full-note .btns{margin:0;}
+main>h2{font-size:23px;margin:40px 0 12px;letter-spacing:-.01em;}
+.more-p{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;}
+.more-p .card{margin:0;padding:14px 16px;}.more-p .card b{font-size:16px;}
 </style>
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "SoftwareSourceCode", "name": "Taiwan Exam", "description": "用於產生原創學測模擬考的 Agent Skill。流程包含答案與難度檢查、套用大考正式版面，並分開交付題目 PDF 與答案詳解 PDF。會考與分科測驗仍在製作中。", "codeRepository": "https://github.com/niansia/taiwan-exam", "author": {"@type": "Person", "name": "Niansia", "url": "https://niansia.com/", "email": "mailto:niansia930202@gmail.com", "sameAs": ["https://github.com/niansia"]}, "inLanguage": "zh-Hant", "url": "https://niansia.com/p/taiwan-exam/zh-tw/"}</script>
 <script defer src="/assets/js/site-stats.js?v=2"></script>
@@ -89,7 +101,7 @@ footer{max-width:760px;margin:0 auto;padding:26px 20px 50px;border-top:1px solid
 </head>
 <body>
 <header class="top"><a class="me" href="/zh-tw/" title="回到 Niansia 的個人網站" data-nz-title="Niansia"><img src="/assets/icons/author.webp" alt="" width="24" height="24"><b>~/niansia</b></a> / <a href="/zh-tw/#projects">projects</a><span class="sp"></span><span class="langs"><a href="/p/taiwan-exam/" hreflang="en">EN</a><a href="/p/taiwan-exam/zh-tw/" aria-current="page" hreflang="zh-Hant">繁</a><a href="/p/taiwan-exam/zh-cn/" hreflang="zh-Hans">简</a></span></header>
-<main><p class="kicker">projects/taiwan-exam</p><h1>Taiwan Exam</h1><div class="chips"><span>Agent Skill</span><span>學測七科</span></div><img class="hero" src="/assets/work/taiwan-exam-social-preview.png" alt="Taiwan Exam" loading="lazy"><p class="lede">用於產生原創學測模擬考的 Agent Skill。流程包含答案與難度檢查、套用大考正式版面，並分開交付題目 PDF 與答案詳解 PDF。會考與分科測驗仍在製作中。</p><h2>佐證</h2><p>分科命題指引、來源與答案檢查、版面驗證、考卷模板，以及公開的安裝說明。</p><div class="btns"><a class="btn primary" href="/zh-tw/#projects/taiwan-exam">打開互動式作品集 →</a><a class="btn" href="/assets/film/taiwan-exam.html?lang=zh-TW">觀看動畫</a><a class="btn" href="https://github.com/niansia/taiwan-exam">原始碼 ↗</a><a class="btn" href="https://github.com/niansia/taiwan-exam/blob/main/SKILL.md">Skill 規格 ↗</a></div><p class="note">這是方便分享的精簡頁面；完整、可互動的版本在終端作品集裡。</p></main>
+<main><p class="kicker">projects/taiwan-exam</p><h1>Taiwan Exam</h1><div class="chips"><span>Agent Skill</span><span>學測七科</span></div><img class="hero" src="/assets/work/cards/hero-taiwan-exam.webp" alt="Taiwan Exam" width="1280" height="640" fetchpriority="high"><p class="lede">用於產生原創學測模擬考的 Agent Skill。流程包含答案與難度檢查、套用大考正式版面，並分開交付題目 PDF 與答案詳解 PDF。會考與分科測驗仍在製作中。</p><div class="btns"><a class="btn primary" href="/zh-tw/#projects/taiwan-exam">打開互動式作品集 →</a><a class="btn" href="/assets/film/taiwan-exam.html?lang=zh-TW">觀看動畫</a><a class="btn" href="https://github.com/niansia/taiwan-exam">原始碼 ↗</a><a class="btn" href="https://github.com/niansia/taiwan-exam/blob/main/SKILL.md">Skill 規格 ↗</a></div><article><h2>佐證</h2><p>分科命題指引、來源與答案檢查、版面驗證、考卷模板，以及公開的安裝說明。</p></article><div class="full-note"><p>這一頁的終端版有互動的部分：可以一步步播放的重播、滑桿和動畫。</p><div class="btns"><a class="btn primary" href="/zh-tw/#projects/taiwan-exam">打開互動式作品集 →</a></div></div><h2>其他作品</h2><nav class="more-p" aria-label="其他作品"><a class="card" href="/p/adversarial-lab/zh-tw/"><b>Adversarial Lab</b><small>AI 安全</small></a><a class="card" href="/p/lumigrid/zh-tw/"><b>LumiGrid</b><small>電腦視覺</small></a><a class="card" href="/p/kcrashlab/zh-tw/"><b>KCrashLab</b><small>系統可靠性</small></a><a class="card" href="/p/contextsec/zh-tw/"><b>ContextSec</b><small>AI 安全</small></a><a class="card" href="/p/merriv/zh-tw/"><b>Merriv</b><small>模型發布</small></a><a class="card" href="/p/ai-repo-gardener/zh-tw/"><b>AI Repo Gardener</b><small>儲存庫分析</small></a><a class="card" href="/p/psg/zh-tw/"><b>PSG - Project State Graph</b><small>代理治理</small></a><a class="card" href="/p/noveltyaudit/zh-tw/"><b>NoveltyAudit</b><small>學術推理</small></a><a class="card" href="/p/research-meeting-coach/zh-tw/"><b>Research Meeting Coach</b><small>研究工作流程</small></a><a class="card" href="/p/chromarecover/zh-tw/"><b>ChromaRecover</b><small>電腦視覺</small></a></nav></main>
 <aside class="author" aria-label="由 Niansia 製作"><a class="an-face" href="/zh-tw/" tabindex="-1" aria-hidden="true" data-nz-title="Niansia"><img src="/assets/icons/author.webp" alt="" width="56" height="56" loading="lazy"></a><div class="an-text"><b>由 Niansia 製作</b><small>陽明交大資工碩士生，研究 AI 安全、電腦視覺與視覺語言模型。</small></div><a class="btn primary an-go" href="/zh-tw/" data-nz-title="Niansia">前往 niansia.com →</a></aside>
 <footer>有問題或想法？寫信到 <a href="mailto:niansia930202@gmail.com">niansia930202@gmail.com</a> · <a href="/zh-tw/">niansia.com</a> · <a href="https://github.com/niansia">github.com/niansia</a><span class="stats" data-stats hidden> · <i class="live-dot"></i> <b data-stat="online">–</b> 人在線 · <b data-stat="total">–</b> 次造訪</span></footer>
 </body>

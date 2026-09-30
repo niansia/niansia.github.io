@@ -5,8 +5,9 @@
     statement_src/statement.<lang>.md -> statement/<lang>/index.html
     blog_src/<date>-<slug>.<lang>.md -> blog/<lang>/<slug>/, blog/<lang>/qa/, blog/<lang>/feed.xml, assets/js/blog-data.js
     images referenced from sources -> assets/media/<hash>.{webp,jpg} + -t.webp (metadata stripped, see content_safety.py)
-    assets/js/portfolio-data.js ->  p/<id>/index.html (+ zh-tw/, zh-cn/) share pages
+    assets/js/portfolio-data.js + projects_src/showcase.json (tools/project_pages.py) -> p/<id>/index.html (+ zh-tw/, zh-cn/) project pages
     open-graph images           ->  assets/og/*.jpg (1200 x 630, rendered with Playwright)
+    home-card images            ->  assets/work/cards/home-*.webp (960 x 480)
     assets/js/publications-data.js + papers_src/<id>.<lang>.md -> paper/<id>/index.html (+ zh-tw/, zh-cn/) paper pages
     terminal-copy / cv / submissions / publications data -> brief/index.html (+ zh-tw/, zh-cn/) one-page brief
     sitemap-extra.xml, robots.txt, assets/js/notes-data.js
@@ -53,13 +54,11 @@ CSP = ("default-src 'self'; script-src 'self' https://www.gstatic.com https://*.
 
 UI = {
     "en": {"notes": "Research notes", "notes_lede": "Short, honest write-ups of what I built, what worked, and what did not.", "min": "min read",
-           "back": "Back to the portfolio", "more": "More notes", "open": "Open the interactive portfolio", "repo": "Source", "evidence": "Evidence",
-           "share_note": "This is a lightweight page for sharing. The full, interactive version lives in the terminal portfolio.", "contact": "Questions or ideas? Email",
+           "back": "Back to the portfolio", "more": "More notes", "open": "Open the interactive portfolio", "repo": "Source", "evidence": "Evidence", "contact": "Questions or ideas? Email",
            "demo": "Try it in your browser", "film": "Watch the film", "all": "All projects", "read": "Read", "online": "online", "visits": "visits",
            "log": "Research log", "log_lede": "Dated snapshots of work in progress: screenshots, figures and small milestones.", "statement": "Research statement"},
     "zh-TW": {"notes": "研究筆記", "notes_lede": "把做過的東西、有效的方法，還有沒成功的地方，誠實地寫下來。", "min": "分鐘閱讀",
-              "back": "回到作品集", "more": "其他筆記", "open": "打開互動式作品集", "repo": "原始碼", "evidence": "佐證",
-              "share_note": "這是方便分享的精簡頁面；完整、可互動的版本在終端作品集裡。", "contact": "有問題或想法？寫信到",
+              "back": "回到作品集", "more": "其他筆記", "open": "打開互動式作品集", "repo": "原始碼", "evidence": "佐證", "contact": "有問題或想法？寫信到",
               "demo": "在瀏覽器試試", "film": "觀看動畫", "all": "全部作品", "read": "閱讀", "online": "人在線", "visits": "次造訪",
               "log": "研究日誌", "log_lede": "有日期的工作紀錄：截圖、圖表和一些小里程碑。", "statement": "研究方向說明"},
 }
@@ -150,7 +149,7 @@ article blockquote{margin:18px 0;padding:4px 18px;border-left:3px solid var(--ac
 .card:hover{transform:translateY(-2px);border-color:var(--accent);}
 .card b{display:block;font-size:18px;line-height:1.4;margin-bottom:4px;}.card small{display:block;color:var(--muted);font-size:14px;line-height:1.6;}
 .card i{display:block;font:normal 500 12px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;color:var(--accent);margin-top:8px;}
-.hero{width:100%;border-radius:16px;border:1px solid var(--line);display:block;margin:6px 0 18px;}
+.hero{width:100%;height:auto;border-radius:16px;border:1px solid var(--line);display:block;margin:6px 0 18px;}
 .chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px;}.chips span{font:500 12px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;padding:4px 11px;border-radius:99px;background:var(--code);}
 .btns{display:flex;flex-wrap:wrap;gap:10px;margin:22px 0;}
 .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:12px;border:1px solid var(--line);background:var(--paper);color:var(--ink);text-decoration:none;font-weight:600;font-size:14px;}
@@ -185,6 +184,12 @@ footer{max-width:760px;margin:0 auto;padding:26px 20px 50px;border-top:1px solid
 FONTS = ('<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
          '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500'
          '&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap">')
+# A page asks only for its own script's CJK font: the Google Fonts stylesheet for Noto Sans TC or SC lists every
+# unicode-range slice and weighs ~100 KB gzipped each, and it blocks rendering. English pages need neither (the
+# language switch's 繁 / 简 fall back to the system font).
+FONTS_BY_LOC = {loc: FONTS.replace({"en": "&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700",
+                                    "zh-TW": "&family=Noto+Sans+SC:wght@400;500;700", "zh-CN": "&family=Noto+Sans+TC:wght@400;500;700"}[loc], "")
+                for loc in ("en", "zh-TW", "zh-CN")}
 
 
 AUTHOR_UI = {
@@ -236,7 +241,7 @@ def shell(*, loc: str, title: str, desc: str, url: str, og: str, alternates: dic
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml">
 <script src="/assets/js/page-transition.js?v=3"></script>
-{FONTS}
+{FONTS_BY_LOC[loc]}
 <style>{CSS}{extra_css}</style>
 {head_extra}{ld}
 <script defer src="/assets/js/site-stats.js?v=2"></script>
@@ -1204,26 +1209,106 @@ EXTRA = {"adversarial-lab": [("demo", "/lab/adversarial/?lang={loc}")],
          "chromarecover": [("demo", "/lab/chromarecover/?lang={loc}"), ("film", "/assets/film/chromarecover.html?lang={loc}")]}
 
 
+# The long-form part of each project page is read out of the terminal's showcase by tools/project_pages.py.
+SHOWCASE = ROOT / "projects_src" / "showcase.json"
+SHOW_UI = {
+    "en": {"interactive": "This part is interactive: open it in the terminal portfolio", "others": "Other projects",
+           "full": "The terminal version of this page has the interactive parts: replays you can step through, sliders and films."},
+    "zh-TW": {"interactive": "這一段是互動式的，請在終端作品集裡打開", "others": "其他作品",
+              "full": "這一頁的終端版有互動的部分：可以一步步播放的重播、滑桿和動畫。"},
+}
+SHOW_UI["zh-CN"] = {k: s_fix(v) for k, v in SHOW_UI["zh-TW"].items()}
+SHOW_CSS = """
+.show pre{font:13px/1.6 'JetBrains Mono',monospace;background:var(--code);padding:12px 14px;border-radius:12px;overflow-x:auto;white-space:pre;}
+.show li{margin:6px 0;}
+.show table.wrap td,.show table.wrap th{white-space:normal;text-align:left;min-width:7em;}
+.show .x-cta{margin:14px 0 22px;}
+.show .x-cta a{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:12px;border:1px dashed var(--accent);text-decoration:none;font-weight:600;font-size:14px;}
+.show .x-cta a:hover{background:var(--code);}
+.full-note{margin:34px 0 0;padding:18px 20px;border-radius:16px;background:var(--code);border:1px solid var(--line);}
+.full-note p{margin:0 0 12px;}.full-note .btns{margin:0;}
+main>h2{font-size:23px;margin:40px 0 12px;letter-spacing:-.01em;}
+.more-p{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;}
+.more-p .card{margin:0;padding:14px 16px;}.more-p .card b{font-size:16px;}
+"""
+
+
+def runs_html(runs: list) -> str:
+    """Structured text runs (plain, bold, code, link) from projects_src/showcase.json, escaped."""
+    parts, i = [], 0
+    while i < len(runs):
+        h = runs[i].get("h")
+        j = i
+        while j < len(runs) and runs[j].get("h") == h:
+            j += 1
+        inner = "".join(f"<strong>{e(r['s'])}</strong>" if r["k"] == "b" else f"<code>{e(r['s'])}</code>" if r["k"] == "c" else e(r["s"])
+                        for r in runs[i:j])
+        if h and (h.startswith("/") or h.startswith("https://")):
+            ext = ' rel="noopener"' if h.startswith("https://") else ""
+            inner = f'<a href="{e(h)}"{ext}>{inner}</a>'
+        parts.append(inner)
+        i = j
+    return "".join(parts)
+
+
+def showcase_html(blocks: list, *, loc: str, pid: str, hero: str) -> str:
+    out = []
+    for b in blocks:
+        t = b["t"]
+        if t in ("h2", "h3"):
+            out.append(f"<{t}>{runs_html(b['runs'])}</{t}>")
+        elif t == "p":
+            out.append(f"<p>{runs_html(b['runs'])}</p>")
+        elif t in ("ul", "ol"):
+            out.append(f"<{t}>" + "".join(f"<li>{runs_html(it)}</li>" for it in b["items"]) + f"</{t}>")
+        elif t == "table":
+            rows, wide = b["rows"], any(len("".join(r["s"] for r in c["runs"])) > 32 for row in b["rows"] for c in row)
+            head = rows[0] if rows and all(c["th"] for c in rows[0]) else None
+            thead = "<thead><tr>" + "".join(f"<th>{runs_html(c['runs'])}</th>" for c in head) + "</tr></thead>" if head else ""
+            body = "".join("<tr>" + "".join(f"<td>{runs_html(c['runs'])}</td>" for c in row) + "</tr>" for row in (rows[1:] if head else rows))
+            cap = f"<caption>{runs_html(b['caption'])}</caption>" if b.get("caption") else ""
+            cls = ' class="wrap"' if wide else ""
+            out.append(f"<table{cls}>{cap}{thead}<tbody>{body}</tbody></table>")
+        elif t == "img":
+            if b["src"] == hero:
+                continue
+            cap = f"<figcaption>{runs_html(b['caption'])}</figcaption>" if b.get("caption") else ""
+            out.append(f'<figure class="fig"><a class="fig-link" href="{e(b["src"])}" data-lightbox="1"><img src="{e(b["src"])}" alt="{e(b["alt"])}" '
+                       f'width="{int(b["w"])}" height="{int(b["h"])}" loading="lazy"></a>{cap}</figure>')
+        elif t == "pre":
+            out.append(f"<pre>{e(b['s'])}</pre>")
+        elif t == "cta":
+            out.append(f'<p class="x-cta"><a href="{HOME[loc]}#projects/{pid}">▶ {e(SHOW_UI[loc]["interactive"])} →</a></p>')
+    return f'<article class="show">{"".join(out)}</article>' if out else ""
+
+
 def build_share(projects: dict) -> list[str]:
     urls = []
+    show = json.loads(SHOWCASE.read_text(encoding="utf-8")) if SHOWCASE.is_file() else {}
     for seg, loc in LANGS.items():
         for p in projects[loc]:
             pid = p["id"]
             base = f"/p/{pid}/" if seg == "en" else f"/p/{pid}/{seg}/"
             alts = {l: (f"/p/{pid}/" if s == "en" else f"/p/{pid}/{s}/") for s, l in LANGS.items()}
-            hero = f'<img class="hero" src="{HERO[pid]}" alt="{e(p["name"])}" loading="lazy">' if pid in HERO else ""
+            hero = hero_img(pid, p["name"])
             extra = "".join(f'<a class="btn" href="{u.format(loc=loc)}">{e(UI[loc][k])}</a>' for k, u in EXTRA.get(pid, []))
+            open_btn = f'<a class="btn primary" href="{HOME[loc]}#projects/{pid}">{e(UI[loc]["open"])} →</a>'
+            others = "".join(f'<a class="card" href="/p/{q["id"]}/{"" if seg == "en" else seg + "/"}"><b>{e(q["name"])}</b><small>{e(q["category"])}</small></a>'
+                             for q in projects[loc] if q["id"] != pid)
             body = (f'<main><p class="kicker">projects/{e(pid)}</p><h1>{e(p["name"])}</h1><div class="chips"><span>{e(p["category"])}</span><span>{e(p["status"])}</span></div>'
-                    f'{hero}<p class="lede">{e(p["description"])}</p><h2>{e(UI[loc]["evidence"])}</h2><p>{e(p["evidence"])}</p>'
-                    f'<div class="btns"><a class="btn primary" href="{HOME[loc]}#projects/{pid}">{e(UI[loc]["open"])} →</a>{extra}'
+                    f'{hero}<p class="lede">{e(p["description"])}</p>'
+                    f'<div class="btns">{open_btn}{extra}'
                     f'<a class="btn" href="{e(p["url"])}">{e(UI[loc]["repo"])} ↗</a><a class="btn" href="{e(p["reference"])}">{e(p["referenceLabel"])} ↗</a></div>'
-                    f'<p class="note">{e(UI[loc]["share_note"])}</p></main>')
+                    f'{showcase_html(show.get(pid, {}).get(loc, []), loc=loc, pid=pid, hero=HERO.get(pid, ""))}'
+                    f'<article><h2>{e(UI[loc]["evidence"])}</h2><p>{e(p["evidence"])}</p></article>'
+                    f'<div class="full-note"><p>{e(SHOW_UI[loc]["full"])}</p><div class="btns">{open_btn}</div></div>'
+                    f'<h2>{e(SHOW_UI[loc]["others"])}</h2><nav class="more-p" aria-label="{e(SHOW_UI[loc]["others"])}">{others}</nav></main>')
             ld = {"@context": "https://schema.org", "@type": "SoftwareSourceCode", "name": p["name"], "description": p["description"], "codeRepository": p["url"],
                   "author": PERSON, "inLanguage": HTML_LANG[loc], "url": f"{SITE}{base}"}
             out = ROOT / base.strip("/") / "index.html"
             out.parent.mkdir(parents=True, exist_ok=True)
             out.write_text(shell(loc=loc, title=f'{p["name"]} · Niansia', desc=p["description"], url=base, og=f"/assets/og/p-{pid}.jpg", alternates=alts,
-                                 body=body, jsonld=ld, crumbs=f' / <a href="{HOME[loc]}#projects">projects</a>', og_type="website"), encoding="utf-8")
+                                 body=body, jsonld=ld, crumbs=f' / <a href="{HOME[loc]}#projects">projects</a>', og_type="website", extra_css=SHOW_CSS), encoding="utf-8")
             urls.append(base)
     return urls
 
@@ -1340,6 +1425,51 @@ def og_jobs(projects: dict, notes: dict, pubs: dict | None = None) -> list[tuple
     return jobs
 
 
+# The home screen's "latest" card shows these at most ~390 px wide (570 px on a tablet), cropped to 2:1 by CSS;
+# the originals are 1200-1280 px photos and screenshots, so the card gets 960 x 480 WebP copies instead.
+HOME_THUMBS = {"adversarial": "assets/og/adversarial-demo.jpg", "lumigrid-out": "assets/lumigrid/0_out.jpg",
+               "lumigrid-in": "assets/lumigrid/0_in.jpg", "taiwan-exam": "assets/work/taiwan-exam-social-preview.png"}
+
+
+def webp_copy(rel: str, name: str, size: tuple[int, int] | None = None) -> tuple[str, int, int]:
+    """assets/work/cards/<name>.webp: a WebP copy of a site image, centre-cropped and resized to `size` when given (as
+    object-fit: cover shows it), rebuilt only when the source is newer. Returns its URL and pixel size."""
+    src, out = ROOT / rel, ROOT / "assets" / "work" / "cards" / f"{name}.webp"
+    if not (out.is_file() and out.stat().st_mtime >= src.stat().st_mtime):
+        im = Image.open(src)
+        im = im.convert("RGBA" if "A" in im.getbands() or "transparency" in im.info else "RGB")
+        if size:
+            w, h, r = *im.size, size[0] / size[1]
+            cw, ch = (w, round(w / r)) if h >= w / r else (round(h * r), h)
+            im = im.crop(((w - cw) // 2, (h - ch) // 2, (w - cw) // 2 + cw, (h - ch) // 2 + ch)).resize(size, Image.LANCZOS)
+        im.save(out, "WEBP", quality=80, method=6)
+    with Image.open(out) as im:
+        return (f"/assets/work/cards/{name}.webp", *im.size)
+
+
+def write_home_thumbs() -> None:
+    for key, rel in HOME_THUMBS.items():
+        webp_copy(rel, f"home-{key}", (960, 480))
+
+
+def hero_img(pid: str, alt: str) -> str:
+    """The top image of a project page: it is the page's largest paint, so it loads first and never lazily. Photos and
+    screenshots are served as WebP copies (one source PNG was 890 KB); SVG and animated GIF stay as they are."""
+    rel = HERO.get(pid)
+    if not rel:
+        return ""
+    src = ROOT / rel.lstrip("/")
+    if src.suffix.lower() in (".jpg", ".jpeg", ".png"):
+        url, w, h = webp_copy(rel.lstrip("/"), f"hero-{pid}")
+        size = f' width="{w}" height="{h}"'
+    elif src.suffix.lower() == ".gif":
+        with Image.open(src) as im:
+            url, size = rel, f' width="{im.width}" height="{im.height}"'
+    else:
+        url, size = rel, ""
+    return f'<img class="hero" src="{url}" alt="{e(alt)}"{size} fetchpriority="high">'
+
+
 def write_site_jsonld():
     """includes/site-jsonld.html: schema.org Person + WebSite for every Quarto page, built from SITE."""
     me = f"{SITE}/#me"
@@ -1404,6 +1534,7 @@ if __name__ == "__main__":
         sys.exit(f"REFUSED TO BUILD: {err}")
     write_sitemap(urls)
     write_site_jsonld()
+    write_home_thumbs()
     if "--no-og" not in sys.argv:
         jobs = og_jobs(projects, notes, pubs)
         if "--og-missing" in sys.argv:
