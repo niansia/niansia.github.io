@@ -95,7 +95,7 @@
       <svg class="bed-back" viewBox="0 0 200 62" preserveAspectRatio="none"><ellipse class="bed-rim" cx="100" cy="27" rx="98" ry="25"/><ellipse class="bed-hole" cx="100" cy="27" rx="84" ry="15"/></svg>
       <svg class="bed-front" viewBox="0 0 200 62" preserveAspectRatio="none"><defs><linearGradient id="yuki-bed-front" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="bed-front-top"/><stop offset="1" class="bed-front-bottom"/></linearGradient></defs><path fill="url(#yuki-bed-front)" d="M2 27A98 34 0 0 0 198 27L186 27A86 16 0 0 1 14 27Z"/><path class="bed-stitch" d="M22 40Q100 64 178 40"/></svg></div>
     <div class="yuki-tailbox" aria-hidden="true"><i class="yuki-tail"></i></div>
-    <button type="button" class="yuki-hit" aria-haspopup="true" aria-expanded="false"><span class="yuki-figure"><span class="yuki-sprite"><i class="ys-body"></i><i class="ys-head"></i></span><span class="yuki-headbox"><span class="yuki-acc" aria-hidden="true" hidden></span><span class="yuki-headprops" aria-hidden="true"></span></span><span class="yuki-props" aria-hidden="true"></span></span></button>
+    <button type="button" class="yuki-hit" aria-haspopup="true" aria-expanded="false"><span class="yuki-figure"><span class="yuki-sprite"><i class="ys-body"></i><i class="ys-head"></i></span><span class="yuki-cat" aria-hidden="true"></span><span class="yuki-headbox"><span class="yuki-acc" aria-hidden="true" hidden></span><span class="yuki-headprops" aria-hidden="true"></span></span><span class="yuki-props" aria-hidden="true"></span></span></button>
     <div class="yuki-blanket" aria-hidden="true"></div><div class="yuki-bowl" aria-hidden="true"><i class="bowl-fish"></i><i class="bowl-dish"></i></div>
     <div class="yuki-fx" aria-hidden="true"></div><svg class="yuki-wand" aria-hidden="true" hidden><path class="wand-rod"/><path class="wand-string"/><g class="wand-tip"></g></svg>
     <div class="yuki-bubble" role="status" aria-live="polite" hidden><p></p><div class="bubble-actions"></div></div>
@@ -117,6 +117,18 @@
   let outfitToken = 0, cellRatio = 191 / 444, stride = 160;
   let anchors = [], outfitChoice = app.store.get('yuki-outfit', 'auto'), outfit = 'hoodie', accChoice = app.store.get('yuki-acc', 'auto'), wardrobeOpen = false;
   let stay = app.store.get('yuki-stay', '0') === '1', menuTab = 'act';   // stay put: no wandering while the visitor reads
+  /* Cat form (assets/js/yuki-cat.js): a button in her menu, or `meow`, turns her into a cat in a puff of smoke; the
+     choice is remembered. The catgirl stays the default; the cat has her own frames and a few cat-only moves. */
+  const Cat = () => window.YukiCat;
+  let form = Cat() && app.store.get('yuki-form', 'girl') === 'cat' ? 'cat' : 'girl', morphing = false, girlHeads = "url('/assets/lab/yuki/heads.webp')";
+  const CAT_LINES = {
+    en: {toCat: 'Poof! Nya~ Now I’m a real cat.', toGirl: 'Poof! Back to my usual self~', roll: 'Roll, roll… belly rubs, please!', sit: 'Sitting pretty. Pats?',
+      missing: 'My cat form isn’t ready yet… soon!', toCatBtn: 'Turn into a cat', toGirlBtn: 'Back to catgirl', wearNote: 'Outfits are for my catgirl form.'},
+    'zh-TW': {toCat: '砰！喵～我變成真正的貓咪了。', toGirl: '砰！變回平常的樣子了～', roll: '滾來滾去……摸摸肚子嘛！', sit: '乖乖坐好了，要摸摸嗎？',
+      missing: '貓咪的樣子還沒準備好……快了！', toCatBtn: '變成貓咪', toGirlBtn: '變回貓娘', wearNote: '衣服是貓娘型態穿的喔。'},
+    'zh-CN': {toCat: '砰！喵～我变成真正的猫咪了。', toGirl: '砰！变回平常的样子了～', roll: '滚来滚去……摸摸肚子嘛！', sit: '乖乖坐好了，要摸摸吗？',
+      missing: '猫咪的样子还没准备好……快了！', toCatBtn: '变成猫咪', toGirlBtn: '变回猫娘', wearNote: '衣服是猫娘形态穿的哦。'}};
+  const cl = key => (CAT_LINES[app.locale()] || CAT_LINES.en)[key];
   const festival = () => window.NIANSIA_FESTIVAL?.active() || null;
   const wardrobe = () => window.YukiWardrobe;
   function loadOutfit(choice) {
@@ -140,8 +152,9 @@
       pet.dataset.tail = l.tail === null ? '0' : '1';
       pet.style.setProperty('--sheet', `url('${o.sheet}pet.webp')`);
       pet.style.setProperty('--tail-img', `url('${o.sheet}tail.webp')`);
-      document.documentElement.style.setProperty('--yuki-heads', `url('${o.sheet}heads.webp')`);
-      measure(); place(); setFrame(frame); pet.classList.add('is-ready');
+      girlHeads = `url('${o.sheet}heads.webp')`;
+      if (form !== 'cat') document.documentElement.style.setProperty('--yuki-heads', girlHeads);
+      measure(); place(); setFrame(frame); showWhenReady();
       if (!first && motion()) { pet.classList.remove('is-changing'); void pet.offsetWidth; pet.classList.add('is-changing'); puff('star', 4, .8); }
     }).catch(() => {});
   }
@@ -175,10 +188,13 @@
   const NECK = .195; // chin below the crown, as a fraction of the cell: the head layer pivots here
   const WALK_STRIDE = 160; // cell pixels travelled per 8-frame cycle (two steps), measured from the baked frames
 
+  let baseH = 156;
   function measure() {
     const w = innerWidth, h = innerHeight;
-    H = w < 720 ? 108 : (h < 760 || w < 1100) ? 134 : 156;
+    H = baseH = w < 720 ? 108 : (h < 760 || w < 1100) ? 134 : 156;
     W = Math.round(H * cellRatio);
+    const L = form === 'cat' && Cat()?.layout();
+    if (L) { H = Math.round(baseH * .5 / L.stand[1]); W = Math.round(H * L.cell[0] / L.cell[1]); }
     pet.style.setProperty('--h', `${H}px`); pet.style.setProperty('--w', `${W}px`);
   }
   function floors() {
@@ -217,8 +233,23 @@
   /* ---------- poses ---------- */
   function setFrame(f) {
     frame = f; pet.dataset.frame = String(f); pet.style.setProperty('--f', f);
-    const a = anchors[f];
+    const a = form === 'cat' ? null : anchors[f];
     if (a) { pet.style.setProperty('--ax', a[0]); pet.style.setProperty('--ay', a[1]); pet.style.setProperty('--aw', a[2]); pet.style.setProperty('--neck', `${((a[1] + NECK) * 100).toFixed(1)}%`); }
+    paintCat();
+  }
+  // Rolling onto her back (or back onto her paws) is a quick squash-and-flip, with the frame swapped halfway.
+  let catShown = '', catTimer = 0;
+  function paintCat() {
+    if (form !== 'cat' || !Cat()?.layout()) return;
+    const name = Cat().frameFor(pose, frame, {juggling: pet.classList.contains('is-juggling')}), el = $('.yuki-cat');
+    const [ax, ay, aw] = Cat().anchor(name);
+    pet.style.setProperty('--ax', ax); pet.style.setProperty('--ay', ay); pet.style.setProperty('--aw', aw);
+    if (name === catShown) return;
+    clearTimeout(catTimer);
+    const flip = motion() && catShown && (name === 'belly') !== (catShown === 'belly');
+    catShown = name;
+    if (flip) { retrigger('is-flipping'); catTimer = setTimeout(() => Cat().paint(el, catShown), 200); }
+    else Cat().paint(el, name);
   }
   function setPose(next, f, ms, after = 'idle') {
     clearTimeout(poseTimer);
@@ -317,7 +348,7 @@
     }
     if (walkTo !== null && grounded && !dragging) {
       // Eight baked walk frames cover two steps; moving exactly one stride per step keeps the feet planted.
-      const fps = busy === 'play' || gait === 'run' ? 18 : 10, speed = (stride * H / 444) * fps / 8;
+      const fps = busy === 'play' || gait === 'run' ? 18 : 10, speed = (stride * baseH / 444) * fps / 8;
       const dx = walkTo - x;
       if (Math.abs(dx) < 3) { walkTo = null; setGait('walk'); if (pose === 'walk') restPose(); onArrive?.(); }
       else {
@@ -354,6 +385,7 @@
           else if (r < .3) lookAround();
           else if (r < .42) stretch();
           else if (r < .5 && (S.energy < 55 || late)) lieDown(14000);
+          else if (form === 'cat' && r < .7) setPose('sit', 0, rand(6000, 11000));
         }
         else if (drowsy && r < .25) { setPose('yawn', 3, 1300); puff('zzz', 1); }
         else if (near && r < (lonely ? .35 : .18)) beCute();
@@ -369,6 +401,8 @@
         else if (r < .84 && lively && innerWidth > 720) chaseButterfly();
         else if (r < .87 && S.mood > 70) trick();
         else if (r < .92 && S.energy < 55) lieDown(14000);
+        else if (form === 'cat' && r < .96) setPose('sit', 0, rand(5000, 9000));
+        else if (form === 'cat' && lively && S.mood > 60) catRoll();
       }
       schedule();
     }, rand(4500, 9500));
@@ -547,6 +581,7 @@
     if (asleep) wake(true);
     stopPlay(); clearProps();
     busy = 'lie'; setPose('lie');
+    if (form === 'cat') { clearTimeout(lieTimer); lieTimer = setTimeout(() => { if (busy === 'lie') { busy = ''; restPose(); } }, ms); return cl('sit'); }
     if (propsEl) propsEl.innerHTML = Props.desk();
     clearTimeout(lieTimer); lieTimer = setTimeout(() => { if (busy === 'lie') { busy = ''; clearProps(); restPose(); } }, ms);
     return al('desk');
@@ -596,7 +631,7 @@
     if (asleep) wake(true);
     if (busy === 'lie') { busy = ''; clearTimeout(lieTimer); }
     stopPlay(); clearProps(); clearInterval(danceTimer);
-    const list = ['spin', ...['dance', 'piano', 'violin'].filter(unlocked)];
+    const list = ['spin', ...['dance', ...(form === 'cat' ? [] : ['piano', 'violin'])].filter(unlocked)];
     const kind = list.includes(want) ? want : list.length > 1 ? pick(list.filter(k => k !== 'spin' || Math.random() < .3)) : 'spin';
     const encore = unlocked('encore') && kind !== 'spin' && list.length > 2 && (want === 'encore' || (!want && Math.random() < .3));
     performAct(kind, encore ? () => { say(al('encore')); later(600, () => performAct(pick(list.filter(k => k !== kind && k !== 'spin')))); } : null);
@@ -657,6 +692,40 @@
     return line(tucked ? 'hide' : 'show');
   }
 
+  // Cat only: crouch, roll onto her back and kick her paws in the air, then roll back with a happy face.
+  function catRoll() {
+    stopPlay(); clearProps();
+    busy = 'play'; walkTo = null; setPose('crouch', 0);
+    later(320, () => { if (busy === 'play') { setPose('belly', 0); puff('heart', 1); } });
+    later(2900, () => {
+      if (busy !== 'play') return;
+      busy = ''; gain(-4, 12, -8, 4); setPose('happy', 2, 1300); puff('heart', 3);
+    });
+    return cl('roll');
+  }
+  function showWhenReady() { if (form !== 'cat' || Cat()?.layout()) pet.classList.add('is-ready'); }
+  function applyForm(next) {
+    form = next; pet.dataset.form = next; catShown = '';
+    const L = next === 'cat' && Cat().layout();
+    if (L) pet.style.setProperty('--cn', L.frames.length);
+    document.documentElement.style.setProperty('--yuki-heads', L ? `url('${Cat().base}heads.webp')` : girlHeads);
+    measure(); reground(); setFrame(frame); paintAccessory(); paintState(); showWhenReady();
+  }
+  // A puff of smoke, and at its thickest she changes; the smoke drifts off and she hops out as the other one.
+  function setForm(next) {
+    next = next === 'cat' ? 'cat' : 'girl';
+    if (!Cat() || morphing || next === form) return '';
+    morphing = true; interact(); closeMenu();
+    if (asleep) wake(true);
+    stopPlay(); clearProps(); endButterfly(); busy = ''; walkTo = null; headProps.innerHTML = '';
+    (next === 'cat' ? Cat().load() : Promise.resolve()).then(() => (motion() && !tucked ? Cat().smoke(pet) : null)).then(() => {
+      applyForm(next); app.store.set('yuki-form', next);
+      setPose('happy', 2, 1200); if (motion()) retrigger('is-hop');
+      puff('star', 3, .8); say(cl(next === 'cat' ? 'toCat' : 'toGirl'));
+    }).catch(() => say(cl('missing'))).finally(() => { morphing = false; });
+    return '';
+  }
+
   /* play: juggling a yarn ball in place, a feather wand (Lv 3), or, when she may wander, chasing a ball across the floor */
   function startPlay(want) {
     interact();
@@ -665,19 +734,20 @@
     if (S.energy < 15) { setPose('yawn', 3, 1200); return line('tooSleepy'); }
     if (busy === 'lie') { busy = ''; clearTimeout(lieTimer); }
     stopPlay(); clearProps(); endButterfly();
-    const modes = ['yarn', ...(unlocked('wand') ? ['wand'] : []), ...(!stay && innerWidth > 720 && motion() ? ['chase'] : [])];
+    const modes = ['yarn', ...(unlocked('wand') ? ['wand'] : []), ...(!stay && innerWidth > 720 && motion() ? ['chase'] : []), ...(form === 'cat' && motion() ? ['roll', 'roll'] : [])];
     const kind = modes.includes(want) ? want : pick(modes);
+    if (kind === 'roll') return catRoll();
     if (kind === 'chase') return startChase();
     if (!motion() || !propsEl) { gain(-4, 12, -8, 4); setPose('happy', 2, 900); return al(kind); }
     return kind === 'wand' ? startWand() : juggle();
   }
   function juggle() {
     busy = 'play'; walkTo = null; setPose('happy', 2);
-    propsEl.innerHTML = `<span class="yp-juggle">${Props.yarn()}</span>`; pet.classList.add('is-juggling');
+    propsEl.innerHTML = `<span class="yp-juggle">${Props.yarn()}</span>`; pet.classList.add('is-juggling'); paintCat();
     const period = 700;
     for (let i = 0; i < 5; i++) later(i * period, () => { if (busy !== 'play') return; retrigger('is-hop'); setFrame(i % 2 ? 2 : 0); if (i % 2) puff('note', 1); });
     later(5 * period, () => {
-      pet.classList.remove('is-juggling'); propsEl.querySelector('.yp-juggle')?.classList.add('is-caught');
+      pet.classList.remove('is-juggling'); paintCat(); propsEl.querySelector('.yp-juggle')?.classList.add('is-caught');
       setPose('pet', 4, 1400); puff('heart', 3); say(al('caught'), {ms: 1800});
       gain(-4, 12, -8, 4);
       later(1500, () => { clearProps(); busy = ''; restPose(); });
@@ -919,6 +989,7 @@
       set: `<div class="menu-settings">${sw('data-stay', stay, 'pin', a.stay)}${sw('data-sound', soundOn(), 'note', esc(r.sound))}</div>`,
     }[menuTab];
     menu.innerHTML = `<div class="menu-head"><span class="menu-avatar" data-face="${asleep ? 2 : S.mood > 70 ? 1 : 0}"></span><div><strong>Yuki${unlocked('gold') ? `<i class="menu-title">${esc(r.best)}</i>` : ''}</strong><small>${t().moodWords[moodKey()]}</small></div><button type="button" class="menu-level tier-${tier}" data-tab="lv" title="${esc(r.title)}">♡ ${t().stats.level} ${lv}</button></div>
+      ${Cat() ? `<button type="button" class="menu-form" data-form-toggle>${form === 'cat' ? '✨' : '🐾'}<span>${esc(cl(form === 'cat' ? 'toGirlBtn' : 'toCatBtn'))}</span></button>` : ''}
       <div class="menu-tabs" role="tablist">${Object.entries(tabs).map(([k, label]) => `<button type="button" role="tab" data-tab="${k}" aria-selected="${k === menuTab}">${esc(label)}${k === 'act' && unread ? '<i></i>' : ''}</button>`).join('')}</div>
       <div class="menu-body" data-body="${menuTab}">${body}</div>`;
     paintMenu();
@@ -926,7 +997,7 @@
   function renderWardrobe() {
     const c = t(), L = app.locale(), list = wardrobe()?.outfits() || [], accs = wardrobe()?.accessories || {};
     const fest = festival();
-    return `<div class="wardrobe">
+    return `<div class="wardrobe">${form === 'cat' ? `<p class="wardrobe-note">🐾 ${esc(cl('wearNote'))}</p>` : ''}
       <p>${c.outfitsLabel}</p><div class="wardrobe-outfits"><button type="button" data-outfit="auto" aria-pressed="${outfitChoice === 'auto'}"><span>✦ ${c.accAuto}</span></button>${list.map(o => `<button type="button" data-outfit="${o.id}" aria-pressed="${o.id === outfitChoice}" title="${esc(o.name?.[L] || o.id)}"><img src="${o.sheet}${o.thumb || 'heads.webp'}" alt="" loading="lazy" width="48" height="48"><span>${esc(o.name?.[L] || o.id)}</span></button>`).join('')}</div>
       ${list.length < 2 ? `<small>${c.moreOutfits}</small>` : ''}
       <p>${c.accessoriesLabel}</p><div class="wardrobe-accs">
@@ -956,6 +1027,7 @@
     const tab = event.target.closest('[data-tab]');
     if (tab) { menuTab = tab.dataset.tab; renderMenu(); placeMenu(); menu.querySelector(`.menu-tabs [data-tab="${menuTab}"]`)?.focus({preventScroll: true}); return; }
     if (event.target.closest('[data-sound]')) { app.store.set('yuki-sound', soundOn() ? '0' : '1'); if (!soundOn()) song?.stop(); renderMenu(); placeMenu(); menu.querySelector('[data-sound]')?.focus({preventScroll: true}); return; }
+    if (event.target.closest('[data-form-toggle]')) { setForm(form === 'cat' ? 'girl' : 'cat'); return; }
     if (event.target.closest('[data-stay]')) { const text = setStay(!stay); renderMenu(); placeMenu(); say(text); menu.querySelector('[data-stay]')?.focus({preventScroll: true}); return; }
     const o = event.target.closest('[data-outfit]');
     if (o) { setOutfit(o.dataset.outfit); renderMenu(); say(t().outfitChanged); return; }
@@ -1477,6 +1549,7 @@
       return true;
     },
     setOutfit, setAccessory, festivalLine, outfit: () => outfitChoice, accessory: () => accChoice,
+    form: () => form, setForm, meow: () => setForm(form === 'cat' ? 'girl' : 'cat'),
     level, rewards: () => REWARDS.map(r => ({...r, unlocked: level() >= r.lv, name: rc().name[r.id]})),
     offer: (text, actions) => { if (tucked || asleep) { pushMessage({who: 'yuki', text, links: actions}); return; } say(text, {ms: 12000, actions}); pushMessage({who: 'yuki', text, links: actions}); },
     act, ask, say: (text, kind) => { if (kind === 'poke') poke(); say(text); pushMessage({who: 'yuki', text}); }, openChat, closeChat,
@@ -1495,6 +1568,7 @@
   };
 
   /* ---------- start ---------- */
+  if (form === 'cat') { pet.dataset.form = 'cat'; Cat().load().then(() => applyForm('cat')).catch(() => applyForm('girl')); }
   measure();
   loadOutfit(outfitChoice); paintAccessory();
   wardrobe()?.ready.then(() => { loadOutfit(outfitChoice); if (!menu.hidden) renderMenu(); });
@@ -1503,7 +1577,7 @@
   pet.classList.toggle('is-tucked', tucked);
   requestAnimationFrame(() => {
     reground();
-    setTimeout(() => pet.classList.add('is-ready'), 3000); // loadOutfit shows her once the look has loaded
+    setTimeout(showWhenReady, 3000); // loadOutfit (or the cat's sheet) shows her once the look has loaded
     blink(); schedule(); paintState();
     const fest = festival(), greetedKey = app.store.get('yuki-fest-greeted', '');
     const part = daypart();

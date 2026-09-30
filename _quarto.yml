@@ -83,6 +83,7 @@ format:
           <script src="/assets/js/cursor-fx.js?v=yuki-59" defer></script>
           <script src="/assets/js/yuki-llm.js?v=yuki-59" defer></script>
           <script src="/assets/js/yuki-props.js?v=yuki-59" defer></script>
+          <script src="/assets/js/yuki-cat.js?v=yuki-59" defer></script>
           <script src="/assets/js/yuki-pet.js?v=yuki-59" defer></script>
           <script src="/assets/js/command-palette.js?v=yuki-59" defer></script>
           <script src="/assets/js/yuki-tour.js?v=yuki-59" defer></script>

@@ -1036,6 +1036,7 @@
              ${t().interests}`);break;
       case 'shortcuts':finish(t().keys.map(([key,description])=>`${key.padEnd(14)} ${description}`).join('\n')+'\n'+t().historyHint);break;
       case 'sudo':finish(t().sudo);yuki()?.act('poke');break;
+      case 'meow':{const Y=yuki();if(!Y?.meow){finish(t().unknown);break;}const to=Y.form()==='cat'?'catgirl':'cat';Y.meow();finish(`nya~ → ${to} 🐾`);break;}
       case 'sky': {
         const parts=DAYPARTS.map(([,p])=>p),S=skyCopy();
         if(lower&&lower!=='auto'&&!parts.includes(lower)){usage();break;}
