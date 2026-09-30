@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Reroute：丟掉的視覺 token，晚點還能撿回來嗎？ · Niansia</title>
+<meta name="description" content="Reroute 把「刪掉低分的視覺 token」改成「先延後，之後還能回來」，不用訓練，壓得越狠救回越多。我們正在研究長影片壓縮後，遺失的畫面怎麼找回、怎麼重新定位，這篇剛好從最小的地方切進去。">
+<link rel="canonical" href="https://niansia.com/blog/zh-tw/2026-09-14-reroute/">
+<link rel="alternate" hreflang="en" href="https://niansia.com/blog/en/2026-09-14-reroute/"><link rel="alternate" hreflang="zh-Hant-TW" href="https://niansia.com/blog/zh-tw/2026-09-14-reroute/"><link rel="alternate" hreflang="zh-Hans-CN" href="https://niansia.com/blog/zh-cn/2026-09-14-reroute/"><link rel="alternate" hreflang="x-default" href="https://niansia.com/blog/en/2026-09-14-reroute/">
+<meta property="og:type" content="article"><meta property="og:site_name" content="Niansia">
+<meta property="og:title" content="Reroute：丟掉的視覺 token，晚點還能撿回來嗎？ · Niansia"><meta property="og:description" content="Reroute 把「刪掉低分的視覺 token」改成「先延後，之後還能回來」，不用訓練，壓得越狠救回越多。我們正在研究長影片壓縮後，遺失的畫面怎麼找回、怎麼重新定位，這篇剛好從最小的地方切進去。">
+<meta property="og:url" content="https://niansia.com/blog/zh-tw/2026-09-14-reroute/"><meta property="og:image" content="https://niansia.com/assets/og/blog-2026-09-14-reroute-zh-tw.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta property="og:locale" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://niansia.com/assets/og/blog-2026-09-14-reroute-zh-tw.jpg">
+
+<meta name="theme-color" content="#fbf6ee" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#15142a" media="(prefers-color-scheme: dark)">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://*.firebasedatabase.app; connect-src 'self' https://*.firebasedatabase.app wss://*.firebasedatabase.app; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; frame-src https://*.firebasedatabase.app; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml">
+<script src="/assets/js/page-transition.js?v=3"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&display=swap">
+<style>
+:root{--bg:#fbf6ee;--paper:#fffdf9;--ink:#2a2230;--muted:#766b73;--line:#2a22301a;--accent:#c0673a;--accent2:#8f6bb3;--code:#f3ece2;}
+@media(prefers-color-scheme:dark){:root{--bg:#15142a;--paper:#1c1a36;--ink:#f1ebe2;--muted:#aaa3bd;--line:#ffffff1a;--accent:#f0a878;--accent2:#b69ae6;--code:#26234a;}}
+*{box-sizing:border-box;}html{-webkit-text-size-adjust:100%;}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.85 Inter,'Noto Sans TC','Noto Sans SC',system-ui,sans-serif;}
+a{color:var(--accent);text-underline-offset:3px;}
+.top{max-width:1080px;margin:0 auto;padding:18px 20px;display:flex;align-items:center;gap:10px;font:500 13px 'JetBrains Mono',monospace;color:var(--muted);}
+.top a{color:var(--muted);text-decoration:none;}.top a:hover{color:var(--accent);}
+.top b{color:var(--ink);font-weight:500;}.top .sp{flex:1;}
+.langs a{padding:4px 9px;border-radius:99px;border:1px solid var(--line);margin-left:4px;}.langs a[aria-current]{color:var(--ink);border-color:var(--accent);}
+main{max-width:760px;margin:0 auto;padding:10px 20px 70px;}
+.kicker{font:500 12px 'JetBrains Mono',monospace;color:var(--accent);letter-spacing:.06em;text-transform:uppercase;margin:24px 0 8px;}
+h1{font-size:clamp(28px,4.4vw,42px);line-height:1.2;letter-spacing:-.02em;margin:0 0 14px;}
+.lede{font-size:18px;color:var(--muted);margin:0 0 16px;line-height:1.7;}
+.meta{display:flex;flex-wrap:wrap;gap:8px 14px;font:500 12.5px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;color:var(--muted);padding-bottom:22px;border-bottom:1px solid var(--line);margin-bottom:10px;}
+.meta span.tag{padding:2px 9px;border-radius:99px;background:var(--code);}
+article h2{font-size:23px;margin:40px 0 10px;letter-spacing:-.01em;}
+article h3{font-size:18px;margin:28px 0 8px;}
+article p,article li{color:var(--ink);}
+article code{font:14px 'JetBrains Mono',monospace;background:var(--code);padding:1px 6px;border-radius:6px;}
+article table{width:100%;border-collapse:collapse;margin:18px 0;font-size:14.5px;display:block;overflow-x:auto;}
+article th,article td{padding:8px 12px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap;}
+article th{font-weight:600;color:var(--muted);font-size:13px;}
+article td:not(:first-child),article th:not(:first-child){text-align:right;}
+article td[style*="left"],article th[style*="left"]{white-space:normal;min-width:6.5em;}   /* text tables (|:---|) wrap instead of scrolling */
+article strong{color:var(--ink);}
+article blockquote{margin:18px 0;padding:4px 18px;border-left:3px solid var(--accent);color:var(--muted);}
+.card{display:block;padding:18px 20px;margin:12px 0;border-radius:16px;background:var(--paper);border:1px solid var(--line);text-decoration:none;color:var(--ink);transition:transform .25s,border-color .25s;}
+.card:hover{transform:translateY(-2px);border-color:var(--accent);}
+.card b{display:block;font-size:18px;line-height:1.4;margin-bottom:4px;}.card small{display:block;color:var(--muted);font-size:14px;line-height:1.6;}
+.card i{display:block;font:normal 500 12px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;color:var(--accent);margin-top:8px;}
+.hero{width:100%;height:auto;border-radius:16px;border:1px solid var(--line);display:block;margin:6px 0 18px;}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px;}.chips span{font:500 12px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;padding:4px 11px;border-radius:99px;background:var(--code);}
+.btns{display:flex;flex-wrap:wrap;gap:10px;margin:22px 0;}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:12px;border:1px solid var(--line);background:var(--paper);color:var(--ink);text-decoration:none;font-weight:600;font-size:14px;}
+.btn.primary{background:var(--accent);border-color:transparent;color:var(--paper);}
+.btn:hover{border-color:var(--accent);}
+.note{font-size:13.5px;color:var(--muted);}
+.live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#34c38f;box-shadow:0 0 0 3px #34c38f33;vertical-align:1px;}footer b{color:var(--ink);font-weight:600;}
+figure.fig{margin:24px 0;}figure.fig a{display:block;border-radius:14px;overflow:hidden;border:1px solid var(--line);cursor:zoom-in;background:var(--code);}
+figure.fig img{display:block;width:100%;height:auto;transition:transform .4s;}figure.fig a:hover img{transform:scale(1.015);}
+figure.fig figcaption{margin-top:8px;font-size:13.5px;color:var(--muted);line-height:1.6;}
+.lb{position:fixed;inset:0;z-index:50;display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px;background:#0d0b16ee;}
+.lb.on{display:flex;}.lb img{max-width:100%;max-height:84vh;border-radius:10px;box-shadow:0 30px 80px #000a;}
+.lb p{margin:0;color:#e9e4f2;font-size:14px;text-align:center;max-width:760px;}
+.lb-x{position:absolute;top:14px;right:18px;width:40px;height:40px;border-radius:50%;border:1px solid #ffffff44;background:transparent;color:#fff;font-size:24px;cursor:pointer;}
+.log-entry{position:relative;padding:0 0 34px 26px;border-left:2px solid var(--line);}
+.log-entry:before{content:'';position:absolute;left:-7px;top:8px;width:12px;height:12px;border-radius:50%;background:var(--bg);border:2px solid var(--accent);}
+.log-entry time{font:500 12.5px 'JetBrains Mono',monospace;color:var(--accent);}
+.log-entry h2{margin:4px 0 6px!important;font-size:21px!important;}
+.log-entry h2 a{color:var(--ink);text-decoration:none;}
+.statement-link{display:flex;justify-content:space-between;align-items:center;}
+.top a.me{display:inline-flex;align-items:center;gap:8px;padding:3px 12px 3px 3px;border:1px solid var(--line);border-radius:99px;transition:border-color .2s;}.top a.me:hover{border-color:var(--accent);}.top a.me img{width:24px;height:24px;border-radius:50%;display:block;}
+.author{max-width:720px;margin:44px auto 0;padding:18px 20px;display:flex;align-items:center;gap:16px;border-radius:18px;background:var(--code);border:1px solid var(--line);}
+.author{box-sizing:border-box;}.author>*{flex:none;}
+.author .an-face img{display:block;width:56px;height:56px;border-radius:50%;border:2px solid var(--accent);}
+.author .an-text{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px;}
+.author .an-text b{font-size:15px;}.author .an-text small{font-size:13px;line-height:1.6;color:var(--muted);}
+.author .an-note{color:var(--ink)!important;}
+.author .an-go{margin:0;white-space:nowrap;}
+@media (max-width:760px){.author{margin:40px 16px 0;}}@media (max-width:600px){.author{flex-wrap:wrap;padding:16px;}.author .an-text{flex-basis:calc(100% - 72px);}.author .an-go{flex:1 1 100%;justify-content:center;text-align:center;}}
+footer{max-width:760px;margin:0 auto;padding:26px 20px 50px;border-top:1px solid var(--line);font-size:14px;color:var(--muted);}
+
+.paper-box{margin:0 0 26px;padding:18px 20px;border-radius:16px;background:var(--paper);border:1px solid var(--line);border-left:4px solid var(--accent2);}
+.paper-box .pv{font:600 12px 'JetBrains Mono',monospace;color:var(--accent2);letter-spacing:.04em;margin:0 0 6px;}
+.paper-box b{display:block;font-size:17px;line-height:1.45;}
+.paper-box .pa{margin:6px 0 0;font-size:13.5px;color:var(--muted);line-height:1.6;}
+.paper-box .pl{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+.paper-box .pl a{font:600 12.5px 'JetBrains Mono',monospace;padding:5px 12px;border-radius:99px;border:1px solid var(--line);text-decoration:none;}
+.paper-box .pl a:hover{border-color:var(--accent);}
+.type{display:inline-block;padding:2px 9px;border-radius:99px;background:var(--accent);color:#fff;font:600 11.5px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;}
+.type.paper{background:var(--accent2);}.type.qa{background:#3f9f86;}.type.post{background:var(--muted);}
+.card .type{margin-bottom:8px;}.card .zh{margin-left:8px;font:500 11.5px 'JetBrains Mono',monospace;color:var(--muted);}
+.now-card{border-left:4px solid var(--accent);}
+.qa{padding:20px 0;border-bottom:1px solid var(--line);}
+.qa .qq{display:flex;gap:12px;font-weight:700;font-size:17px;line-height:1.55;margin:0 0 8px;}
+.qa .qq span,.qa .qa-a>span{flex:none;display:grid;place-items:center;width:28px;height:28px;border-radius:9px;background:var(--code);color:var(--accent);font-size:13px;}
+.qa .qa-a{display:flex;gap:12px;}.qa .qa-a>span{background:var(--accent);color:#fff;}.qa .qa-a article>:first-child{margin-top:0;}
+.qa time{display:block;margin:6px 0 0 40px;font:500 12px 'JetBrains Mono',monospace;color:var(--muted);}
+.ask{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:18px 0 8px;padding:16px 18px;border-radius:16px;background:var(--code);}
+.ask b{display:block;font-size:15.5px;}.ask small{display:block;color:var(--muted);font-size:13px;}
+.ask .btn{flex:none;margin:0;}.ask .btn[aria-disabled]{opacity:.55;pointer-events:none;}
+</style>
+<link rel="alternate" type="application/rss+xml" title="Niansia · Blog" href="/blog/zh-tw/feed.xml"><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BlogPosting", "headline": "Reroute：丟掉的視覺 token，晚點還能撿回來嗎？", "description": "Reroute 把「刪掉低分的視覺 token」改成「先延後，之後還能回來」，不用訓練，壓得越狠救回越多。我們正在研究長影片壓縮後，遺失的畫面怎麼找回、怎麼重新定位，這篇剛好從最小的地方切進去。", "datePublished": "2026-09-14", "dateModified": "2026-09-14", "inLanguage": "zh-Hant", "author": {"@type": "Person", "name": "Niansia", "url": "https://niansia.com/", "email": "mailto:niansia930202@gmail.com", "sameAs": ["https://github.com/niansia"]}, "mainEntityOfPage": "https://niansia.com/blog/zh-tw/2026-09-14-reroute/", "keywords": "視覺語言模型, 視覺 token 壓縮, 定位, 長影片", "citation": {"@type": "ScholarlyArticle", "name": "Reroute, Don’t Remove: Recoverable Visual Token Routing for Vision-Language Models", "url": "https://arxiv.org/abs/2606.12412"}}</script>
+<script defer src="/assets/js/site-stats.js?v=2"></script>
+<script defer src="/assets/js/lightbox.js"></script>
+
+</head>
+<body>
+<header class="top"><a class="me" href="/zh-tw/" title="回到 Niansia 的個人網站" data-nz-title="Niansia"><img src="/assets/icons/author.webp" alt="" width="24" height="24"><b>~/niansia</b></a> / <a href="/blog/zh-tw/">blog</a><span class="sp"></span><span class="langs"><a href="/blog/en/2026-09-14-reroute/" hreflang="en">EN</a><a href="/blog/zh-tw/2026-09-14-reroute/" aria-current="page" hreflang="zh-Hant">繁</a><a href="/blog/zh-cn/2026-09-14-reroute/" hreflang="zh-Hans">简</a></span></header>
+<main><p class="kicker">論文筆記</p><h1>Reroute：丟掉的視覺 token，晚點還能撿回來嗎？</h1><p class="lede">Reroute 把「刪掉低分的視覺 token」改成「先延後，之後還能回來」，不用訓練，壓得越狠救回越多。我們正在研究長影片壓縮後，遺失的畫面怎麼找回、怎麼重新定位，這篇剛好從最小的地方切進去。</p><div class="meta"><time datetime="2026-09-14">2026-09-14</time><span>4 分鐘閱讀</span><span class="tag">視覺語言模型</span><span class="tag">視覺 token 壓縮</span><span class="tag">定位</span><span class="tag">長影片</span></div><aside class="paper-box"><p class="pv">arXiv 2026 · 精讀</p><b lang="en">Reroute, Don’t Remove: Recoverable Visual Token Routing for Vision-Language Models</b><p class="pa" lang="en">Cheng-Yu Yang, Shao-Yuan Lo, Yu-Lun Liu</p><div class="pl"><a href="https://arxiv.org/abs/2606.12412" target="_blank" rel="noopener noreferrer">論文 ↗</a><a href="https://github.com/elmma/mllm-reroute" target="_blank" rel="noopener noreferrer">程式碼 ↗</a></div></aside><article><h2>為什麼讀這篇</h2>
+<p>我們最近在研究的問題是：長影片的畫面太多，一定要壓縮才放得進模型，可是後面的問題偏偏問到被壓掉的細節時怎麼辦？那一塊要怎麼找回來，又要怎麼重新定位到它原本在影片裡的位置？</p>
+<p>現在大部分減少視覺 token 的方法都是同一個套路：打分數、留下高分的、把其他的刪掉，這篇卻直接質疑「刪掉」這個動作本身。它處理的是圖片，不是影片，但問的問題跟我們一模一樣：被丟掉的東西，還有沒有機會回來？</p>
+<h2>這篇在做什麼</h2>
+<p><strong>先看一個現象。</strong> 一個視覺 token 重不重要，會隨著解碼器的深度改變。論文追蹤了「穿綠色上衣的男人」這個描述裡，真正落在目標框內的一個 token：它的注意力百分位在第 3 層（FastV 做決定的地方）只有 0.11，在第 8 層（PDrop 做決定的地方）是 0.25，所以兩種方法都會把它刪掉；可是到第 25 層，它爬到了 0.97。淺層看起來跟背景沒兩樣的 token，到了深層卻是關鍵證據。</p>
+<p><strong>做法很簡單。</strong> Reroute 沿用原本剪枝方法的打分方式（文字對影像的注意力）和同樣的分段排程，只改「打完分之後做什麼」：</p>
+<ul>
+<li>高分的 token 照常經過這一段的注意力和 FFN；</li>
+<li>低分的 token <strong>不刪</strong>，只是這一段先跳過（走殘差路徑，表示維持不變），到下一個決策點再和<strong>全部</strong>視覺 token 一起重新排名，分數夠高就能回來。</li>
+</ul>
+<p>原本的剪枝，就是「禁止回來」的特例。從公式看，兩者只差在下一段的候選集合：是上一段留下來的那些，還是全部。換個角度看，這就是不用訓練、拿注意力分數當路由器的 Mixture-of-Depths。因為每一段進入計算的 token 數一樣，理論上的 TFLOPs 和 KV cache 都跟原本的剪枝方法同一個等級。</p>
+<h2>結果</h2>
+<p>主要看定位任務（RefCOCO 系列，預測框的 IoU 大於 0.5 算對）。下面是 LLaVA-1.5-7B（HuggingFace 版本）的平均成績，以完整 576 個 token 的原模型當 100%：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">平均留下的 token</th>
+<th style="text-align: left;">FastV</th>
+<th style="text-align: left;">FastV + Reroute</th>
+<th style="text-align: left;">PDrop</th>
+<th style="text-align: left;">PDrop + Reroute</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">192</td>
+<td style="text-align: left;">45.5%</td>
+<td style="text-align: left;">59.2%</td>
+<td style="text-align: left;">71.3%</td>
+<td style="text-align: left;">82.3%</td>
+</tr>
+<tr>
+<td style="text-align: left;">128</td>
+<td style="text-align: left;">19.8%</td>
+<td style="text-align: left;">31.8%</td>
+<td style="text-align: left;">53.4%</td>
+<td style="text-align: left;">61.2%</td>
+</tr>
+<tr>
+<td style="text-align: left;">64</td>
+<td style="text-align: left;">0.6%</td>
+<td style="text-align: left;">0.6%</td>
+<td style="text-align: left;">22.2%</td>
+<td style="text-align: left;">34.0%</td>
+</tr>
+</tbody>
+</table>
+<p>幾個重點：</p>
+<ul>
+<li><strong>壓得越狠，救得越多，但前提是要有「再看一次」的機會。</strong> FastV 只在一層做一次決定，到 64 個 token 時幾乎救不回來；PDrop 分好幾段做決定，Reroute 就能從 22.2% 拉到 34.0%。</li>
+<li><strong>換骨幹也成立。</strong> Qwen2.5-VL-7B 砍掉 88.9% 的 token 時，PDrop 從 11.1% 到 18.6%；Qwen3.5-9B 這種混合架構進步最大，砍掉三分之二時 FastV 從 31.1% 直接到 77.5%。</li>
+<li><strong>一般問答沒有變差。</strong> 在 GQA、TextVQA、MME 等八個 VQA 基準上，平均成績和原本的剪枝差不多或更好。</li>
+<li><strong>計算量幾乎一樣。</strong> 留 64 個 token 時，PDrop + Reroute 的 TFLOPs 少 77%、KV cache 少 83%，跟 PDrop 本身差不多。</li>
+<li>另外值得一提：全部實驗都在<strong>一張 RTX 4090</strong> 上完成。</li>
+</ul>
+<h2>附錄裡我最在意的兩件事</h2>
+<p><strong>第一，位置編號比想像中重要。</strong> 剪枝之後，留下的 token 可以重新編成連續的位置，也可以保留原本的位置編號。在 LLaVA-1.5 上用 FastV 留 192 個 token 時，重新編號會讓 RefCOCO testA 從 27.8 掉到 1.9，幾乎完全失去定位能力，token 本身還在，但模型已經不知道它「原本在哪裡」。</p>
+<p>這對我們的問題是很直接的提醒：「找回來」只做了一半，還要能「放回正確的位置」。影片多了時間軸，一個 token 回來時如果時間位置錯了，模型就會把它當成另一個時刻的畫面。</p>
+<p><strong>第二，Qwen3-VL 上反而變差。</strong> 附錄的 Qwen3-VL-8B 實驗裡，砍掉三分之二的 token 時，PDrop 是 69.5%，加上 Reroute 反而掉到 57.2%；只有在砍掉 88.9% 這種極端情況，才從 12.9% 進步到 19.1%。作者的解釋是 Qwen3-VL 有 DeepStack（在前幾層額外注入視覺特徵），手動設定的排程得配合架構調整。這個結果只放在附錄，正文沒有提；但我們手上用的正是 Qwen3-VL 系列，對我們來說它反而是最重要的一張表。</p>
+<h2>放到長影片上：我在想的事</h2>
+<p>圖片只有幾百個 token，影片就不一樣了。讀完之後我一直在想，把「延後而不刪除」搬到長影片上，會碰到哪些問題：</p>
+<ol>
+<li><strong>候選池本身就是負擔。</strong> Reroute 延後的 token 還留在序列裡，只是不參與計算。圖片的 576 個 token 當然留得住，長影片動輒幾萬個，全部的表示都留在顯卡上，本身就是我們想解決的記憶體問題。所以在影片上，「延後」可能要變成「先放到別的地方」：常用的留在顯卡，其他的放到主記憶體，甚至需要時再從原始畫面重算。</li>
+<li><strong>重新定位需要便宜的索引。</strong> Reroute 每次重新排名，都要拿所有候選 token 算一次注意力。如果候選 token 不在顯卡上，就需要一個便宜的方法，先決定「大概在哪一段時間」，再決定「那一段裡的哪些 token」，也就是先在時間上定位，再在空間上定位。</li>
+<li><strong>跳過太久的表示會不會過期？</strong> 被延後的 token，表示停在它被跳過的那一層；如果好幾段之後才回來，它帶的還是淺層的特徵，卻要和深層的文字一起計算。論文沒有分析這件事，而在影片裡可能更嚴重：一個 token 可能同時在「深度」和「時間」上都落後。</li>
+<li><strong>兩種找回，其實可以接在一起。</strong> 八月讀的 Act2See 是回到原始影片去找畫面，成本高，但什麼都找得到；Reroute 是在模型內部把 token 撿回來，便宜，但只撿得回當初有編碼進去的東西。長影片大概兩種都需要：先在內部找，找不到再回去看原始影片。</li>
+</ol>
+<p>讀完這兩篇，我越來越覺得「壓縮」和「找回」應該一起設計，而不是壓完就算了。</p>
+<h2>我的疑問</h2>
+<ul>
+<li><strong>實際速度沒有量。</strong> 論文報的是理論上的 TFLOPs 和 KV cache，作者也承認實際延遲取決於 gather／scatter 的實作。在家用顯卡上實際跑多快，才是我最在意的。</li>
+<li><strong>Qwen3.5 的大進步，有多少來自「回來」？</strong> 作者的解釋是混合架構裡的線性注意力層需要完整的序列排列，而 Reroute 剛好沒有把 token 移走。那麼進步裡有多少來自「保留序列排列」、有多少來自「讓 token 回來」？如果有一組「保留排列但禁止回來」的對照，會清楚很多。</li>
+<li><strong>有一個數字怪怪的。</strong> VQA 表裡，PDrop 留 192 個 token 時 TextVQA 是 46.9，留得更少的 128 個 token 卻是 56.2。這一格如果有問題，192 個 token 那一組的平均差距就會被放大。</li>
+<li><strong>救回來之後還是差很多。</strong> 就算加了 Reroute，Qwen2.5-VL 砍掉 88.9% 時也只剩原本的 18.6%。能找回一些，但離「完整找回」還有很長的距離，這也是我們想往下做的地方。</li>
+</ul>
+<h2>讀完之後想試的事</h2>
+<ol>
+<li>在短影片上照原樣套 Reroute，看影片 token 的重要性是不是也會隨深度漂移，像論文的 Figure 2 那樣追蹤一個關鍵 token。</li>
+<li>做「保留序列排列但禁止回來」的對照組，把進步的來源拆開。</li>
+<li>比較 token 回來時「保留原本的時間位置」和「重新編號」差多少。</li>
+<li>在自己的顯卡上量實際延遲，看 gather／scatter 的額外成本有多大。</li>
+</ol>
+<hr>
+<p>論文的數字已對照 arXiv 網頁版（v1）。我們自己的研究還在進行中，這裡只寫問題和想法，做法和結果等整理好之後再公開。</p></article><div class="ask"><div><b>Q&amp;A</b><small>匿名提問，在這裡回答。</small></div><a class="btn primary" href="https://forms.gle/yNUw4eLZeeqf3Arb6" target="_blank" rel="noopener noreferrer">匿名提問 ↗</a></div><h2 style="margin-top:48px">其他文章</h2><a class="card" href="/blog/zh-tw/2026-09-30-rine/"><span class="type paper">論文筆記</span><b>RINE：中間層真的比最後一層更懂「假」嗎？</b><small>RINE 用 CLIP 中間層的特徵偵測生成圖，和我自己的實驗結論大致相同；但在「野外干擾」下，最有用的層會換人，增強的廣度也比從哪一層拿特徵更關鍵。</small></a><a class="card" href="/blog/zh-tw/2026-09-29-now/"><span class="type now">近況</span><b>2026 年 9 月：作品與考卷分享區上線，開始準備 CVPR</b><small>這個月把 Taiwan Exam、考卷分享區、LumiGrid 網頁版和 Adversarial Lab 放上線，網站也搬到 niansia.com；接下來的重心是 11 月中的 CVPR 2027 投稿。</small></a><a class="card" href="/blog/zh-tw/2026-08-06-act2see/"><span class="type paper">論文筆記</span><b>Act2See：模型學會回頭看影片，那沒有 8 張 A100 的人呢？</b><small>Act2See 讓影片模型想到一半時，自己回影片裡找畫面、或畫出假設的畫面，五個基準都贏過原模型。但它用 8 張 A100 訓練，我讀完一直在想：同樣的想法，放到一張家用顯卡上要怎麼做？</small></a><div class="btns"><a class="btn" href="/blog/zh-tw/">全部文章</a><a class="btn primary" href="/zh-tw/#blog">回到作品集</a></div></main>
+<aside class="author" aria-label="由 Niansia 製作"><a class="an-face" href="/zh-tw/" tabindex="-1" aria-hidden="true" data-nz-title="Niansia"><img src="/assets/icons/author.webp" alt="" width="56" height="56" loading="lazy"></a><div class="an-text"><b>由 Niansia 製作</b><small>陽明交大資工碩士生，研究 AI 安全、電腦視覺與視覺語言模型。</small></div><a class="btn primary an-go" href="/zh-tw/" data-nz-title="Niansia">前往 niansia.com →</a></aside>
+<footer>有問題或想法？寫信到 <a href="mailto:niansia930202@gmail.com">niansia930202@gmail.com</a> · <a href="/zh-tw/">niansia.com</a> · <a href="https://github.com/niansia">github.com/niansia</a><span class="stats" data-stats hidden> · <i class="live-dot"></i> <b data-stat="online">–</b> 人在線 · <b data-stat="total">–</b> 次造訪</span></footer>
+</body>
+</html>

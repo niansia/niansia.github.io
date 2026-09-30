@@ -53,6 +53,25 @@ window.NIANSIA_BLOG = {
     "url": "/blog/en/2026-09-29-now/"
    },
    {
+    "slug": "2026-09-14-reroute",
+    "type": "paper",
+    "title": "Reroute: can dropped visual tokens come back later?",
+    "description": "Reroute turns \"delete the low-scoring visual tokens\" into \"defer them, and let them come back\", with no training, and the harder the compression, the more it recovers. We are studying how to recover and re-locate what a long video loses in compression, and this paper attacks the smallest version of that problem.",
+    "date": "2026-09-14",
+    "minutes": 6,
+    "tags": [
+     "vision-language models",
+     "visual token reduction",
+     "grounding",
+     "long video"
+    ],
+    "lang": "en",
+    "paper": "Reroute, Don’t Remove: Recoverable Visual Token Routing for Vision-Language Models",
+    "venue": "arXiv 2026",
+    "depth": "deep",
+    "url": "/blog/en/2026-09-14-reroute/"
+   },
+   {
     "slug": "2026-08-06-act2see",
     "type": "paper",
     "title": "Act2See: the model learns to look back — what if you don't have eight A100s?",
@@ -124,6 +143,25 @@ window.NIANSIA_BLOG = {
     "url": "/blog/zh-tw/2026-09-29-now/"
    },
    {
+    "slug": "2026-09-14-reroute",
+    "type": "paper",
+    "title": "Reroute：丟掉的視覺 token，晚點還能撿回來嗎？",
+    "description": "Reroute 把「刪掉低分的視覺 token」改成「先延後，之後還能回來」，不用訓練，壓得越狠救回越多。我們正在研究長影片壓縮後，遺失的畫面怎麼找回、怎麼重新定位，這篇剛好從最小的地方切進去。",
+    "date": "2026-09-14",
+    "minutes": 4,
+    "tags": [
+     "視覺語言模型",
+     "視覺 token 壓縮",
+     "定位",
+     "長影片"
+    ],
+    "lang": "zh-TW",
+    "paper": "Reroute, Don’t Remove: Recoverable Visual Token Routing for Vision-Language Models",
+    "venue": "arXiv 2026",
+    "depth": "deep",
+    "url": "/blog/zh-tw/2026-09-14-reroute/"
+   },
+   {
     "slug": "2026-08-06-act2see",
     "type": "paper",
     "title": "Act2See：模型學會回頭看影片，那沒有 8 張 A100 的人呢？",
@@ -193,6 +231,25 @@ window.NIANSIA_BLOG = {
      }
     ],
     "url": "/blog/zh-cn/2026-09-29-now/"
+   },
+   {
+    "slug": "2026-09-14-reroute",
+    "type": "paper",
+    "title": "Reroute：丢掉的视觉 token，晚点还能捡回来吗？",
+    "description": "Reroute 把「删掉低分的视觉 token」改成「先延后，之后还能回来」，不用训练，压得越狠救回越多。我们正在研究长视频压缩后，遗失的画面怎么找回、怎么重新定位，这篇刚好从最小的地方切进去。",
+    "date": "2026-09-14",
+    "minutes": 4,
+    "tags": [
+     "视觉语言模型",
+     "视觉 token 压缩",
+     "定位",
+     "长视频"
+    ],
+    "lang": "zh-CN",
+    "paper": "Reroute, Don’t Remove: Recoverable Visual Token Routing for Vision-Language Models",
+    "venue": "arXiv 2026",
+    "depth": "deep",
+    "url": "/blog/zh-cn/2026-09-14-reroute/"
    },
    {
     "slug": "2026-08-06-act2see",

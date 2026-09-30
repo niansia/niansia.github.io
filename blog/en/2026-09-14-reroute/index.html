@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Reroute: can dropped visual tokens come back later? · Niansia</title>
+<meta name="description" content="Reroute turns &quot;delete the low-scoring visual tokens&quot; into &quot;defer them, and let them come back&quot;, with no training, and the harder the compression, the more it recovers. We are studying how to recover and re-locate what a long video loses in compression, and this paper attacks the smallest version of that problem.">
+<link rel="canonical" href="https://niansia.com/blog/en/2026-09-14-reroute/">
+<link rel="alternate" hreflang="en" href="https://niansia.com/blog/en/2026-09-14-reroute/"><link rel="alternate" hreflang="zh-Hant-TW" href="https://niansia.com/blog/zh-tw/2026-09-14-reroute/"><link rel="alternate" hreflang="zh-Hans-CN" href="https://niansia.com/blog/zh-cn/2026-09-14-reroute/"><link rel="alternate" hreflang="x-default" href="https://niansia.com/blog/en/2026-09-14-reroute/">
+<meta property="og:type" content="article"><meta property="og:site_name" content="Niansia">
+<meta property="og:title" content="Reroute: can dropped visual tokens come back later? · Niansia"><meta property="og:description" content="Reroute turns &quot;delete the low-scoring visual tokens&quot; into &quot;defer them, and let them come back&quot;, with no training, and the harder the compression, the more it recovers. We are studying how to recover and re-locate what a long video loses in compression, and this paper attacks the smallest version of that problem.">
+<meta property="og:url" content="https://niansia.com/blog/en/2026-09-14-reroute/"><meta property="og:image" content="https://niansia.com/assets/og/blog-2026-09-14-reroute-en.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta property="og:locale" content="en">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://niansia.com/assets/og/blog-2026-09-14-reroute-en.jpg">
+
+<meta name="theme-color" content="#fbf6ee" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#15142a" media="(prefers-color-scheme: dark)">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://*.firebasedatabase.app; connect-src 'self' https://*.firebasedatabase.app wss://*.firebasedatabase.app; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; frame-src https://*.firebasedatabase.app; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml">
+<script src="/assets/js/page-transition.js?v=3"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root{--bg:#fbf6ee;--paper:#fffdf9;--ink:#2a2230;--muted:#766b73;--line:#2a22301a;--accent:#c0673a;--accent2:#8f6bb3;--code:#f3ece2;}
+@media(prefers-color-scheme:dark){:root{--bg:#15142a;--paper:#1c1a36;--ink:#f1ebe2;--muted:#aaa3bd;--line:#ffffff1a;--accent:#f0a878;--accent2:#b69ae6;--code:#26234a;}}
+*{box-sizing:border-box;}html{-webkit-text-size-adjust:100%;}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.85 Inter,'Noto Sans TC','Noto Sans SC',system-ui,sans-serif;}
+a{color:var(--accent);text-underline-offset:3px;}
+.top{max-width:1080px;margin:0 auto;padding:18px 20px;display:flex;align-items:center;gap:10px;font:500 13px 'JetBrains Mono',monospace;color:var(--muted);}
+.top a{color:var(--muted);text-decoration:none;}.top a:hover{color:var(--accent);}
+.top b{color:var(--ink);font-weight:500;}.top .sp{flex:1;}
+.langs a{padding:4px 9px;border-radius:99px;border:1px solid var(--line);margin-left:4px;}.langs a[aria-current]{color:var(--ink);border-color:var(--accent);}
+main{max-width:760px;margin:0 auto;padding:10px 20px 70px;}
+.kicker{font:500 12px 'JetBrains Mono',monospace;color:var(--accent);letter-spacing:.06em;text-transform:uppercase;margin:24px 0 8px;}
+h1{font-size:clamp(28px,4.4vw,42px);line-height:1.2;letter-spacing:-.02em;margin:0 0 14px;}
+.lede{font-size:18px;color:var(--muted);margin:0 0 16px;line-height:1.7;}
+.meta{display:flex;flex-wrap:wrap;gap:8px 14px;font:500 12.5px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;color:var(--muted);padding-bottom:22px;border-bottom:1px solid var(--line);margin-bottom:10px;}
+.meta span.tag{padding:2px 9px;border-radius:99px;background:var(--code);}
+article h2{font-size:23px;margin:40px 0 10px;letter-spacing:-.01em;}
+article h3{font-size:18px;margin:28px 0 8px;}
+article p,article li{color:var(--ink);}
+article code{font:14px 'JetBrains Mono',monospace;background:var(--code);padding:1px 6px;border-radius:6px;}
+article table{width:100%;border-collapse:collapse;margin:18px 0;font-size:14.5px;display:block;overflow-x:auto;}
+article th,article td{padding:8px 12px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap;}
+article th{font-weight:600;color:var(--muted);font-size:13px;}
+article td:not(:first-child),article th:not(:first-child){text-align:right;}
+article td[style*="left"],article th[style*="left"]{white-space:normal;min-width:6.5em;}   /* text tables (|:---|) wrap instead of scrolling */
+article strong{color:var(--ink);}
+article blockquote{margin:18px 0;padding:4px 18px;border-left:3px solid var(--accent);color:var(--muted);}
+.card{display:block;padding:18px 20px;margin:12px 0;border-radius:16px;background:var(--paper);border:1px solid var(--line);text-decoration:none;color:var(--ink);transition:transform .25s,border-color .25s;}
+.card:hover{transform:translateY(-2px);border-color:var(--accent);}
+.card b{display:block;font-size:18px;line-height:1.4;margin-bottom:4px;}.card small{display:block;color:var(--muted);font-size:14px;line-height:1.6;}
+.card i{display:block;font:normal 500 12px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;color:var(--accent);margin-top:8px;}
+.hero{width:100%;height:auto;border-radius:16px;border:1px solid var(--line);display:block;margin:6px 0 18px;}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px;}.chips span{font:500 12px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;padding:4px 11px;border-radius:99px;background:var(--code);}
+.btns{display:flex;flex-wrap:wrap;gap:10px;margin:22px 0;}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:12px;border:1px solid var(--line);background:var(--paper);color:var(--ink);text-decoration:none;font-weight:600;font-size:14px;}
+.btn.primary{background:var(--accent);border-color:transparent;color:var(--paper);}
+.btn:hover{border-color:var(--accent);}
+.note{font-size:13.5px;color:var(--muted);}
+.live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#34c38f;box-shadow:0 0 0 3px #34c38f33;vertical-align:1px;}footer b{color:var(--ink);font-weight:600;}
+figure.fig{margin:24px 0;}figure.fig a{display:block;border-radius:14px;overflow:hidden;border:1px solid var(--line);cursor:zoom-in;background:var(--code);}
+figure.fig img{display:block;width:100%;height:auto;transition:transform .4s;}figure.fig a:hover img{transform:scale(1.015);}
+figure.fig figcaption{margin-top:8px;font-size:13.5px;color:var(--muted);line-height:1.6;}
+.lb{position:fixed;inset:0;z-index:50;display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px;background:#0d0b16ee;}
+.lb.on{display:flex;}.lb img{max-width:100%;max-height:84vh;border-radius:10px;box-shadow:0 30px 80px #000a;}
+.lb p{margin:0;color:#e9e4f2;font-size:14px;text-align:center;max-width:760px;}
+.lb-x{position:absolute;top:14px;right:18px;width:40px;height:40px;border-radius:50%;border:1px solid #ffffff44;background:transparent;color:#fff;font-size:24px;cursor:pointer;}
+.log-entry{position:relative;padding:0 0 34px 26px;border-left:2px solid var(--line);}
+.log-entry:before{content:'';position:absolute;left:-7px;top:8px;width:12px;height:12px;border-radius:50%;background:var(--bg);border:2px solid var(--accent);}
+.log-entry time{font:500 12.5px 'JetBrains Mono',monospace;color:var(--accent);}
+.log-entry h2{margin:4px 0 6px!important;font-size:21px!important;}
+.log-entry h2 a{color:var(--ink);text-decoration:none;}
+.statement-link{display:flex;justify-content:space-between;align-items:center;}
+.top a.me{display:inline-flex;align-items:center;gap:8px;padding:3px 12px 3px 3px;border:1px solid var(--line);border-radius:99px;transition:border-color .2s;}.top a.me:hover{border-color:var(--accent);}.top a.me img{width:24px;height:24px;border-radius:50%;display:block;}
+.author{max-width:720px;margin:44px auto 0;padding:18px 20px;display:flex;align-items:center;gap:16px;border-radius:18px;background:var(--code);border:1px solid var(--line);}
+.author{box-sizing:border-box;}.author>*{flex:none;}
+.author .an-face img{display:block;width:56px;height:56px;border-radius:50%;border:2px solid var(--accent);}
+.author .an-text{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px;}
+.author .an-text b{font-size:15px;}.author .an-text small{font-size:13px;line-height:1.6;color:var(--muted);}
+.author .an-note{color:var(--ink)!important;}
+.author .an-go{margin:0;white-space:nowrap;}
+@media (max-width:760px){.author{margin:40px 16px 0;}}@media (max-width:600px){.author{flex-wrap:wrap;padding:16px;}.author .an-text{flex-basis:calc(100% - 72px);}.author .an-go{flex:1 1 100%;justify-content:center;text-align:center;}}
+footer{max-width:760px;margin:0 auto;padding:26px 20px 50px;border-top:1px solid var(--line);font-size:14px;color:var(--muted);}
+
+.paper-box{margin:0 0 26px;padding:18px 20px;border-radius:16px;background:var(--paper);border:1px solid var(--line);border-left:4px solid var(--accent2);}
+.paper-box .pv{font:600 12px 'JetBrains Mono',monospace;color:var(--accent2);letter-spacing:.04em;margin:0 0 6px;}
+.paper-box b{display:block;font-size:17px;line-height:1.45;}
+.paper-box .pa{margin:6px 0 0;font-size:13.5px;color:var(--muted);line-height:1.6;}
+.paper-box .pl{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+.paper-box .pl a{font:600 12.5px 'JetBrains Mono',monospace;padding:5px 12px;border-radius:99px;border:1px solid var(--line);text-decoration:none;}
+.paper-box .pl a:hover{border-color:var(--accent);}
+.type{display:inline-block;padding:2px 9px;border-radius:99px;background:var(--accent);color:#fff;font:600 11.5px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;}
+.type.paper{background:var(--accent2);}.type.qa{background:#3f9f86;}.type.post{background:var(--muted);}
+.card .type{margin-bottom:8px;}.card .zh{margin-left:8px;font:500 11.5px 'JetBrains Mono',monospace;color:var(--muted);}
+.now-card{border-left:4px solid var(--accent);}
+.qa{padding:20px 0;border-bottom:1px solid var(--line);}
+.qa .qq{display:flex;gap:12px;font-weight:700;font-size:17px;line-height:1.55;margin:0 0 8px;}
+.qa .qq span,.qa .qa-a>span{flex:none;display:grid;place-items:center;width:28px;height:28px;border-radius:9px;background:var(--code);color:var(--accent);font-size:13px;}
+.qa .qa-a{display:flex;gap:12px;}.qa .qa-a>span{background:var(--accent);color:#fff;}.qa .qa-a article>:first-child{margin-top:0;}
+.qa time{display:block;margin:6px 0 0 40px;font:500 12px 'JetBrains Mono',monospace;color:var(--muted);}
+.ask{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:18px 0 8px;padding:16px 18px;border-radius:16px;background:var(--code);}
+.ask b{display:block;font-size:15.5px;}.ask small{display:block;color:var(--muted);font-size:13px;}
+.ask .btn{flex:none;margin:0;}.ask .btn[aria-disabled]{opacity:.55;pointer-events:none;}
+</style>
+<link rel="alternate" type="application/rss+xml" title="Niansia · Blog" href="/blog/en/feed.xml"><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BlogPosting", "headline": "Reroute: can dropped visual tokens come back later?", "description": "Reroute turns \"delete the low-scoring visual tokens\" into \"defer them, and let them come back\", with no training, and the harder the compression, the more it recovers. We are studying how to recover and re-locate what a long video loses in compression, and this paper attacks the smallest version of that problem.", "datePublished": "2026-09-14", "dateModified": "2026-09-14", "inLanguage": "en", "author": {"@type": "Person", "name": "Niansia", "url": "https://niansia.com/", "email": "mailto:niansia930202@gmail.com", "sameAs": ["https://github.com/niansia"]}, "mainEntityOfPage": "https://niansia.com/blog/en/2026-09-14-reroute/", "keywords": "vision-language models, visual token reduction, grounding, long video", "citation": {"@type": "ScholarlyArticle", "name": "Reroute, Don’t Remove: Recoverable Visual Token Routing for Vision-Language Models", "url": "https://arxiv.org/abs/2606.12412"}}</script>
+<script defer src="/assets/js/site-stats.js?v=2"></script>
+<script defer src="/assets/js/lightbox.js"></script>
+
+</head>
+<body>
+<header class="top"><a class="me" href="/" title="Back to Niansia&#x27;s website" data-nz-title="Niansia"><img src="/assets/icons/author.webp" alt="" width="24" height="24"><b>~/niansia</b></a> / <a href="/blog/en/">blog</a><span class="sp"></span><span class="langs"><a href="/blog/en/2026-09-14-reroute/" aria-current="page" hreflang="en">EN</a><a href="/blog/zh-tw/2026-09-14-reroute/" hreflang="zh-Hant">繁</a><a href="/blog/zh-cn/2026-09-14-reroute/" hreflang="zh-Hans">简</a></span></header>
+<main><p class="kicker">Paper note</p><h1>Reroute: can dropped visual tokens come back later?</h1><p class="lede">Reroute turns &quot;delete the low-scoring visual tokens&quot; into &quot;defer them, and let them come back&quot;, with no training, and the harder the compression, the more it recovers. We are studying how to recover and re-locate what a long video loses in compression, and this paper attacks the smallest version of that problem.</p><div class="meta"><time datetime="2026-09-14">2026-09-14</time><span>6 min read</span><span class="tag">vision-language models</span><span class="tag">visual token reduction</span><span class="tag">grounding</span><span class="tag">long video</span></div><aside class="paper-box"><p class="pv">arXiv 2026 · Read closely</p><b lang="en">Reroute, Don’t Remove: Recoverable Visual Token Routing for Vision-Language Models</b><p class="pa" lang="en">Cheng-Yu Yang, Shao-Yuan Lo, Yu-Lun Liu</p><div class="pl"><a href="https://arxiv.org/abs/2606.12412" target="_blank" rel="noopener noreferrer">Paper ↗</a><a href="https://github.com/elmma/mllm-reroute" target="_blank" rel="noopener noreferrer">Code ↗</a></div></aside><article><h2>Why this paper</h2>
+<p>The problem we have been working on: a long video has too many frames, so it has to be compressed to fit into the model. But what if a later question asks about a detail that was compressed away? How do you get that piece back, and how do you put it back where it was in the video?</p>
+<p>Most methods that reduce visual tokens follow the same recipe: score them, keep the high scorers, delete the rest, this paper questions the deleting itself. It works on images, not video, but it asks exactly our question: does something that was dropped get a chance to come back?</p>
+<h2>What the paper does</h2>
+<p><strong>First, an observation.</strong> How important a visual token is changes with decoder depth. The paper follows one token that lies inside the target box for "man in green shirt": its attention percentile is only 0.11 at layer 3 (where FastV decides) and 0.25 at layer 8 (where PDrop decides), so both methods delete it; by layer 25 it has climbed to 0.97. A token that looks like background in shallow layers is key evidence in deep ones.</p>
+<p><strong>The method is simple.</strong> Reroute keeps the pruning method's scorer (text-to-vision attention) and its stage schedule, and changes only what happens after scoring:</p>
+<ul>
+<li>high-scoring tokens go through the stage's attention and FFN as usual;</li>
+<li>low-scoring tokens are <strong>not deleted</strong>. They skip this stage (along the residual path, their representation unchanged) and are re-ranked against <strong>all</strong> visual tokens at the next decision point, returning if their score is high enough.</li>
+</ul>
+<p>Ordinary pruning is the special case where coming back is forbidden. In the equations the two differ only in the next stage's candidate set: the tokens kept last stage, or all of them. Seen another way, this is a training-free Mixture-of-Depths with attention scores as the router. Because each stage computes over the same number of tokens, the theoretical TFLOPs and KV cache stay in the same class as the pruning method it builds on.</p>
+<h2>Results</h2>
+<p>The main task is grounding (the RefCOCO family; a predicted box counts if its IoU exceeds 0.5). Below are LLaVA-1.5-7B (HuggingFace format) averages, relative to the full model with all 576 tokens:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Avg. tokens kept</th>
+<th style="text-align: left;">FastV</th>
+<th style="text-align: left;">FastV + Reroute</th>
+<th style="text-align: left;">PDrop</th>
+<th style="text-align: left;">PDrop + Reroute</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">192</td>
+<td style="text-align: left;">45.5%</td>
+<td style="text-align: left;">59.2%</td>
+<td style="text-align: left;">71.3%</td>
+<td style="text-align: left;">82.3%</td>
+</tr>
+<tr>
+<td style="text-align: left;">128</td>
+<td style="text-align: left;">19.8%</td>
+<td style="text-align: left;">31.8%</td>
+<td style="text-align: left;">53.4%</td>
+<td style="text-align: left;">61.2%</td>
+</tr>
+<tr>
+<td style="text-align: left;">64</td>
+<td style="text-align: left;">0.6%</td>
+<td style="text-align: left;">0.6%</td>
+<td style="text-align: left;">22.2%</td>
+<td style="text-align: left;">34.0%</td>
+</tr>
+</tbody>
+</table>
+<p>The main points:</p>
+<ul>
+<li><strong>The harder the compression, the more it recovers, but only if there is a second look.</strong> FastV decides once, at one layer, and at 64 tokens almost nothing comes back; PDrop decides in several stages, and Reroute lifts it from 22.2% to 34.0%.</li>
+<li><strong>It holds on other backbones.</strong> On Qwen2.5-VL-7B with 88.9% of tokens removed, PDrop goes from 11.1% to 18.6%; the hybrid Qwen3.5-9B gains the most, with FastV going from 31.1% to 77.5% at two-thirds removed.</li>
+<li><strong>General QA does not suffer.</strong> Across eight VQA benchmarks including GQA, TextVQA and MME, the average matches or beats the pruning baseline.</li>
+<li><strong>Compute is nearly the same.</strong> At 64 tokens, PDrop + Reroute cuts TFLOPs by 77% and KV cache by 83%, close to PDrop itself.</li>
+<li>Also worth noting: every experiment ran on <strong>a single RTX 4090</strong>.</li>
+</ul>
+<h2>Two things in the appendix I care about most</h2>
+<p><strong>First, position indices matter more than I expected.</strong> After pruning, the kept tokens can be renumbered into consecutive positions or keep their original indices. With FastV keeping 192 tokens on LLaVA-1.5, renumbering drops RefCOCO testA from 27.8 to 1.9, almost all grounding ability gone. The tokens are still there, but the model no longer knows where they came from.</p>
+<p>For our problem this is a direct warning: getting a token back is only half the job; it also has to go back to the right place. Video adds a time axis, and a token that returns with the wrong time position will be read as a different moment.</p>
+<p><strong>Second, it gets worse on Qwen3-VL.</strong> In the appendix's Qwen3-VL-8B experiment with two-thirds of tokens removed, PDrop scores 69.5% and adding Reroute drops it to 57.2%; only at the extreme 88.9% does it help, from 12.9% to 19.1%. The authors attribute this to Qwen3-VL's DeepStack (extra visual features injected into the first few layers): a hand-set schedule has to fit the architecture. The result appears only in the appendix and the main text does not mention it, but Qwen3-VL is exactly the family we work with, so for us it is the most important table in the paper.</p>
+<h2>Taking it to long video: what I keep thinking about</h2>
+<p>An image has a few hundred tokens; a video is another matter. After reading, I kept wondering what "defer instead of delete" runs into on long video:</p>
+<ol>
+<li><strong>The candidate pool itself is the burden.</strong> Reroute's deferred tokens stay in the sequence, just outside the computation. An image's 576 tokens fit easily, but a long video has tens of thousands, and keeping all their representations on the GPU is the very memory problem we want to solve. On video, "defer" may have to mean "put somewhere else": frequently used tokens on the GPU, the rest in main memory, or even recomputed from the raw frames when needed.</li>
+<li><strong>Re-locating needs a cheap index.</strong> Every re-ranking in Reroute computes attention over all candidate tokens. If the candidates are not on the GPU, something cheap has to decide first "roughly which stretch of time", then "which tokens in that stretch": locate in time first, then in space.</li>
+<li><strong>Do representations go stale if they skip too long?</strong> A deferred token's representation stays at the layer where it was skipped; if it returns several stages later, it carries shallow features into computation with deep text features. The paper does not analyse this, and on video it may be worse: a token can lag behind in both depth and time.</li>
+<li><strong>The two kinds of recovery could be chained.</strong> Act2See, which I read in August, goes back to the raw video to fetch frames: expensive, but anything can be found. Reroute picks tokens back up inside the model: cheap, but only what was encoded in the first place. Long video probably needs both: look inside first, and go back to the raw video only when that fails.</li>
+</ol>
+<p>After these two papers, I am more and more convinced that compression and recovery should be designed together, not "compress and be done".</p>
+<h2>Open questions</h2>
+<ul>
+<li><strong>Real speed is not measured.</strong> The paper reports theoretical TFLOPs and KV cache, and the authors acknowledge that actual latency depends on the gather/scatter implementation. How fast it really runs on a home GPU is what I care about most.</li>
+<li><strong>How much of the Qwen3.5 jump comes from tokens coming back?</strong> The authors' explanation is that the hybrid's linear-attention layers need the full sequence layout, which Reroute happens to keep. So how much of the gain is "keeping the layout" and how much is "letting tokens return"? A control that keeps the layout but forbids returning would make this much clearer.</li>
+<li><strong>One number looks odd.</strong> In the VQA table, PDrop keeping 192 tokens scores 46.9 on TextVQA, while keeping fewer, 128, scores 56.2. If that cell is off, the average gap at 192 tokens is inflated.</li>
+<li><strong>Recovered, but still far behind.</strong> Even with Reroute, Qwen2.5-VL with 88.9% removed keeps only 18.6% of its original score. Some things come back, but full recovery is a long way off, which is where we want to go next.</li>
+</ul>
+<h2>What I want to try</h2>
+<ol>
+<li>Apply Reroute as-is to short videos and check whether video-token importance also drifts with depth, tracking one key token like the paper's Figure 2.</li>
+<li>Build the "keep the layout, forbid returning" control to separate where the gains come from.</li>
+<li>Compare returning tokens with their original time positions against renumbering them.</li>
+<li>Measure real latency on my own GPU to see how much the gather/scatter overhead costs.</li>
+</ol>
+<hr>
+<p>The paper's numbers were checked against the arXiv HTML version (v1). Our own research is still in progress, so this note covers only the questions and ideas; the method and results will follow once they are written up.</p></article><div class="ask"><div><b>Questions &amp; answers</b><small>Questions sent anonymously, answered here.</small></div><a class="btn primary" href="https://forms.gle/yNUw4eLZeeqf3Arb6" target="_blank" rel="noopener noreferrer">Ask anonymously ↗</a></div><h2 style="margin-top:48px">More posts</h2><a class="card" href="/blog/en/2026-09-30-rine/"><span class="type paper">Paper note</span><b>RINE: do intermediate layers know “fake” better than the last one?</b><small>RINE detects generated images from CLIP&#x27;s intermediate layers, and my own experiments largely agree. Under real-world corruptions, though, the most useful layers change, and the breadth of augmentation matters more than which layer the features come from.</small></a><a class="card" href="/blog/en/2026-09-29-now/"><span class="type now">Now</span><b>September 2026: new projects and an exam gallery, CVPR prep begins</b><small>This month Taiwan Exam, its exam gallery, the in-browser LumiGrid and Adversarial Lab went live, and the site moved to niansia.com. Next up is the CVPR 2027 submission in mid-November.</small></a><a class="card" href="/blog/en/2026-08-06-act2see/"><span class="type paper">Paper note</span><b>Act2See: the model learns to look back — what if you don&#x27;t have eight A100s?</b><small>Act2See lets a video model stop mid-reasoning to fetch a frame from the video, or draw a hypothetical one, and it beats its base model on all five benchmarks. It was trained on eight A100s, though, and I kept asking myself how the same idea would work on a single home GPU.</small></a><div class="btns"><a class="btn" href="/blog/en/">All posts</a><a class="btn primary" href="/#blog">Back to the portfolio</a></div></main>
+<aside class="author" aria-label="Made by Niansia"><a class="an-face" href="/" tabindex="-1" aria-hidden="true" data-nz-title="Niansia"><img src="/assets/icons/author.webp" alt="" width="56" height="56" loading="lazy"></a><div class="an-text"><b>Made by Niansia</b><small>M.S. student in computer science at NYCU, working on AI security, computer vision and vision-language models.</small></div><a class="btn primary an-go" href="/" data-nz-title="Niansia">Visit niansia.com →</a></aside>
+<footer>Questions or ideas? Email <a href="mailto:niansia930202@gmail.com">niansia930202@gmail.com</a> · <a href="/">niansia.com</a> · <a href="https://github.com/niansia">github.com/niansia</a><span class="stats" data-stats hidden> · <i class="live-dot"></i> <b data-stat="online">–</b> online · <b data-stat="total">–</b> visits</span></footer>
+</body>
+</html>
