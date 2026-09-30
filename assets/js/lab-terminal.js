@@ -30,7 +30,7 @@
     badge:'M6 3h12v18H6zM9 8h6M9 12h6M9 16h3', paper:'M6 2h9l4 4v16H6zM14 2v5h5M9 11h7M9 15h7M9 19h4', bolt:'M13 2 4 14h7l-1 8 9-12h-7z',
     search:'M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zm9 16-4.2-4.2', compass:'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zm3.5 5.5-2 5-5 2 2-5z', book:'M4 5q4-2 8 0v15q-4-2-8 0zM12 5q4-2 8 0v15q-4-2-8 0z', lock:'M6 11h12v10H6zM8.5 11V8a3.5 3.5 0 0 1 7 0v3M12 15v2', clock:'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zm0 4.5V12l3 2', download:'M12 3v12m-5-5 5 5 5-5M4 20h16'
   };
-  Object.assign(icons, {horizon:'M3 17h18M6.5 17a5.5 5.5 0 0 1 11 0M12 6v2.5M5.6 10.2l1.7 1.7M18.4 10.2l-1.7 1.7M8 20.5h8', instagram:'M4 8a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v8a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4zM12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zM16.8 7.2h.01',
+  Object.assign(icons, {chevDown:'m6 9 6 6 6-6', chevUp:'m6 15 6-6 6 6', trash:'M4 7h16M9 7V4h6v3M6.5 7l1 13h9l1-13M10 11v6M14 11v6', horizon:'M3 17h18M6.5 17a5.5 5.5 0 0 1 11 0M12 6v2.5M5.6 10.2l1.7 1.7M18.4 10.2l-1.7 1.7M8 20.5h8', instagram:'M4 8a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v8a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4zM12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zM16.8 7.2h.01',
     threads:'M15.4 11.4c0 2.7-1.3 4.2-3.1 4.2-1.3 0-2.2-.8-2.2-1.9 0-1.3 1.2-2.1 3.1-2.1 3 0 4.6 1.5 4.6 3.5 0 2.4-2.1 4-4.9 4-3.8 0-6.2-2.8-6.2-7.1S9.1 4.9 12.6 4.9c2.5 0 4.1 1.2 4.8 3.3',
     discord:'M7.2 7q4.8-1.8 9.6 0 2.4 3.4 2.7 9-2 1.6-4.4 2l-1-1.7q-2.1.5-4.2 0l-1 1.7q-2.4-.4-4.4-2 .3-5.6 2.7-9zM9.6 12.6h.01M14.4 12.6h.01'});
   // The GitHub mark (Octicons mark-github, MIT), filled rather than stroked like the rest of the set.
@@ -860,16 +860,37 @@
       shell(); emit('locale', {locale});
     }, origin);
   }
-  function renderJournal() {
+  /* The command log shows the newest result; earlier ones wait behind "show N earlier", and the whole log can be folded
+     to one line or cleared. A new command always unfolds it, so its output is never hidden. Kept for the visit. */
+  let journalMode=(()=>{try{return sessionStorage.getItem('niansia-journal')||'latest';}catch{return 'latest';}})();
+  const journalCopy=()=>({en:{title:'Command log',earlier:n=>`Show ${n} earlier`,latest:'Latest only',fold:'Collapse',open:'Expand',clear:'Clear'},
+    'zh-TW':{title:'指令紀錄',earlier:n=>`顯示先前 ${n} 筆`,latest:'只看最新',fold:'收起',open:'展開',clear:'清除'},
+    'zh-CN':{title:'指令记录',earlier:n=>`显示先前 ${n} 条`,latest:'只看最新',fold:'收起',open:'展开',clear:'清除'}}[locale]);
+  const entryHTML=(entry,isNew)=>`<div class="command-entry ${isNew?'is-new':''} ${entry.yuki?'from-yuki':''}"><div class="command-entry-input" translate="no">❯ ${esc(entry.command)}</div><pre>${esc(entry.text)}</pre>${entry.links?.length?`<div class="result-links">${entry.links.map(link=>link.id?`<button data-project="${esc(link.id)}">${esc(link.label)} ↗</button>`:link.url?`<a href="${esc(link.url)}" target="_blank" rel="noopener noreferrer">${esc(link.label)} ↗</a>`:`<button data-command="${esc(link.command)}">${esc(link.label)}</button>`).join('')}</div>`:''}</div>`;
+  function renderJournal(fresh=false) {
     const region=$('.command-results');if(!region)return;
     region.hidden=!commandEntries.length;
-    region.innerHTML=commandEntries.map((entry,i)=>`<div class="command-entry ${i===commandEntries.length-1?'is-new':''} ${entry.yuki?'from-yuki':''}"><div class="command-entry-input" translate="no">❯ ${esc(entry.command)}</div><pre>${esc(entry.text)}</pre>${entry.links?.length?`<div class="result-links">${entry.links.map(link=>link.id?`<button data-project="${esc(link.id)}">${esc(link.label)} ↗</button>`:link.url?`<a href="${esc(link.url)}" target="_blank" rel="noopener noreferrer">${esc(link.label)} ↗</a>`:`<button data-command="${esc(link.command)}">${esc(link.label)}</button>`).join('')}</div>`:''}</div>`).join('');
-    region.scrollTop=region.scrollHeight;
+    if(!commandEntries.length){region.innerHTML='';return;}
+    const J=journalCopy(),n=commandEntries.length,last=commandEntries[n-1],mode=journalMode,folded=mode==='min';
+    const shown=mode==='all'?commandEntries:folded?[]:[last];
+    region.classList.toggle('is-folded',folded);
+    region.innerHTML=`<div class="journal-head"><button type="button" class="journal-title" data-journal="${folded?'latest':'min'}" aria-expanded="${!folded}">${icon('terminal')}<span>${esc(J.title)}</span><em>${n}</em>${folded?`<code translate="no">❯ ${esc(last.command)}</code>`:''}</button>`
+      +`<span class="journal-tools">${n>1&&!folded?`<button type="button" data-journal="${mode==='all'?'latest':'all'}">${esc(mode==='all'?J.latest:J.earlier(n-1))}</button>`:''}`
+      +`<button type="button" class="journal-icon" data-journal="${folded?'latest':'min'}" aria-label="${esc(folded?J.open:J.fold)}" title="${esc(folded?J.open:J.fold)}">${icon(folded?'chevDown':'chevUp')}</button>`
+      +`<button type="button" class="journal-icon" data-journal="clear" aria-label="${esc(J.clear)}" title="${esc(J.clear)}">${icon('trash')}</button></span></div>`
+      +shown.map((entry,i)=>entryHTML(entry,fresh&&i===shown.length-1)).join('');
+    region.scrollTop=mode==='all'?region.scrollHeight:0;
+  }
+  function journal(action) {
+    if(action==='clear'){commandEntries=[];renderJournal();message(n(t().commandHint));$('#terminal-command')?.focus({preventScroll:true});return;}
+    journalMode=action;try{sessionStorage.setItem('niansia-journal',action);}catch{}
+    renderJournal();$(`.command-results [data-journal]`)?.focus({preventScroll:true});
   }
   function record(command,text,links=[],extra={}) {
     commandEntries.push({command,text:String(text),links,...extra});
     if(commandEntries.length>20)commandEntries.shift();
-    renderJournal();$('.terminal-output').scrollTop=0;message(String(text).split('\n')[0]||t().done);
+    if(journalMode==='min')journalMode='latest';   // a new command's output is never folded away
+    renderJournal(true);$('.terminal-output').scrollTop=0;message(String(text).split('\n')[0]||t().done);
   }
   function complete(value) {
     const split=value.indexOf(' '),head=split<0?value:value.slice(0,split),tail=split<0?'':value.slice(split+1).toLowerCase();
@@ -1081,6 +1102,7 @@
     if(!event.target.closest('.motion-menu'))toggleMotionMenu(false);
     if(event.target.closest('.window-title')&&$('.terminal-window').classList.contains('is-minimized'))windowAction('win-min');
     if(!target)return;
+    if(target.dataset.journal){journal(target.dataset.journal);return;}
     if(target.dataset.filter){setProjectFilter(target.dataset.filter,true);return;}
     if(target.dataset.blogFilter){setBlogFilter(target.dataset.blogFilter,true);return;}
     if(target.dataset.latestDot!==undefined){showLatest(Number(target.dataset.latestDot));return;}

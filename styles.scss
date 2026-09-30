@@ -261,6 +261,18 @@ kbd{background:var(--surface);border:1px solid var(--line);box-shadow:0 1px 0 va
 .command-hint{font:10px var(--mono);color:color-mix(in srgb,var(--muted) 78%,var(--ink));line-height:1.8;margin:0 0 24px 2px;}
 .command-results{max-height:240px;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;background:var(--rail);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:0 0 24px;}
 .command-results[hidden]{display:none;}
+/* the log's header: title and count (folds it), "show earlier", fold and clear; it stays on top while the log scrolls */
+.journal-head{position:sticky;top:-14px;z-index:1;display:flex;align-items:center;gap:8px;margin:-14px -16px 10px;padding:7px 10px 7px 14px;background:var(--rail);border-bottom:1px dashed var(--line);}
+.journal-title{display:flex;align-items:center;gap:7px;min-width:0;flex:1;padding:2px 0;text-align:left;font:11px var(--mono);color:var(--muted);}
+.journal-title .icon{width:13px;height:13px;flex:none;}
+.journal-title em{font-style:normal;padding:0 6px;border-radius:99px;background:var(--wash);color:var(--accent);font-size:10px;}
+.journal-title code{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--accent);font:11px var(--mono);background:none;padding:0;}
+.journal-tools{display:flex;align-items:center;gap:4px;flex:none;}
+.journal-tools button{padding:3px 8px;border-radius:7px;font:10.5px var(--mono);color:var(--muted);transition:background .2s,color .2s;}
+.journal-tools button:hover,.journal-title:hover{color:var(--accent);}.journal-tools button:hover{background:var(--wash);}
+.journal-tools .journal-icon{display:grid;place-items:center;width:26px;height:24px;padding:0;}.journal-tools .journal-icon .icon{width:14px;height:14px;}
+.command-results.is-folded{padding-bottom:0;overflow:hidden;}
+.command-results.is-folded .journal-head{margin-bottom:0;border-bottom:0;}
 .command-entry+.command-entry{border-top:1px dashed var(--line);margin-top:14px;padding-top:14px;}
 .command-entry.is-new{animation:rise-in .35s var(--ease);}
 .command-entry-input{color:var(--accent);font:11px/1.6 var(--mono);overflow-wrap:anywhere;}
@@ -904,7 +916,7 @@ html.film-open .yuki,html.film-open .yuki-chat{visibility:hidden;}
   .project-row{min-height:60px;gap:12px;}.project-row-title strong{font-size:12px;}.directory-heading{gap:8px;}.directory-heading>span{font-size:9px;}
   .keyboard-guide>div{grid-template-columns:105px 1fr;font-size:11px;}.research-entry{gap:12px;}.project-pagination{font-size:10px;}
   .inline-command-form{padding:6px 9px;gap:6px;}.inline-command-form input{font-size:16px;}.inline-command-form input::placeholder{font-size:11px;}.inline-command-form button kbd{display:none;}.inline-command-form button{min-width:30px;min-height:36px;}
-  .command-hint{font-size:8px;}.command-catalogue>button{grid-template-columns:1fr;gap:4px;}.command-results{max-height:190px;padding:12px;}.command-entry pre{font-size:11px;}
+  .command-hint{font-size:8px;}.command-catalogue>button{grid-template-columns:1fr;gap:4px;}.command-results{max-height:190px;padding:12px;}.journal-head{top:-12px;margin:-12px -12px 10px;padding-left:12px;}.command-entry pre{font-size:11px;}
   .style-popover{position:fixed;left:10px;right:10px;top:auto;bottom:10px;width:auto;max-height:72dvh;transform-origin:50% 100%;}.style-grid{gap:6px;}
   .yuki-chat{left:8px;right:8px;bottom:8px;width:auto;height:min(72dvh,560px);border-radius:18px;}.chat-form input{font-size:16px;}
   .yuki-menu{width:min(244px,calc(100vw - 16px));}
