@@ -58,7 +58,7 @@ window.NIANSIA_BLOG = {
     "title": "Act2See: the model learns to look back — what if you don't have eight A100s?",
     "description": "Act2See lets a video model stop mid-reasoning to fetch a frame from the video, or draw a hypothetical one, and it beats its base model on all five benchmarks. It was trained on eight A100s, though, and I kept asking myself how the same idea would work on a single home GPU.",
     "date": "2026-08-06",
-    "minutes": 8,
+    "minutes": 9,
     "tags": [
      "video understanding",
      "vision-language models",

@@ -208,7 +208,7 @@ footer{max-width:760px;margin:0 auto;padding:26px 20px 50px;border-top:1px solid
 </table>
 <p>事實題的進步幾乎都來自檢索；生成在反事實題上很強（35.52 → 56.01），但在事實題上反而比什麼都不用還低一點（37.70 對 38.51）。附錄也統計了 VCR-Bench 上的 127 次生成，其中 13 次（10.2%）畫錯，最常見的是語意錯誤（7 次）。</p>
 <h2>最大的反思：8 張 A100</h2>
-<p>讀到訓練細節那一行時我停了很久。LoRA、batch size 1、一個 epoch、三千多筆資料，每個設定都很「省」，最後卻寫著 8 張 A100，我手邊只有一台 8 GB 顯卡的筆電。如果這種方法只有實驗室的叢集跑得動，對我來說它就只是一篇「知道了」的論文。所以我開始想：如果不用這麼大規模的 GPU，只靠一張家用顯卡，能做到什麼程度？</p>
+<p>讀到訓練細節那一行時我停了很久。LoRA、batch size 1、一個 epoch、三千多筆資料，每個設定都很「省」，最後卻寫著 8 張 A100，我手邊只有家用等級的顯卡。如果這種方法只有實驗室的叢集跑得動，對我來說它就只是一篇「知道了」的論文。所以我開始想：如果不用這麼大規模的 GPU，只靠一張家用顯卡，能做到什麼程度？</p>
 <h3>先想清楚：資源到底花在哪裡</h3>
 <p>把整個流程拆開來看，真正需要大 GPU 的地方比我想像中少：</p>
 <ul>
@@ -242,8 +242,11 @@ footer{max-width:760px;margin:0 auto;padding:26px 20px 50px;border-top:1px solid
 <li>試「少量初始幀＋積極檢索」的訓練設定，看能不能用更少的幀追上 1 fps 的成績。</li>
 <li>生成只在反事實題開啟，看整體成績掉多少、省下多少時間。</li>
 </ol>
+<h2>後記（10 月補）</h2>
+<p>讀完這篇之後，「家用顯卡到底做不做得到」這個問題一直放不下。後來我們針對論文裡的其中一個影片推理基準做了自己的方法，並把 Act2See 當成對照組。我們用的是 Qwen3-VL-4B，在自己電腦的一張 RTX 5080 上跑，結果略高於 Act2See。</p>
+<p>論文裡的 Act2See 是 8B 模型，用 8 張 A100 訓練；我們是 4B，一張家用顯卡。領先的幅度不大，但至少讓我確定，八月寫下的那個問題，答案不一定是「要很多 GPU」。方法的細節和數字，等整理好之後再公開。</p>
 <hr>
-<p>論文的數字已對照 arXiv 網頁版（v1）。上面家用顯卡的做法都還只是讀完後的想法，記憶體的數字也只是粗估，還沒有實際跑過。</p></article><div class="ask"><div><b>Q&amp;A</b><small>匿名提問，在這裡回答。</small></div><a class="btn primary" href="https://forms.gle/yNUw4eLZeeqf3Arb6" target="_blank" rel="noopener noreferrer">匿名提問 ↗</a></div><h2 style="margin-top:48px">其他文章</h2><a class="card" href="/blog/zh-tw/2026-09-30-rine/"><span class="type paper">論文筆記</span><b>RINE：中間層真的比最後一層更懂「假」嗎？</b><small>RINE 用 CLIP 中間層的特徵偵測生成圖，和我自己的實驗結論大致相同；但在「野外干擾」下，最有用的層會換人，增強的廣度也比從哪一層拿特徵更關鍵。</small></a><a class="card" href="/blog/zh-tw/2026-09-29-now/"><span class="type now">近況</span><b>2026 年 9 月：作品與考卷分享區上線，開始準備 CVPR</b><small>這個月把 Taiwan Exam、考卷分享區、LumiGrid 網頁版和 Adversarial Lab 放上線，網站也搬到 niansia.com；接下來的重心是 11 月中的 CVPR 2027 投稿。</small></a><div class="btns"><a class="btn" href="/blog/zh-tw/">全部文章</a><a class="btn primary" href="/zh-tw/#blog">回到作品集</a></div></main>
+<p>論文的數字已對照 arXiv 網頁版（v1）。正文是八月讀完時的想法，記憶體的數字只是粗估；後記是之後實際做出來的結果。</p></article><div class="ask"><div><b>Q&amp;A</b><small>匿名提問，在這裡回答。</small></div><a class="btn primary" href="https://forms.gle/yNUw4eLZeeqf3Arb6" target="_blank" rel="noopener noreferrer">匿名提問 ↗</a></div><h2 style="margin-top:48px">其他文章</h2><a class="card" href="/blog/zh-tw/2026-09-30-rine/"><span class="type paper">論文筆記</span><b>RINE：中間層真的比最後一層更懂「假」嗎？</b><small>RINE 用 CLIP 中間層的特徵偵測生成圖，和我自己的實驗結論大致相同；但在「野外干擾」下，最有用的層會換人，增強的廣度也比從哪一層拿特徵更關鍵。</small></a><a class="card" href="/blog/zh-tw/2026-09-29-now/"><span class="type now">近況</span><b>2026 年 9 月：作品與考卷分享區上線，開始準備 CVPR</b><small>這個月把 Taiwan Exam、考卷分享區、LumiGrid 網頁版和 Adversarial Lab 放上線，網站也搬到 niansia.com；接下來的重心是 11 月中的 CVPR 2027 投稿。</small></a><div class="btns"><a class="btn" href="/blog/zh-tw/">全部文章</a><a class="btn primary" href="/zh-tw/#blog">回到作品集</a></div></main>
 <aside class="author" aria-label="由 Niansia 製作"><a class="an-face" href="/zh-tw/" tabindex="-1" aria-hidden="true" data-nz-title="Niansia"><img src="/assets/icons/author.webp" alt="" width="56" height="56" loading="lazy"></a><div class="an-text"><b>由 Niansia 製作</b><small>陽明交大資工碩士生，研究 AI 安全、電腦視覺與視覺語言模型。</small></div><a class="btn primary an-go" href="/zh-tw/" data-nz-title="Niansia">前往 niansia.com →</a></aside>
 <footer>有問題或想法？寫信到 <a href="mailto:niansia930202@gmail.com">niansia930202@gmail.com</a> · <a href="/zh-tw/">niansia.com</a> · <a href="https://github.com/niansia">github.com/niansia</a><span class="stats" data-stats hidden> · <i class="live-dot"></i> <b data-stat="online">–</b> 人在線 · <b data-stat="total">–</b> 次造訪</span></footer>
 </body>
