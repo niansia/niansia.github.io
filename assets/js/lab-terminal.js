@@ -2195,7 +2195,7 @@
   /* Project filters: a project can sit in several groups (Adversarial Lab is both vision and security). */
   const PROJECT_FILTERS=[['all',null],['vision',['lumigrid','chromarecover','adversarial-lab']],['security',['adversarial-lab','contextsec','merriv','ai-repo-gardener']],
     ['agents',['taiwan-exam','contextsec','ai-repo-gardener','psg','noveltyaudit','research-meeting-coach']],['research',['noveltyaudit','research-meeting-coach']],
-    ['systems',['kcrashlab','merriv','psg']],['demo',['adversarial-lab','lumigrid']]];
+    ['systems',['kcrashlab','merriv','psg']],['demo',['adversarial-lab','lumigrid','chromarecover']]];
   const filterCopy=()=>({en:{all:'All',vision:'Computer vision',security:'AI security & trust',agents:'Agents & Skills',research:'Research tools',systems:'Reliability & evidence',demo:'Try in the browser',label:'Filter projects',of:(a,b)=>`${a} of ${b} ${t().directory}`},
     'zh-TW':{all:'全部',vision:'電腦視覺',security:'AI 安全與可信',agents:'Agent Skill 與 AI 代理',research:'研究工具',systems:'可靠性與證據',demo:'可以線上試玩',label:'篩選作品',of:(a,b)=>`${a} / ${b} 項作品`},
     'zh-CN':{all:'全部',vision:'计算机视觉',security:'AI 安全与可信',agents:'Agent Skill 与 AI 代理',research:'研究工具',systems:'可靠性与证据',demo:'可以在线试玩',label:'筛选作品',of:(a,b)=>`${a} / ${b} 项作品`}}[locale]);

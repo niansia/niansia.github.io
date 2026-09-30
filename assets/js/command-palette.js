@@ -15,7 +15,8 @@
       brief: 'One-page brief', briefSub: 'For professors and interviewers · printable', tour: 'Guided tour with Yuki', tours: {research: 'Research track · for professors', builder: 'Builder track · for engineers', fun: 'Just for fun · the playful bits'},
       chat: 'Chat with Yuki', copyEmail: 'Copy email address', copied: 'Email address copied.', toggleDark: 'Toggle light / dark', motionOff: 'Pause all animation', motionOn: 'Resume all animation', motionMenu: 'Animation settings…',
       adv: 'Adversarial Lab: fool a neural network', advSub: 'FGSM / PGD attacks and a robust model, on your CPU',
-      demo: 'Try LumiGrid in your browser', demoSub: 'Low-light enhancement on your own photo, on-device', github: 'GitHub profile', bib: 'Download papers as .bib', styleMenu: 'Open the style picker',
+      demo: 'Try LumiGrid in your browser', demoSub: 'Low-light enhancement on your own photo, on-device',
+      chroma: 'Try ChromaRecover in your browser', chromaSub: 'Find a number hidden only by colour, on-device', github: 'GitHub profile', bib: 'Download papers as .bib', styleMenu: 'Open the style picker',
       lang: {en: 'Switch to English', 'zh-TW': '切換成繁體中文', 'zh-CN': '切换成简体中文'}, light: 'light', dark: 'dark', current: 'current', page: 'page', note: 'note', log: 'log',
       statement: 'Research statement', notes: 'Research notes', logAll: 'Research log', deadline: 'in preparation'},
     'zh-TW': {label: '指令面板', placeholder: '搜尋頁面、作品、論文、風格…', empty: '找不到符合的項目。按 Enter 改問 Yuki。',
@@ -25,7 +26,8 @@
       brief: '一頁式簡介', briefSub: '給教授與面試官 · 可列印', tour: '讓 Yuki 帶你導覽', tours: {research: '研究路線 · 給教授', builder: '實作路線 · 給工程師', fun: '輕鬆逛逛 · 好玩的地方'},
       chat: '和 Yuki 聊天', copyEmail: '複製電子郵件', copied: '已複製電子郵件。', toggleDark: '切換淺色／深色', motionOff: '暫停全部動畫', motionOn: '恢復全部動畫', motionMenu: '動畫效果設定…',
       adv: '對抗樣本實驗室：騙過神經網路', advSub: 'FGSM／PGD 攻擊與穩健模型，在你的 CPU 上執行',
-      demo: '在瀏覽器試玩 LumiGrid', demoSub: '用自己的照片做低光增強，在裝置上執行', github: 'GitHub 個人頁', bib: '下載論文 .bib', styleMenu: '打開網頁風格選單',
+      demo: '在瀏覽器試玩 LumiGrid', demoSub: '用自己的照片做低光增強，在裝置上執行',
+      chroma: '在瀏覽器試玩 ChromaRecover', chromaSub: '找出只靠顏色藏起來的數字，在裝置上執行', github: 'GitHub 個人頁', bib: '下載論文 .bib', styleMenu: '打開網頁風格選單',
       lang: {en: 'Switch to English', 'zh-TW': '切換成繁體中文', 'zh-CN': '切换成简体中文'}, light: '淺色', dark: '深色', current: '使用中', page: '頁面', note: '筆記', log: '日誌',
       statement: '研究方向說明', notes: '研究筆記', logAll: '研究日誌', deadline: '準備中'},
     'zh-CN': {label: '命令面板', placeholder: '搜索页面、作品、论文、风格…', empty: '找不到符合的项目。按 Enter 改问 Yuki。',
@@ -35,7 +37,8 @@
       brief: '一页式简介', briefSub: '给教授与面试官 · 可打印', tour: '让 Yuki 带你导览', tours: {research: '研究路线 · 给教授', builder: '实作路线 · 给工程师', fun: '轻松逛逛 · 好玩的地方'},
       chat: '和 Yuki 聊天', copyEmail: '复制电子邮件', copied: '已复制电子邮件。', toggleDark: '切换浅色／深色', motionOff: '暂停全部动画', motionOn: '恢复全部动画', motionMenu: '动画效果设置…',
       adv: '对抗样本实验室：骗过神经网络', advSub: 'FGSM／PGD 攻击与稳健模型，在你的 CPU 上运行',
-      demo: '在浏览器试玩 LumiGrid', demoSub: '用自己的照片做低光增强，在设备上运行', github: 'GitHub 个人页', bib: '下载论文 .bib', styleMenu: '打开网页风格菜单',
+      demo: '在浏览器试玩 LumiGrid', demoSub: '用自己的照片做低光增强，在设备上运行',
+      chroma: '在浏览器试玩 ChromaRecover', chromaSub: '找出只靠颜色藏起来的数字，在设备上运行', github: 'GitHub 个人页', bib: '下载论文 .bib', styleMenu: '打开网页风格菜单',
       lang: {en: 'Switch to English', 'zh-TW': '切換成繁體中文', 'zh-CN': '切换成简体中文'}, light: '浅色', dark: '深色', current: '使用中', page: '页面', note: '笔记', log: '日志',
       statement: '研究方向说明', notes: '研究笔记', logAll: '研究日志', deadline: '准备中'}
   };
@@ -69,6 +72,7 @@
     }
     add('actions', {id: 'adversarial', title: c.adv, sub: c.advSub, icon: 'lock', words: 'adversarial attack fgsm pgd robust security 對抗 对抗 攻擊 攻击 安全', run: () => go(`/lab/adversarial/?lang=${L()}`), star: true});
     add('actions', {id: 'demo', title: c.demo, sub: c.demoSub, icon: 'spark', words: 'demo lumigrid webgpu 試玩', run: () => go(`/lab/lumigrid/?lang=${L()}`), star: true});
+    add('actions', {id: 'chroma', title: c.chroma, sub: c.chromaSub, icon: 'spark', words: 'demo chromarecover colour color hidden digit pyodide 試玩 顏色 颜色 色盲', run: () => go(`/lab/chromarecover/?lang=${L()}`), star: true});
     if (window.YUKI) add('actions', {id: 'chat', title: c.chat, sub: 'yuki.exe', icon: 'chat', words: 'yuki chat talk 聊天', run: () => window.YUKI.openChat()});
     add('actions', {id: 'email', title: c.copyEmail, sub: EMAIL, icon: 'mail', words: 'email mail contact 信箱 邮箱 聯絡', run: async () => { try { await navigator.clipboard.writeText(EMAIL); app.toast(c.copied); } catch { app.toast(EMAIL); } }});
     add('actions', {id: 'github', title: c.github, sub: 'github.com/niansia', icon: 'link', words: 'github code source', run: () => window.open('https://github.com/niansia', '_blank', 'noopener')});

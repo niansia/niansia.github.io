@@ -143,6 +143,7 @@ article table{width:100%;border-collapse:collapse;margin:18px 0;font-size:14.5px
 article th,article td{padding:8px 12px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap;}
 article th{font-weight:600;color:var(--muted);font-size:13px;}
 article td:not(:first-child),article th:not(:first-child){text-align:right;}
+article td[style*="left"],article th[style*="left"]{white-space:normal;min-width:6.5em;}   /* text tables (|:---|) wrap instead of scrolling */
 article strong{color:var(--ink);}
 article blockquote{margin:18px 0;padding:4px 18px;border-left:3px solid var(--accent);color:var(--muted);}
 .card{display:block;padding:18px 20px;margin:12px 0;border-radius:16px;background:var(--paper);border:1px solid var(--line);text-decoration:none;color:var(--ink);transition:transform .25s,border-color .25s;}
@@ -852,7 +853,7 @@ BRIEF_UI = {
            "focus": "Focus: security, robustness and grounding of visual and multimodal AI (AI security × computer vision × vision-language models).",
            "bg": "Background: B.S. in Computer Science, Yuan Ze University; M.S. studies at NYCU, currently on a one-year leave.",
            "reach": "Open to research conversations and collaboration: reading groups, reproductions, benchmarks and prototypes.",
-           "demos": "Try it in the browser:", "adv": "Adversarial Lab (FGSM / PGD, robust training)", "lumi": "LumiGrid low-light enhancement",
+           "demos": "Try it in the browser:", "adv": "Adversarial Lab (FGSM / PGD, robust training)", "lumi": "LumiGrid low-light enhancement", "chroma": "ChromaRecover (colour-hidden structure)",
            "statement": "Research statement", "notes": "Research notes", "log": "Research log", "footer": "This brief is generated from the same data as the interactive site."},
     "zh-TW": {"title": "一頁式簡介", "desc": "一頁看完 Niansia：研究問題、論文、代表作品、學歷與聯絡方式。可直接列印。",
               "glance": "30 秒速覽", "interests": "研究問題", "papers": "論文與投稿", "none": "目前還沒有同儕審查論文；第一批稿件正在準備中。",
@@ -863,7 +864,7 @@ BRIEF_UI = {
               "focus": "方向：視覺與多模態 AI 的安全性、穩健性與證據對齊（AI 安全 × 電腦視覺 × 視覺語言模型）。",
               "bg": "背景：元智大學資訊工程學士；陽明交通大學資訊工程碩士班，目前休學一年。",
               "reach": "歡迎研究交流與合作：一起讀論文、重現結果、設計評測基準或做原型。",
-              "demos": "在瀏覽器試玩：", "adv": "對抗樣本實驗室（FGSM／PGD、對抗訓練）", "lumi": "LumiGrid 低光增強",
+              "demos": "在瀏覽器試玩：", "adv": "對抗樣本實驗室（FGSM／PGD、對抗訓練）", "lumi": "LumiGrid 低光增強", "chroma": "ChromaRecover 找出顏色藏起來的結構",
               "statement": "研究方向說明", "notes": "研究筆記", "log": "研究日誌", "footer": "這份簡介與互動版網站使用同一份資料產生。"},
 }
 BRIEF_UI["zh-CN"] = {k: ([s_fix(x) for x in v] if isinstance(v, list) else s_fix(v)) for k, v in BRIEF_UI["zh-TW"].items()}
@@ -1014,7 +1015,7 @@ def build_brief(projects: dict, notes: dict, copy: dict, cv: dict, subs: dict, p
 <div class="b-stats">{"".join(f"<div><b>{n}</b><span>{e(label)}</span></div>" for n, label in stats)}</div></section>
 <h2>{e(U["glance"])}</h2><ul class="b-glance">{"".join(f"<li>{e(x)}</li>" for x in glance)}</ul>
 <h2>{e(U["interests"])}</h2><div class="b-two">{"".join(f'<div class="b-q"><b>{e(a)}</b><p>{e(b)}</p></div>' for a, b in interests)}</div>
-<p class="b-demos">{e(U["demos"])} <a href="/lab/adversarial/?lang={loc}">{e(U["adv"])}</a> · <a href="/lab/lumigrid/?lang={loc}">{e(U["lumi"])}</a></p>
+<p class="b-demos">{e(U["demos"])} <a href="/lab/adversarial/?lang={loc}">{e(U["adv"])}</a> · <a href="/lab/lumigrid/?lang={loc}">{e(U["lumi"])}</a> · <a href="/lab/chromarecover/?lang={loc}">{e(U["chroma"])}</a></p>
 <h2>{e(U["papers"])}</h2><div>{"".join(rows)}</div>
 <h2>{e(U["selected"])}</h2><div class="b-proj">{"".join(cards)}</div>
 {f'<h2>{e(U["more"])}</h2><ul class="b-more">{more}</ul>' if more else ""}

@@ -3,6 +3,24 @@ window.NIANSIA_BLOG = {
  "posts": {
   "en": [
    {
+    "slug": "2026-09-30-rine",
+    "type": "paper",
+    "title": "RINE: do intermediate layers know “fake” better than the last one?",
+    "description": "RINE detects generated images from CLIP's intermediate layers, and my own experiments largely agree. Under real-world corruptions, though, the most useful layers change, and the breadth of augmentation matters more than which layer the features come from.",
+    "date": "2026-09-30",
+    "minutes": 5,
+    "tags": [
+     "AI-generated image detection",
+     "CLIP",
+     "robustness"
+    ],
+    "lang": "en",
+    "paper": "Leveraging Representations from Intermediate Encoder-blocks for Synthetic Image Detection",
+    "venue": "ECCV 2024",
+    "depth": "deep",
+    "url": "/blog/en/2026-09-30-rine/"
+   },
+   {
     "slug": "2026-09-29-now",
     "type": "now",
     "title": "September 2026: new projects and an exam gallery, CVPR prep begins",
@@ -37,6 +55,24 @@ window.NIANSIA_BLOG = {
   ],
   "zh-TW": [
    {
+    "slug": "2026-09-30-rine",
+    "type": "paper",
+    "title": "RINE：中間層真的比最後一層更懂「假」嗎？",
+    "description": "RINE 用 CLIP 中間層的特徵偵測生成圖，和我自己的實驗結論大致相同；但在「野外干擾」下，最有用的層會換人，增強的廣度也比從哪一層拿特徵更關鍵。",
+    "date": "2026-09-30",
+    "minutes": 4,
+    "tags": [
+     "AI 生成圖偵測",
+     "CLIP",
+     "穩健性"
+    ],
+    "lang": "zh-TW",
+    "paper": "Leveraging Representations from Intermediate Encoder-blocks for Synthetic Image Detection",
+    "venue": "ECCV 2024",
+    "depth": "deep",
+    "url": "/blog/zh-tw/2026-09-30-rine/"
+   },
+   {
     "slug": "2026-09-29-now",
     "type": "now",
     "title": "2026 年 9 月：作品與考卷分享區上線，開始準備 CVPR",
@@ -70,6 +106,24 @@ window.NIANSIA_BLOG = {
    }
   ],
   "zh-CN": [
+   {
+    "slug": "2026-09-30-rine",
+    "type": "paper",
+    "title": "RINE：中间层真的比最后一层更懂「假」吗？",
+    "description": "RINE 用 CLIP 中间层的特征侦测生成图，和我自己的实验结论大致相同；但在「野外干扰」下，最有用的层会换人，增强的广度也比从哪一层拿特征更关键。",
+    "date": "2026-09-30",
+    "minutes": 4,
+    "tags": [
+     "AI 生成图侦测",
+     "CLIP",
+     "稳健性"
+    ],
+    "lang": "zh-CN",
+    "paper": "Leveraging Representations from Intermediate Encoder-blocks for Synthetic Image Detection",
+    "venue": "ECCV 2024",
+    "depth": "deep",
+    "url": "/blog/zh-cn/2026-09-30-rine/"
+   },
    {
     "slug": "2026-09-29-now",
     "type": "now",

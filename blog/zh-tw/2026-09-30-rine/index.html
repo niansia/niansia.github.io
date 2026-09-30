@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RINE：中間層真的比最後一層更懂「假」嗎？ · Niansia</title>
+<meta name="description" content="RINE 用 CLIP 中間層的特徵偵測生成圖，和我自己的實驗結論大致相同；但在「野外干擾」下，最有用的層會換人，增強的廣度也比從哪一層拿特徵更關鍵。">
+<link rel="canonical" href="https://niansia.com/blog/zh-tw/2026-09-30-rine/">
+<link rel="alternate" hreflang="en" href="https://niansia.com/blog/en/2026-09-30-rine/"><link rel="alternate" hreflang="zh-Hant-TW" href="https://niansia.com/blog/zh-tw/2026-09-30-rine/"><link rel="alternate" hreflang="zh-Hans-CN" href="https://niansia.com/blog/zh-cn/2026-09-30-rine/"><link rel="alternate" hreflang="x-default" href="https://niansia.com/blog/en/2026-09-30-rine/">
+<meta property="og:type" content="article"><meta property="og:site_name" content="Niansia">
+<meta property="og:title" content="RINE：中間層真的比最後一層更懂「假」嗎？ · Niansia"><meta property="og:description" content="RINE 用 CLIP 中間層的特徵偵測生成圖，和我自己的實驗結論大致相同；但在「野外干擾」下，最有用的層會換人，增強的廣度也比從哪一層拿特徵更關鍵。">
+<meta property="og:url" content="https://niansia.com/blog/zh-tw/2026-09-30-rine/"><meta property="og:image" content="https://niansia.com/assets/og/blog-2026-09-30-rine-zh-tw.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta property="og:locale" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://niansia.com/assets/og/blog-2026-09-30-rine-zh-tw.jpg">
+
+<meta name="theme-color" content="#fbf6ee" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#15142a" media="(prefers-color-scheme: dark)">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://*.firebasedatabase.app; connect-src 'self' https://*.firebasedatabase.app wss://*.firebasedatabase.app; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; frame-src https://*.firebasedatabase.app; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml">
+<script src="/assets/js/page-transition.js?v=3"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap">
+<style>
+:root{--bg:#fbf6ee;--paper:#fffdf9;--ink:#2a2230;--muted:#766b73;--line:#2a22301a;--accent:#c0673a;--accent2:#8f6bb3;--code:#f3ece2;}
+@media(prefers-color-scheme:dark){:root{--bg:#15142a;--paper:#1c1a36;--ink:#f1ebe2;--muted:#aaa3bd;--line:#ffffff1a;--accent:#f0a878;--accent2:#b69ae6;--code:#26234a;}}
+*{box-sizing:border-box;}html{-webkit-text-size-adjust:100%;}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.85 Inter,'Noto Sans TC','Noto Sans SC',system-ui,sans-serif;}
+a{color:var(--accent);text-underline-offset:3px;}
+.top{max-width:1080px;margin:0 auto;padding:18px 20px;display:flex;align-items:center;gap:10px;font:500 13px 'JetBrains Mono',monospace;color:var(--muted);}
+.top a{color:var(--muted);text-decoration:none;}.top a:hover{color:var(--accent);}
+.top b{color:var(--ink);font-weight:500;}.top .sp{flex:1;}
+.langs a{padding:4px 9px;border-radius:99px;border:1px solid var(--line);margin-left:4px;}.langs a[aria-current]{color:var(--ink);border-color:var(--accent);}
+main{max-width:760px;margin:0 auto;padding:10px 20px 70px;}
+.kicker{font:500 12px 'JetBrains Mono',monospace;color:var(--accent);letter-spacing:.06em;text-transform:uppercase;margin:24px 0 8px;}
+h1{font-size:clamp(28px,4.4vw,42px);line-height:1.2;letter-spacing:-.02em;margin:0 0 14px;}
+.lede{font-size:18px;color:var(--muted);margin:0 0 16px;line-height:1.7;}
+.meta{display:flex;flex-wrap:wrap;gap:8px 14px;font:500 12.5px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;color:var(--muted);padding-bottom:22px;border-bottom:1px solid var(--line);margin-bottom:10px;}
+.meta span.tag{padding:2px 9px;border-radius:99px;background:var(--code);}
+article h2{font-size:23px;margin:40px 0 10px;letter-spacing:-.01em;}
+article h3{font-size:18px;margin:28px 0 8px;}
+article p,article li{color:var(--ink);}
+article code{font:14px 'JetBrains Mono',monospace;background:var(--code);padding:1px 6px;border-radius:6px;}
+article table{width:100%;border-collapse:collapse;margin:18px 0;font-size:14.5px;display:block;overflow-x:auto;}
+article th,article td{padding:8px 12px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap;}
+article th{font-weight:600;color:var(--muted);font-size:13px;}
+article td:not(:first-child),article th:not(:first-child){text-align:right;}
+article td[style*="left"],article th[style*="left"]{white-space:normal;min-width:6.5em;}   /* text tables (|:---|) wrap instead of scrolling */
+article strong{color:var(--ink);}
+article blockquote{margin:18px 0;padding:4px 18px;border-left:3px solid var(--accent);color:var(--muted);}
+.card{display:block;padding:18px 20px;margin:12px 0;border-radius:16px;background:var(--paper);border:1px solid var(--line);text-decoration:none;color:var(--ink);transition:transform .25s,border-color .25s;}
+.card:hover{transform:translateY(-2px);border-color:var(--accent);}
+.card b{display:block;font-size:18px;line-height:1.4;margin-bottom:4px;}.card small{display:block;color:var(--muted);font-size:14px;line-height:1.6;}
+.card i{display:block;font:normal 500 12px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;color:var(--accent);margin-top:8px;}
+.hero{width:100%;border-radius:16px;border:1px solid var(--line);display:block;margin:6px 0 18px;}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px;}.chips span{font:500 12px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;padding:4px 11px;border-radius:99px;background:var(--code);}
+.btns{display:flex;flex-wrap:wrap;gap:10px;margin:22px 0;}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:12px;border:1px solid var(--line);background:var(--paper);color:var(--ink);text-decoration:none;font-weight:600;font-size:14px;}
+.btn.primary{background:var(--accent);border-color:transparent;color:var(--paper);}
+.btn:hover{border-color:var(--accent);}
+.note{font-size:13.5px;color:var(--muted);}
+.live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#34c38f;box-shadow:0 0 0 3px #34c38f33;vertical-align:1px;}footer b{color:var(--ink);font-weight:600;}
+figure.fig{margin:24px 0;}figure.fig a{display:block;border-radius:14px;overflow:hidden;border:1px solid var(--line);cursor:zoom-in;background:var(--code);}
+figure.fig img{display:block;width:100%;height:auto;transition:transform .4s;}figure.fig a:hover img{transform:scale(1.015);}
+figure.fig figcaption{margin-top:8px;font-size:13.5px;color:var(--muted);line-height:1.6;}
+.lb{position:fixed;inset:0;z-index:50;display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px;background:#0d0b16ee;}
+.lb.on{display:flex;}.lb img{max-width:100%;max-height:84vh;border-radius:10px;box-shadow:0 30px 80px #000a;}
+.lb p{margin:0;color:#e9e4f2;font-size:14px;text-align:center;max-width:760px;}
+.lb-x{position:absolute;top:14px;right:18px;width:40px;height:40px;border-radius:50%;border:1px solid #ffffff44;background:transparent;color:#fff;font-size:24px;cursor:pointer;}
+.log-entry{position:relative;padding:0 0 34px 26px;border-left:2px solid var(--line);}
+.log-entry:before{content:'';position:absolute;left:-7px;top:8px;width:12px;height:12px;border-radius:50%;background:var(--bg);border:2px solid var(--accent);}
+.log-entry time{font:500 12.5px 'JetBrains Mono',monospace;color:var(--accent);}
+.log-entry h2{margin:4px 0 6px!important;font-size:21px!important;}
+.log-entry h2 a{color:var(--ink);text-decoration:none;}
+.statement-link{display:flex;justify-content:space-between;align-items:center;}
+.top a.me{display:inline-flex;align-items:center;gap:8px;padding:3px 12px 3px 3px;border:1px solid var(--line);border-radius:99px;transition:border-color .2s;}.top a.me:hover{border-color:var(--accent);}.top a.me img{width:24px;height:24px;border-radius:50%;display:block;}
+.author{max-width:720px;margin:44px auto 0;padding:18px 20px;display:flex;align-items:center;gap:16px;border-radius:18px;background:var(--code);border:1px solid var(--line);}
+.author{box-sizing:border-box;}.author>*{flex:none;}
+.author .an-face img{display:block;width:56px;height:56px;border-radius:50%;border:2px solid var(--accent);}
+.author .an-text{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px;}
+.author .an-text b{font-size:15px;}.author .an-text small{font-size:13px;line-height:1.6;color:var(--muted);}
+.author .an-note{color:var(--ink)!important;}
+.author .an-go{margin:0;white-space:nowrap;}
+@media (max-width:760px){.author{margin:40px 16px 0;}}@media (max-width:600px){.author{flex-wrap:wrap;padding:16px;}.author .an-text{flex-basis:calc(100% - 72px);}.author .an-go{flex:1 1 100%;justify-content:center;text-align:center;}}
+footer{max-width:760px;margin:0 auto;padding:26px 20px 50px;border-top:1px solid var(--line);font-size:14px;color:var(--muted);}
+
+.paper-box{margin:0 0 26px;padding:18px 20px;border-radius:16px;background:var(--paper);border:1px solid var(--line);border-left:4px solid var(--accent2);}
+.paper-box .pv{font:600 12px 'JetBrains Mono',monospace;color:var(--accent2);letter-spacing:.04em;margin:0 0 6px;}
+.paper-box b{display:block;font-size:17px;line-height:1.45;}
+.paper-box .pa{margin:6px 0 0;font-size:13.5px;color:var(--muted);line-height:1.6;}
+.paper-box .pl{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+.paper-box .pl a{font:600 12.5px 'JetBrains Mono',monospace;padding:5px 12px;border-radius:99px;border:1px solid var(--line);text-decoration:none;}
+.paper-box .pl a:hover{border-color:var(--accent);}
+.type{display:inline-block;padding:2px 9px;border-radius:99px;background:var(--accent);color:#fff;font:600 11.5px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;}
+.type.paper{background:var(--accent2);}.type.qa{background:#3f9f86;}.type.post{background:var(--muted);}
+.card .type{margin-bottom:8px;}.card .zh{margin-left:8px;font:500 11.5px 'JetBrains Mono',monospace;color:var(--muted);}
+.now-card{border-left:4px solid var(--accent);}
+.qa{padding:20px 0;border-bottom:1px solid var(--line);}
+.qa .qq{display:flex;gap:12px;font-weight:700;font-size:17px;line-height:1.55;margin:0 0 8px;}
+.qa .qq span,.qa .qa-a>span{flex:none;display:grid;place-items:center;width:28px;height:28px;border-radius:9px;background:var(--code);color:var(--accent);font-size:13px;}
+.qa .qa-a{display:flex;gap:12px;}.qa .qa-a>span{background:var(--accent);color:#fff;}.qa .qa-a article>:first-child{margin-top:0;}
+.qa time{display:block;margin:6px 0 0 40px;font:500 12px 'JetBrains Mono',monospace;color:var(--muted);}
+.ask{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:18px 0 8px;padding:16px 18px;border-radius:16px;background:var(--code);}
+.ask b{display:block;font-size:15.5px;}.ask small{display:block;color:var(--muted);font-size:13px;}
+.ask .btn{flex:none;margin:0;}.ask .btn[aria-disabled]{opacity:.55;pointer-events:none;}
+</style>
+<link rel="alternate" type="application/rss+xml" title="Niansia · Blog" href="/blog/zh-tw/feed.xml"><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BlogPosting", "headline": "RINE：中間層真的比最後一層更懂「假」嗎？", "description": "RINE 用 CLIP 中間層的特徵偵測生成圖，和我自己的實驗結論大致相同；但在「野外干擾」下，最有用的層會換人，增強的廣度也比從哪一層拿特徵更關鍵。", "datePublished": "2026-09-30", "dateModified": "2026-09-30", "inLanguage": "zh-Hant", "author": {"@type": "Person", "name": "Niansia", "url": "https://niansia.com/", "email": "mailto:niansia930202@gmail.com", "sameAs": ["https://github.com/niansia"]}, "mainEntityOfPage": "https://niansia.com/blog/zh-tw/2026-09-30-rine/", "keywords": "AI 生成圖偵測, CLIP, 穩健性", "citation": {"@type": "ScholarlyArticle", "name": "Leveraging Representations from Intermediate Encoder-blocks for Synthetic Image Detection", "url": "https://arxiv.org/abs/2402.19091"}}</script>
+<script defer src="/assets/js/site-stats.js?v=2"></script>
+<script defer src="/assets/js/lightbox.js"></script>
+
+</head>
+<body>
+<header class="top"><a class="me" href="/zh-tw/" title="回到 Niansia 的個人網站" data-nz-title="Niansia"><img src="/assets/icons/author.webp" alt="" width="24" height="24"><b>~/niansia</b></a> / <a href="/blog/zh-tw/">blog</a><span class="sp"></span><span class="langs"><a href="/blog/en/2026-09-30-rine/" hreflang="en">EN</a><a href="/blog/zh-tw/2026-09-30-rine/" aria-current="page" hreflang="zh-Hant">繁</a><a href="/blog/zh-cn/2026-09-30-rine/" hreflang="zh-Hans">简</a></span></header>
+<main><p class="kicker">論文筆記</p><h1>RINE：中間層真的比最後一層更懂「假」嗎？</h1><p class="lede">RINE 用 CLIP 中間層的特徵偵測生成圖，和我自己的實驗結論大致相同；但在「野外干擾」下，最有用的層會換人，增強的廣度也比從哪一層拿特徵更關鍵。</p><div class="meta"><time datetime="2026-09-30">2026-09-30</time><span>4 分鐘閱讀</span><span class="tag">AI 生成圖偵測</span><span class="tag">CLIP</span><span class="tag">穩健性</span></div><aside class="paper-box"><p class="pv">ECCV 2024 · 精讀</p><b lang="en">Leveraging Representations from Intermediate Encoder-blocks for Synthetic Image Detection</b><p class="pa" lang="en">Christos Koutlis, Symeon Papadopoulos</p><div class="pl"><a href="https://arxiv.org/abs/2402.19091" target="_blank" rel="noopener noreferrer">論文 ↗</a><a href="https://github.com/mever-team/rine" target="_blank" rel="noopener noreferrer">程式碼 ↗</a></div></aside><article><h2>為什麼讀這篇</h2>
+<p>這兩天做實驗時碰到一個意外的結果：同樣是凍結的 CLIP ViT-L/14，只要把「最後一層的 CLS」換成「幾個不同深度的 CLS 串起來」，困難驗證集上干擾圖的 AUC 就明顯上升。這是我整個專案裡第二大的進步，而且幾乎不花成本。</p>
+<p>做完之後回頭找，才發現 RINE 早就把這件事當成論文主軸。我想知道兩件事：他們看到的現象跟我的一樣嗎？在「野外干擾」這個更難的設定下，他們的結論還成立嗎？</p>
+<h2>這篇在做什麼</h2>
+<p>CLIP 的影像編碼器（ViT-L/14）有 24 個 Transformer 區塊。一般的做法（例如 UnivFD）只拿最後一層的輸出做分類，但最後一層是為了「語意」訓練的，生成痕跡這類比較低階的資訊，可能在中間就被丟掉了。</p>
+<p>RINE 把各個區塊的 CLS token 拿出來（最好的設定用了全部 24 個），接一個輕量的網路，再加上一個可學習的「區塊重要性」模組 TIE（Trainable Importance Estimator），讓模型自己決定哪幾層比較重要。損失函數是二元交叉熵，再加上可調權重的監督式對比學習。</p>
+<p>讓我印象深刻的幾點：</p>
+<ul>
+<li><strong>訓練資料很少</strong>：只用 ProGAN 生成的圖訓練，最少只用一個類別（馬），就能推廣到 20 個測試集。4 類模型的平均準確率比先前最佳方法高 10.6 個百分點（AP 高 4.5）。</li>
+<li><strong>訓練很便宜</strong>：只訓練一個 epoch，大約 8 分鐘。</li>
+<li><strong>中間層確實重要</strong>：學到的重要性顯示，有很多中間區塊比最後一層更常拿到最高權重。</li>
+<li><strong>大模型比較好</strong>：ViT-L/14 在所有訓練設定下都比 ViT-B/32 好。</li>
+</ul>
+<h2>兩邊的設定</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;"></th>
+<th style="text-align: left;">RINE</th>
+<th style="text-align: left;">我的實驗</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">骨幹</td>
+<td style="text-align: left;">CLIP ViT-B/32、ViT-L/14</td>
+<td style="text-align: left;">CLIP、DINOv2 的幾個大小</td>
+</tr>
+<tr>
+<td style="text-align: left;">特徵</td>
+<td style="text-align: left;">各區塊 CLS，由 TIE 加權</td>
+<td style="text-align: left;">幾個深度的 CLS 串接 + MLP</td>
+</tr>
+<tr>
+<td style="text-align: left;">訓練資料</td>
+<td style="text-align: left;">ProGAN，1／2／4 類</td>
+<td style="text-align: left;">NTIRE 2026 比賽的訓練資料</td>
+</tr>
+<tr>
+<td style="text-align: left;">干擾增強</td>
+<td style="text-align: left;">模糊、JPEG（機率 0.5）</td>
+<td style="text-align: left;">幾十種干擾隨機串接</td>
+</tr>
+<tr>
+<td style="text-align: left;">縮放</td>
+<td style="text-align: left;">訓練和測試都不縮放</td>
+<td style="text-align: left;">整張圖縮放到 224 反而最穩</td>
+</tr>
+<tr>
+<td style="text-align: left;">關心的問題</td>
+<td style="text-align: left;">沒看過的生成模型抓不抓得到</td>
+<td style="text-align: left;">被後製處理過的圖抓不抓得到</td>
+</tr>
+</tbody>
+</table>
+<h2>和我的實驗對照：印證的地方</h2>
+<ol>
+<li><strong>中間層確實有用，而且是便宜的大進步。</strong> 我在 CLIP 和 DINOv2 的幾個骨幹上都看到同樣的趨勢：多深度特徵讓干擾圖的 AUC 穩定提高好幾個百分點。RINE 的結論在不同骨幹、不同資料上都站得住，讓我比較有信心這不是巧合。</li>
+<li><strong>ViT-L/14 比小模型好得多。</strong> 從 B/32 換成 L/14，即使只用最後一層，進步也很明顯。</li>
+<li><strong>不需要大量訓練。</strong> RINE 一個 epoch 就夠；我的凍結特徵路線，分類頭也只要幾分鐘就訓練完。「凍結大模型 + 輕量頭」確實是筆電也做得起的路線。</li>
+</ol>
+<h2>和我的實驗對照：不一樣的地方</h2>
+<p>這是我覺得最有意思的部分。</p>
+<p><strong>第一，「最重要的層」會隨干擾而改變。</strong> 我逐層測過 CLIP-L/14，趨勢大致是這樣：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">層</th>
+<th style="text-align: left;">乾淨圖</th>
+<th style="text-align: left;">干擾圖</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">中段的層</td>
+<td style="text-align: left;">最準</td>
+<td style="text-align: left;">掉得最多</td>
+</tr>
+<tr>
+<td style="text-align: left;">最後幾層</td>
+<td style="text-align: left;">稍差一些</td>
+<td style="text-align: left;">反而最穩</td>
+</tr>
+</tbody>
+</table>
+<p>中間層抓到的東西很準，但很脆弱。RINE 的 TIE 學到的是一組固定的權重，訓練資料基本上又是乾淨圖，所以它學到的「重要」，很可能偏向「在乾淨圖上重要」。這可以解釋為什麼 RINE 自己的實驗裡，單一干擾（裁切、壓縮）影響不大，多種干擾組合起來時表現卻明顯下降。</p>
+<p><strong>第二，他們刻意不縮放，我的資料卻相反。</strong> RINE 在訓練和測試時都不做縮放，理由是縮放會抹掉生成痕跡，這在他們的設定下很合理。但 NTIRE 的比賽資料把所有圖都統一重新 JPEG 編碼過，縮放又是最常見的干擾。我發現「整張圖縮放到 224」這個視角反而最穩，訓練好的模型幾乎只看它，從原解析度裁切下來的幾塊，預測結果幾乎一模一樣；手工的高頻雜訊特徵更是接近亂猜。</p>
+<p>換句話說，在真正的野外，「保留低階痕跡」這個前提本身可能就不成立。模型最後依賴的，比較像是中高層那種「看起來不太對」的整體線索。</p>
+<p><strong>第三，增強的廣度比架構更重要。</strong> RINE 的干擾增強只有模糊和 JPEG。我的經驗是，光是把幾十種干擾隨機串接起來訓練，同樣的特徵、同樣的資料，干擾圖的 AUC 就大幅上升，連訓練時從沒模擬過的 JPEG-AI 也跟著變好。這個進步比多深度特徵還大。</p>
+<p>所以在野外設定下，「訓練時看過多少種破壞」比「從哪一層拿特徵」更關鍵；兩者一起做，效果才最好。</p>
+<h2>我的看法</h2>
+<p>我很欣賞 RINE 的簡潔：不改骨幹、不做大規模微調，只換一個「看哪裡」的角度，就大幅提升了跨模型的推廣能力。這種成本低、容易重現的想法，正是我這個「8 GB 筆電 GPU」專案想走的路。</p>
+<p>但它的評估比較偏向「乾淨圖跨生成模型」的推廣，而不是「同一張圖被各種後製處理」的穩健性。這兩件事不一樣：前者問的是「沒看過的生成模型能不能抓到」，後者問的是「被壓縮、縮放、加浮水印以後還能不能抓到」。我的實驗顯示，在後者的情況下，有些在乾淨圖上最有用的中間層反而是弱點。只看乾淨圖的結果，很容易高估中間層的價值。</p>
+<p>另外，公開基準常有一種捷徑：真圖和假圖的尺寸、JPEG 設定不一樣，模型學到的可能是這些差異，而不是生成痕跡。NTIRE 的主辦單位把這些都統一了，這可能也是低階線索在我的資料上幾乎沒用的原因。這讓我對一些「在舊基準上很漂亮」的低階痕跡方法，多了一點保留。</p>
+<h2>讀完之後想試的事</h2>
+<ol>
+<li><strong>會隨干擾調整的層權重</strong>：與其學一組固定的重要性，不如讓模型先估計「這張圖被破壞得多嚴重」，再決定要多相信中間層還是深層。乾淨圖多看中間層，被壓得很爛的圖多看深層。</li>
+<li><strong>把 TIE 加到我的 LoRA 模型上</strong>，和現在的「多層 CLS 直接串接 + MLP」比較，看有沒有幫助。</li>
+<li><strong>比較兩種拉近特徵的損失</strong>：他們的監督式對比損失是「同一類要靠近」，我的一致性損失是「同一張圖的乾淨版與干擾版要一致」。也許兩個可以一起用。</li>
+<li><strong>在研究筆記補上「相關研究」</strong>，把 UnivFD、RINE 等前人的做法和我的差異寫清楚，之後公開時也比較站得住腳。</li>
+</ol>
+<hr>
+<p>論文的數字已對照 arXiv 網頁版（v2）。我的實驗還在進行中，這裡只寫大致的趨勢；完整的數字和設定，等整理好之後再公開。</p></article><div class="ask"><div><b>Q&amp;A</b><small>匿名提問，在這裡回答。</small></div><a class="btn primary" href="https://forms.gle/yNUw4eLZeeqf3Arb6" target="_blank" rel="noopener noreferrer">匿名提問 ↗</a></div><h2 style="margin-top:48px">其他文章</h2><a class="card" href="/blog/zh-tw/2026-09-29-now/"><span class="type now">近況</span><b>2026 年 9 月：作品與考卷分享區上線，開始準備 CVPR</b><small>這個月把 Taiwan Exam、考卷分享區、LumiGrid 網頁版和 Adversarial Lab 放上線，網站也搬到 niansia.com；接下來的重心是 11 月中的 CVPR 2027 投稿。</small></a><div class="btns"><a class="btn" href="/blog/zh-tw/">全部文章</a><a class="btn primary" href="/zh-tw/#blog">回到作品集</a></div></main>
+<aside class="author" aria-label="由 Niansia 製作"><a class="an-face" href="/zh-tw/" tabindex="-1" aria-hidden="true" data-nz-title="Niansia"><img src="/assets/icons/author.webp" alt="" width="56" height="56" loading="lazy"></a><div class="an-text"><b>由 Niansia 製作</b><small>陽明交大資工碩士生，研究 AI 安全、電腦視覺與視覺語言模型。</small></div><a class="btn primary an-go" href="/zh-tw/" data-nz-title="Niansia">前往 niansia.com →</a></aside>
+<footer>有問題或想法？寫信到 <a href="mailto:niansia930202@gmail.com">niansia930202@gmail.com</a> · <a href="/zh-tw/">niansia.com</a> · <a href="https://github.com/niansia">github.com/niansia</a><span class="stats" data-stats hidden> · <i class="live-dot"></i> <b data-stat="online">–</b> 人在線 · <b data-stat="total">–</b> 次造訪</span></footer>
+</body>
+</html>

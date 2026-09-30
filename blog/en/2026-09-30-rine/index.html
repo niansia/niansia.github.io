@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RINE: do intermediate layers know “fake” better than the last one? · Niansia</title>
+<meta name="description" content="RINE detects generated images from CLIP&#x27;s intermediate layers, and my own experiments largely agree. Under real-world corruptions, though, the most useful layers change, and the breadth of augmentation matters more than which layer the features come from.">
+<link rel="canonical" href="https://niansia.com/blog/en/2026-09-30-rine/">
+<link rel="alternate" hreflang="en" href="https://niansia.com/blog/en/2026-09-30-rine/"><link rel="alternate" hreflang="zh-Hant-TW" href="https://niansia.com/blog/zh-tw/2026-09-30-rine/"><link rel="alternate" hreflang="zh-Hans-CN" href="https://niansia.com/blog/zh-cn/2026-09-30-rine/"><link rel="alternate" hreflang="x-default" href="https://niansia.com/blog/en/2026-09-30-rine/">
+<meta property="og:type" content="article"><meta property="og:site_name" content="Niansia">
+<meta property="og:title" content="RINE: do intermediate layers know “fake” better than the last one? · Niansia"><meta property="og:description" content="RINE detects generated images from CLIP&#x27;s intermediate layers, and my own experiments largely agree. Under real-world corruptions, though, the most useful layers change, and the breadth of augmentation matters more than which layer the features come from.">
+<meta property="og:url" content="https://niansia.com/blog/en/2026-09-30-rine/"><meta property="og:image" content="https://niansia.com/assets/og/blog-2026-09-30-rine-en.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta property="og:locale" content="en">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://niansia.com/assets/og/blog-2026-09-30-rine-en.jpg">
+
+<meta name="theme-color" content="#fbf6ee" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#15142a" media="(prefers-color-scheme: dark)">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://*.firebasedatabase.app; connect-src 'self' https://*.firebasedatabase.app wss://*.firebasedatabase.app; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; frame-src https://*.firebasedatabase.app; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml">
+<script src="/assets/js/page-transition.js?v=3"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap">
+<style>
+:root{--bg:#fbf6ee;--paper:#fffdf9;--ink:#2a2230;--muted:#766b73;--line:#2a22301a;--accent:#c0673a;--accent2:#8f6bb3;--code:#f3ece2;}
+@media(prefers-color-scheme:dark){:root{--bg:#15142a;--paper:#1c1a36;--ink:#f1ebe2;--muted:#aaa3bd;--line:#ffffff1a;--accent:#f0a878;--accent2:#b69ae6;--code:#26234a;}}
+*{box-sizing:border-box;}html{-webkit-text-size-adjust:100%;}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.85 Inter,'Noto Sans TC','Noto Sans SC',system-ui,sans-serif;}
+a{color:var(--accent);text-underline-offset:3px;}
+.top{max-width:1080px;margin:0 auto;padding:18px 20px;display:flex;align-items:center;gap:10px;font:500 13px 'JetBrains Mono',monospace;color:var(--muted);}
+.top a{color:var(--muted);text-decoration:none;}.top a:hover{color:var(--accent);}
+.top b{color:var(--ink);font-weight:500;}.top .sp{flex:1;}
+.langs a{padding:4px 9px;border-radius:99px;border:1px solid var(--line);margin-left:4px;}.langs a[aria-current]{color:var(--ink);border-color:var(--accent);}
+main{max-width:760px;margin:0 auto;padding:10px 20px 70px;}
+.kicker{font:500 12px 'JetBrains Mono',monospace;color:var(--accent);letter-spacing:.06em;text-transform:uppercase;margin:24px 0 8px;}
+h1{font-size:clamp(28px,4.4vw,42px);line-height:1.2;letter-spacing:-.02em;margin:0 0 14px;}
+.lede{font-size:18px;color:var(--muted);margin:0 0 16px;line-height:1.7;}
+.meta{display:flex;flex-wrap:wrap;gap:8px 14px;font:500 12.5px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;color:var(--muted);padding-bottom:22px;border-bottom:1px solid var(--line);margin-bottom:10px;}
+.meta span.tag{padding:2px 9px;border-radius:99px;background:var(--code);}
+article h2{font-size:23px;margin:40px 0 10px;letter-spacing:-.01em;}
+article h3{font-size:18px;margin:28px 0 8px;}
+article p,article li{color:var(--ink);}
+article code{font:14px 'JetBrains Mono',monospace;background:var(--code);padding:1px 6px;border-radius:6px;}
+article table{width:100%;border-collapse:collapse;margin:18px 0;font-size:14.5px;display:block;overflow-x:auto;}
+article th,article td{padding:8px 12px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap;}
+article th{font-weight:600;color:var(--muted);font-size:13px;}
+article td:not(:first-child),article th:not(:first-child){text-align:right;}
+article td[style*="left"],article th[style*="left"]{white-space:normal;min-width:6.5em;}   /* text tables (|:---|) wrap instead of scrolling */
+article strong{color:var(--ink);}
+article blockquote{margin:18px 0;padding:4px 18px;border-left:3px solid var(--accent);color:var(--muted);}
+.card{display:block;padding:18px 20px;margin:12px 0;border-radius:16px;background:var(--paper);border:1px solid var(--line);text-decoration:none;color:var(--ink);transition:transform .25s,border-color .25s;}
+.card:hover{transform:translateY(-2px);border-color:var(--accent);}
+.card b{display:block;font-size:18px;line-height:1.4;margin-bottom:4px;}.card small{display:block;color:var(--muted);font-size:14px;line-height:1.6;}
+.card i{display:block;font:normal 500 12px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;color:var(--accent);margin-top:8px;}
+.hero{width:100%;border-radius:16px;border:1px solid var(--line);display:block;margin:6px 0 18px;}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px;}.chips span{font:500 12px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;padding:4px 11px;border-radius:99px;background:var(--code);}
+.btns{display:flex;flex-wrap:wrap;gap:10px;margin:22px 0;}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:12px;border:1px solid var(--line);background:var(--paper);color:var(--ink);text-decoration:none;font-weight:600;font-size:14px;}
+.btn.primary{background:var(--accent);border-color:transparent;color:var(--paper);}
+.btn:hover{border-color:var(--accent);}
+.note{font-size:13.5px;color:var(--muted);}
+.live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#34c38f;box-shadow:0 0 0 3px #34c38f33;vertical-align:1px;}footer b{color:var(--ink);font-weight:600;}
+figure.fig{margin:24px 0;}figure.fig a{display:block;border-radius:14px;overflow:hidden;border:1px solid var(--line);cursor:zoom-in;background:var(--code);}
+figure.fig img{display:block;width:100%;height:auto;transition:transform .4s;}figure.fig a:hover img{transform:scale(1.015);}
+figure.fig figcaption{margin-top:8px;font-size:13.5px;color:var(--muted);line-height:1.6;}
+.lb{position:fixed;inset:0;z-index:50;display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px;background:#0d0b16ee;}
+.lb.on{display:flex;}.lb img{max-width:100%;max-height:84vh;border-radius:10px;box-shadow:0 30px 80px #000a;}
+.lb p{margin:0;color:#e9e4f2;font-size:14px;text-align:center;max-width:760px;}
+.lb-x{position:absolute;top:14px;right:18px;width:40px;height:40px;border-radius:50%;border:1px solid #ffffff44;background:transparent;color:#fff;font-size:24px;cursor:pointer;}
+.log-entry{position:relative;padding:0 0 34px 26px;border-left:2px solid var(--line);}
+.log-entry:before{content:'';position:absolute;left:-7px;top:8px;width:12px;height:12px;border-radius:50%;background:var(--bg);border:2px solid var(--accent);}
+.log-entry time{font:500 12.5px 'JetBrains Mono',monospace;color:var(--accent);}
+.log-entry h2{margin:4px 0 6px!important;font-size:21px!important;}
+.log-entry h2 a{color:var(--ink);text-decoration:none;}
+.statement-link{display:flex;justify-content:space-between;align-items:center;}
+.top a.me{display:inline-flex;align-items:center;gap:8px;padding:3px 12px 3px 3px;border:1px solid var(--line);border-radius:99px;transition:border-color .2s;}.top a.me:hover{border-color:var(--accent);}.top a.me img{width:24px;height:24px;border-radius:50%;display:block;}
+.author{max-width:720px;margin:44px auto 0;padding:18px 20px;display:flex;align-items:center;gap:16px;border-radius:18px;background:var(--code);border:1px solid var(--line);}
+.author{box-sizing:border-box;}.author>*{flex:none;}
+.author .an-face img{display:block;width:56px;height:56px;border-radius:50%;border:2px solid var(--accent);}
+.author .an-text{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px;}
+.author .an-text b{font-size:15px;}.author .an-text small{font-size:13px;line-height:1.6;color:var(--muted);}
+.author .an-note{color:var(--ink)!important;}
+.author .an-go{margin:0;white-space:nowrap;}
+@media (max-width:760px){.author{margin:40px 16px 0;}}@media (max-width:600px){.author{flex-wrap:wrap;padding:16px;}.author .an-text{flex-basis:calc(100% - 72px);}.author .an-go{flex:1 1 100%;justify-content:center;text-align:center;}}
+footer{max-width:760px;margin:0 auto;padding:26px 20px 50px;border-top:1px solid var(--line);font-size:14px;color:var(--muted);}
+
+.paper-box{margin:0 0 26px;padding:18px 20px;border-radius:16px;background:var(--paper);border:1px solid var(--line);border-left:4px solid var(--accent2);}
+.paper-box .pv{font:600 12px 'JetBrains Mono',monospace;color:var(--accent2);letter-spacing:.04em;margin:0 0 6px;}
+.paper-box b{display:block;font-size:17px;line-height:1.45;}
+.paper-box .pa{margin:6px 0 0;font-size:13.5px;color:var(--muted);line-height:1.6;}
+.paper-box .pl{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+.paper-box .pl a{font:600 12.5px 'JetBrains Mono',monospace;padding:5px 12px;border-radius:99px;border:1px solid var(--line);text-decoration:none;}
+.paper-box .pl a:hover{border-color:var(--accent);}
+.type{display:inline-block;padding:2px 9px;border-radius:99px;background:var(--accent);color:#fff;font:600 11.5px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;}
+.type.paper{background:var(--accent2);}.type.qa{background:#3f9f86;}.type.post{background:var(--muted);}
+.card .type{margin-bottom:8px;}.card .zh{margin-left:8px;font:500 11.5px 'JetBrains Mono',monospace;color:var(--muted);}
+.now-card{border-left:4px solid var(--accent);}
+.qa{padding:20px 0;border-bottom:1px solid var(--line);}
+.qa .qq{display:flex;gap:12px;font-weight:700;font-size:17px;line-height:1.55;margin:0 0 8px;}
+.qa .qq span,.qa .qa-a>span{flex:none;display:grid;place-items:center;width:28px;height:28px;border-radius:9px;background:var(--code);color:var(--accent);font-size:13px;}
+.qa .qa-a{display:flex;gap:12px;}.qa .qa-a>span{background:var(--accent);color:#fff;}.qa .qa-a article>:first-child{margin-top:0;}
+.qa time{display:block;margin:6px 0 0 40px;font:500 12px 'JetBrains Mono',monospace;color:var(--muted);}
+.ask{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:18px 0 8px;padding:16px 18px;border-radius:16px;background:var(--code);}
+.ask b{display:block;font-size:15.5px;}.ask small{display:block;color:var(--muted);font-size:13px;}
+.ask .btn{flex:none;margin:0;}.ask .btn[aria-disabled]{opacity:.55;pointer-events:none;}
+</style>
+<link rel="alternate" type="application/rss+xml" title="Niansia · Blog" href="/blog/en/feed.xml"><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BlogPosting", "headline": "RINE: do intermediate layers know “fake” better than the last one?", "description": "RINE detects generated images from CLIP's intermediate layers, and my own experiments largely agree. Under real-world corruptions, though, the most useful layers change, and the breadth of augmentation matters more than which layer the features come from.", "datePublished": "2026-09-30", "dateModified": "2026-09-30", "inLanguage": "en", "author": {"@type": "Person", "name": "Niansia", "url": "https://niansia.com/", "email": "mailto:niansia930202@gmail.com", "sameAs": ["https://github.com/niansia"]}, "mainEntityOfPage": "https://niansia.com/blog/en/2026-09-30-rine/", "keywords": "AI-generated image detection, CLIP, robustness", "citation": {"@type": "ScholarlyArticle", "name": "Leveraging Representations from Intermediate Encoder-blocks for Synthetic Image Detection", "url": "https://arxiv.org/abs/2402.19091"}}</script>
+<script defer src="/assets/js/site-stats.js?v=2"></script>
+<script defer src="/assets/js/lightbox.js"></script>
+
+</head>
+<body>
+<header class="top"><a class="me" href="/" title="Back to Niansia&#x27;s website" data-nz-title="Niansia"><img src="/assets/icons/author.webp" alt="" width="24" height="24"><b>~/niansia</b></a> / <a href="/blog/en/">blog</a><span class="sp"></span><span class="langs"><a href="/blog/en/2026-09-30-rine/" aria-current="page" hreflang="en">EN</a><a href="/blog/zh-tw/2026-09-30-rine/" hreflang="zh-Hant">繁</a><a href="/blog/zh-cn/2026-09-30-rine/" hreflang="zh-Hans">简</a></span></header>
+<main><p class="kicker">Paper note</p><h1>RINE: do intermediate layers know “fake” better than the last one?</h1><p class="lede">RINE detects generated images from CLIP&#x27;s intermediate layers, and my own experiments largely agree. Under real-world corruptions, though, the most useful layers change, and the breadth of augmentation matters more than which layer the features come from.</p><div class="meta"><time datetime="2026-09-30">2026-09-30</time><span>5 min read</span><span class="tag">AI-generated image detection</span><span class="tag">CLIP</span><span class="tag">robustness</span></div><aside class="paper-box"><p class="pv">ECCV 2024 · Read closely</p><b lang="en">Leveraging Representations from Intermediate Encoder-blocks for Synthetic Image Detection</b><p class="pa" lang="en">Christos Koutlis, Symeon Papadopoulos</p><div class="pl"><a href="https://arxiv.org/abs/2402.19091" target="_blank" rel="noopener noreferrer">Paper ↗</a><a href="https://github.com/mever-team/rine" target="_blank" rel="noopener noreferrer">Code ↗</a></div></aside><article><h2>Why this paper</h2>
+<p>An experiment this week gave me a surprise. With the same frozen CLIP ViT-L/14, replacing "the last layer's CLS" with "CLS tokens from a few depths, concatenated" clearly raised the AUC on corrupted images of the hard validation set. It is the second-largest gain in my whole project, and it costs almost nothing.</p>
+<p>Only afterwards did I find that RINE had made this the core of a paper. I wanted to know two things: do they see the same thing I do, and do their conclusions hold in the harder setting of real-world corruptions?</p>
+<h2>What the paper does</h2>
+<p>CLIP's image encoder (ViT-L/14) has 24 Transformer blocks. The usual approach (UnivFD, for example) classifies from the last block only, but the last block is trained for semantics, and lower-level information such as generation artefacts may already be lost by then.</p>
+<p>RINE takes the CLS token from each block (the best setting uses all 24), passes them through a light network, and adds a Trainable Importance Estimator (TIE) that learns which blocks matter. The loss is binary cross-entropy plus a supervised contrastive term with a tunable weight.</p>
+<p>What stood out to me:</p>
+<ul>
+<li><strong>Little training data</strong>: trained only on ProGAN images, with as little as one object class (horse), it generalises to 20 test sets. The 4-class model beats the previous state of the art by 10.6 points in average accuracy (4.5 in AP).</li>
+<li><strong>Cheap training</strong>: one epoch, about 8 minutes.</li>
+<li><strong>Intermediate blocks matter</strong>: many intermediate blocks win the highest learned importance more often than the last one.</li>
+<li><strong>Bigger is better</strong>: ViT-L/14 beats ViT-B/32 in every training setting.</li>
+</ul>
+<h2>The two setups side by side</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;"></th>
+<th style="text-align: left;">RINE</th>
+<th style="text-align: left;">My experiments</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Backbones</td>
+<td style="text-align: left;">CLIP ViT-B/32, ViT-L/14</td>
+<td style="text-align: left;">several sizes of CLIP and DINOv2</td>
+</tr>
+<tr>
+<td style="text-align: left;">Features</td>
+<td style="text-align: left;">CLS of each block, weighted by TIE</td>
+<td style="text-align: left;">CLS from a few depths, concatenated + MLP</td>
+</tr>
+<tr>
+<td style="text-align: left;">Training data</td>
+<td style="text-align: left;">ProGAN, 1 / 2 / 4 classes</td>
+<td style="text-align: left;">NTIRE 2026 challenge training data</td>
+</tr>
+<tr>
+<td style="text-align: left;">Corruption augmentation</td>
+<td style="text-align: left;">blur, JPEG (probability 0.5)</td>
+<td style="text-align: left;">dozens of corruptions chained at random</td>
+</tr>
+<tr>
+<td style="text-align: left;">Resizing</td>
+<td style="text-align: left;">none, in training or testing</td>
+<td style="text-align: left;">resizing the whole image to 224 turns out most robust</td>
+</tr>
+<tr>
+<td style="text-align: left;">Question asked</td>
+<td style="text-align: left;">can it catch generators it never saw?</td>
+<td style="text-align: left;">can it catch images after post-processing?</td>
+</tr>
+</tbody>
+</table>
+<h2>Where my results agree</h2>
+<ol>
+<li><strong>Intermediate layers help, and it is a cheap, large gain.</strong> I see the same trend on several CLIP and DINOv2 backbones: multi-depth features consistently raise corrupted-image AUC by several points. RINE's conclusion holds across backbones and data, which makes me more confident it is not a fluke.</li>
+<li><strong>ViT-L/14 is much better than smaller models.</strong> Moving from B/32 to L/14 is a clear gain, even with the last layer alone.</li>
+<li><strong>Little training is needed.</strong> RINE needs one epoch; in my frozen-feature setup the classifier head trains in minutes. "Frozen large model + light head" really is something a laptop can do.</li>
+</ol>
+<h2>Where my results differ</h2>
+<p>This is the part I find most interesting.</p>
+<p><strong>First, the most important layers change with corruption.</strong> I tested CLIP-L/14 layer by layer; roughly:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Layers</th>
+<th style="text-align: left;">Clean images</th>
+<th style="text-align: left;">Corrupted images</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">middle layers</td>
+<td style="text-align: left;">most accurate</td>
+<td style="text-align: left;">drop the most</td>
+</tr>
+<tr>
+<td style="text-align: left;">last few layers</td>
+<td style="text-align: left;">a little worse</td>
+<td style="text-align: left;">the most stable</td>
+</tr>
+</tbody>
+</table>
+<p>The middle layers are accurate but fragile. RINE's TIE learns one fixed set of weights, from essentially clean training images, so what it learns as "important" is probably "important on clean images". That would explain why, in RINE's own robustness test, single perturbations such as cropping or compression barely hurt, while combining several perturbations lowers performance considerably.</p>
+<p><strong>Second, they avoid resizing on purpose; my data points the other way.</strong> RINE skips resizing in training and testing because it erases generation traces, which is reasonable in their setting. But the NTIRE challenge data re-encodes every image with the same JPEG settings, and resizing is the most common corruption. I found that the whole image resized to 224 is the most robust view, and the trained model relies almost only on it: crops taken at native resolution give nearly identical predictions. Hand-crafted high-frequency noise features are close to chance.</p>
+<p>In other words, in the wild the premise of "keep the low-level traces" may not hold at all. What the model ends up using looks more like the mid-to-high-level "something looks off" cues.</p>
+<p><strong>Third, breadth of augmentation matters more than architecture.</strong> RINE's corruption augmentation is only blur and JPEG. In my experiments, training on dozens of corruptions chained at random, with the same features and the same data, raised corrupted-image AUC by a wide margin, and even JPEG-AI, which I never simulated, improved with it. That gain is larger than the one from multi-depth features.</p>
+<p>So in the wild, "how many kinds of damage the model saw in training" matters more than "which layer the features come from", and doing both works best.</p>
+<h2>What I think</h2>
+<p>I like how simple RINE is: no change to the backbone, no large-scale fine-tuning, just a different answer to "where to look", and cross-generator generalisation improves a lot. Cheap, reproducible ideas like this are exactly the path my "8 GB laptop GPU" project wants to take.</p>
+<p>But its evaluation leans towards generalisation across generators on clean images, not robustness when the same image goes through post-processing. These are different questions: the first asks "can it catch a generator it never saw?", the second "can it still catch the image after compression, resizing or a watermark?". My experiments suggest that in the second case, some of the intermediate layers that help most on clean images become a weakness. Judging only from clean images makes it easy to overrate them.</p>
+<p>Public benchmarks also often contain a shortcut: real and fake images differ in size or JPEG settings, so a model may learn those differences instead of generation traces. The NTIRE organisers made all of this uniform, which may also be why low-level cues are almost useless on my data. It makes me a little more cautious about low-level-trace methods that look great on older benchmarks.</p>
+<h2>What I want to try next</h2>
+<ol>
+<li><strong>Layer weights that adapt to corruption</strong>: instead of one fixed importance vector, first estimate how badly the image is damaged, then decide how much to trust middle versus deep layers. Clean images lean on the middle layers; heavily compressed ones on the deep layers.</li>
+<li><strong>Add TIE to my LoRA model</strong> and compare it with the current "multi-depth CLS concatenated + MLP".</li>
+<li><strong>Compare the two losses that pull features together</strong>: their supervised contrastive loss says "same class, close together"; my consistency loss says "the clean and corrupted versions of one image should agree". Maybe the two can be combined.</li>
+<li><strong>Add a related-work section to my research notes</strong> that states clearly how UnivFD, RINE and my approach differ, so the work holds up better when it goes public.</li>
+</ol>
+<hr>
+<p>The paper's numbers were checked against the arXiv HTML version (v2). My experiments are still in progress, so this note gives only the rough trends; the full numbers and setup will follow once they are written up.</p></article><div class="ask"><div><b>Questions &amp; answers</b><small>Questions sent anonymously, answered here.</small></div><a class="btn primary" href="https://forms.gle/yNUw4eLZeeqf3Arb6" target="_blank" rel="noopener noreferrer">Ask anonymously ↗</a></div><h2 style="margin-top:48px">More posts</h2><a class="card" href="/blog/en/2026-09-29-now/"><span class="type now">Now</span><b>September 2026: new projects and an exam gallery, CVPR prep begins</b><small>This month Taiwan Exam, its exam gallery, the in-browser LumiGrid and Adversarial Lab went live, and the site moved to niansia.com. Next up is the CVPR 2027 submission in mid-November.</small></a><div class="btns"><a class="btn" href="/blog/en/">All posts</a><a class="btn primary" href="/#blog">Back to the portfolio</a></div></main>
+<aside class="author" aria-label="Made by Niansia"><a class="an-face" href="/" tabindex="-1" aria-hidden="true" data-nz-title="Niansia"><img src="/assets/icons/author.webp" alt="" width="56" height="56" loading="lazy"></a><div class="an-text"><b>Made by Niansia</b><small>M.S. student in computer science at NYCU, working on AI security, computer vision and vision-language models.</small></div><a class="btn primary an-go" href="/" data-nz-title="Niansia">Visit niansia.com →</a></aside>
+<footer>Questions or ideas? Email <a href="mailto:niansia930202@gmail.com">niansia930202@gmail.com</a> · <a href="/">niansia.com</a> · <a href="https://github.com/niansia">github.com/niansia</a><span class="stats" data-stats hidden> · <i class="live-dot"></i> <b data-stat="online">–</b> online · <b data-stat="total">–</b> visits</span></footer>
+</body>
+</html>
