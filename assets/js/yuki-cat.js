@@ -87,6 +87,8 @@
 .yuki[data-form='cat'][data-pose='sleep'] .yuki-figure{height:100%;bottom:calc(var(--h) * .17);clip-path:none;transform:scaleX(var(--dir));animation:none;}   /* curled up in the bed, the rim hiding only her underside */
 .yuki[data-form='cat'][data-pose='sleep'] .yuki-hit{top:30%;}.yuki[data-form='cat'][data-pose='sleep'] .yuki-shadow{width:calc(var(--w) * 1.1);}
 .yuki[data-form='cat'] .yuki-blanket{display:none;}
+.yuki[data-form='cat'] .yuki-headbox{translate:none;rotate:0deg;animation:none;}   /* the catgirl's head moves (desk doze, tilt) are not the cat's */
+.yuki[data-form='cat'][data-pose='lie'] .yuki-shadow{width:calc(var(--w) * .9);}
 .yuki[data-form='cat'] .yp-hand{width:calc(var(--aw) * var(--w) * 1.25);top:calc(var(--ay) * var(--h) - var(--aw) * var(--w) * .78);}   /* the palm rests on her crown, not over her face */
 .yuki[data-form='cat'] .yp-juggle.yp-bat{width:calc(var(--w) * .15);left:calc(var(--w) * .37);top:calc(var(--h) * .2);}   /* the yarn over her paws while she lies on her back */
 .yuki[data-form='cat'] .yuki-shadow{width:calc(var(--w) * .8);}
