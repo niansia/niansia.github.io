@@ -1,8 +1,8 @@
 # Yuki's cat form — sprite sheets to generate
 
 Yuki can turn into a cat (a button in her menu, with a puff of smoke). The cat is drawn from generated
-sprite sheets in the same anime style as the character sheet. Generate the three sheets below, save them as
-`art/cat/a.png`, `art/cat/b.png` and `art/cat/c.png` (the `art/` folder is git-ignored), then run
+sprite sheets in the same anime style as the character sheet. Generate the sheets below, save them as
+`art/cat/a.png`, `art/cat/b.png`, `art/cat/c.png` (and optionally `art/cat/d.png`) (the `art/` folder is git-ignored), then run
 `python tools/build_cat.py`. The script removes the background, cuts the poses, matches their scale using the
 standing cat that opens every sheet, and writes `assets/lab/yuki/cat.webp` plus its layout.
 
@@ -59,6 +59,17 @@ including the tail tips and ears, is inside the frame. No text, no props, no bac
 4. Crouching low, about to pounce: chest near the ground, rear end up, eyes wide and focused.
 ```
 
+### Sheet D — resting and playing, optional (`art/cat/d.png`)
+
+Without it the cat lies down in the crouch, swats at the feather wand in the leap, and never grooms.
+
+```text
+1. Standing still, relaxed, tail hanging down in a soft curve (same as the first cat of every sheet).
+2. Lying down on her belly like a sphinx, front paws stretched forward, head up, eyes open, relaxed.
+3. Rearing up on her hind legs, one front paw reaching high to swat at something above her, eyes on it.
+4. Sitting and grooming: licking one raised front paw, eyes half closed.
+```
+
 ## What each pose is used for
 
 | Sheet | Pose | Frame | Used for |
@@ -72,3 +83,6 @@ including the tail tips and ears, is inside the frame. No text, no props, no bac
 | C | 2 | `happy` | happy, level up, a snack |
 | C | 3 | `stretch` | yawning, waking up |
 | C | 4 | `crouch` | getting ready to pounce |
+| D | 2 | `lie` | lying down for pats (falls back to `crouch`) |
+| D | 3 | `swipe` | swatting at the feather wand (falls back to `leap`) |
+| D | 4 | `groom` | grooming now and then while idle |

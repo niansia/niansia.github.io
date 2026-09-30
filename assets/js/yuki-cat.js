@@ -18,14 +18,18 @@
     }
     return loading;
   }
-  // The catgirl's poses (and, for walking and dancing, her sprite frame numbers) mapped onto the cat's frames.
-  const POSE = {idle: 'stand', happy: 'happy', yawn: 'stretch', pet: 'happy', lie: 'sit', sit: 'sit', sleep: 'curl', eat: 'sit', drag: 'leap', fall: 'leap',
-    dizzy: 'sit', annoyed: 'crouch', trick: 'leap', crouch: 'crouch', jump: 'leap', cute: 'belly', belly: 'belly'};
+  // The catgirl's poses (and, for walking and dancing, her sprite frame numbers) mapped onto the cat's frames. Frames from
+  // the optional fourth sheet (lie, swipe, groom) fall back to the closest pose when the sheet has not been made.
+  const POSE = {idle: 'stand', happy: 'happy', yawn: 'stretch', pet: 'happy', lie: 'lie', sit: 'sit', sleep: 'curl', eat: 'sit', drag: 'leap', fall: 'leap',
+    dizzy: 'sit', annoyed: 'crouch', trick: 'leap', crouch: 'crouch', jump: 'leap', cute: 'belly', belly: 'belly', swipe: 'swipe', groom: 'groom'};
+  const FALLBACK = {lie: 'crouch', swipe: 'leap', groom: 'sit'};
+  const has = name => !!layout?.frames.includes(name);
   function frameFor(pose, frame = 0, {juggling = false} = {}) {
     if (juggling) return 'belly';                                        // batting the yarn ball, on her back
     if (pose === 'walk') return (frame - 5 + 8) % 8 < 4 ? 'walkA' : 'walkB';   // eight catgirl steps = two cat strides
     if (pose === 'dance') return frame === 2 ? 'happy' : 'sit';
-    return POSE[pose] || 'stand';
+    const name = POSE[pose] || 'stand';
+    return has(name) ? name : FALLBACK[name] || 'stand';
   }
   const index = name => Math.max(0, layout ? layout.frames.indexOf(name) : 0);
   const anchor = name => layout?.anchors?.[name] || [.75, .2, .4];
@@ -83,6 +87,8 @@
 .yuki[data-form='cat'][data-pose='sleep'] .yuki-figure{height:100%;bottom:calc(var(--h) * .17);clip-path:none;transform:scaleX(var(--dir));animation:none;}   /* curled up in the bed, the rim hiding only her underside */
 .yuki[data-form='cat'][data-pose='sleep'] .yuki-hit{top:30%;}.yuki[data-form='cat'][data-pose='sleep'] .yuki-shadow{width:calc(var(--w) * 1.1);}
 .yuki[data-form='cat'] .yuki-blanket{display:none;}
+.yuki[data-form='cat'] .yp-hand{width:calc(var(--aw) * var(--w) * 1.25);top:calc(var(--ay) * var(--h) - var(--aw) * var(--w) * .78);}   /* the palm rests on her crown, not over her face */
+.yuki[data-form='cat'] .yp-juggle.yp-bat{width:calc(var(--w) * .15);left:calc(var(--w) * .37);top:calc(var(--h) * .2);}   /* the yarn over her paws while she lies on her back */
 .yuki[data-form='cat'] .yuki-shadow{width:calc(var(--w) * .8);}
 @keyframes cat-breathe{50%{transform:scale(1.01,1.022);}}
 @keyframes cat-kick{from{transform:rotate(-2.5deg);}to{transform:rotate(2.5deg) translateY(-1.5%);}}
@@ -96,5 +102,5 @@
 @media (prefers-reduced-motion:reduce){.yuki-cat{animation:none!important;}}`;
     document.head.append(css);
   }
-  window.YukiCat = {load, frameFor, index, anchor, paint, smoke, base: BASE, layout: () => layout};
+  window.YukiCat = {load, frameFor, has, index, anchor, paint, smoke, base: BASE, layout: () => layout};
 })();

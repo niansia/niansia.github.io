@@ -122,11 +122,11 @@
   const Cat = () => window.YukiCat;
   let form = Cat() && app.store.get('yuki-form', 'girl') === 'cat' ? 'cat' : 'girl', morphing = false, girlHeads = "url('/assets/lab/yuki/heads.webp')";
   const CAT_LINES = {
-    en: {toCat: 'Poof! Nya~ Now I’m a real cat.', toGirl: 'Poof! Back to my usual self~', roll: 'Roll, roll… belly rubs, please!', sit: 'Sitting pretty. Pats?',
+    en: {toCat: 'Poof! Nya~ Now I’m a real cat.', toGirl: 'Poof! Back to my usual self~', roll: 'Roll, roll… belly rubs, please!', sit: 'Lying down. Pats?',
       missing: 'My cat form isn’t ready yet… soon!', toCatBtn: 'Turn into a cat', toGirlBtn: 'Back to catgirl', wearNote: 'Outfits are for my catgirl form.'},
-    'zh-TW': {toCat: '砰！喵～我變成真正的貓咪了。', toGirl: '砰！變回平常的樣子了～', roll: '滾來滾去……摸摸肚子嘛！', sit: '乖乖坐好了，要摸摸嗎？',
+    'zh-TW': {toCat: '砰！喵～我變成真正的貓咪了。', toGirl: '砰！變回平常的樣子了～', roll: '滾來滾去……摸摸肚子嘛！', sit: '趴下來了，要摸摸嗎？',
       missing: '貓咪的樣子還沒準備好……快了！', toCatBtn: '變成貓咪', toGirlBtn: '變回貓娘', wearNote: '衣服是貓娘型態穿的喔。'},
-    'zh-CN': {toCat: '砰！喵～我变成真正的猫咪了。', toGirl: '砰！变回平常的样子了～', roll: '滚来滚去……摸摸肚子嘛！', sit: '乖乖坐好了，要摸摸吗？',
+    'zh-CN': {toCat: '砰！喵～我变成真正的猫咪了。', toGirl: '砰！变回平常的样子了～', roll: '滚来滚去……摸摸肚子嘛！', sit: '趴下来了，要摸摸吗？',
       missing: '猫咪的样子还没准备好……快了！', toCatBtn: '变成猫咪', toGirlBtn: '变回猫娘', wearNote: '衣服是猫娘形态穿的哦。'}};
   const cl = key => (CAT_LINES[app.locale()] || CAT_LINES.en)[key];
   const festival = () => window.NIANSIA_FESTIVAL?.active() || null;
@@ -401,7 +401,8 @@
         else if (r < .84 && lively && innerWidth > 720) chaseButterfly();
         else if (r < .87 && S.mood > 70) trick();
         else if (r < .92 && S.energy < 55) lieDown(14000);
-        else if (form === 'cat' && r < .96) setPose('sit', 0, rand(5000, 9000));
+        else if (form === 'cat' && r < .94) setPose('sit', 0, rand(5000, 9000));
+        else if (form === 'cat' && r < .97 && Cat().has('groom')) setPose('groom', 0, rand(2500, 4000));
         else if (form === 'cat' && lively && S.mood > 60) catRoll();
       }
       schedule();
@@ -696,10 +697,16 @@
   function catRoll() {
     stopPlay(); clearProps();
     busy = 'play'; walkTo = null; setPose('crouch', 0);
-    later(320, () => { if (busy === 'play') { setPose('belly', 0); puff('heart', 1); } });
-    later(2900, () => {
+    later(320, () => {
       if (busy !== 'play') return;
-      busy = ''; gain(-4, 12, -8, 4); setPose('happy', 2, 1300); puff('heart', 3);
+      setPose('belly', 0); puff('heart', 1);
+      if (propsEl && motion()) propsEl.innerHTML = `<span class="yp-juggle yp-bat">${Props.yarn()}</span>`;   // batting the yarn above her paws
+    });
+    later(3900, () => {
+      if (busy !== 'play') return;
+      propsEl?.querySelector('.yp-juggle')?.classList.add('is-caught');
+      busy = ''; gain(-4, 12, -8, 4); setPose('happy', 2, 1300); puff('heart', 3); say(al('caught'), {ms: 1800});
+      later(900, () => { if (!busy && propsEl) propsEl.innerHTML = ''; });
     });
     return cl('roll');
   }
@@ -734,9 +741,9 @@
     if (S.energy < 15) { setPose('yawn', 3, 1200); return line('tooSleepy'); }
     if (busy === 'lie') { busy = ''; clearTimeout(lieTimer); }
     stopPlay(); clearProps(); endButterfly();
-    const modes = ['yarn', ...(unlocked('wand') ? ['wand'] : []), ...(!stay && innerWidth > 720 && motion() ? ['chase'] : []), ...(form === 'cat' && motion() ? ['roll', 'roll'] : [])];
+    const modes = ['yarn', ...(unlocked('wand') ? ['wand'] : []), ...(!stay && innerWidth > 720 && motion() ? ['chase'] : []), ...(form === 'cat' && motion() ? ['roll'] : [])];
     const kind = modes.includes(want) ? want : pick(modes);
-    if (kind === 'roll') return catRoll();
+    if (kind === 'roll' || (form === 'cat' && kind === 'yarn')) return catRoll();
     if (kind === 'chase') return startChase();
     if (!motion() || !propsEl) { gain(-4, 12, -8, 4); setPose('happy', 2, 900); return al(kind); }
     return kind === 'wand' ? startWand() : juggle();
@@ -754,42 +761,63 @@
     });
     return al('yarn');
   }
-  /* The feather wand: it swings by itself, or follows the pointer when it comes close. She swats at it and
-     catches it on the third or fourth try. */
+  /* The feather wand: an invisible hand swoops it along the floor (or it follows the pointer when that comes close).
+     She runs after it, swats when it is within reach, jumps when it flicks up over her, and catches it on the third to
+     fifth try. Everything is in page coordinates so she can chase it along the floor; the rod is drawn in her own box. */
   function startWand() {
-    busy = 'play'; walkTo = null; setPose('idle', 0);
+    busy = 'play'; walkTo = null; onArrive = null; setPose('idle', 0);
     wandSvg.removeAttribute('hidden'); wandSvg.querySelector('.wand-tip').innerHTML = Props.feather();
-    wandState = {t: 0, swipes: 0, cool: 1, until: now() + 9000, caught: 0, tip: {x: W * 1.4, y: -H * .45}, steered: false};
+    const f = floorOf(floorKind), [a, b] = bounds(f), side = x > (a + b) / 2 ? -1 : 1;
+    const home = clamp(x + side * Math.min(240, (b - a) / 4), a, b);
+    wandState = {t: 0, swipes: 0, cool: 1.2, until: now() + 13000, caught: 0, steered: false, side, home, range: Math.min(230, (b - a) / 3),
+      tip: {x: x + side * W * 1.2, y: f.y - H * .5}, hand: {x: x + side * W * 3, y: f.y - H * 1.8}};
     kick();
     setTimeout(() => { if (wandState && !wandState.steered && pointer.t < now() - 2000) say(al('wandHint'), {ms: 3200}); }, 2600);
     return al('wand');
   }
+  const headAt = () => ({x: x + dir * W * (form === 'cat' ? .26 : 0), y: y - H * (form === 'cat' ? .72 : .86)});
   function stepWand(dt) {
     const s = wandState; if (!s) return false;
     s.t += dt; s.cool -= dt;
-    const box = pet.getBoundingClientRect(), head = {x: W * .5, y: H * .12};
-    const px = pointer.x - box.left, py = pointer.y - box.top;
-    const steer = !s.caught && pointer.t > now() - 1200 && Math.hypot(px - head.x, py - head.y) < 280;
+    const f = floorOf(floorKind), [a, b] = bounds(f), head = headAt();
+    const steer = !s.caught && pointer.t > now() - 1200 && Math.hypot(pointer.x - head.x, pointer.y - head.y) < 320;
     if (steer) s.steered = true;
     let tx, ty;
-    if (s.caught) { tx = head.x + W * .05; ty = H * .42; }
-    else if (steer) { tx = px; ty = py; }
-    else { tx = head.x + Math.sin(s.t * 1.6) * W * .95; ty = head.y - H * .16 + Math.sin(s.t * 3.2) * H * .13; }
-    const k = Math.min(1, dt * (s.caught ? 10 : 5));
-    s.tip.x += (tx - s.tip.x) * k; s.tip.y += (ty - s.tip.y) * k;
-    const base = {x: W * 2.2, y: -H * .62}, rod = {x: base.x + (s.tip.x - base.x) * .5, y: base.y + (s.tip.y - base.y) * .45 - H * .08};
-    wandSvg.querySelector('.wand-rod').setAttribute('d', `M${base.x},${base.y}L${rod.x},${rod.y}`);
-    wandSvg.querySelector('.wand-string').setAttribute('d', `M${rod.x},${rod.y}Q${(rod.x + s.tip.x) / 2},${Math.max(rod.y, s.tip.y) + 14} ${s.tip.x},${s.tip.y}`);
-    wandSvg.querySelector('.wand-tip').setAttribute('transform', `translate(${s.tip.x},${s.tip.y}) rotate(${clamp((s.tip.x - rod.x) * .4, -40, 40)})`);
-    if (!s.caught) {
-      setLook(clamp((s.tip.x - head.x) / 10, -10, 10));
-      const d = Math.hypot(s.tip.x - head.x, s.tip.y - (head.y - H * .06));
-      if (s.cool <= 0 && d < H * .36 && !dragging) {
-        s.cool = .9; s.swipes++; retrigger('is-swipe'); setPose('happy', 2, 420); puff('star', 1, .6);
-        if ((s.swipes >= 3 && Math.random() < .6) || s.swipes >= 4) catchWand();
-      }
-      if (now() > s.until) catchWand();
+    if (s.caught) { tx = head.x + dir * W * .25; ty = y - H * .45; }
+    else if (steer) { tx = pointer.x; ty = pointer.y; }
+    else {   // swoops along the floor, and flicks up now and then
+      tx = clamp(s.home + Math.sin(s.t * .85) * s.range + Math.sin(s.t * 2.3) * 36, a - W * .3, b + W * .3);
+      ty = f.y - H * .32 - Math.max(0, Math.sin(s.t * 1.6)) ** 8 * H * 1.15 + Math.sin(s.t * 3.4) * H * .07;
     }
+    const k = Math.min(1, dt * (s.caught ? 10 : 4));
+    s.tip.x += (tx - s.tip.x) * k; s.tip.y += (ty - s.tip.y) * k;
+    s.hand.x += (s.tip.x + s.side * W * 1.8 - s.hand.x) * Math.min(1, dt * 1.4);   // the hand follows, so the rod never spans the page
+    s.hand.y = f.y - H * 1.8;
+    const box = pet.getBoundingClientRect(), base = {x: s.hand.x - box.left, y: s.hand.y - box.top}, tip = {x: s.tip.x - box.left, y: s.tip.y - box.top};
+    const rod = {x: base.x + (tip.x - base.x) * .5, y: base.y + (tip.y - base.y) * .45 - H * .08};
+    wandSvg.querySelector('.wand-rod').setAttribute('d', `M${base.x},${base.y}L${rod.x},${rod.y}`);
+    wandSvg.querySelector('.wand-string').setAttribute('d', `M${rod.x},${rod.y}Q${(rod.x + tip.x) / 2},${Math.max(rod.y, tip.y) + 14} ${tip.x},${tip.y}`);
+    wandSvg.querySelector('.wand-tip').setAttribute('transform', `translate(${tip.x},${tip.y}) rotate(${clamp((tip.x - rod.x) * .4, -40, 40)})`);
+    if (!s.caught && !dragging && grounded && !leaping) {
+      const dx = s.tip.x - x, reach = W * (form === 'cat' ? .75 : .9);
+      if (Math.abs(dx) > reach) {   // run after it
+        onArrive = null; walkTo = clamp(s.tip.x - Math.sign(dx) * W * .4, a, b); setGait(Math.abs(dx) > W * 2.5 ? 'run' : 'walk');
+      } else {
+        if (walkTo !== null) { walkTo = null; setGait('walk'); restPose(); }
+        if (dir !== (dx >= 0 ? 1 : -1)) { dir = dx >= 0 ? 1 : -1; place(); }
+        setLook(clamp((s.tip.y - head.y) / -12, -10, 10));
+        if (s.cool <= 0) {
+          const high = s.tip.y < head.y - H * .3;
+          if (high) { s.cool = 1.3; s.swipes++; jump(clamp(s.tip.x, a, b), rand(520, 620)); }   // it flew up: jump for it
+          else if (Math.hypot(dx, s.tip.y - head.y) < H * .95) {
+            s.cool = .85; s.swipes++; retrigger('is-swipe'); puff('star', 1, .6);
+            setPose(form === 'cat' ? 'swipe' : 'happy', form === 'cat' ? 0 : 2, 480);
+          }
+          if ((s.swipes >= 3 && Math.random() < .45) || s.swipes >= 5) catchWand();
+        }
+      }
+    }
+    if (!s.caught && now() > s.until) catchWand();
     return true;
   }
   function catchWand() {

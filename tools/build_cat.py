@@ -24,7 +24,9 @@ from build_outfits import remove_background  # noqa: E402
 from build_yuki_assets import characters  # noqa: E402
 
 OUT = ROOT / 'assets/lab/yuki/cat'
-SHEETS = {'a': ['stand', 'walkA', 'walkB', 'leap'], 'b': [None, 'sit', 'belly', 'curl'], 'c': [None, 'happy', 'stretch', 'crouch']}
+SHEETS = {'a': ['stand', 'walkA', 'walkB', 'leap'], 'b': [None, 'sit', 'belly', 'curl'], 'c': [None, 'happy', 'stretch', 'crouch'],
+          'd': [None, 'lie', 'swipe', 'groom']}
+OPTIONAL = {'d'}   # extra poses; yuki-cat.js falls back to the closest frame it has
 STAND_HEIGHT = 240   # pixels of the standing cat in the output (shown at about 78 px: sharp on 3x screens)
 STEADY = {'stand', 'walkA', 'walkB', 'leap'}   # frames placed by the head, so walking does not sway the body
 PAD = 6
@@ -48,11 +50,29 @@ def head_box(cell: np.ndarray, depth: float = .6) -> tuple[int, int, int, int]:
     return int(x0 + (x1 - x0) * .52 + bx.min()), int(y0 + by.min()), int(x0 + (x1 - x0) * .52 + bx.max()), int(y0 + by.max())
 
 
+def head_anchor(cell: np.ndarray, depth: float = .6) -> list[float]:
+    """Head centre, crown (ear tips) and the width of the face below the ears, as fractions of the cell: what props such
+    as the patting hand are sized and placed by. Measured on the rows a third of the way down the head."""
+    h, w = cell.shape[:2]
+    hx0, hy0, hx1, hy1 = head_box(cell, depth)
+    alpha = cell[..., 3] > 60
+    spans = []
+    for y in range(hy0 + int((hy1 - hy0) * .28), hy0 + int((hy1 - hy0) * .42) + 1):
+        xs = np.nonzero(alpha[y, hx0:hx1 + 1])[0]
+        if xs.size:
+            spans.append((hx0 + xs.min(), hx0 + xs.max()))
+    left = np.median([a for a, _ in spans]) if spans else hx0
+    right = np.median([b for _, b in spans]) if spans else hx1
+    return [round((left + right) / 2 / w, 4), round(hy0 / h, 4), round(max(right - left, w * .2) / w, 4)]   # a head bent low can hide the face rows
+
+
 def main(src: Path) -> None:
     frames: dict[str, np.ndarray] = {}
     for sheet, names in SHEETS.items():
         path = next((p for ext in ('png', 'webp', 'jpg', 'jpeg') if (p := src / f'{sheet}.{ext}').exists()), None)
         if not path:
+            if sheet in OPTIONAL:
+                continue
             sys.exit(f'missing {src / sheet}.png (see tools/cat/README.md)')
         cats = [trim(part) for part, _ in characters(remove_background(Image.open(path)))]
         if len(cats) != 4:
@@ -62,7 +82,7 @@ def main(src: Path) -> None:
             if name:
                 img = Image.fromarray(part)
                 frames[name] = np.asarray(img.resize((max(1, round(img.width * factor)), max(1, round(img.height * factor))), Image.LANCZOS))
-    order = [n for names in SHEETS.values() for n in names if n]
+    order = [n for names in SHEETS.values() for n in names if n and n in frames]
     ch = max(f.shape[0] for f in frames.values()) + 2 * PAD
     # The moving frames share one head column (the body swings behind it); the others are centred in the cell.
     head_x = {n: (lambda b: (b[0] + b[2]) / 2)(head_box(frames[n])) for n in STEADY}
@@ -77,8 +97,7 @@ def main(src: Path) -> None:
         cell[ch - PAD - f.shape[0]:ch - PAD, x:x + f.shape[1]] = f   # paws on the same baseline
         cells[name] = cell
         strip.paste(Image.fromarray(cell), (i * cw, 0))
-        hx0, hy0, hx1, hy1 = head_box(cell)
-        anchors[name] = [round((hx0 + hx1) / 2 / cw, 4), round(hy0 / ch, 4), round((hx1 - hx0) / cw, 4)]
+        anchors[name] = head_anchor(cell, 1 if name in ('curl', 'lie') else .6)
     OUT.mkdir(parents=True, exist_ok=True)
     strip.save(OUT / 'cat.webp', quality=88, method=6)
     heads = Image.new('RGBA', (480, 160))
