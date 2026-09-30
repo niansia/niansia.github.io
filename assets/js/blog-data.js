@@ -72,6 +72,25 @@ window.NIANSIA_BLOG = {
     "url": "/blog/en/2026-09-14-reroute/"
    },
    {
+    "slug": "2026-08-30-swarmworld",
+    "type": "paper",
+    "title": "SwarmWorld: agents cooperate without talking — is watching their messages enough?",
+    "description": "Identical LLM agents dropped into a world that keeps their traces divide the work among themselves with no assigned roles, and mostly learn each other's technology by walking past it. The announcement was dramatic, the paper is far more measured; what I care about most is the security angle — watching only what agents say to each other misses a lot of coordination.",
+    "date": "2026-08-30",
+    "minutes": 6,
+    "tags": [
+     "multi-agent systems",
+     "LLM agents",
+     "AI security",
+     "collective intelligence"
+    ],
+    "lang": "en",
+    "paper": "SwarmWorld: Stigmergic technological evolution in societies of language-model agents",
+    "venue": "arXiv 2026",
+    "depth": "deep",
+    "url": "/blog/en/2026-08-30-swarmworld/"
+   },
+   {
     "slug": "2026-08-06-act2see",
     "type": "paper",
     "title": "Act2See: the model learns to look back — what if you don't have eight A100s?",
@@ -162,6 +181,25 @@ window.NIANSIA_BLOG = {
     "url": "/blog/zh-tw/2026-09-14-reroute/"
    },
    {
+    "slug": "2026-08-30-swarmworld",
+    "type": "paper",
+    "title": "SwarmWorld：AI agent 不講話也能合作，那只監控對話還夠嗎？",
+    "description": "一群一模一樣的 LLM agent 放進會留下痕跡的世界，不指派角色也會自己分工，而且大多是「路過看到」別人的成品才學會的。推文講得很震撼，論文本身克制得多；我最在意的是它對 AI 安全的意思：只看 agent 之間的對話，會漏掉很多協調。",
+    "date": "2026-08-30",
+    "minutes": 5,
+    "tags": [
+     "多智能體",
+     "LLM agent",
+     "AI 安全",
+     "集體智慧"
+    ],
+    "lang": "zh-TW",
+    "paper": "SwarmWorld: Stigmergic technological evolution in societies of language-model agents",
+    "venue": "arXiv 2026",
+    "depth": "deep",
+    "url": "/blog/zh-tw/2026-08-30-swarmworld/"
+   },
+   {
     "slug": "2026-08-06-act2see",
     "type": "paper",
     "title": "Act2See：模型學會回頭看影片，那沒有 8 張 A100 的人呢？",
@@ -250,6 +288,25 @@ window.NIANSIA_BLOG = {
     "venue": "arXiv 2026",
     "depth": "deep",
     "url": "/blog/zh-cn/2026-09-14-reroute/"
+   },
+   {
+    "slug": "2026-08-30-swarmworld",
+    "type": "paper",
+    "title": "SwarmWorld：AI agent 不讲话也能合作，那只监控对话还够吗？",
+    "description": "一群一模一样的 LLM agent 放进会留下痕迹的世界，不指派角色也会自己分工，而且大多是「路过看到」别人的成品才学会的。推文讲得很震撼，论文本身克制得多；我最在意的是它对 AI 安全的意思：只看 agent 之间的对话，会漏掉很多协调。",
+    "date": "2026-08-30",
+    "minutes": 5,
+    "tags": [
+     "多智能体",
+     "LLM agent",
+     "AI 安全",
+     "集体智能"
+    ],
+    "lang": "zh-CN",
+    "paper": "SwarmWorld: Stigmergic technological evolution in societies of language-model agents",
+    "venue": "arXiv 2026",
+    "depth": "deep",
+    "url": "/blog/zh-cn/2026-08-30-swarmworld/"
    },
    {
     "slug": "2026-08-06-act2see",

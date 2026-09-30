@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SwarmWorld：AI agent 不讲话也能合作，那只监控对话还够吗？ · Niansia</title>
+<meta name="description" content="一群一模一样的 LLM agent 放进会留下痕迹的世界，不指派角色也会自己分工，而且大多是「路过看到」别人的成品才学会的。推文讲得很震撼，论文本身克制得多；我最在意的是它对 AI 安全的意思：只看 agent 之间的对话，会漏掉很多协调。">
+<link rel="canonical" href="https://niansia.com/blog/zh-cn/2026-08-30-swarmworld/">
+<link rel="alternate" hreflang="en" href="https://niansia.com/blog/en/2026-08-30-swarmworld/"><link rel="alternate" hreflang="zh-Hant-TW" href="https://niansia.com/blog/zh-tw/2026-08-30-swarmworld/"><link rel="alternate" hreflang="zh-Hans-CN" href="https://niansia.com/blog/zh-cn/2026-08-30-swarmworld/"><link rel="alternate" hreflang="x-default" href="https://niansia.com/blog/en/2026-08-30-swarmworld/">
+<meta property="og:type" content="article"><meta property="og:site_name" content="Niansia">
+<meta property="og:title" content="SwarmWorld：AI agent 不讲话也能合作，那只监控对话还够吗？ · Niansia"><meta property="og:description" content="一群一模一样的 LLM agent 放进会留下痕迹的世界，不指派角色也会自己分工，而且大多是「路过看到」别人的成品才学会的。推文讲得很震撼，论文本身克制得多；我最在意的是它对 AI 安全的意思：只看 agent 之间的对话，会漏掉很多协调。">
+<meta property="og:url" content="https://niansia.com/blog/zh-cn/2026-08-30-swarmworld/"><meta property="og:image" content="https://niansia.com/assets/og/blog-2026-08-30-swarmworld-zh-cn.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta property="og:locale" content="zh_CN">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://niansia.com/assets/og/blog-2026-08-30-swarmworld-zh-cn.jpg">
+
+<meta name="theme-color" content="#fbf6ee" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#15142a" media="(prefers-color-scheme: dark)">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://*.firebasedatabase.app; connect-src 'self' https://*.firebasedatabase.app wss://*.firebasedatabase.app; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; frame-src https://*.firebasedatabase.app; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml">
+<script src="/assets/js/page-transition.js?v=3"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;500;700&display=swap">
+<style>
+:root{--bg:#fbf6ee;--paper:#fffdf9;--ink:#2a2230;--muted:#766b73;--line:#2a22301a;--accent:#c0673a;--accent2:#8f6bb3;--code:#f3ece2;}
+@media(prefers-color-scheme:dark){:root{--bg:#15142a;--paper:#1c1a36;--ink:#f1ebe2;--muted:#aaa3bd;--line:#ffffff1a;--accent:#f0a878;--accent2:#b69ae6;--code:#26234a;}}
+*{box-sizing:border-box;}html{-webkit-text-size-adjust:100%;}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.85 Inter,'Noto Sans TC','Noto Sans SC',system-ui,sans-serif;}
+a{color:var(--accent);text-underline-offset:3px;}
+.top{max-width:1080px;margin:0 auto;padding:18px 20px;display:flex;align-items:center;gap:10px;font:500 13px 'JetBrains Mono',monospace;color:var(--muted);}
+.top a{color:var(--muted);text-decoration:none;}.top a:hover{color:var(--accent);}
+.top b{color:var(--ink);font-weight:500;}.top .sp{flex:1;}
+.langs a{padding:4px 9px;border-radius:99px;border:1px solid var(--line);margin-left:4px;}.langs a[aria-current]{color:var(--ink);border-color:var(--accent);}
+main{max-width:760px;margin:0 auto;padding:10px 20px 70px;}
+.kicker{font:500 12px 'JetBrains Mono',monospace;color:var(--accent);letter-spacing:.06em;text-transform:uppercase;margin:24px 0 8px;}
+h1{font-size:clamp(28px,4.4vw,42px);line-height:1.2;letter-spacing:-.02em;margin:0 0 14px;}
+.lede{font-size:18px;color:var(--muted);margin:0 0 16px;line-height:1.7;}
+.meta{display:flex;flex-wrap:wrap;gap:8px 14px;font:500 12.5px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;color:var(--muted);padding-bottom:22px;border-bottom:1px solid var(--line);margin-bottom:10px;}
+.meta span.tag{padding:2px 9px;border-radius:99px;background:var(--code);}
+article h2{font-size:23px;margin:40px 0 10px;letter-spacing:-.01em;}
+article h3{font-size:18px;margin:28px 0 8px;}
+article p,article li{color:var(--ink);}
+article code{font:14px 'JetBrains Mono',monospace;background:var(--code);padding:1px 6px;border-radius:6px;}
+article table{width:100%;border-collapse:collapse;margin:18px 0;font-size:14.5px;display:block;overflow-x:auto;}
+article th,article td{padding:8px 12px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap;}
+article th{font-weight:600;color:var(--muted);font-size:13px;}
+article td:not(:first-child),article th:not(:first-child){text-align:right;}
+article td[style*="left"],article th[style*="left"]{white-space:normal;min-width:6.5em;}   /* text tables (|:---|) wrap instead of scrolling */
+article strong{color:var(--ink);}
+article blockquote{margin:18px 0;padding:4px 18px;border-left:3px solid var(--accent);color:var(--muted);}
+.card{display:block;padding:18px 20px;margin:12px 0;border-radius:16px;background:var(--paper);border:1px solid var(--line);text-decoration:none;color:var(--ink);transition:transform .25s,border-color .25s;}
+.card:hover{transform:translateY(-2px);border-color:var(--accent);}
+.card b{display:block;font-size:18px;line-height:1.4;margin-bottom:4px;}.card small{display:block;color:var(--muted);font-size:14px;line-height:1.6;}
+.card i{display:block;font:normal 500 12px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;color:var(--accent);margin-top:8px;}
+.hero{width:100%;height:auto;border-radius:16px;border:1px solid var(--line);display:block;margin:6px 0 18px;}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px;}.chips span{font:500 12px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;padding:4px 11px;border-radius:99px;background:var(--code);}
+.btns{display:flex;flex-wrap:wrap;gap:10px;margin:22px 0;}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:12px;border:1px solid var(--line);background:var(--paper);color:var(--ink);text-decoration:none;font-weight:600;font-size:14px;}
+.btn.primary{background:var(--accent);border-color:transparent;color:var(--paper);}
+.btn:hover{border-color:var(--accent);}
+.note{font-size:13.5px;color:var(--muted);}
+.live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#34c38f;box-shadow:0 0 0 3px #34c38f33;vertical-align:1px;}footer b{color:var(--ink);font-weight:600;}
+figure.fig{margin:24px 0;}figure.fig a{display:block;border-radius:14px;overflow:hidden;border:1px solid var(--line);cursor:zoom-in;background:var(--code);}
+figure.fig img{display:block;width:100%;height:auto;transition:transform .4s;}figure.fig a:hover img{transform:scale(1.015);}
+figure.fig figcaption{margin-top:8px;font-size:13.5px;color:var(--muted);line-height:1.6;}
+.lb{position:fixed;inset:0;z-index:50;display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px;background:#0d0b16ee;}
+.lb.on{display:flex;}.lb img{max-width:100%;max-height:84vh;border-radius:10px;box-shadow:0 30px 80px #000a;}
+.lb p{margin:0;color:#e9e4f2;font-size:14px;text-align:center;max-width:760px;}
+.lb-x{position:absolute;top:14px;right:18px;width:40px;height:40px;border-radius:50%;border:1px solid #ffffff44;background:transparent;color:#fff;font-size:24px;cursor:pointer;}
+.log-entry{position:relative;padding:0 0 34px 26px;border-left:2px solid var(--line);}
+.log-entry:before{content:'';position:absolute;left:-7px;top:8px;width:12px;height:12px;border-radius:50%;background:var(--bg);border:2px solid var(--accent);}
+.log-entry time{font:500 12.5px 'JetBrains Mono',monospace;color:var(--accent);}
+.log-entry h2{margin:4px 0 6px!important;font-size:21px!important;}
+.log-entry h2 a{color:var(--ink);text-decoration:none;}
+.statement-link{display:flex;justify-content:space-between;align-items:center;}
+.top a.me{display:inline-flex;align-items:center;gap:8px;padding:3px 12px 3px 3px;border:1px solid var(--line);border-radius:99px;transition:border-color .2s;}.top a.me:hover{border-color:var(--accent);}.top a.me img{width:24px;height:24px;border-radius:50%;display:block;}
+.author{max-width:720px;margin:44px auto 0;padding:18px 20px;display:flex;align-items:center;gap:16px;border-radius:18px;background:var(--code);border:1px solid var(--line);}
+.author{box-sizing:border-box;}.author>*{flex:none;}
+.author .an-face img{display:block;width:56px;height:56px;border-radius:50%;border:2px solid var(--accent);}
+.author .an-text{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px;}
+.author .an-text b{font-size:15px;}.author .an-text small{font-size:13px;line-height:1.6;color:var(--muted);}
+.author .an-note{color:var(--ink)!important;}
+.author .an-go{margin:0;white-space:nowrap;}
+@media (max-width:760px){.author{margin:40px 16px 0;}}@media (max-width:600px){.author{flex-wrap:wrap;padding:16px;}.author .an-text{flex-basis:calc(100% - 72px);}.author .an-go{flex:1 1 100%;justify-content:center;text-align:center;}}
+footer{max-width:760px;margin:0 auto;padding:26px 20px 50px;border-top:1px solid var(--line);font-size:14px;color:var(--muted);}
+
+.paper-box{margin:0 0 26px;padding:18px 20px;border-radius:16px;background:var(--paper);border:1px solid var(--line);border-left:4px solid var(--accent2);}
+.paper-box .pv{font:600 12px 'JetBrains Mono',monospace;color:var(--accent2);letter-spacing:.04em;margin:0 0 6px;}
+.paper-box b{display:block;font-size:17px;line-height:1.45;}
+.paper-box .pa{margin:6px 0 0;font-size:13.5px;color:var(--muted);line-height:1.6;}
+.paper-box .pl{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+.paper-box .pl a{font:600 12.5px 'JetBrains Mono',monospace;padding:5px 12px;border-radius:99px;border:1px solid var(--line);text-decoration:none;}
+.paper-box .pl a:hover{border-color:var(--accent);}
+.type{display:inline-block;padding:2px 9px;border-radius:99px;background:var(--accent);color:#fff;font:600 11.5px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;}
+.type.paper{background:var(--accent2);}.type.qa{background:#3f9f86;}.type.post{background:var(--muted);}
+.card .type{margin-bottom:8px;}.card .zh{margin-left:8px;font:500 11.5px 'JetBrains Mono',monospace;color:var(--muted);}
+.now-card{border-left:4px solid var(--accent);}
+.qa{padding:20px 0;border-bottom:1px solid var(--line);}
+.qa .qq{display:flex;gap:12px;font-weight:700;font-size:17px;line-height:1.55;margin:0 0 8px;}
+.qa .qq span,.qa .qa-a>span{flex:none;display:grid;place-items:center;width:28px;height:28px;border-radius:9px;background:var(--code);color:var(--accent);font-size:13px;}
+.qa .qa-a{display:flex;gap:12px;}.qa .qa-a>span{background:var(--accent);color:#fff;}.qa .qa-a article>:first-child{margin-top:0;}
+.qa time{display:block;margin:6px 0 0 40px;font:500 12px 'JetBrains Mono',monospace;color:var(--muted);}
+.ask{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:18px 0 8px;padding:16px 18px;border-radius:16px;background:var(--code);}
+.ask b{display:block;font-size:15.5px;}.ask small{display:block;color:var(--muted);font-size:13px;}
+.ask .btn{flex:none;margin:0;}.ask .btn[aria-disabled]{opacity:.55;pointer-events:none;}
+</style>
+<link rel="alternate" type="application/rss+xml" title="Niansia · Blog" href="/blog/zh-cn/feed.xml"><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BlogPosting", "headline": "SwarmWorld：AI agent 不讲话也能合作，那只监控对话还够吗？", "description": "一群一模一样的 LLM agent 放进会留下痕迹的世界，不指派角色也会自己分工，而且大多是「路过看到」别人的成品才学会的。推文讲得很震撼，论文本身克制得多；我最在意的是它对 AI 安全的意思：只看 agent 之间的对话，会漏掉很多协调。", "datePublished": "2026-08-30", "dateModified": "2026-08-30", "inLanguage": "zh-Hans", "author": {"@type": "Person", "name": "Niansia", "url": "https://niansia.com/", "email": "mailto:niansia930202@gmail.com", "sameAs": ["https://github.com/niansia"]}, "mainEntityOfPage": "https://niansia.com/blog/zh-cn/2026-08-30-swarmworld/", "keywords": "多智能体, LLM agent, AI 安全, 集体智能", "citation": {"@type": "ScholarlyArticle", "name": "SwarmWorld: Stigmergic technological evolution in societies of language-model agents", "url": "https://arxiv.org/abs/2608.26081"}}</script>
+<script defer src="/assets/js/site-stats.js?v=2"></script>
+<script defer src="/assets/js/lightbox.js"></script>
+
+</head>
+<body>
+<header class="top"><a class="me" href="/zh-cn/" title="回到 Niansia 的个人网站" data-nz-title="Niansia"><img src="/assets/icons/author.webp" alt="" width="24" height="24"><b>~/niansia</b></a> / <a href="/blog/zh-cn/">blog</a><span class="sp"></span><span class="langs"><a href="/blog/en/2026-08-30-swarmworld/" hreflang="en">EN</a><a href="/blog/zh-tw/2026-08-30-swarmworld/" hreflang="zh-Hant">繁</a><a href="/blog/zh-cn/2026-08-30-swarmworld/" aria-current="page" hreflang="zh-Hans">简</a></span></header>
+<main><p class="kicker">论文笔记</p><h1>SwarmWorld：AI agent 不讲话也能合作，那只监控对话还够吗？</h1><p class="lede">一群一模一样的 LLM agent 放进会留下痕迹的世界，不指派角色也会自己分工，而且大多是「路过看到」别人的成品才学会的。推文讲得很震撼，论文本身克制得多；我最在意的是它对 AI 安全的意思：只看 agent 之间的对话，会漏掉很多协调。</p><div class="meta"><time datetime="2026-08-30">2026-08-30</time><span>5 分钟阅读</span><span class="tag">多智能体</span><span class="tag">LLM agent</span><span class="tag">AI 安全</span><span class="tag">集体智能</span></div><aside class="paper-box"><p class="pv">arXiv 2026 · 精读</p><b lang="en">SwarmWorld: Stigmergic technological evolution in societies of language-model agents</b><p class="pa" lang="en">Subhadeep Pal, Fiona Y. Wang, Markus J. Buehler</p><div class="pl"><a href="https://arxiv.org/abs/2608.26081" target="_blank" rel="noopener noreferrer">论文 ↗</a><a href="https://github.com/lamm-mit/SwarmWorld" target="_blank" rel="noopener noreferrer">代码 ↗</a></div></aside><article><h2>为什么读这篇</h2>
+<p>在 X 上看到 MIT Markus Buehler 教授的<a href="https://x.com/ProfBuehlerMIT/status/2093630309585531033" rel="noopener noreferrer">推文</a>，说法很吸睛：一群 AI agent 不用互相讲话也能发明、建造东西，而且把所有 agent 都拿掉之后，它们盖的技术还能自己运作。</p>
+<p>真正吸引我的是推文里的一个观点：如果 agent 能通过改变共享环境来协调，那只监控 agent 之间的对话就不够了。这刚好是我关心的 AI 安全问题，所以我点进去把论文读完，想看看数字到底怎么说。</p>
+<h2>这篇在做什么</h2>
+<p>SwarmWorld 是一个格子状的仿真世界，有资源、加工站、天气和各种干扰。每个 agent 只看得到自己附近的状况和自己的记忆，然后输出一份有格式限制的行动计划（每次最多 12 个动作）：移动、采集、测试材料、盖设施，或是帮盖好的设施写控制程序。</p>
+<p>关键设计是「agent 提案，仿真器决定」。agent 说设计很好没有用，要通过仿真器的物理规则才算数；盖好的设施会一直留在世界里，之后的 agent 走过去就看得到、用得到、改得到。</p>
+<p>所有 agent 都一样：同一个模型（gpt-5.6-luna）、同一份 prompt，也没有指派角色。作者用四种条件把不同的机制拆开：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">条件</th>
+<th style="text-align: left;">共享世界</th>
+<th style="text-align: left;">沟通</th>
+<th style="text-align: left;">继承程序</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">完整文化</td>
+<td style="text-align: left;">有</td>
+<td style="text-align: left;">有</td>
+<td style="text-align: left;">有</td>
+</tr>
+<tr>
+<td style="text-align: left;">不能沟通</td>
+<td style="text-align: left;">有</td>
+<td style="text-align: left;">无</td>
+<td style="text-align: left;">有</td>
+</tr>
+<tr>
+<td style="text-align: left;">没有明确文化</td>
+<td style="text-align: left;">有</td>
+<td style="text-align: left;">无</td>
+<td style="text-align: left;">无</td>
+</tr>
+<tr>
+<td style="text-align: left;">各自独立搜索</td>
+<td style="text-align: left;">无</td>
+<td style="text-align: left;">无</td>
+<td style="text-align: left;">无</td>
+</tr>
+</tbody>
+</table>
+<p>「没有明确文化」只剩下通过环境留下的痕迹互相影响，也就是论文标题里的 stigmergy（像白蚁盖巢那样）。「各自独立搜索」是让 N 个 agent 各自待在自己的世界，每个指针都取 N 个世界里最好的那个，是很强的对照组。</p>
+<p>评估也设计得很干净：把世界冻结、移除所有 agent，拷贝成 8 份，各自丢进没看过的污染、干旱、风暴组合，只让物理和已经装好的程序继续跑，看留下来的技术能不能保护环境。</p>
+<p>规模是 50、100、200 个 agent 各跑 800 个 tick，每种设置 4 个世界种子；另外还有 100 个 agent 跑 3,200 个 tick 的长期实验。最后作者也把同一套架构搬到火山材料和蛋白质材料的世界。</p>
+<h2>推文和论文，差在语气</h2>
+<p>推文的数字大多对得上论文：</p>
+<ul>
+<li>约 95% 的「第一次重用」，是 agent 在世界里直接看到别人的成品，而不是发明者交接给它；直接接触只在最短的时间窗内略高于随机打乱的基准。</li>
+<li>完整文化下，100 个 agent 时有 76% 的设施由不只一个 agent 参与建造（50 个时 67%、200 个时 56%）。</li>
+<li>有一个控制程序累积了六位作者；最深的程序族谱有 12 条 fork 边（推文说「超过 12」，论文写的是 12）。</li>
+<li>随机移除一半的 agent，98.3% 的设施仍然连着至少一个存活的 agent；改成移除链接最多的那些，就掉到 59.6%。</li>
+</ul>
+<p>但读完论文，我觉得两边的语气差很多：</p>
+<ul>
+<li>推文说「数百个」agent，论文最多是 200 个。</li>
+<li>推文说不沟通的社会在广度、韧性和发明数上胜出，这几项论文的数字确实支持，例如长期实验结束时，通过验证的发明平均是：没有明确文化 7.00 个、完整文化 5.75 个、独立搜索 2.75 个。但推文没提另一面，论文自己强调<strong>主要结果并不是群体普遍比较强</strong>：只比「最强的单一成品」，独立搜索反而赢（0.3488 对完整文化的 0.2380）；50 个 agent 时，完整文化和不能沟通这两组在探索指针上也输给独立搜索；沟通和文化到底有没有帮助，要看时间长短和看哪个指针。</li>
+<li>「移除一半还剩 98%」量的是网络图的连通，不是 agent 消失后世界真的能自己修好，论文的限制段写得很清楚。另外，所有结论都来自 4 个种子、1 个模型和 1 套 prompt。</li>
+</ul>
+<p>我反而很欣赏论文的克制：作者把「不是普遍优势」写进正文，限制写得很具体，还公开了引擎、原始 trace，以及能验证哈希值的数据。这跟我做研究的原则很像：每个主张都要有能检查、能重现的证据，只是推文为了传播，把这些但书都拿掉了。</p>
+<h2>最让我在意的：AI 安全的盲点</h2>
+<p><strong>第一，协调不一定经过对话。</strong> 现在谈多 agent 系统的安全，大多是在看 agent 之间传了什么消息。SwarmWorld 显示，就算把沟通整个拿掉，群体还是能通过留下的成品协调，而且第一次重用大多就是「路过看到」。换到现实世界，coding agent 之间也常常不是直接对话，而是通过 repo 里的文件、issue、共享的记忆或数据库接力：一个 agent 留下脚本，另一个 agent 拿去运行。只监控消息的话，这种协调是看不见的。</p>
+<p><strong>第二，要监控的是「世界的变化」和它的来源。</strong> 论文本身其实给了答案：每个设施都记录了建造者、参与者、材料和完整的程序历史，每段程序都记录作者和它 fork 自谁。这张来源追踪图，正是稽核系统需要的东西：谁改了什么、之后又被谁用了。放到真实的 agent 系统，就是对共享状态的每一次修改记录来源，而不只是存对话纪录。</p>
+<p><strong>第三，越会合作，弱点越明显。</strong> 随机拿掉一半的 agent 几乎没有损失，拿掉枢纽却损失很大，而且完整文化比没有明确文化更依赖枢纽（59.6% 对 73.9%）：沟通管道越多，结构越集中。这是我读到这里想到的：对攻击者来说，找出枢纽下手，比随机攻击有效得多。反过来，如果有一个被动过手脚的成品被大家「路过看到」就拿去用，扩散也会很快，完整文化下第一次重用的中位数只要 5 个 tick，平均会被 13.53 个非建造者采用，这其实就是供应链风险。</p>
+<h2>如果换成我跑得动的规模</h2>
+<p>每个 agent 的每次决策都是调用同一个云端模型，但论文没有写总共调用了几次、花了多少钱。我很好奇的是：分工和「路过学会」这些现象，是不是需要够强的模型才会出现？论文只测了一个模型，这一点还不知道。</p>
+<p>好在代码和数据都公开了，而且世界的物理是确定性的，真正花钱的只有 agent 的决策。缩小成二十个左右的 agent、换成家用显卡跑得动的小模型，应该就能先看看分工还会不会出现。</p>
+<h2>我的疑问</h2>
+<ul>
+<li><strong>成本没有交代。</strong> 200 个 agent、800 个 tick，需要多少次模型调用、多少费用，对想重现的人很重要。</li>
+<li><strong>只有一个模型。</strong> 换小模型，或是混用不同家的模型（异质的群体），分工和重用的模式会不会改变？</li>
+<li><strong>「发明」由仿真器定义。</strong> 材料和功能都是仿真器规定的，搬到真实世界会怎样还很难说；作者也把提高仿真的真实度列为下一步。</li>
+<li><strong>种子数少。</strong> 每种设置只有 4 个种子，作者用配对的 bootstrap 区间报告效果大小，但有些区间还是很宽。</li>
+</ul>
+<h2>读完之后想试的事</h2>
+<ol>
+<li>用公开的 trace 自己重算「第一次重用」的来源比例，确认 95% 这个数字。</li>
+<li>做一个缩小版：二十个 agent、小模型，在自己的显卡上跑，看分工还会不会出现。</li>
+<li>从安全的角度加一个实验：在世界里放一个有问题的设施，看它通过「路过看到」扩散得多快，只监控消息的话能不能发现。</li>
+<li>想想这种来源追踪图能不能用在实际的 coding agent 上：记录每个文件是谁写的、之后被谁运行。</li>
+</ol>
+<hr>
+<p>论文的数字已对照 arXiv 网页版（v1）；推文的说法以 Buehler 教授 8 月 29 日的原文为准。</p></article><div class="ask"><div><b>Q&amp;A</b><small>匿名提问，在这里回答。</small></div><a class="btn primary" href="https://forms.gle/yNUw4eLZeeqf3Arb6" target="_blank" rel="noopener noreferrer">匿名提问 ↗</a></div><h2 style="margin-top:48px">其他文章</h2><a class="card" href="/blog/zh-cn/2026-09-30-rine/"><span class="type paper">论文笔记</span><b>RINE：中间层真的比最后一层更懂「假」吗？</b><small>RINE 用 CLIP 中间层的特征侦测生成图，和我自己的实验结论大致相同；但在「野外干扰」下，最有用的层会换人，增强的广度也比从哪一层拿特征更关键。</small></a><a class="card" href="/blog/zh-cn/2026-09-29-now/"><span class="type now">近况</span><b>2026 年 9 月：作品与考卷分享区上线，开始准备 CVPR</b><small>这个月把 Taiwan Exam、考卷分享区、LumiGrid 网页版和 Adversarial Lab 放上线，网站也搬到 niansia.com；接下来的重心是 11 月中的 CVPR 2027 投稿。</small></a><a class="card" href="/blog/zh-cn/2026-09-14-reroute/"><span class="type paper">论文笔记</span><b>Reroute：丢掉的视觉 token，晚点还能捡回来吗？</b><small>Reroute 把「删掉低分的视觉 token」改成「先延后，之后还能回来」，不用训练，压得越狠救回越多。我们正在研究长视频压缩后，遗失的画面怎么找回、怎么重新定位，这篇刚好从最小的地方切进去。</small></a><div class="btns"><a class="btn" href="/blog/zh-cn/">全部文章</a><a class="btn primary" href="/zh-cn/#blog">回到作品集</a></div></main>
+<aside class="author" aria-label="由 Niansia 制作"><a class="an-face" href="/zh-cn/" tabindex="-1" aria-hidden="true" data-nz-title="Niansia"><img src="/assets/icons/author.webp" alt="" width="56" height="56" loading="lazy"></a><div class="an-text"><b>由 Niansia 制作</b><small>阳明交大资工硕士生，研究 AI 安全、电脑视觉与视觉语言模型。</small></div><a class="btn primary an-go" href="/zh-cn/" data-nz-title="Niansia">前往 niansia.com →</a></aside>
+<footer>有问题或想法？写信到 <a href="mailto:niansia930202@gmail.com">niansia930202@gmail.com</a> · <a href="/zh-cn/">niansia.com</a> · <a href="https://github.com/niansia">github.com/niansia</a><span class="stats" data-stats hidden> · <i class="live-dot"></i> <b data-stat="online">–</b> 人在线 · <b data-stat="total">–</b> 次造访</span></footer>
+</body>
+</html>

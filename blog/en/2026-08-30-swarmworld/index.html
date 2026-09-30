@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SwarmWorld: agents cooperate without talking — is watching their messages enough? · Niansia</title>
+<meta name="description" content="Identical LLM agents dropped into a world that keeps their traces divide the work among themselves with no assigned roles, and mostly learn each other&#x27;s technology by walking past it. The announcement was dramatic, the paper is far more measured; what I care about most is the security angle — watching only what agents say to each other misses a lot of coordination.">
+<link rel="canonical" href="https://niansia.com/blog/en/2026-08-30-swarmworld/">
+<link rel="alternate" hreflang="en" href="https://niansia.com/blog/en/2026-08-30-swarmworld/"><link rel="alternate" hreflang="zh-Hant-TW" href="https://niansia.com/blog/zh-tw/2026-08-30-swarmworld/"><link rel="alternate" hreflang="zh-Hans-CN" href="https://niansia.com/blog/zh-cn/2026-08-30-swarmworld/"><link rel="alternate" hreflang="x-default" href="https://niansia.com/blog/en/2026-08-30-swarmworld/">
+<meta property="og:type" content="article"><meta property="og:site_name" content="Niansia">
+<meta property="og:title" content="SwarmWorld: agents cooperate without talking — is watching their messages enough? · Niansia"><meta property="og:description" content="Identical LLM agents dropped into a world that keeps their traces divide the work among themselves with no assigned roles, and mostly learn each other&#x27;s technology by walking past it. The announcement was dramatic, the paper is far more measured; what I care about most is the security angle — watching only what agents say to each other misses a lot of coordination.">
+<meta property="og:url" content="https://niansia.com/blog/en/2026-08-30-swarmworld/"><meta property="og:image" content="https://niansia.com/assets/og/blog-2026-08-30-swarmworld-en.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta property="og:locale" content="en">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://niansia.com/assets/og/blog-2026-08-30-swarmworld-en.jpg">
+
+<meta name="theme-color" content="#fbf6ee" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#15142a" media="(prefers-color-scheme: dark)">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://*.firebasedatabase.app; connect-src 'self' https://*.firebasedatabase.app wss://*.firebasedatabase.app; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; frame-src https://*.firebasedatabase.app; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml">
+<script src="/assets/js/page-transition.js?v=3"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root{--bg:#fbf6ee;--paper:#fffdf9;--ink:#2a2230;--muted:#766b73;--line:#2a22301a;--accent:#c0673a;--accent2:#8f6bb3;--code:#f3ece2;}
+@media(prefers-color-scheme:dark){:root{--bg:#15142a;--paper:#1c1a36;--ink:#f1ebe2;--muted:#aaa3bd;--line:#ffffff1a;--accent:#f0a878;--accent2:#b69ae6;--code:#26234a;}}
+*{box-sizing:border-box;}html{-webkit-text-size-adjust:100%;}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.85 Inter,'Noto Sans TC','Noto Sans SC',system-ui,sans-serif;}
+a{color:var(--accent);text-underline-offset:3px;}
+.top{max-width:1080px;margin:0 auto;padding:18px 20px;display:flex;align-items:center;gap:10px;font:500 13px 'JetBrains Mono',monospace;color:var(--muted);}
+.top a{color:var(--muted);text-decoration:none;}.top a:hover{color:var(--accent);}
+.top b{color:var(--ink);font-weight:500;}.top .sp{flex:1;}
+.langs a{padding:4px 9px;border-radius:99px;border:1px solid var(--line);margin-left:4px;}.langs a[aria-current]{color:var(--ink);border-color:var(--accent);}
+main{max-width:760px;margin:0 auto;padding:10px 20px 70px;}
+.kicker{font:500 12px 'JetBrains Mono',monospace;color:var(--accent);letter-spacing:.06em;text-transform:uppercase;margin:24px 0 8px;}
+h1{font-size:clamp(28px,4.4vw,42px);line-height:1.2;letter-spacing:-.02em;margin:0 0 14px;}
+.lede{font-size:18px;color:var(--muted);margin:0 0 16px;line-height:1.7;}
+.meta{display:flex;flex-wrap:wrap;gap:8px 14px;font:500 12.5px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;color:var(--muted);padding-bottom:22px;border-bottom:1px solid var(--line);margin-bottom:10px;}
+.meta span.tag{padding:2px 9px;border-radius:99px;background:var(--code);}
+article h2{font-size:23px;margin:40px 0 10px;letter-spacing:-.01em;}
+article h3{font-size:18px;margin:28px 0 8px;}
+article p,article li{color:var(--ink);}
+article code{font:14px 'JetBrains Mono',monospace;background:var(--code);padding:1px 6px;border-radius:6px;}
+article table{width:100%;border-collapse:collapse;margin:18px 0;font-size:14.5px;display:block;overflow-x:auto;}
+article th,article td{padding:8px 12px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap;}
+article th{font-weight:600;color:var(--muted);font-size:13px;}
+article td:not(:first-child),article th:not(:first-child){text-align:right;}
+article td[style*="left"],article th[style*="left"]{white-space:normal;min-width:6.5em;}   /* text tables (|:---|) wrap instead of scrolling */
+article strong{color:var(--ink);}
+article blockquote{margin:18px 0;padding:4px 18px;border-left:3px solid var(--accent);color:var(--muted);}
+.card{display:block;padding:18px 20px;margin:12px 0;border-radius:16px;background:var(--paper);border:1px solid var(--line);text-decoration:none;color:var(--ink);transition:transform .25s,border-color .25s;}
+.card:hover{transform:translateY(-2px);border-color:var(--accent);}
+.card b{display:block;font-size:18px;line-height:1.4;margin-bottom:4px;}.card small{display:block;color:var(--muted);font-size:14px;line-height:1.6;}
+.card i{display:block;font:normal 500 12px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;color:var(--accent);margin-top:8px;}
+.hero{width:100%;height:auto;border-radius:16px;border:1px solid var(--line);display:block;margin:6px 0 18px;}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px;}.chips span{font:500 12px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;padding:4px 11px;border-radius:99px;background:var(--code);}
+.btns{display:flex;flex-wrap:wrap;gap:10px;margin:22px 0;}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:12px;border:1px solid var(--line);background:var(--paper);color:var(--ink);text-decoration:none;font-weight:600;font-size:14px;}
+.btn.primary{background:var(--accent);border-color:transparent;color:var(--paper);}
+.btn:hover{border-color:var(--accent);}
+.note{font-size:13.5px;color:var(--muted);}
+.live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#34c38f;box-shadow:0 0 0 3px #34c38f33;vertical-align:1px;}footer b{color:var(--ink);font-weight:600;}
+figure.fig{margin:24px 0;}figure.fig a{display:block;border-radius:14px;overflow:hidden;border:1px solid var(--line);cursor:zoom-in;background:var(--code);}
+figure.fig img{display:block;width:100%;height:auto;transition:transform .4s;}figure.fig a:hover img{transform:scale(1.015);}
+figure.fig figcaption{margin-top:8px;font-size:13.5px;color:var(--muted);line-height:1.6;}
+.lb{position:fixed;inset:0;z-index:50;display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px;background:#0d0b16ee;}
+.lb.on{display:flex;}.lb img{max-width:100%;max-height:84vh;border-radius:10px;box-shadow:0 30px 80px #000a;}
+.lb p{margin:0;color:#e9e4f2;font-size:14px;text-align:center;max-width:760px;}
+.lb-x{position:absolute;top:14px;right:18px;width:40px;height:40px;border-radius:50%;border:1px solid #ffffff44;background:transparent;color:#fff;font-size:24px;cursor:pointer;}
+.log-entry{position:relative;padding:0 0 34px 26px;border-left:2px solid var(--line);}
+.log-entry:before{content:'';position:absolute;left:-7px;top:8px;width:12px;height:12px;border-radius:50%;background:var(--bg);border:2px solid var(--accent);}
+.log-entry time{font:500 12.5px 'JetBrains Mono',monospace;color:var(--accent);}
+.log-entry h2{margin:4px 0 6px!important;font-size:21px!important;}
+.log-entry h2 a{color:var(--ink);text-decoration:none;}
+.statement-link{display:flex;justify-content:space-between;align-items:center;}
+.top a.me{display:inline-flex;align-items:center;gap:8px;padding:3px 12px 3px 3px;border:1px solid var(--line);border-radius:99px;transition:border-color .2s;}.top a.me:hover{border-color:var(--accent);}.top a.me img{width:24px;height:24px;border-radius:50%;display:block;}
+.author{max-width:720px;margin:44px auto 0;padding:18px 20px;display:flex;align-items:center;gap:16px;border-radius:18px;background:var(--code);border:1px solid var(--line);}
+.author{box-sizing:border-box;}.author>*{flex:none;}
+.author .an-face img{display:block;width:56px;height:56px;border-radius:50%;border:2px solid var(--accent);}
+.author .an-text{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px;}
+.author .an-text b{font-size:15px;}.author .an-text small{font-size:13px;line-height:1.6;color:var(--muted);}
+.author .an-note{color:var(--ink)!important;}
+.author .an-go{margin:0;white-space:nowrap;}
+@media (max-width:760px){.author{margin:40px 16px 0;}}@media (max-width:600px){.author{flex-wrap:wrap;padding:16px;}.author .an-text{flex-basis:calc(100% - 72px);}.author .an-go{flex:1 1 100%;justify-content:center;text-align:center;}}
+footer{max-width:760px;margin:0 auto;padding:26px 20px 50px;border-top:1px solid var(--line);font-size:14px;color:var(--muted);}
+
+.paper-box{margin:0 0 26px;padding:18px 20px;border-radius:16px;background:var(--paper);border:1px solid var(--line);border-left:4px solid var(--accent2);}
+.paper-box .pv{font:600 12px 'JetBrains Mono',monospace;color:var(--accent2);letter-spacing:.04em;margin:0 0 6px;}
+.paper-box b{display:block;font-size:17px;line-height:1.45;}
+.paper-box .pa{margin:6px 0 0;font-size:13.5px;color:var(--muted);line-height:1.6;}
+.paper-box .pl{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+.paper-box .pl a{font:600 12.5px 'JetBrains Mono',monospace;padding:5px 12px;border-radius:99px;border:1px solid var(--line);text-decoration:none;}
+.paper-box .pl a:hover{border-color:var(--accent);}
+.type{display:inline-block;padding:2px 9px;border-radius:99px;background:var(--accent);color:#fff;font:600 11.5px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;}
+.type.paper{background:var(--accent2);}.type.qa{background:#3f9f86;}.type.post{background:var(--muted);}
+.card .type{margin-bottom:8px;}.card .zh{margin-left:8px;font:500 11.5px 'JetBrains Mono',monospace;color:var(--muted);}
+.now-card{border-left:4px solid var(--accent);}
+.qa{padding:20px 0;border-bottom:1px solid var(--line);}
+.qa .qq{display:flex;gap:12px;font-weight:700;font-size:17px;line-height:1.55;margin:0 0 8px;}
+.qa .qq span,.qa .qa-a>span{flex:none;display:grid;place-items:center;width:28px;height:28px;border-radius:9px;background:var(--code);color:var(--accent);font-size:13px;}
+.qa .qa-a{display:flex;gap:12px;}.qa .qa-a>span{background:var(--accent);color:#fff;}.qa .qa-a article>:first-child{margin-top:0;}
+.qa time{display:block;margin:6px 0 0 40px;font:500 12px 'JetBrains Mono',monospace;color:var(--muted);}
+.ask{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:18px 0 8px;padding:16px 18px;border-radius:16px;background:var(--code);}
+.ask b{display:block;font-size:15.5px;}.ask small{display:block;color:var(--muted);font-size:13px;}
+.ask .btn{flex:none;margin:0;}.ask .btn[aria-disabled]{opacity:.55;pointer-events:none;}
+</style>
+<link rel="alternate" type="application/rss+xml" title="Niansia · Blog" href="/blog/en/feed.xml"><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BlogPosting", "headline": "SwarmWorld: agents cooperate without talking — is watching their messages enough?", "description": "Identical LLM agents dropped into a world that keeps their traces divide the work among themselves with no assigned roles, and mostly learn each other's technology by walking past it. The announcement was dramatic, the paper is far more measured; what I care about most is the security angle — watching only what agents say to each other misses a lot of coordination.", "datePublished": "2026-08-30", "dateModified": "2026-08-30", "inLanguage": "en", "author": {"@type": "Person", "name": "Niansia", "url": "https://niansia.com/", "email": "mailto:niansia930202@gmail.com", "sameAs": ["https://github.com/niansia"]}, "mainEntityOfPage": "https://niansia.com/blog/en/2026-08-30-swarmworld/", "keywords": "multi-agent systems, LLM agents, AI security, collective intelligence", "citation": {"@type": "ScholarlyArticle", "name": "SwarmWorld: Stigmergic technological evolution in societies of language-model agents", "url": "https://arxiv.org/abs/2608.26081"}}</script>
+<script defer src="/assets/js/site-stats.js?v=2"></script>
+<script defer src="/assets/js/lightbox.js"></script>
+
+</head>
+<body>
+<header class="top"><a class="me" href="/" title="Back to Niansia&#x27;s website" data-nz-title="Niansia"><img src="/assets/icons/author.webp" alt="" width="24" height="24"><b>~/niansia</b></a> / <a href="/blog/en/">blog</a><span class="sp"></span><span class="langs"><a href="/blog/en/2026-08-30-swarmworld/" aria-current="page" hreflang="en">EN</a><a href="/blog/zh-tw/2026-08-30-swarmworld/" hreflang="zh-Hant">繁</a><a href="/blog/zh-cn/2026-08-30-swarmworld/" hreflang="zh-Hans">简</a></span></header>
+<main><p class="kicker">Paper note</p><h1>SwarmWorld: agents cooperate without talking — is watching their messages enough?</h1><p class="lede">Identical LLM agents dropped into a world that keeps their traces divide the work among themselves with no assigned roles, and mostly learn each other&#x27;s technology by walking past it. The announcement was dramatic, the paper is far more measured; what I care about most is the security angle — watching only what agents say to each other misses a lot of coordination.</p><div class="meta"><time datetime="2026-08-30">2026-08-30</time><span>6 min read</span><span class="tag">multi-agent systems</span><span class="tag">LLM agents</span><span class="tag">AI security</span><span class="tag">collective intelligence</span></div><aside class="paper-box"><p class="pv">arXiv 2026 · Read closely</p><b lang="en">SwarmWorld: Stigmergic technological evolution in societies of language-model agents</b><p class="pa" lang="en">Subhadeep Pal, Fiona Y. Wang, Markus J. Buehler</p><div class="pl"><a href="https://arxiv.org/abs/2608.26081" target="_blank" rel="noopener noreferrer">Paper ↗</a><a href="https://github.com/lamm-mit/SwarmWorld" target="_blank" rel="noopener noreferrer">Code ↗</a></div></aside><article><h2>Why this paper</h2>
+<p>I came across a <a href="https://x.com/ProfBuehlerMIT/status/2093630309585531033" rel="noopener noreferrer">post on X</a> by MIT's Prof. Markus Buehler with a striking claim: a swarm of AI agents can invent and build things without talking to one another, and what they built keeps working after every agent is removed.</p>
+<p>What really caught me was one point in the post: if agents can coordinate by changing a shared environment, monitoring their conversations is not enough. That is exactly the kind of AI security question I care about, so I read the paper to see what the numbers actually say.</p>
+<h2>What the paper does</h2>
+<p>SwarmWorld is a grid world with resources, processing stations, weather and disturbances. Each agent sees only its surroundings and its own memory, and outputs a schema-constrained plan (at most 12 actions per turn): move, gather, test materials, build structures, or write control programs for what has been built.</p>
+<p>The key design is "agents propose, the simulator decides". An agent calling its design good counts for nothing; it has to pass the simulator's physics. Finished structures stay in the world, so later agents who walk past can see, use and modify them.</p>
+<p>All agents are identical: one model (gpt-5.6-luna), one prompt, no assigned roles. Four conditions separate the mechanisms:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Condition</th>
+<th style="text-align: left;">Shared world</th>
+<th style="text-align: left;">Messages</th>
+<th style="text-align: left;">Program inheritance</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Full culture</td>
+<td style="text-align: left;">yes</td>
+<td style="text-align: left;">yes</td>
+<td style="text-align: left;">yes</td>
+</tr>
+<tr>
+<td style="text-align: left;">No communication</td>
+<td style="text-align: left;">yes</td>
+<td style="text-align: left;">no</td>
+<td style="text-align: left;">yes</td>
+</tr>
+<tr>
+<td style="text-align: left;">No explicit culture</td>
+<td style="text-align: left;">yes</td>
+<td style="text-align: left;">no</td>
+<td style="text-align: left;">no</td>
+</tr>
+<tr>
+<td style="text-align: left;">Independent search</td>
+<td style="text-align: left;">no</td>
+<td style="text-align: left;">no</td>
+<td style="text-align: left;">no</td>
+</tr>
+</tbody>
+</table>
+<p>"No explicit culture" leaves only influence through traces in the environment, the stigmergy of the title (the way termites build a nest). "Independent search" puts N agents in N separate worlds and takes the best of the N on every metric, a deliberately strong control.</p>
+<p>The evaluation is clean too: freeze the world, remove every agent, clone it eight times, and expose each clone to an unseen mix of contamination, drought and storms. Only physics and the installed programs keep running, and the question is whether the technology left behind still protects the habitat.</p>
+<p>The scale: 50, 100 and 200 agents for 800 ticks each, four world seeds per setting, plus a long run of 100 agents for 3,200 ticks. The same architecture is also moved to a volcanic-materials world and a protein-materials world.</p>
+<h2>The post and the paper differ in tone</h2>
+<p>Most of the post's numbers match the paper:</p>
+<ul>
+<li>About 95% of first reuse happened because an agent saw someone's work in the world, not through a handoff from the inventor; direct contact beat a timestamp-shuffled baseline only weakly, in the shortest window.</li>
+<li>Under full culture with 100 agents, 76% of structures had more than one builder (67% at 50, 56% at 200).</li>
+<li>One control program gathered six authors; the deepest program lineage has 12 fork edges (the post says "exceeded 12"; the paper says 12).</li>
+<li>Removing half the agents at random left 98.3% of structures connected to at least one surviving agent; removing the best-connected ones dropped it to 59.6%.</li>
+</ul>
+<p>Reading the paper, though, the tone is very different:</p>
+<ul>
+<li>The post speaks of "hundreds" of agents; the paper goes up to 200.</li>
+<li>The post says non-communicating societies win on breadth, resilience and inventions, and the paper's numbers do support those three. At the end of the long run, validated inventions averaged 7.00 without explicit culture, 5.75 with full culture and 2.75 for independent search. What the post leaves out is the other side, which the paper itself stresses: <strong>the main result is not a universal swarm advantage</strong>. On the single strongest artifact, independent search wins (0.3488 against 0.2380 for full culture); at 50 agents, full culture and no communication trailed independent search on the discovery metric; and whether communication and culture help depends on the time horizon and the metric.</li>
+<li>"98% left after removing half" measures connectivity in a graph, not a world that actually repairs itself after its agents vanish, as the limitations section states plainly. And every conclusion rests on four seeds, one model and one prompt.</li>
+</ul>
+<p>I actually admire that restraint. The authors put "not a universal advantage" in the main text, spell out concrete limits, and release the engine, the raw traces and hash-verified data. That matches a rule I try to keep in my own research: every claim needs evidence someone can check and reproduce. The post simply dropped those caveats to travel further.</p>
+<h2>What stays with me: a blind spot in AI security</h2>
+<p><strong>First, coordination does not have to go through conversation.</strong> Most talk about multi-agent safety looks at the messages agents send each other. SwarmWorld shows that even with communication removed entirely, a society still coordinates through what it leaves behind, and first reuse mostly comes from walking past. In the real world, coding agents often don't talk directly either; they relay through files in a repo, issues, shared memory or a database. One agent leaves a script, another runs it. A monitor that watches only messages cannot see that kind of coordination.</p>
+<p><strong>Second, what needs watching is how the world changes, and where each change came from.</strong> The paper supplies the answer itself: every structure records its creator, contributors, materials and full program history, and every program records its author and what it was forked from. That provenance graph is exactly what an audit system needs: who changed what, and who used it later. For real agent systems, that means recording the origin of every change to shared state, not just storing chat logs.</p>
+<p><strong>Third, the better they cooperate, the clearer the weak spot.</strong> Removing half the agents at random costs almost nothing, removing the hubs costs a lot, and full culture depends on hubs more than no explicit culture does (59.6% against 73.9%): more channels, more centralisation. This is my own reading: for an attacker, going after the hubs is far more effective than random attacks. Conversely, a tampered artifact that others pick up just by walking past would spread fast. Under full culture the median time to first reuse is 5 ticks and each artifact is adopted by 13.53 non-builders on average, which is a supply-chain risk.</p>
+<h2>At a scale I could run</h2>
+<p>Every decision of every agent is a call to the same cloud model, and the paper doesn't say how many calls there were or what they cost. What I want to know is whether division of labour and "learning by walking past" need a strong model to appear at all. With only one model tested, we don't know yet.</p>
+<p>Fortunately the code and data are public, the world physics is deterministic, and only the agents' decisions cost anything. Scaled down to twenty or so agents and a small model that runs on a home GPU, it should be possible to see whether the division of labour still shows up.</p>
+<h2>Open questions</h2>
+<ul>
+<li><strong>Cost is not reported.</strong> For 200 agents over 800 ticks, the number of model calls and the bill matter a lot to anyone trying to reproduce it.</li>
+<li><strong>Only one model.</strong> Would a smaller model, or a mix of models from different providers, change the patterns of work and reuse?</li>
+<li><strong>"Invention" is defined by the simulator.</strong> Materials and functions follow the simulator's rules, so how this carries over to the real world is hard to say; the authors list higher-fidelity simulation as a next step.</li>
+<li><strong>Few seeds.</strong> Four seeds per setting; effect sizes come with paired bootstrap intervals, but some of them are wide.</li>
+</ul>
+<h2>What I want to try</h2>
+<ol>
+<li>Recompute the source of first reuse from the released traces to check the 95% figure.</li>
+<li>Build a scaled-down version, twenty agents and a small model on my own GPU, and see whether the division of labour still appears.</li>
+<li>Add a security experiment: place a faulty structure in the world, measure how fast it spreads by walking past, and check whether a message-only monitor would notice.</li>
+<li>Think about applying this kind of provenance graph to real coding agents: record who wrote each file and who ran it afterwards.</li>
+</ol>
+<hr>
+<p>The paper's numbers were checked against the arXiv HTML version (v1); the post's claims are as Prof. Buehler wrote them on 29 August.</p></article><div class="ask"><div><b>Questions &amp; answers</b><small>Questions sent anonymously, answered here.</small></div><a class="btn primary" href="https://forms.gle/yNUw4eLZeeqf3Arb6" target="_blank" rel="noopener noreferrer">Ask anonymously ↗</a></div><h2 style="margin-top:48px">More posts</h2><a class="card" href="/blog/en/2026-09-30-rine/"><span class="type paper">Paper note</span><b>RINE: do intermediate layers know “fake” better than the last one?</b><small>RINE detects generated images from CLIP&#x27;s intermediate layers, and my own experiments largely agree. Under real-world corruptions, though, the most useful layers change, and the breadth of augmentation matters more than which layer the features come from.</small></a><a class="card" href="/blog/en/2026-09-29-now/"><span class="type now">Now</span><b>September 2026: new projects and an exam gallery, CVPR prep begins</b><small>This month Taiwan Exam, its exam gallery, the in-browser LumiGrid and Adversarial Lab went live, and the site moved to niansia.com. Next up is the CVPR 2027 submission in mid-November.</small></a><a class="card" href="/blog/en/2026-09-14-reroute/"><span class="type paper">Paper note</span><b>Reroute: can dropped visual tokens come back later?</b><small>Reroute turns &quot;delete the low-scoring visual tokens&quot; into &quot;defer them, and let them come back&quot;, with no training, and the harder the compression, the more it recovers. We are studying how to recover and re-locate what a long video loses in compression, and this paper attacks the smallest version of that problem.</small></a><div class="btns"><a class="btn" href="/blog/en/">All posts</a><a class="btn primary" href="/#blog">Back to the portfolio</a></div></main>
+<aside class="author" aria-label="Made by Niansia"><a class="an-face" href="/" tabindex="-1" aria-hidden="true" data-nz-title="Niansia"><img src="/assets/icons/author.webp" alt="" width="56" height="56" loading="lazy"></a><div class="an-text"><b>Made by Niansia</b><small>M.S. student in computer science at NYCU, working on AI security, computer vision and vision-language models.</small></div><a class="btn primary an-go" href="/" data-nz-title="Niansia">Visit niansia.com →</a></aside>
+<footer>Questions or ideas? Email <a href="mailto:niansia930202@gmail.com">niansia930202@gmail.com</a> · <a href="/">niansia.com</a> · <a href="https://github.com/niansia">github.com/niansia</a><span class="stats" data-stats hidden> · <i class="live-dot"></i> <b data-stat="online">–</b> online · <b data-stat="total">–</b> visits</span></footer>
+</body>
+</html>
