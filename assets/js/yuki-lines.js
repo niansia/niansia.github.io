@@ -257,6 +257,117 @@ window.YUKI_LINES = {
   ],
   "terminalAnswer": [
    "Yuki: "
+  ],
+  "returningMorning": [
+   "Good morning! Visit #{visits} already. Did you have breakfast?"
+  ],
+  "returningNight": [
+   "Up this late? Visit #{visits}… thanks for keeping me company."
+  ],
+  "lateNight": [
+   "It’s getting really late. One more page, then off to bed?",
+   "Yawn… even I’m sleepy. Don’t stay up too late, okay?"
+  ],
+  "proj-adversarial-lab": [
+   "Adversarial Lab: under PGD at ε = 0.2, the normal model drops from 98.95% to 0.2%. Try fooling it yourself!",
+   "The adversarially trained model still keeps 92.2% at ε = 0.2. Tougher than it looks~"
+  ],
+  "proj-lumigrid": [
+   "LumiGrid lifts dark photos to 24.57 dB PSNR. The old course pipeline got 16.48 dB!",
+   "Only 2.1 M parameters, yet it handles 24-megapixel photos on a laptop GPU. Drag the slider~"
+  ],
+  "proj-taiwan-exam": [
+   "Taiwan Exam writes original GSAT practice exams for seven subjects, with separate worked solutions.",
+   "Students share the mock exams they made in the exam gallery. Want to try one?"
+  ],
+  "proj-kcrashlab": [
+   "KCrashLab replays a failure until 3 of 3 clean runs agree. It’s all simulated, no real crashes!",
+   "In experiment E1, keeping only new coverage with energy-ranked picks found the failure 18 times out of 20. Press play~"
+  ],
+  "proj-contextsec": [
+   "ContextSec has 16 risk packs and 116 controls. Missing evidence stays “unknown”, never “not applicable”.",
+   "It caught 10 of 10 single-edit security mutations. Pick a product and see its gate!"
+  ],
+  "proj-merriv": [
+   "Merriv caught an INT8 build that lost 34 cases and gained 6 against FP16, and blocked it.",
+   "Too little evidence never becomes a PASS here: Merriv fails closed. Strict, but fair~"
+  ],
+  "proj-ai-repo-gardener": [
+   "AI Repo Gardener found 10 of 10 deletable files and proposed 0 of the 10 live ones. A careful gardener!",
+   "It never deletes without a plan a person reviewed, and 0 of 59 tricky variants fooled it."
+  ],
+  "proj-psg": [
+   "With PSG routing, file reads over 12 tasks went from 456 to 47. That’s 89.7% fewer!",
+   "An agent can’t widen its own write scope here. Step through the task until it says SHIPPABLE~"
+  ],
+  "proj-noveltyaudit": [
+   "NoveltyAudit freezes the claim before searching, so it can’t drift toward what was found.",
+   "No novelty percentages here: a number like that would look precise and mean nothing."
+  ],
+  "proj-research-meeting-coach": [
+   "Research Meeting Coach turns a week of notes into one decision for your advisor.",
+   "Its validators caught 14 of 16 dishonest edits, and the 2 they miss are shown honestly."
+  ],
+  "proj-chromarecover": [
+   "ChromaRecover finds shapes hidden in colour: on 192 px dot plates, 10 of 10 hidden digits, and it declined to guess on all 10 decoys.",
+   "It runs the real Python package right in your browser. Hide your own number and try~"
+  ],
+  "papersDeadline": [
+   "{venue} deadline in {days} days. I’m keeping count!"
+  ],
+  "blogNewest": [
+   "The newest post is “{title}”, about {minutes} min. Want to read it?"
+  ],
+  "sc-kcrashlab-discover": [
+   "Eek, failures! {raw} raw failures, but only {sig} exact signature."
+  ],
+  "sc-kcrashlab-minimize": [
+   "Shrunk from {from} operations to {to}, and the signature didn’t change!"
+  ],
+  "sc-kcrashlab-replay": [
+   "{m} of {n} clean replays match. Confirmed!"
+  ],
+  "sc-kcrashlab-evidence": [
+   "Evidence bundle verified. Now anyone can check it~"
+  ],
+  "sc-psg-rejected": [
+   "Nope! The agent slipped in three edits nobody asked for, and PSG rejected all three."
+  ],
+  "sc-psg-ship_early": [
+   "Too early! The acceptance criterion has no evidence yet, so the gate says BLOCKED."
+  ],
+  "sc-psg-ship": [
+   "SHIPPABLE! Review stops right here, and the three findings stay as follow-up work~"
+  ],
+  "sc-contextsec-BLOCK": [
+   "BLOCK… some required controls failed or have no proof yet."
+  ],
+  "sc-contextsec-WARN": [
+   "WARN: nothing blocks the release, but some things are still unknown."
+  ],
+  "sc-contextsec-PASS": [
+   "PASS! Every blocking control is verified~"
+  ],
+  "sc-noveltyaudit-RESIDUAL_NOVELTY": [
+   "Cutoff {cutoff}: no small set of earlier papers covers it. Still something new!"
+  ],
+  "sc-noveltyaudit-PLAUSIBLE_COMPOSITION_RISK": [
+   "Cutoff {cutoff}: the pieces exist and the citation graph links them… a plausible composition risk."
+  ],
+  "sc-noveltyaudit-STRONG_COMPOSITION_RISK": [
+   "Cutoff {cutoff}: earlier text already connects them. A strong composition risk!"
+  ],
+  "sc-noveltyaudit-DIRECT_PRECEDENT": [
+   "Cutoff {cutoff}: one earlier paper already covers everything."
+  ],
+  "sc-noveltyaudit-FRAGMENTED_PRECEDENT": [
+   "Cutoff {cutoff}: the pieces are there, but nothing linked them yet."
+  ],
+  "sc-noveltyaudit-INCONCLUSIVE": [
+   "Cutoff {cutoff}: too little evidence to say. It won’t guess."
+  ],
+  "sc-lumigrid-drag": [
+   "See the difference? {l}, against {r}!"
   ]
  },
  "zh-TW": {
@@ -516,6 +627,117 @@ window.YUKI_LINES = {
   ],
   "terminalAnswer": [
    "Yuki："
+  ],
+  "returningMorning": [
+   "早安！這是你第 {visits} 次來，吃早餐了嗎？"
+  ],
+  "returningNight": [
+   "這麼晚還來呀？第 {visits} 次了……謝謝你陪我。"
+  ],
+  "lateNight": [
+   "已經很晚了，看完這一頁就去睡吧？",
+   "呼啊……連我都睏了，別熬太晚喔。"
+  ],
+  "proj-adversarial-lab": [
+   "對抗樣本實驗室：一般模型在 ε = 0.2 的 PGD 攻擊下，準確率從 98.95% 掉到 0.2%。你也來騙騙看！",
+   "對抗訓練過的模型在 ε = 0.2 還有 92.2%，比看起來堅強喔～"
+  ],
+  "proj-lumigrid": [
+   "LumiGrid 把暗照片提升到 24.57 dB PSNR，原本的課堂作法只有 16.48 dB 喔！",
+   "只有 210 萬參數，筆電顯卡就能處理 2400 萬畫素的照片。拖拖看中間的滑桿～"
+  ],
+  "proj-taiwan-exam": [
+   "Taiwan Exam 可以出學測七科的原創模擬考，還會附上分開的詳解。",
+   "考卷分享區有大家用它做的模擬考，要不要挑一份寫寫看？"
+  ],
+  "proj-kcrashlab": [
+   "KCrashLab 會重播失敗，3 次乾淨重播都一致才算數。這裡全部是模擬的，不會真的當機！",
+   "E1 實驗裡，「只收新覆蓋、依能量挑選」的組合 20 次找到 18 次失敗。按播放看看～"
+  ],
+  "proj-contextsec": [
+   "ContextSec 有 16 個風險包、116 項控制。缺少證據就是「未知」，不會偷偷變成「不適用」。",
+   "單一安全修改的變異 10 個全被抓到。選一個產品看看它的判定吧！"
+  ],
+  "proj-merriv": [
+   "Merriv 抓到一個 INT8 版本：跟 FP16 比少對 34 題、多對 6 題，直接 BLOCK。",
+   "證據不夠就不會 PASS，Merriv 會保守地擋下來。很嚴格，但很公平～"
+  ],
+  "proj-ai-repo-gardener": [
+   "AI Repo Gardener 找到全部 10 個該刪的檔案，還在用的 10 個一個都沒動。好細心的園丁！",
+   "沒有人審過的計畫它就不會刪，59 個刁鑽的變體也沒有一個騙過它。"
+  ],
+  "proj-psg": [
+   "用了 PSG 的路由，12 個任務的讀檔次數從 456 降到 47，少了 89.7%！",
+   "代理不能自己擴大寫入範圍喔。一步步點到 SHIPPABLE 看看～"
+  ],
+  "proj-noveltyaudit": [
+   "NoveltyAudit 會在搜尋前先凍結主張，這樣就不會跟著搜到的東西飄走。",
+   "這裡不打新穎度百分比，那種數字看起來精準，其實沒有意義。"
+  ],
+  "proj-research-meeting-coach": [
+   "Research Meeting Coach 把一週的筆記整理成一個請導師決定的問題。",
+   "驗證器擋下 16 種不誠實修改中的 14 種，沒擋到的 2 種也老實列出來了。"
+  ],
+  "proj-chromarecover": [
+   "ChromaRecover 找得出藏在顏色裡的形狀：192 px 點圖上 10 個數字全找到，10 個誘餌也都選擇不猜。",
+   "真的 Python 套件直接在你的瀏覽器裡跑喔。藏一個自己的數字試試看～"
+  ],
+  "papersDeadline": [
+   "{venue} 截稿倒數 {days} 天，我幫忙盯著！"
+  ],
+  "blogNewest": [
+   "最新一篇是〈{title}〉，大約 {minutes} 分鐘讀完喔。"
+  ],
+  "sc-kcrashlab-discover": [
+   "哇，出現失敗了！{raw} 次原始失敗，其實只有 {sig} 個精確簽章。"
+  ],
+  "sc-kcrashlab-minimize": [
+   "從 {from} 個操作縮到只剩 {to} 個，簽章完全沒變！"
+  ],
+  "sc-kcrashlab-replay": [
+   "{n} 次乾淨重播，{m} 次一致，確認了！"
+  ],
+  "sc-kcrashlab-evidence": [
+   "證據包驗證通過，現在誰都能檢查了～"
+  ],
+  "sc-psg-rejected": [
+   "不行喔！代理偷偷多改了三個沒人要求的地方，PSG 三個都退回了。"
+  ],
+  "sc-psg-ship_early": [
+   "太早了！驗收條件還沒有證據，所以關卡說 BLOCKED。"
+  ],
+  "sc-psg-ship": [
+   "SHIPPABLE！審查到這裡結束，三個發現留作後續工作～"
+  ],
+  "sc-contextsec-BLOCK": [
+   "BLOCK……有必要的控制沒通過，或還沒有證據。"
+  ],
+  "sc-contextsec-WARN": [
+   "WARN：沒有擋住發布的問題，但還有不確定的地方。"
+  ],
+  "sc-contextsec-PASS": [
+   "PASS！會擋發布的控制全都驗證過了～"
+  ],
+  "sc-noveltyaudit-RESIDUAL_NOVELTY": [
+   "截止日 {cutoff}：沒有三篇以內的論文能涵蓋它，還有新的部分！"
+  ],
+  "sc-noveltyaudit-PLAUSIBLE_COMPOSITION_RISK": [
+   "截止日 {cutoff}：零件都有了，引用圖也連得起來……可能有組合風險。"
+  ],
+  "sc-noveltyaudit-STRONG_COMPOSITION_RISK": [
+   "截止日 {cutoff}：之前就有文字把它們連在一起了，組合風險很高！"
+  ],
+  "sc-noveltyaudit-DIRECT_PRECEDENT": [
+   "截止日 {cutoff}：一篇更早的論文就全部涵蓋了。"
+  ],
+  "sc-noveltyaudit-FRAGMENTED_PRECEDENT": [
+   "截止日 {cutoff}：零件都在，但當時還沒有人把它們連起來。"
+  ],
+  "sc-noveltyaudit-INCONCLUSIVE": [
+   "截止日 {cutoff}：證據太少，說不準，它不會亂猜。"
+  ],
+  "sc-lumigrid-drag": [
+   "看出差別了嗎？{l}，對上 {r}！"
   ]
  },
  "zh-CN": {
@@ -775,6 +997,117 @@ window.YUKI_LINES = {
   ],
   "terminalAnswer": [
    "Yuki："
+  ],
+  "returningMorning": [
+   "早安！这是你第 {visits} 次来，吃早餐了吗？"
+  ],
+  "returningNight": [
+   "这么晚还来呀？第 {visits} 次了……谢谢你陪我。"
+  ],
+  "lateNight": [
+   "已经很晚了，看完这一页就去睡吧？",
+   "呼啊……连我都困了，别熬太晚喔。"
+  ],
+  "proj-adversarial-lab": [
+   "对抗样本实验室：一般模型在 ε = 0.2 的 PGD 攻击下，准确率从 98.95% 掉到 0.2%。你也来骗骗看！",
+   "对抗训练过的模型在 ε = 0.2 还有 92.2%，比看起来坚强喔～"
+  ],
+  "proj-lumigrid": [
+   "LumiGrid 把暗照片提升到 24.57 dB PSNR，原本的课堂作法只有 16.48 dB 喔！",
+   "只有 210 万参数，笔电显卡就能处理 2400 万像素的照片。拖拖看中间的滑杆～"
+  ],
+  "proj-taiwan-exam": [
+   "Taiwan Exam 可以出学测七科的原创仿真考，还会附上分开的详解。",
+   "考卷分享区有大家用它做的仿真考，要不要挑一份写写看？"
+  ],
+  "proj-kcrashlab": [
+   "KCrashLab 会重播失败，3 次干净重播都一致才算数。这里全部是仿真的，不会真的当机！",
+   "E1 实验里，「只收新覆盖、依能量挑选」的组合 20 次找到 18 次失败。按播放看看～"
+  ],
+  "proj-contextsec": [
+   "ContextSec 有 16 个风险包、116 项控制。缺少证据就是「未知」，不会偷偷变成「不适用」。",
+   "单一安全修改的变异 10 个全被抓到。选一个产品看看它的判定吧！"
+  ],
+  "proj-merriv": [
+   "Merriv 抓到一个 INT8 版本：跟 FP16 比少对 34 题、多对 6 题，直接 BLOCK。",
+   "证据不够就不会 PASS，Merriv 会保守地挡下来。很严格，但很公平～"
+  ],
+  "proj-ai-repo-gardener": [
+   "AI Repo Gardener 找到全部 10 个该删的文件，还在用的 10 个一个都没动。好细心的园丁！",
+   "没有人审过的计划它就不会删，59 个刁钻的变体也没有一个骗过它。"
+  ],
+  "proj-psg": [
+   "用了 PSG 的路由，12 个任务的读档次数从 456 降到 47，少了 89.7%！",
+   "代理不能自己扩大写入范围喔。一步步点到 SHIPPABLE 看看～"
+  ],
+  "proj-noveltyaudit": [
+   "NoveltyAudit 会在搜索前先冻结主张，这样就不会跟着搜到的东西飘走。",
+   "这里不打新颖度百分比，那种数字看起来精准，其实没有意义。"
+  ],
+  "proj-research-meeting-coach": [
+   "Research Meeting Coach 把一周的笔记整理成一个请导师决定的问题。",
+   "验证器挡下 16 种不诚实修改中的 14 种，没挡到的 2 种也老实列出来了。"
+  ],
+  "proj-chromarecover": [
+   "ChromaRecover 找得出藏在颜色里的形状：192 px 点图上 10 个数字全找到，10 个诱饵也都选择不猜。",
+   "真的 Python 套件直接在你的浏览器里跑喔。藏一个自己的数字试试看～"
+  ],
+  "papersDeadline": [
+   "{venue} 截稿倒数 {days} 天，我帮忙盯着！"
+  ],
+  "blogNewest": [
+   "最新一篇是〈{title}〉，大约 {minutes} 分钟读完喔。"
+  ],
+  "sc-kcrashlab-discover": [
+   "哇，出现失败了！{raw} 次原始失败，其实只有 {sig} 个精确签章。"
+  ],
+  "sc-kcrashlab-minimize": [
+   "从 {from} 个操作缩到只剩 {to} 个，签章完全没变！"
+  ],
+  "sc-kcrashlab-replay": [
+   "{n} 次干净重播，{m} 次一致，确认了！"
+  ],
+  "sc-kcrashlab-evidence": [
+   "证据包验证通过，现在谁都能检查了～"
+  ],
+  "sc-psg-rejected": [
+   "不行喔！代理偷偷多改了三个没人要求的地方，PSG 三个都退回了。"
+  ],
+  "sc-psg-ship_early": [
+   "太早了！验收条件还没有证据，所以关卡说 BLOCKED。"
+  ],
+  "sc-psg-ship": [
+   "SHIPPABLE！审查到这里结束，三个发现留作后续工作～"
+  ],
+  "sc-contextsec-BLOCK": [
+   "BLOCK……有必要的控制没通过，或还没有证据。"
+  ],
+  "sc-contextsec-WARN": [
+   "WARN：没有挡住发布的问题，但还有不确定的地方。"
+  ],
+  "sc-contextsec-PASS": [
+   "PASS！会挡发布的控制全都验证过了～"
+  ],
+  "sc-noveltyaudit-RESIDUAL_NOVELTY": [
+   "截止日 {cutoff}：没有三篇以内的论文能涵盖它，还有新的部分！"
+  ],
+  "sc-noveltyaudit-PLAUSIBLE_COMPOSITION_RISK": [
+   "截止日 {cutoff}：零件都有了，引用图也连得起来……可能有组合风险。"
+  ],
+  "sc-noveltyaudit-STRONG_COMPOSITION_RISK": [
+   "截止日 {cutoff}：之前就有文本把它们连在一起了，组合风险很高！"
+  ],
+  "sc-noveltyaudit-DIRECT_PRECEDENT": [
+   "截止日 {cutoff}：一篇更早的论文就全部涵盖了。"
+  ],
+  "sc-noveltyaudit-FRAGMENTED_PRECEDENT": [
+   "截止日 {cutoff}：零件都在，但当时还没有人把它们连起来。"
+  ],
+  "sc-noveltyaudit-INCONCLUSIVE": [
+   "截止日 {cutoff}：证据太少，说不准，它不会乱猜。"
+  ],
+  "sc-lumigrid-drag": [
+   "看出差别了吗？{l}，对上 {r}！"
   ]
  }
 };

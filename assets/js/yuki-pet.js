@@ -347,14 +347,15 @@
       if (!busy && walkTo === null && !asleep && !tucked && !dragging && grounded && !leaping && menu.hidden && motion() && !document.hidden) {
         const r = Math.random(), f = floorOf(floorKind), [a, b] = bounds(f);
         const near = pointer.t && now() - pointer.t < 8000 && pointer.y > f.y - H * 2.2;
-        const lively = S.energy > 40, lonely = S.mood < 55;
+        const late = daypart() === 'night', drowsy = S.energy < 35 || late;   // after 23:00 she is sleepy whatever her energy
+        const lively = S.energy > 40 && !late, lonely = S.mood < 55;
         if (stay) {
-          if (S.energy < 35 && r < .25) { setPose('yawn', 3, 1300); puff('zzz', 1); }
+          if (drowsy && r < .25) { setPose('yawn', 3, 1300); puff('zzz', 1); }
           else if (r < .3) lookAround();
           else if (r < .42) stretch();
-          else if (r < .5 && S.energy < 55) lieDown(14000);
+          else if (r < .5 && (S.energy < 55 || late)) lieDown(14000);
         }
-        else if (S.energy < 35 && r < .25) { setPose('yawn', 3, 1300); puff('zzz', 1); }
+        else if (drowsy && r < .25) { setPose('yawn', 3, 1300); puff('zzz', 1); }
         else if (near && r < (lonely ? .35 : .18)) beCute();
         else if (near && lively && r < .3 && Math.abs(pointer.x - x) < 360 && Math.abs(pointer.y - f.y) < H * 1.4) pounce();
         else if (near && r < .38) { walk(clamp(pointer.x, a, b), () => { dir = pointer.x > x ? 1 : -1; setPose('happy', 2, 900); puff('heart', 1); }); }
@@ -1394,17 +1395,55 @@
     window.dispatchEvent(new CustomEvent('yuki:state', {detail: {asleep, mood: key, level: level()}}));
     if (!menu.hidden) paintMenu();
   }
+  /* ---------- what Yuki knows about the page and the hour ---------- */
+  const daypart = () => document.documentElement.dataset.daypart || '';
+  function nextDeadline() {
+    const v = (window.NIANSIA_SUBMISSIONS?.venues || []).filter(x => x.deadline && Date.parse(x.deadline) > now())
+      .sort((a, b) => Date.parse(a.deadline) - Date.parse(b.deadline))[0];
+    return v && {venue: v.venue, days: Math.floor((Date.parse(v.deadline) - now()) / 864e5)};
+  }
+  // Opening a page: a real number from that project (tools/yuki_brain_data.py, proj-<id>), the next deadline, the newest post.
+  function pageLine(view, item) {
+    if (item) return line(`proj-${item.id}`) || `${item.name} · ${item.status}`;
+    const deadline = view === 'papers' && nextDeadline();
+    if (deadline) return line('papersDeadline', deadline);
+    const post = view === 'blog' && window.NIANSIA_BLOG?.posts?.[app.locale()]?.find(p => p.type !== 'qa');
+    if (post) return line('blogNewest', {title: post.title, minutes: post.minutes});
+    return t().routeReplies[view];
+  }
   window.addEventListener('niansia:navigate', event => {
     const {view, id, quiet} = event.detail;
     renderChips();
     if (id) markSeen(id);
     if (quiet || asleep || tucked || busy === 'eat') return;
     interact();
-    const item = byId(id);
-    say(item ? `${item.name} · ${item.status}` : t().routeReplies[view], {ms: 2600});
+    say(pageLine(view, byId(id)));
     dir = -1; place();
     if (motion()) { pet.classList.remove('is-hop'); void pet.offsetWidth; pet.classList.add('is-hop'); }
   });
+  // Moments inside a showcase (showcases.js): each line once per visit, never two within a few seconds.
+  const saidMoments = new Set();
+  let lastMoment = 0;
+  window.addEventListener('niansia:showcase', event => {
+    const {id, key, vars = {}, mood} = event.detail || {}, name = `sc-${id}-${key}`, seen = name + JSON.stringify(vars);
+    const text = line(name, vars);
+    if (!text || saidMoments.has(seen) || now() - lastMoment < 5000 || asleep || tucked || busy === 'eat' || !chat.hidden || !menu.hidden) return;
+    saidMoments.add(seen); lastMoment = now(); interact();
+    say(text);
+    if (mood === 'bad') { if (motion()) restart('is-hop'); puff('sweat', 1); }
+    else { setPose('happy', 2, 1100); puff('star', 2, .6); }
+  });
+  // Late at night she yawns more, plays less (schedule) and, once a visit, suggests going to bed.
+  function nightNudge(delay) {
+    let done = '1'; try { done = sessionStorage.getItem('niansia-yuki-night'); } catch {}
+    if (done || daypart() !== 'night') return;
+    setTimeout(() => {
+      if (daypart() !== 'night' || asleep || tucked || !chat.hidden || !menu.hidden) return;
+      try { sessionStorage.setItem('niansia-yuki-night', '1'); } catch {}
+      say(line('lateNight')); setPose('yawn', 3, 1500); puff('zzz', 1);
+    }, delay);
+  }
+  window.addEventListener('niansia:daypart', () => nightNudge(4000));
   window.addEventListener('niansia:theme', () => { if (!asleep) { setPose('happy', 2, 900); puff('star', 2, .5); } });
   window.addEventListener('niansia:locale', () => { if (!chat.hidden) renderChatShell(); if (!menu.hidden) renderMenu(); paintState(); });
   window.addEventListener('niansia:festival', () => { loadOutfit(outfitChoice); paintAccessory(); if (!menu.hidden) renderMenu(); const l = festivalLine(); if (l) say(l); });
@@ -1467,7 +1506,10 @@
     setTimeout(() => pet.classList.add('is-ready'), 3000); // loadOutfit shows her once the look has loaded
     blink(); schedule(); paintState();
     const fest = festival(), greetedKey = app.store.get('yuki-fest-greeted', '');
-    let greet = S.visits === 1 ? line('firstVisit') : line('returning', {visits: S.visits});
+    const part = daypart();
+    let greet = S.visits === 1 ? line('firstVisit')
+      : line(part === 'night' ? 'returningNight' : part === 'dawn' || part === 'morning' ? 'returningMorning' : 'returning', {visits: S.visits});
+    nightNudge(45000);
     if (fest && greetedKey !== fest.key + app.locale()) { greet = festivalLine(fest); app.store.set('yuki-fest-greeted', fest.key + app.locale()); }
     setTimeout(() => { if (!tucked) say(greet, {ms: 6000}); pushMessage({who: 'yuki', text: greet}); }, 1400);
   });

@@ -30,7 +30,7 @@
     badge:'M6 3h12v18H6zM9 8h6M9 12h6M9 16h3', paper:'M6 2h9l4 4v16H6zM14 2v5h5M9 11h7M9 15h7M9 19h4', bolt:'M13 2 4 14h7l-1 8 9-12h-7z',
     search:'M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zm9 16-4.2-4.2', compass:'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zm3.5 5.5-2 5-5 2 2-5z', book:'M4 5q4-2 8 0v15q-4-2-8 0zM12 5q4-2 8 0v15q-4-2-8 0z', lock:'M6 11h12v10H6zM8.5 11V8a3.5 3.5 0 0 1 7 0v3M12 15v2', clock:'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zm0 4.5V12l3 2', download:'M12 3v12m-5-5 5 5 5-5M4 20h16'
   };
-  Object.assign(icons, {instagram:'M4 8a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v8a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4zM12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zM16.8 7.2h.01',
+  Object.assign(icons, {horizon:'M3 17h18M6.5 17a5.5 5.5 0 0 1 11 0M12 6v2.5M5.6 10.2l1.7 1.7M18.4 10.2l-1.7 1.7M8 20.5h8', instagram:'M4 8a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v8a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4zM12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zM16.8 7.2h.01',
     threads:'M15.4 11.4c0 2.7-1.3 4.2-3.1 4.2-1.3 0-2.2-.8-2.2-1.9 0-1.3 1.2-2.1 3.1-2.1 3 0 4.6 1.5 4.6 3.5 0 2.4-2.1 4-4.9 4-3.8 0-6.2-2.8-6.2-7.1S9.1 4.9 12.6 4.9c2.5 0 4.1 1.2 4.8 3.3',
     discord:'M7.2 7q4.8-1.8 9.6 0 2.4 3.4 2.7 9-2 1.6-4.4 2l-1-1.7q-2.1.5-4.2 0l-1 1.7q-2.4-.4-4.4-2 .3-5.6 2.7-9zM9.6 12.6h.01M14.4 12.6h.01'});
   // The GitHub mark (Octicons mark-github, MIT), filled rather than stroked like the rest of the set.
@@ -198,9 +198,54 @@
     emit('shell', {locale});
   }
   function tickClock() {
+    paintSky();
     const el = $('.window-clock');
-    if (el) el.textContent = new Intl.DateTimeFormat(locale, {hour:'2-digit', minute:'2-digit'}).format(new Date());
+    if (el) el.innerHTML = `${icon(SKY_ICON[document.documentElement.dataset.daypart] || 'sun')}<span>${new Intl.DateTimeFormat(locale, {hour:'2-digit', minute:'2-digit'}).format(new Date())}</span>`;
   }
+  /* The sky follows the visitor's clock: <html data-daypart> tints the strip of desk around the terminal, brings out
+     stars (and now and then a shooting star) in the evening and at night, and puts a sun or moon by the clock. Yuki reads
+     it too. `sky <part>` previews another time of day for this visit. */
+  const DAYPARTS = [[5, 'dawn'], [7, 'morning'], [11, 'noon'], [14, 'afternoon'], [17, 'dusk'], [19, 'evening'], [23, 'night']];
+  const SKY_ICON = {dawn: 'horizon', morning: 'sun', noon: 'sun', afternoon: 'sun', dusk: 'horizon', evening: 'moon', night: 'moon'};
+  const daypartAt = hour => DAYPARTS.reduce((part, [from, name]) => hour >= from ? name : part, 'night');
+  const skyOverride = () => { try { return sessionStorage.getItem('niansia-sky') || ''; } catch { return ''; } };
+  let meteorTimer = 0;
+  function paintSky() {
+    const html = document.documentElement, part = skyOverride() || daypartAt(new Date().getHours());
+    if (!document.querySelector('.day-sky')) {
+      const sky = document.createElement('div');
+      sky.className = 'day-sky'; sky.setAttribute('aria-hidden', 'true');
+      sky.innerHTML = '<i class="sky-stars"></i><i class="sky-stars sky-twinkle"></i><i class="sky-moon"></i>';
+      const fest = document.querySelector('.fest-sky');   // the festival sky stays on top
+      if (fest) fest.before(sky); else document.body.prepend(sky);
+    }
+    if (html.dataset.daypart === part) return;
+    html.dataset.daypart = part;
+    clearTimeout(meteorTimer); meteor();
+    emit('daypart', {part});
+  }
+  function meteor() {
+    const part = document.documentElement.dataset.daypart;
+    if (part !== 'night' && part !== 'evening') return;
+    meteorTimer = setTimeout(() => {
+      const sky = document.querySelector('.day-sky');
+      if (sky && motion('ui') && !document.hidden) {
+        const m = document.createElement('i');
+        m.className = 'sky-meteor';
+        m.style.left = `${Math.round(20 + Math.random() * 70)}%`; m.style.top = `${Math.round(6 + Math.random() * 36)}px`;
+        sky.append(m);
+        m.animate([{opacity: 0, transform: 'translate(0,0) rotate(-20deg) scaleX(.3)'}, {opacity: 1, offset: .2},
+          {opacity: 0, transform: 'translate(-260px,95px) rotate(-20deg) scaleX(1)'}], {duration: 1300, easing: 'cubic-bezier(.3,.6,.4,1)'}).onfinish = () => m.remove();
+      }
+      meteor();
+    }, (part === 'night' ? 22000 : 50000) * (.6 + Math.random()));
+  }
+  const skyCopy = () => ({en: {names: {dawn: 'dawn', morning: 'morning', noon: 'midday', afternoon: 'afternoon', dusk: 'dusk', evening: 'evening', night: 'night'},
+      auto: 'follows your clock', fixed: 'a preview for this visit · sky auto follows your clock again'},
+    'zh-TW': {names: {dawn: '黎明', morning: '早晨', noon: '正午', afternoon: '午後', dusk: '黃昏', evening: '晚上', night: '深夜'},
+      auto: '跟著你的時鐘', fixed: '這次造訪的預覽 · 輸入 sky auto 回到跟著時鐘'},
+    'zh-CN': {names: {dawn: '黎明', morning: '早晨', noon: '正午', afternoon: '午后', dusk: '黄昏', evening: '晚上', night: '深夜'},
+      auto: '跟着你的时钟', fixed: '本次访问的预览 · 输入 sky auto 回到跟着时钟'}}[locale]);
   /* Only the home screen keeps a second, inline prompt (the tour points at it); every other screen shows the command as a
      read-only line, so the command bar at the bottom is the one place to type. Command output still lands in .command-results. */
   function commandTitle(command) {
@@ -307,7 +352,11 @@
     document.querySelector('meta[name="theme-color"]')?.setAttribute('content', tone || themeColors[theme]);
     paintFestivalChrome(fest);
     let sky = document.querySelector('.fest-sky');
-    if (fest && !sky) { sky = document.createElement('div'); sky.className = 'fest-sky'; sky.setAttribute('aria-hidden', 'true'); document.body.prepend(sky); }
+    if (fest && !sky) {
+      sky = document.createElement('div'); sky.className = 'fest-sky'; sky.setAttribute('aria-hidden', 'true');
+      const day = document.querySelector('.day-sky');     // above the time-of-day sky
+      if (day) day.after(sky); else document.body.prepend(sky);
+    }
     if (sky) sky.dataset.fest = fest ? fest.primary.id : '';
     fx()?.ambient(fest ? fest.festivals.map(f => f.particle) : []);
   }
@@ -987,6 +1036,12 @@
              ${t().interests}`);break;
       case 'shortcuts':finish(t().keys.map(([key,description])=>`${key.padEnd(14)} ${description}`).join('\n')+'\n'+t().historyHint);break;
       case 'sudo':finish(t().sudo);yuki()?.act('poke');break;
+      case 'sky': {
+        const parts=DAYPARTS.map(([,p])=>p),S=skyCopy();
+        if(lower&&lower!=='auto'&&!parts.includes(lower)){usage();break;}
+        if(lower){try{if(lower==='auto')sessionStorage.removeItem('niansia-sky');else sessionStorage.setItem('niansia-sky',lower);}catch{}tickClock();}
+        finish(`sky: ${S.names[document.documentElement.dataset.daypart]} · ${skyOverride()?S.fixed:S.auto}`);break;
+      }
       case 'festival': {
         const F=window.NIANSIA_FESTIVAL;if(!F){finish(t().unknown);break;}
         if(lower==='list'){finish(F.upcoming(new Date(),8).map(o=>`${o.start}${o.end!==o.start?' → '+o.end:''}  ${o.festival.id.padEnd(13)} ${o.festival.name[locale]}`).join('\n'));break;}

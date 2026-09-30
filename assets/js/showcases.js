@@ -6,6 +6,9 @@ window.NIANSIA_SHOWCASES = ctx => {
   'use strict';
   const {root, esc, icon, $, motion} = ctx;
   let locale = ctx.locale();
+  // Tell Yuki what just happened in a showcase (yuki-pet.js may say a line keyed sc-<id>-<key>; without her nothing happens).
+  // Only user actions and finished replays send one, never the first paint of a page.
+  const moment = (id, key, vars = {}, mood = 'good') => window.dispatchEvent(new CustomEvent('niansia:showcase', {detail: {id, key, vars, mood}}));
   /* LumiGrid project page: film card, a draggable before/after comparison on real test images, and the test table. */
   let lgData=null;
   const lgCopy=()=>({en:{film:'Watch the LumiGrid film',tryT:'Try LumiGrid in your browser',tryS:'Brighten your own dark photo. Both networks run on your device (WebGPU / WebAssembly); nothing is uploaded.',filmSub:'About 90 s, one continuous take: a real test image travels through the whole model, from pixels and encoder features to the curve grid, slicing and tiled refinement.',before:'input',after:'LumiGrid',orig:'course pipeline',vs:'compare with',table:'Held-out test split (20 pairs, official NTIRE metrics)',method:'Method',note:'Not a leaderboard result: the challenge test ground truth is not public. For orientation, the public validation leaderboard spanned 24.1 dB (median) to 26.5 dB (best) on different images.',drag:'drag to compare'},
@@ -116,6 +119,9 @@ window.NIANSIA_SHOWCASES = ctx => {
       <div class="kc-ctrl"><button type="button" class="kc-play" data-kc-play>${icon('play')}<span>${esc(c.play)}</span></button><span class="kc-src"></span></div></div>
       <h2>${esc(c.e1Title)}</h2><div class="kc-e1"></div><p class="comment-line kc-e1-note"></p></section>`;
   }
+  // What a finished replay tells Yuki: the same numbers the stage shows.
+  const KC_MOMENTS=[D=>['discover',{raw:D.g3.fails.length,sig:D.g3.signatures},'bad'],D=>['minimize',{from:D.min.original.length,to:D.min.minimized.length}],
+    D=>['replay',{m:D.replay.filter(r=>r==='MATCH').length,n:D.replay.length}],()=>['evidence',{}]];
   function kcStage(animate) {
     const box=$('.kc-show'); if(!box||!kcData) return;
     const c=kcCopy(), D=kcData, stage=box.querySelector('.kc-stage'), run=++kcState.run, label=box.querySelector('.kc-play span');
@@ -124,7 +130,7 @@ window.NIANSIA_SHOWCASES = ctx => {
     box.querySelector('.kc-src').textContent=kcFill(c.src,{c:D.source.commit.slice(0,7),e:D.source.engine});
     const go=animate&&motion();
     label.textContent=go?c.replaying:c.play;
-    const done=()=>{ if(alive()) label.textContent=go?c.again:c.play; };
+    const done=()=>{ if(!alive()) return; label.textContent=go?c.again:c.play; if(go) moment('kcrashlab',...KC_MOMENTS[kcState.tab](D)); };
     [kcDiscover,kcMinimize,kcReplay,kcEvidence][kcState.tab](stage,c,D,go,alive,done);
   }
   const kcStats=(c,keys)=>`<div class="kc-stats">${keys.map(([k,label])=>`<div><b data-k="${k}">–</b><span>${esc(label)}</span></div>`).join('')}</div>`;
@@ -351,6 +357,7 @@ window.NIANSIA_SHOWCASES = ctx => {
       <h2>${esc(c.twinsTitle)}</h2><p class="screen-intro">${esc(c.twinsLede)}</p><div class="cs-twins"></div>
       <h2>${esc(c.benchTitle)}</h2><div class="cs-bench"></div><p class="comment-line">${esc(c.benchNote)}</p></section>`;
   }
+  const csMoment=()=>{ const g=csData.products[csState.p].gate.status; moment('contextsec',g,{},g==='BLOCK'?'bad':'good'); };
   function csPaint() {
     const box=$('.cs-show'); if(!box||!csData) return;
     const c=csCopy(), D=csData, P=D.products[csState.p], stage=box.querySelector('.cs-stage');
@@ -394,11 +401,11 @@ window.NIANSIA_SHOWCASES = ctx => {
     const go=()=>{ csStatic(); csPaint(); };
     if(csData) go(); else fetch('/assets/contextsec/showcase.json?v=1').then(r=>r.json()).then(d=>{csData=d;go();}).catch(()=>{});
   }
-  root.addEventListener('click',event=>{ const b=event.target.closest('[data-cs-p]'); if(b){ csState.p=Number(b.dataset.csP); csPaint(); } });
+  root.addEventListener('click',event=>{ const b=event.target.closest('[data-cs-p]'); if(b){ csState.p=Number(b.dataset.csP); csPaint(); csMoment(); } });
   root.addEventListener('keydown',event=>{
     const b=event.target.closest?.('[data-cs-p]'); if(!b||!['ArrowLeft','ArrowRight','Home','End'].includes(event.key)||!csData) return;
     event.preventDefault(); const n=csData.products.length;
-    csState.p=event.key==='Home'?0:event.key==='End'?n-1:(csState.p+(event.key==='ArrowRight'?1:n-1))%n; csPaint(); $(`[data-cs-p="${csState.p}"]`)?.focus();
+    csState.p=event.key==='Home'?0:event.key==='End'?n-1:(csState.p+(event.key==='ArrowRight'?1:n-1))%n; csPaint(); csMoment(); $(`[data-cs-p="${csState.p}"]`)?.focus();
   });
   /* AI Repo Gardener: how it decides, then its real output on the cases of its labeled corpus and one recorded review → apply → restore
      session (assets/gardener/showcase.json, built by tools/gardener_showcase.py from a clean checkout). */
@@ -753,6 +760,7 @@ window.NIANSIA_SHOWCASES = ctx => {
       <h2>${esc(c.benchTitle)}</h2><p class="screen-intro">${esc(c.benchLede)}</p><div class="ps-bench"></div>
       <h2>${esc(c.numTitle)}</h2><div class="ps-nums"></div><p class="comment-line">${esc(c.numNote)}</p></section>`;
   }
+  const psMoment=()=>{ const k=['open','seal','rejected','allowed','verify','ship_early','review','ship'][psState.s]; moment('psg',k,{},k==='rejected'||k==='ship_early'?'bad':'good'); };
   function psPaint() {
     const box=$('.ps-show'); if(!box||!psData) return;
     const c=psCopy(), S=psData.session, i=psState.s, T=S.task, W=S.context.working_set;
@@ -815,11 +823,11 @@ window.NIANSIA_SHOWCASES = ctx => {
     const go=()=>{ psStatic(); psPaint(); };
     if(psData) go(); else fetch('/assets/psg/showcase.json?v=1').then(r=>r.json()).then(d=>{psData=d;go();}).catch(()=>{});
   }
-  root.addEventListener('click',event=>{ const b=event.target.closest('[data-ps-s]'); if(b){ psState.s=Number(b.dataset.psS); psPaint(); } });
+  root.addEventListener('click',event=>{ const b=event.target.closest('[data-ps-s]'); if(b){ psState.s=Number(b.dataset.psS); psPaint(); psMoment(); } });
   root.addEventListener('keydown',event=>{
     const b=event.target.closest?.('[data-ps-s]'); if(!b||!['ArrowLeft','ArrowRight','Home','End'].includes(event.key)||!psData) return;
     event.preventDefault(); const n=8;
-    psState.s=event.key==='Home'?0:event.key==='End'?n-1:(psState.s+(event.key==='ArrowRight'?1:n-1))%n; psPaint(); $(`[data-ps-s="${psState.s}"]`)?.focus();
+    psState.s=event.key==='Home'?0:event.key==='End'?n-1:(psState.s+(event.key==='ArrowRight'?1:n-1))%n; psPaint(); psMoment(); $(`[data-ps-s="${psState.s}"]`)?.focus();
   });
   /* NoveltyAudit: how an audit is built, then its own offline code on the synthetic report committed with its tests (the
      cutoff moved through time, the validator given dishonest copies) and a public claim decomposed
@@ -951,6 +959,7 @@ window.NIANSIA_SHOWCASES = ctx => {
       <h2>${esc(c.ragTitle)}</h2><p class="screen-intro">${esc(c.ragLede)}</p><div class="na-rag"></div>
       <h2>${esc(c.numTitle)}</h2><div class="na-nums"></div><p class="comment-line na-numnote"></p></section>`;
   }
+  const naMoment=()=>{ const X=naData.sweep[naState.k<0?naData.sweep.length-1:naState.k]; moment('noveltyaudit',X.classification,{cutoff:X.cutoff},/RISK|PRECEDENT/.test(X.classification)?'bad':'good'); };
   function naPaint() {
     const box=$('.na-show'); if(!box||!naData) return;
     const c=naCopy(), L=NA_CLS[locale]||NA_CLS.en, D=naData, F=D.fixture, k=naState.k<0?D.sweep.length-1:naState.k, X=D.sweep[k];
@@ -1001,11 +1010,11 @@ window.NIANSIA_SHOWCASES = ctx => {
     const go=()=>{ naStatic(); naPaint(); };
     if(naData) go(); else fetch('/assets/noveltyaudit/showcase.json?v=1').then(r=>r.json()).then(d=>{naData=d;go();}).catch(()=>{});
   }
-  root.addEventListener('click',event=>{ const b=event.target.closest('[data-na-k]'); if(b){ naState.k=Number(b.dataset.naK); naPaint(); } });
+  root.addEventListener('click',event=>{ const b=event.target.closest('[data-na-k]'); if(b){ naState.k=Number(b.dataset.naK); naPaint(); naMoment(); } });
   root.addEventListener('keydown',event=>{
     const b=event.target.closest?.('[data-na-k]'); if(!b||!['ArrowLeft','ArrowRight','Home','End'].includes(event.key)||!naData) return;
     event.preventDefault(); const n=naData.sweep.length, cur=naState.k<0?n-1:naState.k;
-    naState.k=event.key==='Home'?0:event.key==='End'?n-1:(cur+(event.key==='ArrowRight'?1:n-1))%n; naPaint(); $(`[data-na-k="${naState.k}"]`)?.focus();
+    naState.k=event.key==='Home'?0:event.key==='End'?n-1:(cur+(event.key==='ArrowRight'?1:n-1))%n; naPaint(); naMoment(); $(`[data-na-k="${naState.k}"]`)?.focus();
   });
   /* Research Meeting Coach: how it turns a week of notes into one advisor decision, then its deterministic gates run on the
      repository's synthetic worked example and on dishonest edits of it (assets/rmc/showcase.json, built by
@@ -1528,7 +1537,7 @@ window.NIANSIA_SHOWCASES = ctx => {
       <p class="comment-line">${esc(mvFill(c.src,{c:S.source.commit.slice(0,7),rt:S.source.runtime,d:S.source.run}))}</p>`;
   }
   function initMerriv() { if(!$('.mv-show')) return; if(mvData) mvResults(); else fetch('/assets/merriv/summary.json?v=1').then(r=>r.json()).then(d=>{mvData=d;mvResults();}).catch(()=>{}); }
-  root.addEventListener('input',event=>{ if(event.target.matches('.lg-range')){ const cmp=event.target.closest('.lg-compare'); cmp.dataset.touched='1'; cmp.style.setProperty('--x',`${event.target.value}%`); } });
+  root.addEventListener('input',event=>{ if(event.target.matches('.lg-range')){ const cmp=event.target.closest('.lg-compare'); if(!cmp.dataset.touched) moment('lumigrid','drag',{l:cmp.querySelector('.lg-l').textContent,r:cmp.querySelector('.lg-r').textContent}); cmp.dataset.touched='1'; cmp.style.setProperty('--x',`${event.target.value}%`); } });
   root.addEventListener('click',event=>{ const t=event.target.closest('[data-lg-i]'), v=event.target.closest('[data-lg-vs]'); if(t){lgState.i=Number(t.dataset.lgI);paintLumigrid();} if(v){lgState.vs=v.dataset.lgVs;paintLumigrid();} });
   const SHOWCASES = {
     'lumigrid': [lumigridShowcase, initLumigrid],

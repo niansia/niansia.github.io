@@ -215,6 +215,7 @@ kbd{background:var(--surface);border:1px solid var(--line);box-shadow:0 1px 0 va
 .window-title{white-space:nowrap;}.muted{color:var(--muted);}
 .window-note{margin-left:auto;color:var(--muted);font-size:11px;display:flex;align-items:center;gap:8px;white-space:nowrap;}.window-note .icon{width:14px;}
 .window-clock{padding:2px 8px;border-radius:99px;background:var(--wash);color:var(--accent);margin-right:6px;}
+.window-clock{display:inline-flex;align-items:center;gap:4px;}.window-clock .icon,.window-note .window-clock .icon{display:block;width:11px;height:11px;flex:none;}
 :root[data-max='on'] .desktop{padding:0;max-width:none;}
 :root[data-max='on'] .desktop-bar{height:0;min-height:0;opacity:0;overflow:hidden;pointer-events:none;}
 :root[data-max='on'] .desktop-footer{display:none;}
@@ -1023,6 +1024,34 @@ button.brain-badge:disabled{cursor:default;transform:none;border-color:var(--lin
 .fest-sky[data-fest='midautumn']{background:radial-gradient(circle at 88% 12%,#fff4c9 0 46px,#ffe7a355 70px,transparent 240px);}
 .fest-sky[data-fest='christmas']{background:radial-gradient(900px 400px at 50% -10%,#ffffff55,transparent 70%);}
 .fest-sky[data-fest='lunarnewyear'],.fest-sky[data-fest='lantern']{background:radial-gradient(700px 360px at 90% 0%,#ff6b6b22,transparent 70%);}
+/* ============ Sky: the desk's light follows the visitor's clock (<html data-daypart>, set by paintSky in lab-terminal.js).
+   A light wash over each style's own decoration (body:before; several are opaque) and under the festival sky and the
+   terminal, so it colours the desk around the terminal: mostly the strip above it. ============ */
+.day-sky{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden;--star:color-mix(in srgb,var(--accent) 50%,#fff);}
+.day-sky:before{content:'';position:absolute;inset:0;opacity:0;transition:opacity 2s var(--ease);}
+:root[data-daypart='dawn'] .day-sky:before{opacity:1;background:radial-gradient(1100px 230px at 16% -50px,#ffb89690,transparent 70%),radial-gradient(900px 210px at 84% -60px,#ffcfe690,transparent 70%);}
+:root[data-daypart='morning'] .day-sky:before{opacity:1;background:radial-gradient(1000px 220px at 82% -70px,#fff0b87a,transparent 70%);}
+:root[data-daypart='afternoon'] .day-sky:before{opacity:1;background:radial-gradient(1000px 260px at 100% -40px,#ffdca06e,transparent 70%);}
+:root[data-daypart='dusk'] .day-sky:before{opacity:1;background:linear-gradient(180deg,#b98cff3d,#ff9e7a33 70px,transparent 150px),radial-gradient(1400px 260px at 50% calc(100% + 110px),#ff9a6a70,transparent 70%);}
+:root[data-daypart='evening'] .day-sky:before{opacity:1;background:linear-gradient(180deg,#6f76d83d,#a893f026 55px,transparent 140px);}
+:root[data-daypart='night'] .day-sky:before{opacity:1;background:linear-gradient(180deg,#4b4fbf52,#7d6fd82e 60px,transparent 150px);}
+/* dark styles: a deeper night over the whole desk, and daylight kept faint (warm light on a dark desk reads as dust) */
+:root:is([data-theme='dark'],[data-theme='retro'],[data-theme='yozakura'],[data-theme='glass-night'])[data-daypart='night'] .day-sky:before{background:linear-gradient(180deg,#26307a59,transparent 190px),#1e245a24;}
+:root:is([data-theme='dark'],[data-theme='retro'],[data-theme='yozakura'],[data-theme='glass-night']):is([data-daypart='morning'],[data-daypart='afternoon']) .day-sky:before{opacity:.45;}
+.sky-moon{position:absolute;left:calc(50% - 60px);top:18px;width:20px;height:20px;border-radius:50%;box-shadow:inset 6px -3px 0 0 #fdf1c4;filter:drop-shadow(0 0 7px #fff1b8b0);opacity:0;transition:opacity 2s var(--ease);}
+:root:is([data-daypart='evening'],[data-daypart='night']) .sky-moon{opacity:.95;}
+@media(max-width:1199px){.sky-moon{display:none;}}
+.sky-stars{position:absolute;left:0;right:0;top:0;height:190px;opacity:0;transition:opacity 2s var(--ease);
+  background:radial-gradient(circle,var(--star) 1px,transparent 1.7px) 13px 9px/97px 53px,radial-gradient(circle,var(--star) .8px,transparent 1.4px) 61px 27px/71px 61px,
+    radial-gradient(circle,var(--star) 1.2px,transparent 1.9px) 35px 41px/139px 67px;
+  -webkit-mask-image:linear-gradient(#000 0 13px,#0002 20px 46px,#000 54px,transparent 190px);mask-image:linear-gradient(#000 0 13px,#0002 20px 46px,#000 54px,transparent 190px);}   /* faint behind the header's text line */
+.sky-twinkle{background:radial-gradient(circle,var(--star) 1.4px,transparent 2.1px) 44px 18px/173px 59px,radial-gradient(circle,var(--star) 1px,transparent 1.6px) 101px 47px/113px 71px;}
+:root[data-daypart='evening'] .sky-stars{opacity:.45;--twinkle:.5;}
+:root[data-daypart='night'] .sky-stars{opacity:.9;}
+:root[data-fx-ui='on']:is([data-daypart='evening'],[data-daypart='night']) .sky-twinkle{animation:sky-twinkle 4.6s ease-in-out infinite alternate;}
+@keyframes sky-twinkle{from{opacity:.1;}to{opacity:var(--twinkle,.95);}}
+.sky-meteor{position:absolute;width:90px;height:1.5px;border-radius:2px;background:linear-gradient(90deg,var(--star),transparent);filter:drop-shadow(0 0 3px var(--star));opacity:0;}
+:root:is([data-theme='dark'],[data-theme='retro'],[data-theme='yozakura'],[data-theme='glass-night']) .day-sky,:root:is([data-daypart='evening'],[data-daypart='night']) .day-sky{--star:#fff;}
 @keyframes motif-float{0%,100%{transform:translateY(0) rotate(-3deg);}50%{transform:translateY(-6px) rotate(3deg);}}
 .fx-confetti{width:7px;height:10px;border-radius:2px;}
 .fx-snowdot{width:7px;height:7px;border-radius:50%;box-shadow:0 0 6px #fff;}

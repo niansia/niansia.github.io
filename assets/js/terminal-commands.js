@@ -64,6 +64,7 @@ window.NIANSIA_TERMINAL = {
     ['neofetch','neofetch','neofetch','Show a small terminal identity card','顯示終端資訊名片','显示终端信息名片'],
     ['shortcuts','shortcuts','shortcuts','Show keyboard shortcuts','查看鍵盤快捷鍵','查看键盘快捷键'],
     ['festival','festival [list|auto|off|<id>]','festival list','Holiday themes: see the calendar or preview one','節日主題：查看行事曆或預覽','节日主题：查看日历或预览'],
+    ['sky','sky [auto|dawn|morning|noon|afternoon|dusk|evening|night]','sky night','The sky follows your clock; preview another time of day','天空跟著你的時鐘變化；也能預覽其他時段','天空跟着你的时钟变化；也能预览其他时段'],
     ['outfit','outfit [list|<id>]','outfit list','Change Yuki’s outfit','幫 Yuki 換衣服','帮 Yuki 换衣服'],
     ['accessory','accessory [list|auto|none|<id>]','accessory bunnyears','Give Yuki an accessory','幫 Yuki 戴配件','帮 Yuki 戴配件'],
     ['sudo','sudo <command>','sudo pet','Try to become root (good luck)','嘗試取得 root 權限（祝好運）','尝试获取 root 权限（祝好运）']
