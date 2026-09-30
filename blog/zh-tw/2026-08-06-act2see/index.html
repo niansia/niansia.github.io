@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Act2See：模型學會回頭看影片，那沒有 8 張 A100 的人呢？ · Niansia</title>
+<meta name="description" content="Act2See 讓影片模型想到一半時，自己回影片裡找畫面、或畫出假設的畫面，五個基準都贏過原模型。但它用 8 張 A100 訓練，我讀完一直在想：同樣的想法，放到一張家用顯卡上要怎麼做？">
+<link rel="canonical" href="https://niansia.com/blog/zh-tw/2026-08-06-act2see/">
+<link rel="alternate" hreflang="en" href="https://niansia.com/blog/en/2026-08-06-act2see/"><link rel="alternate" hreflang="zh-Hant-TW" href="https://niansia.com/blog/zh-tw/2026-08-06-act2see/"><link rel="alternate" hreflang="zh-Hans-CN" href="https://niansia.com/blog/zh-cn/2026-08-06-act2see/"><link rel="alternate" hreflang="x-default" href="https://niansia.com/blog/en/2026-08-06-act2see/">
+<meta property="og:type" content="article"><meta property="og:site_name" content="Niansia">
+<meta property="og:title" content="Act2See：模型學會回頭看影片，那沒有 8 張 A100 的人呢？ · Niansia"><meta property="og:description" content="Act2See 讓影片模型想到一半時，自己回影片裡找畫面、或畫出假設的畫面，五個基準都贏過原模型。但它用 8 張 A100 訓練，我讀完一直在想：同樣的想法，放到一張家用顯卡上要怎麼做？">
+<meta property="og:url" content="https://niansia.com/blog/zh-tw/2026-08-06-act2see/"><meta property="og:image" content="https://niansia.com/assets/og/blog-2026-08-06-act2see-zh-tw.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta property="og:locale" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://niansia.com/assets/og/blog-2026-08-06-act2see-zh-tw.jpg">
+
+<meta name="theme-color" content="#fbf6ee" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#15142a" media="(prefers-color-scheme: dark)">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://*.firebasedatabase.app; connect-src 'self' https://*.firebasedatabase.app wss://*.firebasedatabase.app; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; frame-src https://*.firebasedatabase.app; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml">
+<script src="/assets/js/page-transition.js?v=3"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&display=swap">
+<style>
+:root{--bg:#fbf6ee;--paper:#fffdf9;--ink:#2a2230;--muted:#766b73;--line:#2a22301a;--accent:#c0673a;--accent2:#8f6bb3;--code:#f3ece2;}
+@media(prefers-color-scheme:dark){:root{--bg:#15142a;--paper:#1c1a36;--ink:#f1ebe2;--muted:#aaa3bd;--line:#ffffff1a;--accent:#f0a878;--accent2:#b69ae6;--code:#26234a;}}
+*{box-sizing:border-box;}html{-webkit-text-size-adjust:100%;}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.85 Inter,'Noto Sans TC','Noto Sans SC',system-ui,sans-serif;}
+a{color:var(--accent);text-underline-offset:3px;}
+.top{max-width:1080px;margin:0 auto;padding:18px 20px;display:flex;align-items:center;gap:10px;font:500 13px 'JetBrains Mono',monospace;color:var(--muted);}
+.top a{color:var(--muted);text-decoration:none;}.top a:hover{color:var(--accent);}
+.top b{color:var(--ink);font-weight:500;}.top .sp{flex:1;}
+.langs a{padding:4px 9px;border-radius:99px;border:1px solid var(--line);margin-left:4px;}.langs a[aria-current]{color:var(--ink);border-color:var(--accent);}
+main{max-width:760px;margin:0 auto;padding:10px 20px 70px;}
+.kicker{font:500 12px 'JetBrains Mono',monospace;color:var(--accent);letter-spacing:.06em;text-transform:uppercase;margin:24px 0 8px;}
+h1{font-size:clamp(28px,4.4vw,42px);line-height:1.2;letter-spacing:-.02em;margin:0 0 14px;}
+.lede{font-size:18px;color:var(--muted);margin:0 0 16px;line-height:1.7;}
+.meta{display:flex;flex-wrap:wrap;gap:8px 14px;font:500 12.5px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;color:var(--muted);padding-bottom:22px;border-bottom:1px solid var(--line);margin-bottom:10px;}
+.meta span.tag{padding:2px 9px;border-radius:99px;background:var(--code);}
+article h2{font-size:23px;margin:40px 0 10px;letter-spacing:-.01em;}
+article h3{font-size:18px;margin:28px 0 8px;}
+article p,article li{color:var(--ink);}
+article code{font:14px 'JetBrains Mono',monospace;background:var(--code);padding:1px 6px;border-radius:6px;}
+article table{width:100%;border-collapse:collapse;margin:18px 0;font-size:14.5px;display:block;overflow-x:auto;}
+article th,article td{padding:8px 12px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap;}
+article th{font-weight:600;color:var(--muted);font-size:13px;}
+article td:not(:first-child),article th:not(:first-child){text-align:right;}
+article td[style*="left"],article th[style*="left"]{white-space:normal;min-width:6.5em;}   /* text tables (|:---|) wrap instead of scrolling */
+article strong{color:var(--ink);}
+article blockquote{margin:18px 0;padding:4px 18px;border-left:3px solid var(--accent);color:var(--muted);}
+.card{display:block;padding:18px 20px;margin:12px 0;border-radius:16px;background:var(--paper);border:1px solid var(--line);text-decoration:none;color:var(--ink);transition:transform .25s,border-color .25s;}
+.card:hover{transform:translateY(-2px);border-color:var(--accent);}
+.card b{display:block;font-size:18px;line-height:1.4;margin-bottom:4px;}.card small{display:block;color:var(--muted);font-size:14px;line-height:1.6;}
+.card i{display:block;font:normal 500 12px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;color:var(--accent);margin-top:8px;}
+.hero{width:100%;height:auto;border-radius:16px;border:1px solid var(--line);display:block;margin:6px 0 18px;}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px;}.chips span{font:500 12px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;padding:4px 11px;border-radius:99px;background:var(--code);}
+.btns{display:flex;flex-wrap:wrap;gap:10px;margin:22px 0;}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:12px;border:1px solid var(--line);background:var(--paper);color:var(--ink);text-decoration:none;font-weight:600;font-size:14px;}
+.btn.primary{background:var(--accent);border-color:transparent;color:var(--paper);}
+.btn:hover{border-color:var(--accent);}
+.note{font-size:13.5px;color:var(--muted);}
+.live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#34c38f;box-shadow:0 0 0 3px #34c38f33;vertical-align:1px;}footer b{color:var(--ink);font-weight:600;}
+figure.fig{margin:24px 0;}figure.fig a{display:block;border-radius:14px;overflow:hidden;border:1px solid var(--line);cursor:zoom-in;background:var(--code);}
+figure.fig img{display:block;width:100%;height:auto;transition:transform .4s;}figure.fig a:hover img{transform:scale(1.015);}
+figure.fig figcaption{margin-top:8px;font-size:13.5px;color:var(--muted);line-height:1.6;}
+.lb{position:fixed;inset:0;z-index:50;display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px;background:#0d0b16ee;}
+.lb.on{display:flex;}.lb img{max-width:100%;max-height:84vh;border-radius:10px;box-shadow:0 30px 80px #000a;}
+.lb p{margin:0;color:#e9e4f2;font-size:14px;text-align:center;max-width:760px;}
+.lb-x{position:absolute;top:14px;right:18px;width:40px;height:40px;border-radius:50%;border:1px solid #ffffff44;background:transparent;color:#fff;font-size:24px;cursor:pointer;}
+.log-entry{position:relative;padding:0 0 34px 26px;border-left:2px solid var(--line);}
+.log-entry:before{content:'';position:absolute;left:-7px;top:8px;width:12px;height:12px;border-radius:50%;background:var(--bg);border:2px solid var(--accent);}
+.log-entry time{font:500 12.5px 'JetBrains Mono',monospace;color:var(--accent);}
+.log-entry h2{margin:4px 0 6px!important;font-size:21px!important;}
+.log-entry h2 a{color:var(--ink);text-decoration:none;}
+.statement-link{display:flex;justify-content:space-between;align-items:center;}
+.top a.me{display:inline-flex;align-items:center;gap:8px;padding:3px 12px 3px 3px;border:1px solid var(--line);border-radius:99px;transition:border-color .2s;}.top a.me:hover{border-color:var(--accent);}.top a.me img{width:24px;height:24px;border-radius:50%;display:block;}
+.author{max-width:720px;margin:44px auto 0;padding:18px 20px;display:flex;align-items:center;gap:16px;border-radius:18px;background:var(--code);border:1px solid var(--line);}
+.author{box-sizing:border-box;}.author>*{flex:none;}
+.author .an-face img{display:block;width:56px;height:56px;border-radius:50%;border:2px solid var(--accent);}
+.author .an-text{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px;}
+.author .an-text b{font-size:15px;}.author .an-text small{font-size:13px;line-height:1.6;color:var(--muted);}
+.author .an-note{color:var(--ink)!important;}
+.author .an-go{margin:0;white-space:nowrap;}
+@media (max-width:760px){.author{margin:40px 16px 0;}}@media (max-width:600px){.author{flex-wrap:wrap;padding:16px;}.author .an-text{flex-basis:calc(100% - 72px);}.author .an-go{flex:1 1 100%;justify-content:center;text-align:center;}}
+footer{max-width:760px;margin:0 auto;padding:26px 20px 50px;border-top:1px solid var(--line);font-size:14px;color:var(--muted);}
+
+.paper-box{margin:0 0 26px;padding:18px 20px;border-radius:16px;background:var(--paper);border:1px solid var(--line);border-left:4px solid var(--accent2);}
+.paper-box .pv{font:600 12px 'JetBrains Mono',monospace;color:var(--accent2);letter-spacing:.04em;margin:0 0 6px;}
+.paper-box b{display:block;font-size:17px;line-height:1.45;}
+.paper-box .pa{margin:6px 0 0;font-size:13.5px;color:var(--muted);line-height:1.6;}
+.paper-box .pl{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+.paper-box .pl a{font:600 12.5px 'JetBrains Mono',monospace;padding:5px 12px;border-radius:99px;border:1px solid var(--line);text-decoration:none;}
+.paper-box .pl a:hover{border-color:var(--accent);}
+.type{display:inline-block;padding:2px 9px;border-radius:99px;background:var(--accent);color:#fff;font:600 11.5px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;}
+.type.paper{background:var(--accent2);}.type.qa{background:#3f9f86;}.type.post{background:var(--muted);}
+.card .type{margin-bottom:8px;}.card .zh{margin-left:8px;font:500 11.5px 'JetBrains Mono',monospace;color:var(--muted);}
+.now-card{border-left:4px solid var(--accent);}
+.qa{padding:20px 0;border-bottom:1px solid var(--line);}
+.qa .qq{display:flex;gap:12px;font-weight:700;font-size:17px;line-height:1.55;margin:0 0 8px;}
+.qa .qq span,.qa .qa-a>span{flex:none;display:grid;place-items:center;width:28px;height:28px;border-radius:9px;background:var(--code);color:var(--accent);font-size:13px;}
+.qa .qa-a{display:flex;gap:12px;}.qa .qa-a>span{background:var(--accent);color:#fff;}.qa .qa-a article>:first-child{margin-top:0;}
+.qa time{display:block;margin:6px 0 0 40px;font:500 12px 'JetBrains Mono',monospace;color:var(--muted);}
+.ask{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:18px 0 8px;padding:16px 18px;border-radius:16px;background:var(--code);}
+.ask b{display:block;font-size:15.5px;}.ask small{display:block;color:var(--muted);font-size:13px;}
+.ask .btn{flex:none;margin:0;}.ask .btn[aria-disabled]{opacity:.55;pointer-events:none;}
+</style>
+<link rel="alternate" type="application/rss+xml" title="Niansia · Blog" href="/blog/zh-tw/feed.xml"><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BlogPosting", "headline": "Act2See：模型學會回頭看影片，那沒有 8 張 A100 的人呢？", "description": "Act2See 讓影片模型想到一半時，自己回影片裡找畫面、或畫出假設的畫面，五個基準都贏過原模型。但它用 8 張 A100 訓練，我讀完一直在想：同樣的想法，放到一張家用顯卡上要怎麼做？", "datePublished": "2026-08-06", "dateModified": "2026-08-06", "inLanguage": "zh-Hant", "author": {"@type": "Person", "name": "Niansia", "url": "https://niansia.com/", "email": "mailto:niansia930202@gmail.com", "sameAs": ["https://github.com/niansia"]}, "mainEntityOfPage": "https://niansia.com/blog/zh-tw/2026-08-06-act2see/", "keywords": "影片理解, 視覺語言模型, 思考鏈, 輕量化", "citation": {"@type": "ScholarlyArticle", "name": "Act2See: Emergent Active Visual Perception for Video Reasoning", "url": "https://arxiv.org/abs/2605.01657"}}</script>
+<script defer src="/assets/js/site-stats.js?v=2"></script>
+<script defer src="/assets/js/lightbox.js"></script>
+
+</head>
+<body>
+<header class="top"><a class="me" href="/zh-tw/" title="回到 Niansia 的個人網站" data-nz-title="Niansia"><img src="/assets/icons/author.webp" alt="" width="24" height="24"><b>~/niansia</b></a> / <a href="/blog/zh-tw/">blog</a><span class="sp"></span><span class="langs"><a href="/blog/en/2026-08-06-act2see/" hreflang="en">EN</a><a href="/blog/zh-tw/2026-08-06-act2see/" aria-current="page" hreflang="zh-Hant">繁</a><a href="/blog/zh-cn/2026-08-06-act2see/" hreflang="zh-Hans">简</a></span></header>
+<main><p class="kicker">論文筆記</p><h1>Act2See：模型學會回頭看影片，那沒有 8 張 A100 的人呢？</h1><p class="lede">Act2See 讓影片模型想到一半時，自己回影片裡找畫面、或畫出假設的畫面，五個基準都贏過原模型。但它用 8 張 A100 訓練，我讀完一直在想：同樣的想法，放到一張家用顯卡上要怎麼做？</p><div class="meta"><time datetime="2026-08-06">2026-08-06</time><span>6 分鐘閱讀</span><span class="tag">影片理解</span><span class="tag">視覺語言模型</span><span class="tag">思考鏈</span><span class="tag">輕量化</span></div><aside class="paper-box"><p class="pv">arXiv 2026 · 精讀</p><b lang="en">Act2See: Emergent Active Visual Perception for Video Reasoning</b><p class="pa" lang="en">Martin Q. Ma, Yuxiao Qu, Aditya Agrawal, Willis Guo, Paul Pu Liang, Ruslan Salakhutdinov, Louis-Philippe Morency</p><div class="pl"><a href="https://arxiv.org/abs/2605.01657" target="_blank" rel="noopener noreferrer">論文 ↗</a><a href="https://github.com/martinmamql/act2see" target="_blank" rel="noopener noreferrer">程式碼 ↗</a></div></aside><article><h2>為什麼讀這篇</h2>
+<p>人看影片時，漏掉關鍵的一幕會倒帶回去看；題目如果問「當時要是那樣做會怎樣」，也會在腦中想像那個畫面。現在的影片模型不是這樣：它一開始照固定頻率抽幾幀進來，之後整段思考鏈都是文字，剛好沒抽到關鍵那一幀，就只能用猜的。</p>
+<p>Act2See 的名字很直白，Act to See，先動作才看得見，它想讓模型推理到一半時，自己決定要「回去找某個畫面」還是「生成一個假設的畫面」。這個方向我一直覺得是對的，所以決定仔細讀。</p>
+<h2>這篇在做什麼</h2>
+<p>核心是在思考鏈裡加兩種工具呼叫：</p>
+<ul>
+<li><strong><code>&lt;retrieve&gt;</code>（檢索）</strong>：模型寫下想找什麼，系統用 TFVTG（一個不需要訓練的時間定位方法，底層用 BLIP-2）在影片裡找到對應片段，取中間那一幀插回思考鏈。檢索是在 3 fps 的影片上找，比模型一開始拿到的 1 fps 更密，所以真的有機會找回「沒抽到的那一幀」。</li>
+<li><strong><code>&lt;generate&gt;</code>（生成）</strong>：遇到「如果……會怎樣」這類反事實問題，先檢索一張相關的幀，再用 Stable Diffusion 3.5 Large 做圖生圖，把假設的畫面畫出來。</li>
+</ul>
+<p>麻煩的是，沒有現成的資料教模型「什麼時候該呼叫工具」。他們讓 Gemini 2.5 Pro 在三個有人工標註思考鏈的資料集（MINERVA、CausalVQA、Social Genome）上，產生夾著工具呼叫的思考鏈，再層層過濾：</p>
+<ol>
+<li>答錯的重新產生，最多重試兩次；</li>
+<li>和人工標註的思考鏈算 BGE-M3 相似度，高於 80% 才留下；</li>
+<li>檢查格式，最後人工抽查 100 筆，全部通過。</li>
+</ol>
+<p>最後得到 3,373 筆資料，其中 1,608 筆（約 47.7%）含有檢索或生成的畫面（檢索 1,026 筆、生成 582 筆）。</p>
+<p>有個細節我覺得很聰明：人工標註的思考鏈<strong>不直接給</strong> Gemini 看，只拿來過濾。因為一給答案，Gemini 就不太呼叫工具了（後面的消融會看到）。</p>
+<p>訓練本身很樸素：在 Qwen3-VL-8B-Thinking 上做 LoRA 微調，learning rate 2.5×10⁻⁶、batch size 1、只跑一個 epoch，用的是 <strong>8 張 A100</strong>。推論時沿用同一套 TFVTG 和 SD3.5 Large。模型學完以後，會自己在思考鏈裡寫出 <code>&lt;retrieve&gt;</code>、<code>&lt;generate&gt;</code>，這就是標題裡的「湧現」。</p>
+<h2>結果</h2>
+<p>和原模型比（原模型的數字大多是作者自己重測的）：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">基準</th>
+<th style="text-align: left;">原模型 Qwen3-VL-8B-Thinking</th>
+<th style="text-align: left;">Act2See</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Video-MME</td>
+<td style="text-align: left;">71.8</td>
+<td style="text-align: left;">74.2</td>
+</tr>
+<tr>
+<td style="text-align: left;">VideoEspresso</td>
+<td style="text-align: left;">41.5</td>
+<td style="text-align: left;">46.8</td>
+</tr>
+<tr>
+<td style="text-align: left;">EgoNormia</td>
+<td style="text-align: left;">48.9</td>
+<td style="text-align: left;">51.3</td>
+</tr>
+<tr>
+<td style="text-align: left;">VCR-Bench</td>
+<td style="text-align: left;">38.2</td>
+<td style="text-align: left;">47.1</td>
+</tr>
+<tr>
+<td style="text-align: left;">ViTIB</td>
+<td style="text-align: left;">60.2</td>
+<td style="text-align: left;">63.3</td>
+</tr>
+</tbody>
+</table>
+<p>五個都有進步，VCR-Bench 最明顯（+8.9）。和同尺寸的開源模型比也大多領先；不過離 Gemini 2.5 Pro 還很遠（Video-MME 84.3），同期的 Chain-of-Frames 在 Video-MME 上也比它高（75.3）。</p>
+<h2>消融裡我最在意的三件事</h2>
+<p><strong>第一，資料的來源比數量重要。</strong> 同樣 1,000 筆，拿 VLM 自己產生的思考鏈當來源（VideoEspresso、Video-R1 的訓練集），Video-MME 只有 68.6，比完全沒微調的原模型（71.8）還差；換成人工標註的來源是 73.7。</p>
+<p><strong>第二，給答案反而變差。</strong> 把人工思考鏈放進 prompt 以後，含畫面的思考鏈比例從 45.21% 掉到 5.26%，Video-MME 也從 73.7 掉到 72.2。有了答案就懶得再去看，這點其實跟人蠻像的。</p>
+<p><strong>第三，檢索和生成的分工很清楚。</strong> 1,000 筆的小實驗裡，只有文字 71.9、只有檢索 72.8、只有生成 72.4、兩個都用 73.7。附錄把 VCR-Bench 拆成反事實題（用 GPT-5.2 分出 107 題）和事實題，看得更清楚：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">思考鏈裡用了什麼</th>
+<th style="text-align: left;">反事實題</th>
+<th style="text-align: left;">事實題</th>
+<th style="text-align: left;">全部</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">都不用</td>
+<td style="text-align: left;">35.52</td>
+<td style="text-align: left;">38.51</td>
+<td style="text-align: left;">38.20</td>
+</tr>
+<tr>
+<td style="text-align: left;">只有檢索</td>
+<td style="text-align: left;">43.41</td>
+<td style="text-align: left;">45.80</td>
+<td style="text-align: left;">45.55</td>
+</tr>
+<tr>
+<td style="text-align: left;">只有生成</td>
+<td style="text-align: left;">56.01</td>
+<td style="text-align: left;">37.70</td>
+<td style="text-align: left;">39.60</td>
+</tr>
+<tr>
+<td style="text-align: left;">檢索 + 生成</td>
+<td style="text-align: left;">56.22</td>
+<td style="text-align: left;">46.05</td>
+<td style="text-align: left;">47.10</td>
+</tr>
+</tbody>
+</table>
+<p>事實題的進步幾乎都來自檢索；生成在反事實題上很強（35.52 → 56.01），但在事實題上反而比什麼都不用還低一點（37.70 對 38.51）。附錄也統計了 VCR-Bench 上的 127 次生成，其中 13 次（10.2%）畫錯，最常見的是語意錯誤（7 次）。</p>
+<h2>最大的反思：8 張 A100</h2>
+<p>讀到訓練細節那一行時我停了很久。LoRA、batch size 1、一個 epoch、三千多筆資料，每個設定都很「省」，最後卻寫著 8 張 A100，我手邊只有一台 8 GB 顯卡的筆電。如果這種方法只有實驗室的叢集跑得動，對我來說它就只是一篇「知道了」的論文。所以我開始想：如果不用這麼大規模的 GPU，只靠一張家用顯卡，能做到什麼程度？</p>
+<h3>先想清楚：資源到底花在哪裡</h3>
+<p>把整個流程拆開來看，真正需要大 GPU 的地方比我想像中少：</p>
+<ul>
+<li><strong>產生資料</strong>：思考鏈是 Gemini 2.5 Pro 產的，花的是 API 費用，不是本地的顯卡。</li>
+<li><strong>檢索和生成的畫面</strong>：訓練資料裡的檢索幀、生成圖，在建資料集時就決定好了。訓練階段只是讀圖片，不需要同時跑 TFVTG 和 SD3.5。</li>
+<li><strong>微調本身</strong>：這才是吃顯卡的地方，但它吃的主要是<strong>記憶體</strong>，不是運算次數。batch size 1 跑三千多步，步數其實不多；麻煩的是每一筆都是長影片，一幀就算壓成一兩百個視覺 token，一百多幀也有上萬個，再加上 8B 模型用 bf16 光權重就要 16 GB 左右。</li>
+</ul>
+<p>所以對個人來說，問題不是「算不算得完」，而是「塞不塞得下」。論文沒寫 8 張卡怎麼分工、跑了多久，我猜多半是資料平行，用卡數換時間。</p>
+<h3>如果只有一張家用顯卡，我會這樣改</h3>
+<ol>
+<li><strong>換小一號的模型，加上 4-bit 量化（QLoRA）。</strong> Qwen3-VL 有 2B、4B 的版本。8B 量化成 4-bit，權重大概剩 5 GB 上下；再配合 gradient checkpointing（batch size 本來就是 1，需要的話用梯度累積），24 GB 的 3090／4090 應該有機會直接跑 8B。像我這種 8 GB 的筆電，就得換成 2B 或 4B。</li>
+<li><strong>先少看，再放大看。</strong> 一開始的幀用低解析度、少量幀，只有檢索回來的關鍵幀才用高解析度。就像先掃一眼全景，看到可疑的地方再拿望遠鏡。視覺 token 是記憶體大戶，這一步省最多。</li>
+<li><strong>檢索改成查表。</strong> 與其每次都跑 TFVTG，不如先把影片每一幀用 CLIP 或 SigLIP 編碼好存起來，檢索時只要把查詢文字也編碼，做一次內積找最像的幀。影片只要編碼一次，之後幾乎不花 GPU；代價是定位可能沒那麼準，要實際比較。</li>
+<li><strong>生成按需開，而且換小的。</strong> 附錄的數字很明確：生成只在反事實題大幅加分，在事實題還會扣一點。所以可以只在模型判斷是反事實題時才呼叫；生成模型換成 SD3.5 Medium，或蒸餾過、步數少的 Large Turbo（論文附錄介紹 SD3.5 時自己也提到，這些版本就是為資源有限的環境設計的）；真的塞不下，就讓 VLM 和生成模型輪流載入顯卡，不要同時常駐。</li>
+<li><strong>資料少而精。</strong> 1,000 筆的小實驗在 Video-MME 已經拿到 73.7，全部 3,373 筆是 74.2。兩者的組成不完全一樣，不能直接比，但方向很清楚。再加上「VLM 產的來源比原模型還差」那個結果，對個人來說，把時間花在過濾資料，比花錢租 GPU 划算。</li>
+</ol>
+<h3>反過來想：「主動去看」本身就是省算力的方法</h3>
+<p>寫到這裡我才意識到：Act2See 的精神是「不用一次看完全部，需要時再回去找」，這本來就是一種省記憶體的想法。與其一口氣塞兩百多幀進去，不如只給幾十幀，讓模型自己決定要回去看哪裡。</p>
+<p>論文附錄其實碰到了這件事，但只碰了一半。在 VCR-Bench 上把 Act2See 的輸入幀數砍半（0.5 fps，平均 106 幀），準確率 38.7%，只比原模型用 1 fps（平均 210 幀）的 38.2% 高一點，運算量則從 1025 降到 877 TFLOPs。也就是說，主動檢索大概能補回一半的幀數，但 Act2See 在 1 fps 時的 47.1 也跟著沒了。</p>
+<p>我猜原因是模型是在 1 fps 下訓練的，它學到的是「平常看得很清楚，偶爾補一幀」，而不是「平常看得很少，要積極去找」。如果從訓練一開始就只給少量幀，逼它多用檢索，會不會學出一個更會「找」的模型？如果成立，對家用顯卡來說，Act2See 就不只是加分的技巧，而是讓長影片塞得進 8 GB 的方法。這是我讀完最想驗證的事。</p>
+<h2>我的疑問</h2>
+<ul>
+<li><strong>「湧現」這個詞有點大。</strong> 模型是在含工具呼叫的資料上微調過的，推論時會呼叫工具，比較像是學會了 Gemini 的習慣。真正讓我驚訝的會是：訓練資料裡沒出現過的工具用法，它自己用出來了。</li>
+<li><strong>附錄 F 的圖說寫「Qwen3-VL-3B baseline」，但內文和表格都是 8B。</strong> 應該是筆誤，但也讓我好奇他們有沒有試過更小的模型。</li>
+<li><strong>推論成本只給了 FLOPs。</strong> 生成一張圖要多久、SD3.5 Large 和 VLM 要不要同時放在顯卡上，這些對實際部署影響很大，論文沒有細談。</li>
+</ul>
+<h2>讀完之後想試的事</h2>
+<ol>
+<li>如果他們的資料有公開，用 Qwen3-VL-2B 或 4B 加 QLoRA，在自己的顯卡上重跑 1,000 筆的小規模版本，先看「只有文字」和「有檢索」的差距在小模型上還在不在。</li>
+<li>把 TFVTG 換成預先算好的 CLIP／SigLIP 幀向量，比較準確率和速度。</li>
+<li>試「少量初始幀＋積極檢索」的訓練設定，看能不能用更少的幀追上 1 fps 的成績。</li>
+<li>生成只在反事實題開啟，看整體成績掉多少、省下多少時間。</li>
+</ol>
+<hr>
+<p>論文的數字已對照 arXiv 網頁版（v1）。上面家用顯卡的做法都還只是讀完後的想法，記憶體的數字也只是粗估，還沒有實際跑過。</p></article><div class="ask"><div><b>Q&amp;A</b><small>匿名提問，在這裡回答。</small></div><a class="btn primary" href="https://forms.gle/yNUw4eLZeeqf3Arb6" target="_blank" rel="noopener noreferrer">匿名提問 ↗</a></div><h2 style="margin-top:48px">其他文章</h2><a class="card" href="/blog/zh-tw/2026-09-30-rine/"><span class="type paper">論文筆記</span><b>RINE：中間層真的比最後一層更懂「假」嗎？</b><small>RINE 用 CLIP 中間層的特徵偵測生成圖，和我自己的實驗結論大致相同；但在「野外干擾」下，最有用的層會換人，增強的廣度也比從哪一層拿特徵更關鍵。</small></a><a class="card" href="/blog/zh-tw/2026-09-29-now/"><span class="type now">近況</span><b>2026 年 9 月：作品與考卷分享區上線，開始準備 CVPR</b><small>這個月把 Taiwan Exam、考卷分享區、LumiGrid 網頁版和 Adversarial Lab 放上線，網站也搬到 niansia.com；接下來的重心是 11 月中的 CVPR 2027 投稿。</small></a><div class="btns"><a class="btn" href="/blog/zh-tw/">全部文章</a><a class="btn primary" href="/zh-tw/#blog">回到作品集</a></div></main>
+<aside class="author" aria-label="由 Niansia 製作"><a class="an-face" href="/zh-tw/" tabindex="-1" aria-hidden="true" data-nz-title="Niansia"><img src="/assets/icons/author.webp" alt="" width="56" height="56" loading="lazy"></a><div class="an-text"><b>由 Niansia 製作</b><small>陽明交大資工碩士生，研究 AI 安全、電腦視覺與視覺語言模型。</small></div><a class="btn primary an-go" href="/zh-tw/" data-nz-title="Niansia">前往 niansia.com →</a></aside>
+<footer>有問題或想法？寫信到 <a href="mailto:niansia930202@gmail.com">niansia930202@gmail.com</a> · <a href="/zh-tw/">niansia.com</a> · <a href="https://github.com/niansia">github.com/niansia</a><span class="stats" data-stats hidden> · <i class="live-dot"></i> <b data-stat="online">–</b> 人在線 · <b data-stat="total">–</b> 次造訪</span></footer>
+</body>
+</html>
