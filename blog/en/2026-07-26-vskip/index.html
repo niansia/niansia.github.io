@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>V-Skip: when you shorten the reasoning, don&#x27;t cut out what the model saw · Niansia</title>
+<meta name="description" content="Move a text-only chain-of-thought compressor onto a vision-language model and it deletes the words that only the image could supply. The reasoning still reads smoothly, but it has come loose from the picture, and hallucinations follow. The paper calls this Visual Amnesia and it names a real problem; I have reservations about its explanation of the cause and about a few of its numbers.">
+<link rel="canonical" href="https://niansia.com/blog/en/2026-07-26-vskip/">
+<link rel="alternate" hreflang="en" href="https://niansia.com/blog/en/2026-07-26-vskip/"><link rel="alternate" hreflang="zh-Hant-TW" href="https://niansia.com/blog/zh-tw/2026-07-26-vskip/"><link rel="alternate" hreflang="zh-Hans-CN" href="https://niansia.com/blog/zh-cn/2026-07-26-vskip/"><link rel="alternate" hreflang="x-default" href="https://niansia.com/blog/en/2026-07-26-vskip/">
+<meta property="og:type" content="article"><meta property="og:site_name" content="Niansia">
+<meta property="og:title" content="V-Skip: when you shorten the reasoning, don&#x27;t cut out what the model saw · Niansia"><meta property="og:description" content="Move a text-only chain-of-thought compressor onto a vision-language model and it deletes the words that only the image could supply. The reasoning still reads smoothly, but it has come loose from the picture, and hallucinations follow. The paper calls this Visual Amnesia and it names a real problem; I have reservations about its explanation of the cause and about a few of its numbers.">
+<meta property="og:url" content="https://niansia.com/blog/en/2026-07-26-vskip/"><meta property="og:image" content="https://niansia.com/assets/og/blog-2026-07-26-vskip-en.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta property="og:locale" content="en">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://niansia.com/assets/og/blog-2026-07-26-vskip-en.jpg">
+
+<meta name="theme-color" content="#fbf6ee" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#15142a" media="(prefers-color-scheme: dark)">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://*.firebasedatabase.app; connect-src 'self' https://*.firebasedatabase.app wss://*.firebasedatabase.app; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; frame-src https://*.firebasedatabase.app; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml">
+<script src="/assets/js/page-transition.js?v=3"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root{--bg:#fbf6ee;--paper:#fffdf9;--ink:#2a2230;--muted:#766b73;--line:#2a22301a;--accent:#c0673a;--accent2:#8f6bb3;--code:#f3ece2;}
+@media(prefers-color-scheme:dark){:root{--bg:#15142a;--paper:#1c1a36;--ink:#f1ebe2;--muted:#aaa3bd;--line:#ffffff1a;--accent:#f0a878;--accent2:#b69ae6;--code:#26234a;}}
+*{box-sizing:border-box;}html{-webkit-text-size-adjust:100%;}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.85 Inter,'Noto Sans TC','Noto Sans SC',system-ui,sans-serif;}
+a{color:var(--accent);text-underline-offset:3px;}
+.top{max-width:1080px;margin:0 auto;padding:18px 20px;display:flex;align-items:center;gap:10px;font:500 13px 'JetBrains Mono',monospace;color:var(--muted);}
+.top a{color:var(--muted);text-decoration:none;}.top a:hover{color:var(--accent);}
+.top b{color:var(--ink);font-weight:500;}.top .sp{flex:1;}
+.langs a{padding:4px 9px;border-radius:99px;border:1px solid var(--line);margin-left:4px;}.langs a[aria-current]{color:var(--ink);border-color:var(--accent);}
+main{max-width:760px;margin:0 auto;padding:10px 20px 70px;}
+.kicker{font:500 12px 'JetBrains Mono',monospace;color:var(--accent);letter-spacing:.06em;text-transform:uppercase;margin:24px 0 8px;}
+h1{font-size:clamp(28px,4.4vw,42px);line-height:1.2;letter-spacing:-.02em;margin:0 0 14px;}
+.lede{font-size:18px;color:var(--muted);margin:0 0 16px;line-height:1.7;}
+.meta{display:flex;flex-wrap:wrap;gap:8px 14px;font:500 12.5px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;color:var(--muted);padding-bottom:22px;border-bottom:1px solid var(--line);margin-bottom:10px;}
+.meta span.tag{padding:2px 9px;border-radius:99px;background:var(--code);}
+article h2{font-size:23px;margin:40px 0 10px;letter-spacing:-.01em;}
+article h3{font-size:18px;margin:28px 0 8px;}
+article p,article li{color:var(--ink);}
+article code{font:14px 'JetBrains Mono',monospace;background:var(--code);padding:1px 6px;border-radius:6px;}
+article table{width:100%;border-collapse:collapse;margin:18px 0;font-size:14.5px;display:block;overflow-x:auto;}
+article th,article td{padding:8px 12px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap;}
+article th{font-weight:600;color:var(--muted);font-size:13px;}
+article td:not(:first-child),article th:not(:first-child){text-align:right;}
+article td[style*="left"],article th[style*="left"]{white-space:normal;min-width:6.5em;}   /* text tables (|:---|) wrap instead of scrolling */
+article strong{color:var(--ink);}
+article blockquote{margin:18px 0;padding:4px 18px;border-left:3px solid var(--accent);color:var(--muted);}
+.card{display:block;padding:18px 20px;margin:12px 0;border-radius:16px;background:var(--paper);border:1px solid var(--line);text-decoration:none;color:var(--ink);transition:transform .25s,border-color .25s;}
+.card:hover{transform:translateY(-2px);border-color:var(--accent);}
+.card b{display:block;font-size:18px;line-height:1.4;margin-bottom:4px;}.card small{display:block;color:var(--muted);font-size:14px;line-height:1.6;}
+.card i{display:block;font:normal 500 12px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;color:var(--accent);margin-top:8px;}
+.hero{width:100%;height:auto;border-radius:16px;border:1px solid var(--line);display:block;margin:6px 0 18px;}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px;}.chips span{font:500 12px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;padding:4px 11px;border-radius:99px;background:var(--code);}
+.btns{display:flex;flex-wrap:wrap;gap:10px;margin:22px 0;}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:12px;border:1px solid var(--line);background:var(--paper);color:var(--ink);text-decoration:none;font-weight:600;font-size:14px;}
+.btn.primary{background:var(--accent);border-color:transparent;color:var(--paper);}
+.btn:hover{border-color:var(--accent);}
+.note{font-size:13.5px;color:var(--muted);}
+.live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#34c38f;box-shadow:0 0 0 3px #34c38f33;vertical-align:1px;}footer b{color:var(--ink);font-weight:600;}
+figure.fig{margin:24px 0;}figure.fig a{display:block;border-radius:14px;overflow:hidden;border:1px solid var(--line);cursor:zoom-in;background:var(--code);}
+figure.fig img{display:block;width:100%;height:auto;transition:transform .4s;}figure.fig a:hover img{transform:scale(1.015);}
+figure.fig figcaption{margin-top:8px;font-size:13.5px;color:var(--muted);line-height:1.6;}
+.lb{position:fixed;inset:0;z-index:50;display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px;background:#0d0b16ee;}
+.lb.on{display:flex;}.lb img{max-width:100%;max-height:84vh;border-radius:10px;box-shadow:0 30px 80px #000a;}
+.lb p{margin:0;color:#e9e4f2;font-size:14px;text-align:center;max-width:760px;}
+.lb-x{position:absolute;top:14px;right:18px;width:40px;height:40px;border-radius:50%;border:1px solid #ffffff44;background:transparent;color:#fff;font-size:24px;cursor:pointer;}
+.log-entry{position:relative;padding:0 0 34px 26px;border-left:2px solid var(--line);}
+.log-entry:before{content:'';position:absolute;left:-7px;top:8px;width:12px;height:12px;border-radius:50%;background:var(--bg);border:2px solid var(--accent);}
+.log-entry time{font:500 12.5px 'JetBrains Mono',monospace;color:var(--accent);}
+.log-entry h2{margin:4px 0 6px!important;font-size:21px!important;}
+.log-entry h2 a{color:var(--ink);text-decoration:none;}
+.statement-link{display:flex;justify-content:space-between;align-items:center;}
+.top a.me{display:inline-flex;align-items:center;gap:8px;padding:3px 12px 3px 3px;border:1px solid var(--line);border-radius:99px;transition:border-color .2s;}.top a.me:hover{border-color:var(--accent);}.top a.me img{width:24px;height:24px;border-radius:50%;display:block;}
+.author{max-width:720px;margin:44px auto 0;padding:18px 20px;display:flex;align-items:center;gap:16px;border-radius:18px;background:var(--code);border:1px solid var(--line);}
+.author{box-sizing:border-box;}.author>*{flex:none;}
+.author .an-face img{display:block;width:56px;height:56px;border-radius:50%;border:2px solid var(--accent);}
+.author .an-text{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px;}
+.author .an-text b{font-size:15px;}.author .an-text small{font-size:13px;line-height:1.6;color:var(--muted);}
+.author .an-note{color:var(--ink)!important;}
+.author .an-go{margin:0;white-space:nowrap;}
+@media (max-width:760px){.author{margin:40px 16px 0;}}@media (max-width:600px){.author{flex-wrap:wrap;padding:16px;}.author .an-text{flex-basis:calc(100% - 72px);}.author .an-go{flex:1 1 100%;justify-content:center;text-align:center;}}
+footer{max-width:760px;margin:0 auto;padding:26px 20px 50px;border-top:1px solid var(--line);font-size:14px;color:var(--muted);}
+
+.paper-box{margin:0 0 26px;padding:18px 20px;border-radius:16px;background:var(--paper);border:1px solid var(--line);border-left:4px solid var(--accent2);}
+.paper-box .pv{font:600 12px 'JetBrains Mono',monospace;color:var(--accent2);letter-spacing:.04em;margin:0 0 6px;}
+.paper-box b{display:block;font-size:17px;line-height:1.45;}
+.paper-box .pa{margin:6px 0 0;font-size:13.5px;color:var(--muted);line-height:1.6;}
+.paper-box .pl{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+.paper-box .pl a{font:600 12.5px 'JetBrains Mono',monospace;padding:5px 12px;border-radius:99px;border:1px solid var(--line);text-decoration:none;}
+.paper-box .pl a:hover{border-color:var(--accent);}
+.type{display:inline-block;padding:2px 9px;border-radius:99px;background:var(--accent);color:#fff;font:600 11.5px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;}
+.type.paper{background:var(--accent2);}.type.qa{background:#3f9f86;}.type.post{background:var(--muted);}
+.card .type{margin-bottom:8px;}.card .zh{margin-left:8px;font:500 11.5px 'JetBrains Mono',monospace;color:var(--muted);}
+.now-card{border-left:4px solid var(--accent);}
+.qa{padding:20px 0;border-bottom:1px solid var(--line);}
+.qa .qq{display:flex;gap:12px;font-weight:700;font-size:17px;line-height:1.55;margin:0 0 8px;}
+.qa .qq span,.qa .qa-a>span{flex:none;display:grid;place-items:center;width:28px;height:28px;border-radius:9px;background:var(--code);color:var(--accent);font-size:13px;}
+.qa .qa-a{display:flex;gap:12px;}.qa .qa-a>span{background:var(--accent);color:#fff;}.qa .qa-a article>:first-child{margin-top:0;}
+.qa time{display:block;margin:6px 0 0 40px;font:500 12px 'JetBrains Mono',monospace;color:var(--muted);}
+.ask{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:18px 0 8px;padding:16px 18px;border-radius:16px;background:var(--code);}
+.ask b{display:block;font-size:15.5px;}.ask small{display:block;color:var(--muted);font-size:13px;}
+.ask .btn{flex:none;margin:0;}.ask .btn[aria-disabled]{opacity:.55;pointer-events:none;}
+</style>
+<link rel="alternate" type="application/rss+xml" title="Niansia · Blog" href="/blog/en/feed.xml"><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BlogPosting", "headline": "V-Skip: when you shorten the reasoning, don't cut out what the model saw", "description": "Move a text-only chain-of-thought compressor onto a vision-language model and it deletes the words that only the image could supply. The reasoning still reads smoothly, but it has come loose from the picture, and hallucinations follow. The paper calls this Visual Amnesia and it names a real problem; I have reservations about its explanation of the cause and about a few of its numbers.", "datePublished": "2026-07-26", "dateModified": "2026-07-26", "inLanguage": "en", "author": {"@type": "Person", "name": "Niansia", "url": "https://niansia.com/", "email": "mailto:niansia930202@gmail.com", "sameAs": ["https://github.com/niansia"]}, "mainEntityOfPage": "https://niansia.com/blog/en/2026-07-26-vskip/", "keywords": "vision-language models, chain of thought, hallucination, efficiency", "citation": {"@type": "ScholarlyArticle", "name": "Chain-of-Thought Compression Should Not Be Blind: V-Skip for Efficient Multimodal Reasoning via Dual-Path Anchoring", "url": "https://arxiv.org/abs/2601.13879"}}</script>
+<script defer src="/assets/js/site-stats.js?v=2"></script>
+<script defer src="/assets/js/lightbox.js"></script>
+
+</head>
+<body>
+<header class="top"><a class="me" href="/" title="Back to Niansia&#x27;s website" data-nz-title="Niansia"><img src="/assets/icons/author.webp" alt="" width="24" height="24"><b>~/niansia</b></a> / <a href="/blog/en/">blog</a><span class="sp"></span><span class="langs"><a href="/blog/en/2026-07-26-vskip/" aria-current="page" hreflang="en">EN</a><a href="/blog/zh-tw/2026-07-26-vskip/" hreflang="zh-Hant">繁</a><a href="/blog/zh-cn/2026-07-26-vskip/" hreflang="zh-Hans">简</a></span></header>
+<main><p class="kicker">Paper note</p><h1>V-Skip: when you shorten the reasoning, don&#x27;t cut out what the model saw</h1><p class="lede">Move a text-only chain-of-thought compressor onto a vision-language model and it deletes the words that only the image could supply. The reasoning still reads smoothly, but it has come loose from the picture, and hallucinations follow. The paper calls this Visual Amnesia and it names a real problem; I have reservations about its explanation of the cause and about a few of its numbers.</p><div class="meta"><time datetime="2026-07-26">2026-07-26</time><span>10 min read</span><span class="tag">vision-language models</span><span class="tag">chain of thought</span><span class="tag">hallucination</span><span class="tag">efficiency</span></div><aside class="paper-box"><p class="pv">arXiv 2026 · Read closely</p><b lang="en">Chain-of-Thought Compression Should Not Be Blind: V-Skip for Efficient Multimodal Reasoning via Dual-Path Anchoring</b><p class="pa" lang="en">Dongxu Zhang, Yiding Sun, Cheng Tan, Wenbiao Yan, Ning Yang, Jihua Zhu, Haijun Zhang</p><div class="pl"><a href="https://arxiv.org/abs/2601.13879" target="_blank" rel="noopener noreferrer">Paper ↗</a></div></aside><article><h2>Why this paper</h2>
+<p>Vision-language models increasingly think before they answer, but a chain of thought is generated one token at a time: the longer it gets, the longer you wait and the bigger the KV cache. Text-only models already have several ways to compress reasoning, such as TokenSkip: drop the unimportant tokens from the chain, then fine-tune the model so it learns to write the short version directly.</p>
+<p>I had assumed the same recipe would carry over to images. This paper's title answered me directly: Chain-of-Thought Compression Should Not Be Blind. It calls what goes wrong when you port text methods over Visual Amnesia: the compressed reasoning still reads fluently, but it has lost its link to the image, and the model starts to hallucinate. It is a good name, so I read the whole thing.</p>
+<h2>What the paper does</h2>
+<p><strong>The problem first.</strong> A text-only compressor judges a token by its linguistic information: if it can be guessed from what came before, it is redundant. In multimodal reasoning, though, a token matters in two ways. The paper's example is "a red apple". Linguistically, "red" is no surprise, yet it may be the only piece of evidence in the chain that came from the image. Delete it, and the rest of the reasoning can only run on linguistic common sense.</p>
+<p><strong>Then the method.</strong> V-Skip has three steps:</p>
+<ol>
+<li><strong>Generate and filter chains</strong>: a teacher model writes a full chain of thought for each image-question pair, and chains that reach a wrong answer are discarded.</li>
+<li><strong>Score on two paths, keep the union</strong>:
+   - Text path: the token's self-information, −log P. The easier it is to guess, the lower the score.
+   - Visual path: how much attention the token puts on the image patches, taken only from layers at 25–75% depth, using the strongest head in each layer and averaging over layers.
+   - Each path sets its own threshold at the (1−γ) percentile, and <strong>a token is kept if it passes either one</strong>. γ is the target compression ratio; 0.5 means keeping about half.</li>
+<li><strong>Distil into LoRA</strong>: fine-tune the model with LoRA on the compressed chains (r=16, attention projections only, 3 epochs, eight RTX 3090s). At inference the model writes the short chain directly, with no attention maps or scoring.</li>
+</ol>
+<p>The theory is wrapped as a "visual-anchored information bottleneck" (VA-IB): under a length budget, maximise both the mutual information between the chain and the answer and the conditional mutual information between the chain and the image given the question. Unpacked, the second term is the uncertainty from text alone minus the uncertainty once the image is seen, which picks out tokens you cannot guess from the text but become certain once you look.</p>
+<p>At this point I realised the pipeline is essentially TokenSkip's (prune tokens with LLMLingua-2, then fine-tune with LoRA) plus a visual path. Yet the related-work section describes TokenSkip as letting redundant tokens bypass layers, which does not match TokenSkip's own description.</p>
+<p>The experiments use Qwen2-VL (2B, 7B, 72B) and Llama-3.2-11B-Vision on the validation sets of MMMU and DocVQA, with POPE for object hallucination.</p>
+<h2>Results</h2>
+<p>The main table is Qwen2-VL-7B (accuracy for MMMU, ANLS for DocVQA, end-to-end latency in seconds):</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Method</th>
+<th style="text-align: left;">γ</th>
+<th style="text-align: left;">MMMU</th>
+<th style="text-align: left;">Latency</th>
+<th style="text-align: left;">DocVQA</th>
+<th style="text-align: left;">Latency</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Original (full chain)</td>
+<td style="text-align: left;">–</td>
+<td style="text-align: left;">54.1</td>
+<td style="text-align: left;">6.42</td>
+<td style="text-align: left;">91.6</td>
+<td style="text-align: left;">4.87</td>
+</tr>
+<tr>
+<td style="text-align: left;">Truncation</td>
+<td style="text-align: left;">0.5</td>
+<td style="text-align: left;">38.5</td>
+<td style="text-align: left;">3.23</td>
+<td style="text-align: left;">62.5</td>
+<td style="text-align: left;">2.57</td>
+</tr>
+<tr>
+<td style="text-align: left;">LLMLingua-2</td>
+<td style="text-align: left;">0.5</td>
+<td style="text-align: left;">32.4</td>
+<td style="text-align: left;">3.73</td>
+<td style="text-align: left;">38.5</td>
+<td style="text-align: left;">2.93</td>
+</tr>
+<tr>
+<td style="text-align: left;">ASCoT</td>
+<td style="text-align: left;">0.5</td>
+<td style="text-align: left;">33.1</td>
+<td style="text-align: left;">3.91</td>
+<td style="text-align: left;">40.2</td>
+<td style="text-align: left;">3.10</td>
+</tr>
+<tr>
+<td style="text-align: left;">V-Skip</td>
+<td style="text-align: left;">0.7</td>
+<td style="text-align: left;">51.5</td>
+<td style="text-align: left;">4.65</td>
+<td style="text-align: left;">87.9</td>
+<td style="text-align: left;">3.68</td>
+</tr>
+<tr>
+<td style="text-align: left;">V-Skip</td>
+<td style="text-align: left;">0.5</td>
+<td style="text-align: left;">48.2</td>
+<td style="text-align: left;">3.49</td>
+<td style="text-align: left;">83.7</td>
+<td style="text-align: left;">2.71</td>
+</tr>
+</tbody>
+</table>
+<p>A few other numbers I found interesting:</p>
+<ul>
+<li><strong>How many colour words survive</strong>: at γ=0.5, LLMLingua-2 keeps only 42.5% of the colour words in the chain, ASCoT 48.2%, V-Skip 89.4%; for object names it is 64.8%, 69.5% and 91.2%.</li>
+<li><strong>Hallucination</strong>: POPE asks whether an object is in the image, with half the answers yes and half no. The original model says "yes" 50.4% of the time. After the two text methods compress its reasoning, that jumps to 66.8% (ASCoT) and 64.5% (LLMLingua-2), and F1 falls from 89.1 to 77.1 and 78.9. V-Skip stays at 51.2%, F1 88.9.</li>
+<li><strong>Union beats intersection by a lot</strong>: at γ=0.5, random deletion scores 27.5, text only 32.4, vision only 40.5 (with an 11.2% syntax error rate), intersection 30.1, union 48.2 (1.3% syntax errors).</li>
+<li><strong>Bigger models compress better</strong>: at γ=0.5, 2B drops 8.5, 7B drops 5.9, 72B drops 3.2.</li>
+<li><strong>The visual score should come from the middle layers</strong>: the first 25% of layers give 41.5, the last 25% give 46.8, all layers 47.1, the middle layers 48.2.</li>
+</ul>
+<h2>Three things that stay with me</h2>
+<p><strong>First, the scary part is fluent hallucination.</strong> The POPE table is the one I keep thinking about. The compressed models don't become visibly worse; they start saying "yes" more. Once the visual evidence is cut from the chain, the model falls back on linguistic common sense, say, seeing a dining table and assuming there must be a fork. The chain still reads well, and a user reading the reasoning would not spot what went wrong. Obvious errors get checked; fluent, confident ones are the hard ones to catch. To me that is more worth remembering than "a few times faster".</p>
+<p><strong>Second, the paper gives two opposite explanations for why these tokens get cut.</strong> Figure 1 says "red" is deleted because it is <strong>too easy to guess</strong> from the text. The method section and the $45.20 invoice example say instead that visual tokens are <strong>hard to guess</strong> from the text (high perplexity), so they are thrown away as noise. These point in opposite directions, and under V-Skip's own text path a high-scoring, hard-to-guess token would be kept anyway. Besides, LLMLingua-2 does not use perplexity at all; it is a text-only token classifier that never sees the image.</p>
+<p>The explanation I find more convincing is about who computes the probability. If the score −log P comes from the model that can see the image, "red" is easy to guess not because "apple" came earlier but because <strong>the model saw the picture</strong>. The more a word depends on the image, the more confident the model is, the lower its score and the more likely it is to be discarded as filler. In other words, the better grounded a token is, the harder this kind of scoring punishes it. That is the irony I took away from the paper.</p>
+<p><strong>Third, I am not yet convinced that attention is evidence of looking at the image.</strong> The paper cites contrastive learning (CPC) to argue that attention weights lower-bound mutual information, but the attention it measures sits in the language decoder, which is trained to predict the next token, not with a contrastive objective. Attention also has well-known quirks, such as tokens that soak up large amounts of attention whatever their content. The choice of layers moves the result quite a bit (41.5 to 48.2), another sign the signal needs careful tuning.</p>
+<p>Since the scoring is done offline, where extra compute is cheap, I would rather compute the VA-IB term directly: run the same token with and without the image and see how much its probability changes. That is the direct estimate of "how much the uncertainty drops once the image is seen".</p>
+<h2>Read the numbers against the tables</h2>
+<ul>
+<li><strong>The 2.9× speed-up is not in the tables.</strong> The abstract and conclusion both say 2.9×, but in the Qwen2-VL-7B table at γ=0.5, MMMU goes from 6.42 to 3.49 seconds and DocVQA from 4.87 to 2.71, roughly 1.8×, and the main text itself says 1.8× on DocVQA.</li>
+<li><strong>"Negligible loss" depends on how hard you compress.</strong> At γ=0.5, MMMU drops 5.9 and DocVQA 7.9; I would not call that negligible. The nearly lossless setting is γ=0.9 (drops of 0.5 and 0.8), but latency only falls from 6.42 to 5.89 seconds. The realistic point seems to be γ=0.7: drops of 2.6 and 3.7, for about 1.3–1.4× speed.</li>
+<li><strong>Plain truncation beats both text compressors.</strong> This is the row in the main table that surprised me most. Simply cutting the chain to half (the paper doesn't define it; I assume it keeps the first half) gives 38.5 on MMMU and 62.5 on DocVQA, well above LLMLingua-2 and ASCoT. My guess is that vision-language chains often describe the image first and reason afterwards, so the first half happens to keep the visual description. But it also makes me wonder how the baselines were run. The paper says V-Skip is faster than LLMLingua-2 because the latter filters online, which suggests the baselines did not get the same LoRA distillation. The fairest comparison would be TokenSkip: the same LoRA training with only the scoring changed, which would show how much of the gain comes from the visual score and how much from training.</li>
+<li><strong>Two 32.4s.</strong> The "text only" row in the ablation scores 32.4, exactly the same as LLMLingua-2 in the main table. I can't tell whether they are the same run.</li>
+<li><strong>No "answer directly, no reasoning" baseline.</strong> The full-chain MMMU scores (2B 41.2, 7B 54.1, 72B 64.5) are almost identical to the Qwen2-VL technical report (41.1, 54.1, 64.5). I don't know whether the report used chain-of-thought, but without that row there is no way to see how much the reasoning itself helps on MMMU. If answering directly already gets about 54, a chain compressed down to 48.2 is both slower and worse than not reasoning at all. Compressing reasoning only makes sense if the reasoning was useful.</li>
+</ul>
+<h2>On a home GPU</h2>
+<p>This paper is actually friendly to individual researchers: all scoring happens offline, and at inference there is only a LoRA adapter, with no extra computation. The LoRA-rank ablation reports a training memory peak of 18.5 GB at r=16 (the table doesn't name the model, but its 48.2 accuracy matches 7B in the main table, so presumably 7B). That figure is from eight-GPU training; on one card you would lean on gradient accumulation, but it looks like a single 24 GB card has a chance.</p>
+<p>The "bigger models compress better" table worries me a little, though. The most fragile is 2B, which loses 8.5 points; the authors explain that small models' chains are already dense, with little to cut. But small models are exactly the ones people run on their own machines. The models that most need the savings are the ones that can least afford them, so small models may need a compression level chosen per question rather than one fixed γ.</p>
+<h2>Open questions</h2>
+<ul>
+<li><strong>Where does the training data come from?</strong> The paper names neither the teacher model nor the data used to generate chains for distillation. MMMU only has public answers for its dev set (150 questions) and validation set (900), and evaluation uses the validation set, so I would really like to know what training used.</li>
+<li><strong>The chains are short.</strong> The original model writes only 245 tokens on average on MMMU and 189 on DocVQA, and all the models are from 2024. Today's long-thinking vision-language models write thousands of tokens, which is where compression matters most; with visual evidence scattered through a long chain, the risk of losing it may be higher, but the paper doesn't test this.</li>
+<li><strong>Slower when not compressing.</strong> V-Skip at γ=1.0 (6.54 s) is a little slower than the original model (6.42 s), perhaps from an unmerged LoRA adapter. The gap is small, but "zero overhead" still depends on how you deploy.</li>
+<li><strong>No released code.</strong> I couldn't find code when I read it, so details such as the union thresholds and the layer choice can't be checked independently.</li>
+</ul>
+<h2>What I want to try</h2>
+<ol>
+<li><strong>Estimate "how much the image tells you" directly</strong>: compute log P for the same token with and without the image (or with a blank image), use the difference as the visual score, and compare it with the attention score to see which finds the real visual anchors.</li>
+<li><strong>Add two baselines</strong>: "answer directly, no reasoning" and "TokenSkip with the same LoRA training", to separate the value of the reasoning itself, the effect of training and the effect of the visual score.</li>
+<li><strong>Make the POPE yes-ratio a routine check</strong>: for any compression method (reasoning chains, visual tokens, quantisation alike), look at whether the model starts saying "yes" more often. It catches a model drifting away from the image earlier than accuracy alone.</li>
+<li><strong>Try a small long-thinking model</strong>: for example a small Qwen3-VL Thinking variant, to see where the visual anchors sit in a long chain and whether most of them cluster in the opening description of the image.</li>
+</ol>
+<hr>
+<p>The paper's numbers were checked against the arXiv v4 PDF (11 March 2026); the Qwen2-VL scores come from its technical report (arXiv 2409.12191).</p></article><div class="ask"><div><b>Questions &amp; answers</b><small>Questions sent anonymously, answered here.</small></div><a class="btn primary" href="https://forms.gle/yNUw4eLZeeqf3Arb6" target="_blank" rel="noopener noreferrer">Ask anonymously ↗</a></div><h2 style="margin-top:48px">More posts</h2><a class="card" href="/blog/en/2026-09-30-rine/"><span class="type paper">Paper note</span><b>RINE: do intermediate layers know “fake” better than the last one?</b><small>RINE detects generated images from CLIP&#x27;s intermediate layers, and my own experiments largely agree. Under real-world corruptions, though, the most useful layers change, and the breadth of augmentation matters more than which layer the features come from.</small></a><a class="card" href="/blog/en/2026-09-29-now/"><span class="type now">Now</span><b>September 2026: new projects and an exam gallery, CVPR prep begins</b><small>This month Taiwan Exam, its exam gallery, the in-browser LumiGrid and Adversarial Lab went live, and the site moved to niansia.com. Next up is the CVPR 2027 submission in mid-November.</small></a><a class="card" href="/blog/en/2026-09-14-reroute/"><span class="type paper">Paper note</span><b>Reroute: can dropped visual tokens come back later?</b><small>Reroute turns &quot;delete the low-scoring visual tokens&quot; into &quot;defer them, and let them come back&quot;, with no training, and the harder the compression, the more it recovers. We are studying how to recover and re-locate what a long video loses in compression, and this paper attacks the smallest version of that problem.</small></a><div class="btns"><a class="btn" href="/blog/en/">All posts</a><a class="btn primary" href="/#blog">Back to the portfolio</a></div></main>
+<aside class="author" aria-label="Made by Niansia"><a class="an-face" href="/" tabindex="-1" aria-hidden="true" data-nz-title="Niansia"><img src="/assets/icons/author.webp" alt="" width="56" height="56" loading="lazy"></a><div class="an-text"><b>Made by Niansia</b><small>M.S. student in computer science at NYCU, working on AI security, computer vision and vision-language models.</small></div><a class="btn primary an-go" href="/" data-nz-title="Niansia">Visit niansia.com →</a></aside>
+<footer>Questions or ideas? Email <a href="mailto:niansia930202@gmail.com">niansia930202@gmail.com</a> · <a href="/">niansia.com</a> · <a href="https://github.com/niansia">github.com/niansia</a><span class="stats" data-stats hidden> · <i class="live-dot"></i> <b data-stat="online">–</b> online · <b data-stat="total">–</b> visits</span></footer>
+</body>
+</html>

@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>V-Skip：把推理鏈壓短，別連「看到的東西」一起刪掉 · Niansia</title>
+<meta name="description" content="把純文字的推理鏈壓縮法直接搬到視覺語言模型上，會刪掉「看圖才說得出來」的詞，推理鏈照樣通順，卻和原圖斷了線，開始出現幻覺。論文把這叫 Visual Amnesia，問題抓得很準；不過它對原因的解釋和幾個數字，我讀完有些保留。">
+<link rel="canonical" href="https://niansia.com/blog/zh-tw/2026-07-26-vskip/">
+<link rel="alternate" hreflang="en" href="https://niansia.com/blog/en/2026-07-26-vskip/"><link rel="alternate" hreflang="zh-Hant-TW" href="https://niansia.com/blog/zh-tw/2026-07-26-vskip/"><link rel="alternate" hreflang="zh-Hans-CN" href="https://niansia.com/blog/zh-cn/2026-07-26-vskip/"><link rel="alternate" hreflang="x-default" href="https://niansia.com/blog/en/2026-07-26-vskip/">
+<meta property="og:type" content="article"><meta property="og:site_name" content="Niansia">
+<meta property="og:title" content="V-Skip：把推理鏈壓短，別連「看到的東西」一起刪掉 · Niansia"><meta property="og:description" content="把純文字的推理鏈壓縮法直接搬到視覺語言模型上，會刪掉「看圖才說得出來」的詞，推理鏈照樣通順，卻和原圖斷了線，開始出現幻覺。論文把這叫 Visual Amnesia，問題抓得很準；不過它對原因的解釋和幾個數字，我讀完有些保留。">
+<meta property="og:url" content="https://niansia.com/blog/zh-tw/2026-07-26-vskip/"><meta property="og:image" content="https://niansia.com/assets/og/blog-2026-07-26-vskip-zh-tw.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta property="og:locale" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://niansia.com/assets/og/blog-2026-07-26-vskip-zh-tw.jpg">
+
+<meta name="theme-color" content="#fbf6ee" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#15142a" media="(prefers-color-scheme: dark)">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://*.firebasedatabase.app; connect-src 'self' https://*.firebasedatabase.app wss://*.firebasedatabase.app; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; frame-src https://*.firebasedatabase.app; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml">
+<script src="/assets/js/page-transition.js?v=3"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&display=swap">
+<style>
+:root{--bg:#fbf6ee;--paper:#fffdf9;--ink:#2a2230;--muted:#766b73;--line:#2a22301a;--accent:#c0673a;--accent2:#8f6bb3;--code:#f3ece2;}
+@media(prefers-color-scheme:dark){:root{--bg:#15142a;--paper:#1c1a36;--ink:#f1ebe2;--muted:#aaa3bd;--line:#ffffff1a;--accent:#f0a878;--accent2:#b69ae6;--code:#26234a;}}
+*{box-sizing:border-box;}html{-webkit-text-size-adjust:100%;}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.85 Inter,'Noto Sans TC','Noto Sans SC',system-ui,sans-serif;}
+a{color:var(--accent);text-underline-offset:3px;}
+.top{max-width:1080px;margin:0 auto;padding:18px 20px;display:flex;align-items:center;gap:10px;font:500 13px 'JetBrains Mono',monospace;color:var(--muted);}
+.top a{color:var(--muted);text-decoration:none;}.top a:hover{color:var(--accent);}
+.top b{color:var(--ink);font-weight:500;}.top .sp{flex:1;}
+.langs a{padding:4px 9px;border-radius:99px;border:1px solid var(--line);margin-left:4px;}.langs a[aria-current]{color:var(--ink);border-color:var(--accent);}
+main{max-width:760px;margin:0 auto;padding:10px 20px 70px;}
+.kicker{font:500 12px 'JetBrains Mono',monospace;color:var(--accent);letter-spacing:.06em;text-transform:uppercase;margin:24px 0 8px;}
+h1{font-size:clamp(28px,4.4vw,42px);line-height:1.2;letter-spacing:-.02em;margin:0 0 14px;}
+.lede{font-size:18px;color:var(--muted);margin:0 0 16px;line-height:1.7;}
+.meta{display:flex;flex-wrap:wrap;gap:8px 14px;font:500 12.5px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;color:var(--muted);padding-bottom:22px;border-bottom:1px solid var(--line);margin-bottom:10px;}
+.meta span.tag{padding:2px 9px;border-radius:99px;background:var(--code);}
+article h2{font-size:23px;margin:40px 0 10px;letter-spacing:-.01em;}
+article h3{font-size:18px;margin:28px 0 8px;}
+article p,article li{color:var(--ink);}
+article code{font:14px 'JetBrains Mono',monospace;background:var(--code);padding:1px 6px;border-radius:6px;}
+article table{width:100%;border-collapse:collapse;margin:18px 0;font-size:14.5px;display:block;overflow-x:auto;}
+article th,article td{padding:8px 12px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap;}
+article th{font-weight:600;color:var(--muted);font-size:13px;}
+article td:not(:first-child),article th:not(:first-child){text-align:right;}
+article td[style*="left"],article th[style*="left"]{white-space:normal;min-width:6.5em;}   /* text tables (|:---|) wrap instead of scrolling */
+article strong{color:var(--ink);}
+article blockquote{margin:18px 0;padding:4px 18px;border-left:3px solid var(--accent);color:var(--muted);}
+.card{display:block;padding:18px 20px;margin:12px 0;border-radius:16px;background:var(--paper);border:1px solid var(--line);text-decoration:none;color:var(--ink);transition:transform .25s,border-color .25s;}
+.card:hover{transform:translateY(-2px);border-color:var(--accent);}
+.card b{display:block;font-size:18px;line-height:1.4;margin-bottom:4px;}.card small{display:block;color:var(--muted);font-size:14px;line-height:1.6;}
+.card i{display:block;font:normal 500 12px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;color:var(--accent);margin-top:8px;}
+.hero{width:100%;height:auto;border-radius:16px;border:1px solid var(--line);display:block;margin:6px 0 18px;}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px;}.chips span{font:500 12px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;padding:4px 11px;border-radius:99px;background:var(--code);}
+.btns{display:flex;flex-wrap:wrap;gap:10px;margin:22px 0;}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:12px;border:1px solid var(--line);background:var(--paper);color:var(--ink);text-decoration:none;font-weight:600;font-size:14px;}
+.btn.primary{background:var(--accent);border-color:transparent;color:var(--paper);}
+.btn:hover{border-color:var(--accent);}
+.note{font-size:13.5px;color:var(--muted);}
+.live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#34c38f;box-shadow:0 0 0 3px #34c38f33;vertical-align:1px;}footer b{color:var(--ink);font-weight:600;}
+figure.fig{margin:24px 0;}figure.fig a{display:block;border-radius:14px;overflow:hidden;border:1px solid var(--line);cursor:zoom-in;background:var(--code);}
+figure.fig img{display:block;width:100%;height:auto;transition:transform .4s;}figure.fig a:hover img{transform:scale(1.015);}
+figure.fig figcaption{margin-top:8px;font-size:13.5px;color:var(--muted);line-height:1.6;}
+.lb{position:fixed;inset:0;z-index:50;display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px;background:#0d0b16ee;}
+.lb.on{display:flex;}.lb img{max-width:100%;max-height:84vh;border-radius:10px;box-shadow:0 30px 80px #000a;}
+.lb p{margin:0;color:#e9e4f2;font-size:14px;text-align:center;max-width:760px;}
+.lb-x{position:absolute;top:14px;right:18px;width:40px;height:40px;border-radius:50%;border:1px solid #ffffff44;background:transparent;color:#fff;font-size:24px;cursor:pointer;}
+.log-entry{position:relative;padding:0 0 34px 26px;border-left:2px solid var(--line);}
+.log-entry:before{content:'';position:absolute;left:-7px;top:8px;width:12px;height:12px;border-radius:50%;background:var(--bg);border:2px solid var(--accent);}
+.log-entry time{font:500 12.5px 'JetBrains Mono',monospace;color:var(--accent);}
+.log-entry h2{margin:4px 0 6px!important;font-size:21px!important;}
+.log-entry h2 a{color:var(--ink);text-decoration:none;}
+.statement-link{display:flex;justify-content:space-between;align-items:center;}
+.top a.me{display:inline-flex;align-items:center;gap:8px;padding:3px 12px 3px 3px;border:1px solid var(--line);border-radius:99px;transition:border-color .2s;}.top a.me:hover{border-color:var(--accent);}.top a.me img{width:24px;height:24px;border-radius:50%;display:block;}
+.author{max-width:720px;margin:44px auto 0;padding:18px 20px;display:flex;align-items:center;gap:16px;border-radius:18px;background:var(--code);border:1px solid var(--line);}
+.author{box-sizing:border-box;}.author>*{flex:none;}
+.author .an-face img{display:block;width:56px;height:56px;border-radius:50%;border:2px solid var(--accent);}
+.author .an-text{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px;}
+.author .an-text b{font-size:15px;}.author .an-text small{font-size:13px;line-height:1.6;color:var(--muted);}
+.author .an-note{color:var(--ink)!important;}
+.author .an-go{margin:0;white-space:nowrap;}
+@media (max-width:760px){.author{margin:40px 16px 0;}}@media (max-width:600px){.author{flex-wrap:wrap;padding:16px;}.author .an-text{flex-basis:calc(100% - 72px);}.author .an-go{flex:1 1 100%;justify-content:center;text-align:center;}}
+footer{max-width:760px;margin:0 auto;padding:26px 20px 50px;border-top:1px solid var(--line);font-size:14px;color:var(--muted);}
+
+.paper-box{margin:0 0 26px;padding:18px 20px;border-radius:16px;background:var(--paper);border:1px solid var(--line);border-left:4px solid var(--accent2);}
+.paper-box .pv{font:600 12px 'JetBrains Mono',monospace;color:var(--accent2);letter-spacing:.04em;margin:0 0 6px;}
+.paper-box b{display:block;font-size:17px;line-height:1.45;}
+.paper-box .pa{margin:6px 0 0;font-size:13.5px;color:var(--muted);line-height:1.6;}
+.paper-box .pl{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+.paper-box .pl a{font:600 12.5px 'JetBrains Mono',monospace;padding:5px 12px;border-radius:99px;border:1px solid var(--line);text-decoration:none;}
+.paper-box .pl a:hover{border-color:var(--accent);}
+.type{display:inline-block;padding:2px 9px;border-radius:99px;background:var(--accent);color:#fff;font:600 11.5px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;}
+.type.paper{background:var(--accent2);}.type.qa{background:#3f9f86;}.type.post{background:var(--muted);}
+.card .type{margin-bottom:8px;}.card .zh{margin-left:8px;font:500 11.5px 'JetBrains Mono',monospace;color:var(--muted);}
+.now-card{border-left:4px solid var(--accent);}
+.qa{padding:20px 0;border-bottom:1px solid var(--line);}
+.qa .qq{display:flex;gap:12px;font-weight:700;font-size:17px;line-height:1.55;margin:0 0 8px;}
+.qa .qq span,.qa .qa-a>span{flex:none;display:grid;place-items:center;width:28px;height:28px;border-radius:9px;background:var(--code);color:var(--accent);font-size:13px;}
+.qa .qa-a{display:flex;gap:12px;}.qa .qa-a>span{background:var(--accent);color:#fff;}.qa .qa-a article>:first-child{margin-top:0;}
+.qa time{display:block;margin:6px 0 0 40px;font:500 12px 'JetBrains Mono',monospace;color:var(--muted);}
+.ask{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:18px 0 8px;padding:16px 18px;border-radius:16px;background:var(--code);}
+.ask b{display:block;font-size:15.5px;}.ask small{display:block;color:var(--muted);font-size:13px;}
+.ask .btn{flex:none;margin:0;}.ask .btn[aria-disabled]{opacity:.55;pointer-events:none;}
+</style>
+<link rel="alternate" type="application/rss+xml" title="Niansia · Blog" href="/blog/zh-tw/feed.xml"><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BlogPosting", "headline": "V-Skip：把推理鏈壓短，別連「看到的東西」一起刪掉", "description": "把純文字的推理鏈壓縮法直接搬到視覺語言模型上，會刪掉「看圖才說得出來」的詞，推理鏈照樣通順，卻和原圖斷了線，開始出現幻覺。論文把這叫 Visual Amnesia，問題抓得很準；不過它對原因的解釋和幾個數字，我讀完有些保留。", "datePublished": "2026-07-26", "dateModified": "2026-07-26", "inLanguage": "zh-Hant", "author": {"@type": "Person", "name": "Niansia", "url": "https://niansia.com/", "email": "mailto:niansia930202@gmail.com", "sameAs": ["https://github.com/niansia"]}, "mainEntityOfPage": "https://niansia.com/blog/zh-tw/2026-07-26-vskip/", "keywords": "視覺語言模型, 思考鏈, 幻覺, 輕量化", "citation": {"@type": "ScholarlyArticle", "name": "Chain-of-Thought Compression Should Not Be Blind: V-Skip for Efficient Multimodal Reasoning via Dual-Path Anchoring", "url": "https://arxiv.org/abs/2601.13879"}}</script>
+<script defer src="/assets/js/site-stats.js?v=2"></script>
+<script defer src="/assets/js/lightbox.js"></script>
+
+</head>
+<body>
+<header class="top"><a class="me" href="/zh-tw/" title="回到 Niansia 的個人網站" data-nz-title="Niansia"><img src="/assets/icons/author.webp" alt="" width="24" height="24"><b>~/niansia</b></a> / <a href="/blog/zh-tw/">blog</a><span class="sp"></span><span class="langs"><a href="/blog/en/2026-07-26-vskip/" hreflang="en">EN</a><a href="/blog/zh-tw/2026-07-26-vskip/" aria-current="page" hreflang="zh-Hant">繁</a><a href="/blog/zh-cn/2026-07-26-vskip/" hreflang="zh-Hans">简</a></span></header>
+<main><p class="kicker">論文筆記</p><h1>V-Skip：把推理鏈壓短，別連「看到的東西」一起刪掉</h1><p class="lede">把純文字的推理鏈壓縮法直接搬到視覺語言模型上，會刪掉「看圖才說得出來」的詞，推理鏈照樣通順，卻和原圖斷了線，開始出現幻覺。論文把這叫 Visual Amnesia，問題抓得很準；不過它對原因的解釋和幾個數字，我讀完有些保留。</p><div class="meta"><time datetime="2026-07-26">2026-07-26</time><span>6 分鐘閱讀</span><span class="tag">視覺語言模型</span><span class="tag">思考鏈</span><span class="tag">幻覺</span><span class="tag">輕量化</span></div><aside class="paper-box"><p class="pv">arXiv 2026 · 精讀</p><b lang="en">Chain-of-Thought Compression Should Not Be Blind: V-Skip for Efficient Multimodal Reasoning via Dual-Path Anchoring</b><p class="pa" lang="en">Dongxu Zhang, Yiding Sun, Cheng Tan, Wenbiao Yan, Ning Yang, Jihua Zhu, Haijun Zhang</p><div class="pl"><a href="https://arxiv.org/abs/2601.13879" target="_blank" rel="noopener noreferrer">論文 ↗</a></div></aside><article><h2>為什麼讀這篇</h2>
+<p>視覺語言模型越來越會「先想再答」，但推理鏈是一個 token 一個 token 生出來的，寫得越長，等得越久，KV cache 也越大。純文字那邊已經有不少壓縮推理鏈的方法，例如 TokenSkip：先刪掉推理鏈裡不重要的 token，再微調模型，讓它學會直接寫出精簡版。</p>
+<p>我原本以為，把這套搬到圖片上應該差不多。這篇的標題直接回答了我：Chain-of-Thought Compression Should Not Be Blind，壓縮不能是盲的。它把文字方法搬過來時出的問題叫做 Visual Amnesia（視覺失憶）：壓縮後的推理鏈讀起來還是很通順，卻跟原本的圖片斷了線，模型開始產生幻覺。這個名字取得很好，所以我決定把它讀完。</p>
+<h2>這篇在做什麼</h2>
+<p><strong>先看問題。</strong> 純文字的壓縮方法判斷一個 token 重不重要，看的是語言上的資訊量：可以從前文猜到的詞，就算多餘。可是在多模態推理裡，一個 token 重不重要有兩個面向。論文的例子是「紅色的蘋果」：從語言上看，「紅色」一點都不意外，但它可能正是推理鏈裡唯一來自圖片的證據；刪掉之後，後面的推理就只能靠語言上的常識往下走。</p>
+<p><strong>再看做法。</strong> V-Skip 分成三步：</p>
+<ol>
+<li><strong>產生並篩選推理鏈</strong>：用一個老師模型對每組「圖片＋問題」寫完整的推理鏈，答錯的直接丟掉。</li>
+<li><strong>雙路打分，聯集保留</strong>：
+   - 文字路徑：token 的 self-information，也就是 −log P，越好猜分數越低。
+   - 視覺路徑：這個 token 在注意力裡分給圖片 patch 的總量。只取中間 25%～75% 深度的層，每層取最大的那個 head，再對層平均。
+   - 兩條路各自用 (1−γ) 的百分位數當門檻，<strong>只要其中一條過門檻就保留</strong>。γ 是目標壓縮比，0.5 代表大約留一半。</li>
+<li><strong>蒸餾成 LoRA</strong>：用壓縮後的推理鏈對模型做 LoRA 微調（r=16，只加在注意力的投影層，3 個 epoch，8 張 RTX 3090）。推論時模型直接寫出精簡的推理鏈，不需要再算注意力或打分。</li>
+</ol>
+<p>理論包裝是「視覺錨定的資訊瓶頸」（VA-IB）：在長度限制下，同時最大化推理鏈和答案的互資訊，以及推理鏈和圖片在給定問題下的條件互資訊。後者拆開來，就是「只看文字時的不確定性」減去「看了圖之後的不確定性」，也就是挑出那些只看文字猜不到、看了圖就很確定的 token。</p>
+<p>讀到這裡我發現，整條流程其實就是 TokenSkip 的架構（用 LLMLingua-2 刪 token，再用 LoRA 微調），只是多了一條視覺路徑。不過論文在相關研究裡把 TokenSkip 描述成「讓多餘的 token 跳過某些層」，跟 TokenSkip 自己公開的說明對不太上。</p>
+<p>實驗用 Qwen2-VL（2B、7B、72B）和 Llama-3.2-11B-Vision，基準是 MMMU 和 DocVQA 的驗證集，另外用 POPE 測物體幻覺。</p>
+<h2>結果</h2>
+<p>主表是 Qwen2-VL-7B（MMMU 看準確率，DocVQA 看 ANLS，延遲是端到端的秒數）：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">方法</th>
+<th style="text-align: left;">γ</th>
+<th style="text-align: left;">MMMU</th>
+<th style="text-align: left;">延遲</th>
+<th style="text-align: left;">DocVQA</th>
+<th style="text-align: left;">延遲</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">原模型（完整推理鏈）</td>
+<td style="text-align: left;">–</td>
+<td style="text-align: left;">54.1</td>
+<td style="text-align: left;">6.42</td>
+<td style="text-align: left;">91.6</td>
+<td style="text-align: left;">4.87</td>
+</tr>
+<tr>
+<td style="text-align: left;">直接截斷</td>
+<td style="text-align: left;">0.5</td>
+<td style="text-align: left;">38.5</td>
+<td style="text-align: left;">3.23</td>
+<td style="text-align: left;">62.5</td>
+<td style="text-align: left;">2.57</td>
+</tr>
+<tr>
+<td style="text-align: left;">LLMLingua-2</td>
+<td style="text-align: left;">0.5</td>
+<td style="text-align: left;">32.4</td>
+<td style="text-align: left;">3.73</td>
+<td style="text-align: left;">38.5</td>
+<td style="text-align: left;">2.93</td>
+</tr>
+<tr>
+<td style="text-align: left;">ASCoT</td>
+<td style="text-align: left;">0.5</td>
+<td style="text-align: left;">33.1</td>
+<td style="text-align: left;">3.91</td>
+<td style="text-align: left;">40.2</td>
+<td style="text-align: left;">3.10</td>
+</tr>
+<tr>
+<td style="text-align: left;">V-Skip</td>
+<td style="text-align: left;">0.7</td>
+<td style="text-align: left;">51.5</td>
+<td style="text-align: left;">4.65</td>
+<td style="text-align: left;">87.9</td>
+<td style="text-align: left;">3.68</td>
+</tr>
+<tr>
+<td style="text-align: left;">V-Skip</td>
+<td style="text-align: left;">0.5</td>
+<td style="text-align: left;">48.2</td>
+<td style="text-align: left;">3.49</td>
+<td style="text-align: left;">83.7</td>
+<td style="text-align: left;">2.71</td>
+</tr>
+</tbody>
+</table>
+<p>其他幾個我覺得有意思的數字：</p>
+<ul>
+<li><strong>顏色詞留下多少</strong>：γ=0.5 時，推理鏈裡的顏色詞 LLMLingua-2 只留下 42.5%、ASCoT 48.2%、V-Skip 89.4%；物體名稱分別是 64.8%、69.5%、91.2%。</li>
+<li><strong>幻覺</strong>：POPE 問的是「圖裡有沒有某個東西」，答案一半是有、一半是沒有。原模型回答「有」的比例是 50.4%，兩個文字方法壓縮後衝到 66.8%（ASCoT）和 64.5%（LLMLingua-2），F1 從 89.1 掉到 77.1 和 78.9；V-Skip 是 51.2%，F1 88.9。</li>
+<li><strong>聯集比交集好很多</strong>：γ=0.5 時，隨機刪 27.5、只看文字 32.4、只看視覺 40.5（但語法錯誤率 11.2%）、交集 30.1、聯集 48.2（語法錯誤率 1.3%）。</li>
+<li><strong>模型越大越耐壓</strong>：γ=0.5 時，2B 掉 8.5、7B 掉 5.9、72B 掉 3.2。</li>
+<li><strong>視覺分數要從中間層拿</strong>：只用前 25% 的層是 41.5，最後 25% 是 46.8，全部平均是 47.1，中間層是 48.2。</li>
+</ul>
+<h2>讀完最在意的三件事</h2>
+<p><strong>第一，最可怕的是「通順的幻覺」。</strong> POPE 那張表最讓我在意。壓縮後的模型不是明顯變笨，而是越來越愛說「有」：推理鏈裡的視覺證據被刪掉以後，它就退回語言上的常識，比如看到餐桌，就覺得應該也有叉子。推理鏈本身照樣通順，使用者看推理過程也看不出哪裡不對。明顯的錯誤大家會去檢查，流暢又有自信的錯誤才難發現，這也是我覺得這篇比「又快了幾倍」更值得記住的地方。</p>
+<p><strong>第二，論文對「為什麼會被刪」給了兩個方向相反的解釋。</strong> 圖 1 說，「紅色」被刪是因為它在語言上<strong>太好猜</strong>；可是方法那一節和 $45.20 的發票例子又說，視覺相關的 token 在語言上<strong>很難猜</strong>（困惑度高），所以被當成雜訊刪掉。這兩種說法方向相反，而且照 V-Skip 自己的文字路徑，分數高、難猜的 token 本來就會被留下來。另外，LLMLingua-2 其實不是用困惑度，而是一個只讀文字的 token 分類器，它根本看不到圖。</p>
+<p>我自己比較相信的解釋是：問題出在「誰在算機率」。如果用看得到圖的模型自己來算 −log P，「紅色」之所以好猜，不是因為前面說了蘋果，而是因為<strong>模型看到了圖</strong>。越是靠圖片才說得出來的詞，模型越有把握，分數就越低，越容易被當成廢話，換句話說，接地接得越好的 token，越會被這種打分方式懲罰。這是我讀完覺得最諷刺的地方。</p>
+<p><strong>第三，用注意力當「有沒有在看圖」的證據，我還不太服氣。</strong> 論文引用對比學習（CPC）的理論，說注意力權重可以當成互資訊的下界；但它算的是語言模型解碼器裡的注意力，這部分是用「預測下一個 token」訓練的，不是對比學習。注意力也有不少已知的怪現象，例如某些 token 不管內容是什麼都會吸走大量注意力。層的選擇對結果影響不小（41.5 到 48.2），也說明這個訊號需要細調。</p>
+<p>既然打分是離線做的，不怕多花一點算力，我反而想直接照 VA-IB 的式子算：同一個 token，用「有圖」和「沒有圖」各跑一次，看機率差多少。這才是式子裡「看了圖之後不確定性下降多少」的直接估計。</p>
+<h2>數字要對著表看</h2>
+<ul>
+<li><strong>2.9 倍加速在表裡找不到。</strong> 摘要和結論都說 2.9 倍，但 Qwen2-VL-7B 的主表裡，γ=0.5 時 MMMU 是 6.42 → 3.49 秒、DocVQA 是 4.87 → 2.71 秒，大約 1.8 倍，正文自己也寫 DocVQA 是 1.8 倍。</li>
+<li><strong>「幾乎沒有損失」要看壓多少。</strong> γ=0.5 時 MMMU 掉 5.9、DocVQA 掉 7.9，我不會說這可以忽略。真的幾乎沒掉的是 γ=0.9（掉 0.5 和 0.8），但延遲只從 6.42 秒降到 5.89 秒。我覺得比較實際的是 γ=0.7：掉 2.6 和 3.7，快大約 1.3 到 1.4 倍。</li>
+<li><strong>直接截斷贏過兩個文字壓縮法。</strong> 這是主表裡最讓我意外的一列：只把推理鏈截到一半（論文沒有定義，我猜是留前半），MMMU 38.5、DocVQA 62.5，都比 LLMLingua-2 和 ASCoT 好很多。我猜是因為視覺語言模型的推理鏈常常先描述圖片、再推理，留前半剛好保住了視覺描述；但這也讓我懷疑基準線是怎麼跑的。論文說 V-Skip 比 LLMLingua-2 快，是因為後者要「線上過濾」，看起來基準線沒有經過同樣的 LoRA 蒸餾。最公平的對照應該是 TokenSkip：一樣的 LoRA 訓練，只差打分方式，這樣才知道進步有多少來自視覺分數、多少來自訓練。</li>
+<li><strong>兩個 32.4。</strong> 消融表裡「只看文字」的 32.4，跟主表 LLMLingua-2 的 32.4 一模一樣，我不確定它們是不是同一組實驗。</li>
+<li><strong>少了「不推理、直接回答」的對照組。</strong> 表裡「完整推理鏈」的 MMMU 分數（2B 41.2、7B 54.1、72B 64.5），跟 Qwen2-VL 技術報告的分數（41.1、54.1、64.5）幾乎一樣。我不知道技術報告是不是用推理鏈測的，但少了這一列，就看不出推理鏈在 MMMU 上本身幫了多少。如果直接回答就有 54 分左右，那壓到 48.2 的推理鏈，等於比不推理還慢、還差，壓縮推理鏈的前提，是推理鏈本身有用。</li>
+</ul>
+<h2>放到家用顯卡上</h2>
+<p>這篇對個人研究者其實很友善：打分全部離線做，推論時只是多一個 LoRA，不用額外計算。LoRA rank 的消融表寫到，r=16 時訓練的顯存峰值是 18.5 GB（表裡沒寫是哪個模型，但準確率 48.2 跟 7B 的主表一樣，應該是 7B）。這是 8 張卡一起訓練時的數字，換成單卡要靠梯度累積，不過看起來一張 24 GB 的卡有機會放得下。</p>
+<p>但「模型越大越耐壓」那張表讓我有點擔心。最怕壓的是 2B，掉了 8.5 分，作者的解釋是小模型的推理鏈本來就很密，沒什麼可以刪；可是在自己電腦上跑的，偏偏就是這些小模型。最需要省的模型，也最禁不起省，所以小模型可能更需要「看題目決定壓多少」，而不是一個固定的 γ。</p>
+<h2>我的疑問</h2>
+<ul>
+<li><strong>訓練資料從哪裡來？</strong> 論文沒寫老師模型是哪一個，也沒寫拿哪些資料產生推理鏈來蒸餾。MMMU 有公開答案的只有 dev（150 題）和驗證集（900 題），而評估用的就是驗證集，我很想知道訓練用的是什麼。</li>
+<li><strong>推理鏈很短。</strong> 原模型在 MMMU 平均只寫 245 個 token，DocVQA 是 189 個，模型也都是 2024 年的。現在會長篇思考的視覺語言模型動不動就寫幾千個 token，那才是最需要壓縮的地方；視覺證據散在長推理鏈裡，被刪掉的風險可能更高，但這篇沒有測。</li>
+<li><strong>不壓縮時反而比較慢。</strong> γ=1.0 的 V-Skip（6.54 秒）比原模型（6.42 秒）慢一點，可能是 LoRA 沒有合併回權重的開銷。差距很小，但「零額外成本」還是要看怎麼部署。</li>
+<li><strong>沒有公開程式碼。</strong> 我讀的時候找不到程式碼，聯集門檻、層的選擇這些細節沒辦法自己確認。</li>
+</ul>
+<h2>讀完之後想試的事</h2>
+<ol>
+<li><strong>直接估計「看了圖多知道多少」</strong>：同一個 token，用有圖和沒有圖（或換成空白圖）各算一次 log P，把差值當視覺分數，和注意力分數比較，看哪一個更能找出真正的視覺錨點。</li>
+<li><strong>補兩個對照組</strong>：「不推理、直接回答」和「TokenSkip（同樣的 LoRA 訓練）」，把推理鏈本身的價值、訓練的效果和視覺分數的效果分開。</li>
+<li><strong>把 POPE 的「有」比例當成固定檢查</strong>：以後看到任何壓縮方法（推理鏈、視覺 token、量化都一樣），都順手看模型是不是變得比較愛說「有」，這比只看準確率更早發現它開始脫離圖片。</li>
+<li><strong>換成會長篇思考的小模型</strong>：例如 Qwen3-VL 的小型 Thinking 版本，看視覺錨點在長推理鏈裡分布在哪裡，是不是大多集中在開頭描述圖片的那一段。</li>
+</ol>
+<hr>
+<p>論文的數字已對照 arXiv v4（2026 年 3 月 11 日）的 PDF；Qwen2-VL 的分數取自它的技術報告（arXiv 2409.12191）。</p></article><div class="ask"><div><b>Q&amp;A</b><small>匿名提問，在這裡回答。</small></div><a class="btn primary" href="https://forms.gle/yNUw4eLZeeqf3Arb6" target="_blank" rel="noopener noreferrer">匿名提問 ↗</a></div><h2 style="margin-top:48px">其他文章</h2><a class="card" href="/blog/zh-tw/2026-09-30-rine/"><span class="type paper">論文筆記</span><b>RINE：中間層真的比最後一層更懂「假」嗎？</b><small>RINE 用 CLIP 中間層的特徵偵測生成圖，和我自己的實驗結論大致相同；但在「野外干擾」下，最有用的層會換人，增強的廣度也比從哪一層拿特徵更關鍵。</small></a><a class="card" href="/blog/zh-tw/2026-09-29-now/"><span class="type now">近況</span><b>2026 年 9 月：作品與考卷分享區上線，開始準備 CVPR</b><small>這個月把 Taiwan Exam、考卷分享區、LumiGrid 網頁版和 Adversarial Lab 放上線，網站也搬到 niansia.com；接下來的重心是 11 月中的 CVPR 2027 投稿。</small></a><a class="card" href="/blog/zh-tw/2026-09-14-reroute/"><span class="type paper">論文筆記</span><b>Reroute：丟掉的視覺 token，晚點還能撿回來嗎？</b><small>Reroute 把「刪掉低分的視覺 token」改成「先延後，之後還能回來」，不用訓練，壓得越狠救回越多。我們正在研究長影片壓縮後，遺失的畫面怎麼找回、怎麼重新定位，這篇剛好從最小的地方切進去。</small></a><div class="btns"><a class="btn" href="/blog/zh-tw/">全部文章</a><a class="btn primary" href="/zh-tw/#blog">回到作品集</a></div></main>
+<aside class="author" aria-label="由 Niansia 製作"><a class="an-face" href="/zh-tw/" tabindex="-1" aria-hidden="true" data-nz-title="Niansia"><img src="/assets/icons/author.webp" alt="" width="56" height="56" loading="lazy"></a><div class="an-text"><b>由 Niansia 製作</b><small>陽明交大資工碩士生，研究 AI 安全、電腦視覺與視覺語言模型。</small></div><a class="btn primary an-go" href="/zh-tw/" data-nz-title="Niansia">前往 niansia.com →</a></aside>
+<footer>有問題或想法？寫信到 <a href="mailto:niansia930202@gmail.com">niansia930202@gmail.com</a> · <a href="/zh-tw/">niansia.com</a> · <a href="https://github.com/niansia">github.com/niansia</a><span class="stats" data-stats hidden> · <i class="live-dot"></i> <b data-stat="online">–</b> 人在線 · <b data-stat="total">–</b> 次造訪</span></footer>
+</body>
+</html>

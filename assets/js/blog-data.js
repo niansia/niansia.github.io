@@ -108,6 +108,25 @@ window.NIANSIA_BLOG = {
     "venue": "arXiv 2026",
     "depth": "deep",
     "url": "/blog/en/2026-08-06-act2see/"
+   },
+   {
+    "slug": "2026-07-26-vskip",
+    "type": "paper",
+    "title": "V-Skip: when you shorten the reasoning, don't cut out what the model saw",
+    "description": "Move a text-only chain-of-thought compressor onto a vision-language model and it deletes the words that only the image could supply. The reasoning still reads smoothly, but it has come loose from the picture, and hallucinations follow. The paper calls this Visual Amnesia and it names a real problem; I have reservations about its explanation of the cause and about a few of its numbers.",
+    "date": "2026-07-26",
+    "minutes": 10,
+    "tags": [
+     "vision-language models",
+     "chain of thought",
+     "hallucination",
+     "efficiency"
+    ],
+    "lang": "en",
+    "paper": "Chain-of-Thought Compression Should Not Be Blind: V-Skip for Efficient Multimodal Reasoning via Dual-Path Anchoring",
+    "venue": "arXiv 2026",
+    "depth": "deep",
+    "url": "/blog/en/2026-07-26-vskip/"
    }
   ],
   "zh-TW": [
@@ -217,6 +236,25 @@ window.NIANSIA_BLOG = {
     "venue": "arXiv 2026",
     "depth": "deep",
     "url": "/blog/zh-tw/2026-08-06-act2see/"
+   },
+   {
+    "slug": "2026-07-26-vskip",
+    "type": "paper",
+    "title": "V-Skip：把推理鏈壓短，別連「看到的東西」一起刪掉",
+    "description": "把純文字的推理鏈壓縮法直接搬到視覺語言模型上，會刪掉「看圖才說得出來」的詞，推理鏈照樣通順，卻和原圖斷了線，開始出現幻覺。論文把這叫 Visual Amnesia，問題抓得很準；不過它對原因的解釋和幾個數字，我讀完有些保留。",
+    "date": "2026-07-26",
+    "minutes": 6,
+    "tags": [
+     "視覺語言模型",
+     "思考鏈",
+     "幻覺",
+     "輕量化"
+    ],
+    "lang": "zh-TW",
+    "paper": "Chain-of-Thought Compression Should Not Be Blind: V-Skip for Efficient Multimodal Reasoning via Dual-Path Anchoring",
+    "venue": "arXiv 2026",
+    "depth": "deep",
+    "url": "/blog/zh-tw/2026-07-26-vskip/"
    }
   ],
   "zh-CN": [
@@ -326,6 +364,25 @@ window.NIANSIA_BLOG = {
     "venue": "arXiv 2026",
     "depth": "deep",
     "url": "/blog/zh-cn/2026-08-06-act2see/"
+   },
+   {
+    "slug": "2026-07-26-vskip",
+    "type": "paper",
+    "title": "V-Skip：把推理链压短，别连「看到的东西」一起删掉",
+    "description": "把纯文本的推理链压缩法直接搬到视觉语言模型上，会删掉「看图才说得出来」的词，推理链照样通顺，却和原图断了线，开始出现幻觉。论文把这叫 Visual Amnesia，问题抓得很准；不过它对原因的解释和几个数字，我读完有些保留。",
+    "date": "2026-07-26",
+    "minutes": 6,
+    "tags": [
+     "视觉语言模型",
+     "思考链",
+     "幻觉",
+     "轻量化"
+    ],
+    "lang": "zh-CN",
+    "paper": "Chain-of-Thought Compression Should Not Be Blind: V-Skip for Efficient Multimodal Reasoning via Dual-Path Anchoring",
+    "venue": "arXiv 2026",
+    "depth": "deep",
+    "url": "/blog/zh-cn/2026-07-26-vskip/"
    }
   ]
  }
