@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VisionPulse: at every step of the reasoning, the model needs to see something different · Niansia</title>
+<meta name="description" content="VisionPulse finds that a model&#x27;s reliance on the image changes from one reasoning step to the next, so at each step it keeps only the visual tokens needed right then. With 5% kept, accuracy barely moves and the reasoning gets shorter. I love the observation; but it saves compute rather than memory, the experiments are all on images, and the double explosion of long video plus long reasoning is still untouched.">
+<link rel="canonical" href="https://niansia.com/blog/en/2026-07-31-visionpulse/">
+<link rel="alternate" hreflang="en" href="https://niansia.com/blog/en/2026-07-31-visionpulse/"><link rel="alternate" hreflang="zh-Hant-TW" href="https://niansia.com/blog/zh-tw/2026-07-31-visionpulse/"><link rel="alternate" hreflang="zh-Hans-CN" href="https://niansia.com/blog/zh-cn/2026-07-31-visionpulse/"><link rel="alternate" hreflang="x-default" href="https://niansia.com/blog/en/2026-07-31-visionpulse/">
+<meta property="og:type" content="article"><meta property="og:site_name" content="Niansia">
+<meta property="og:title" content="VisionPulse: at every step of the reasoning, the model needs to see something different · Niansia"><meta property="og:description" content="VisionPulse finds that a model&#x27;s reliance on the image changes from one reasoning step to the next, so at each step it keeps only the visual tokens needed right then. With 5% kept, accuracy barely moves and the reasoning gets shorter. I love the observation; but it saves compute rather than memory, the experiments are all on images, and the double explosion of long video plus long reasoning is still untouched.">
+<meta property="og:url" content="https://niansia.com/blog/en/2026-07-31-visionpulse/"><meta property="og:image" content="https://niansia.com/assets/og/blog-2026-07-31-visionpulse-en.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta property="og:locale" content="en">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://niansia.com/assets/og/blog-2026-07-31-visionpulse-en.jpg">
+
+<meta name="theme-color" content="#fbf6ee" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#15142a" media="(prefers-color-scheme: dark)">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://*.firebasedatabase.app; connect-src 'self' https://*.firebasedatabase.app wss://*.firebasedatabase.app; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; frame-src https://*.firebasedatabase.app; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml">
+<script src="/assets/js/page-transition.js?v=3"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root{--bg:#fbf6ee;--paper:#fffdf9;--ink:#2a2230;--muted:#766b73;--line:#2a22301a;--accent:#c0673a;--accent2:#8f6bb3;--code:#f3ece2;}
+@media(prefers-color-scheme:dark){:root{--bg:#15142a;--paper:#1c1a36;--ink:#f1ebe2;--muted:#aaa3bd;--line:#ffffff1a;--accent:#f0a878;--accent2:#b69ae6;--code:#26234a;}}
+*{box-sizing:border-box;}html{-webkit-text-size-adjust:100%;}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.85 Inter,'Noto Sans TC','Noto Sans SC',system-ui,sans-serif;}
+a{color:var(--accent);text-underline-offset:3px;}
+.top{max-width:1080px;margin:0 auto;padding:18px 20px;display:flex;align-items:center;gap:10px;font:500 13px 'JetBrains Mono',monospace;color:var(--muted);}
+.top a{color:var(--muted);text-decoration:none;}.top a:hover{color:var(--accent);}
+.top b{color:var(--ink);font-weight:500;}.top .sp{flex:1;}
+.langs a{padding:4px 9px;border-radius:99px;border:1px solid var(--line);margin-left:4px;}.langs a[aria-current]{color:var(--ink);border-color:var(--accent);}
+main{max-width:760px;margin:0 auto;padding:10px 20px 70px;}
+.kicker{font:500 12px 'JetBrains Mono',monospace;color:var(--accent);letter-spacing:.06em;text-transform:uppercase;margin:24px 0 8px;}
+h1{font-size:clamp(28px,4.4vw,42px);line-height:1.2;letter-spacing:-.02em;margin:0 0 14px;}
+.lede{font-size:18px;color:var(--muted);margin:0 0 16px;line-height:1.7;}
+.meta{display:flex;flex-wrap:wrap;gap:8px 14px;font:500 12.5px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;color:var(--muted);padding-bottom:22px;border-bottom:1px solid var(--line);margin-bottom:10px;}
+.meta span.tag{padding:2px 9px;border-radius:99px;background:var(--code);}
+article h2{font-size:23px;margin:40px 0 10px;letter-spacing:-.01em;}
+article h3{font-size:18px;margin:28px 0 8px;}
+article p,article li{color:var(--ink);}
+article code{font:14px 'JetBrains Mono',monospace;background:var(--code);padding:1px 6px;border-radius:6px;}
+article table{width:100%;border-collapse:collapse;margin:18px 0;font-size:14.5px;display:block;overflow-x:auto;}
+article th,article td{padding:8px 12px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap;}
+article th{font-weight:600;color:var(--muted);font-size:13px;}
+article td:not(:first-child),article th:not(:first-child){text-align:right;}
+article td[style*="left"],article th[style*="left"]{white-space:normal;min-width:6.5em;}   /* text tables (|:---|) wrap instead of scrolling */
+article strong{color:var(--ink);}
+article blockquote{margin:18px 0;padding:4px 18px;border-left:3px solid var(--accent);color:var(--muted);}
+.card{display:block;padding:18px 20px;margin:12px 0;border-radius:16px;background:var(--paper);border:1px solid var(--line);text-decoration:none;color:var(--ink);transition:transform .25s,border-color .25s;}
+.card:hover{transform:translateY(-2px);border-color:var(--accent);}
+.card b{display:block;font-size:18px;line-height:1.4;margin-bottom:4px;}.card small{display:block;color:var(--muted);font-size:14px;line-height:1.6;}
+.card i{display:block;font:normal 500 12px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;color:var(--accent);margin-top:8px;}
+.hero{width:100%;height:auto;border-radius:16px;border:1px solid var(--line);display:block;margin:6px 0 18px;}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px;}.chips span{font:500 12px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;padding:4px 11px;border-radius:99px;background:var(--code);}
+.btns{display:flex;flex-wrap:wrap;gap:10px;margin:22px 0;}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:12px;border:1px solid var(--line);background:var(--paper);color:var(--ink);text-decoration:none;font-weight:600;font-size:14px;}
+.btn.primary{background:var(--accent);border-color:transparent;color:var(--paper);}
+.btn:hover{border-color:var(--accent);}
+.note{font-size:13.5px;color:var(--muted);}
+.live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#34c38f;box-shadow:0 0 0 3px #34c38f33;vertical-align:1px;}footer b{color:var(--ink);font-weight:600;}
+figure.fig{margin:24px 0;}figure.fig a{display:block;border-radius:14px;overflow:hidden;border:1px solid var(--line);cursor:zoom-in;background:var(--code);}
+figure.fig img{display:block;width:100%;height:auto;transition:transform .4s;}figure.fig a:hover img{transform:scale(1.015);}
+figure.fig figcaption{margin-top:8px;font-size:13.5px;color:var(--muted);line-height:1.6;}
+.lb{position:fixed;inset:0;z-index:50;display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px;background:#0d0b16ee;}
+.lb.on{display:flex;}.lb img{max-width:100%;max-height:84vh;border-radius:10px;box-shadow:0 30px 80px #000a;}
+.lb p{margin:0;color:#e9e4f2;font-size:14px;text-align:center;max-width:760px;}
+.lb-x{position:absolute;top:14px;right:18px;width:40px;height:40px;border-radius:50%;border:1px solid #ffffff44;background:transparent;color:#fff;font-size:24px;cursor:pointer;}
+.log-entry{position:relative;padding:0 0 34px 26px;border-left:2px solid var(--line);}
+.log-entry:before{content:'';position:absolute;left:-7px;top:8px;width:12px;height:12px;border-radius:50%;background:var(--bg);border:2px solid var(--accent);}
+.log-entry time{font:500 12.5px 'JetBrains Mono',monospace;color:var(--accent);}
+.log-entry h2{margin:4px 0 6px!important;font-size:21px!important;}
+.log-entry h2 a{color:var(--ink);text-decoration:none;}
+.statement-link{display:flex;justify-content:space-between;align-items:center;}
+.top a.me{display:inline-flex;align-items:center;gap:8px;padding:3px 12px 3px 3px;border:1px solid var(--line);border-radius:99px;transition:border-color .2s;}.top a.me:hover{border-color:var(--accent);}.top a.me img{width:24px;height:24px;border-radius:50%;display:block;}
+.author{max-width:720px;margin:44px auto 0;padding:18px 20px;display:flex;align-items:center;gap:16px;border-radius:18px;background:var(--code);border:1px solid var(--line);}
+.author{box-sizing:border-box;}.author>*{flex:none;}
+.author .an-face img{display:block;width:56px;height:56px;border-radius:50%;border:2px solid var(--accent);}
+.author .an-text{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px;}
+.author .an-text b{font-size:15px;}.author .an-text small{font-size:13px;line-height:1.6;color:var(--muted);}
+.author .an-note{color:var(--ink)!important;}
+.author .an-go{margin:0;white-space:nowrap;}
+@media (max-width:760px){.author{margin:40px 16px 0;}}@media (max-width:600px){.author{flex-wrap:wrap;padding:16px;}.author .an-text{flex-basis:calc(100% - 72px);}.author .an-go{flex:1 1 100%;justify-content:center;text-align:center;}}
+footer{max-width:760px;margin:0 auto;padding:26px 20px 50px;border-top:1px solid var(--line);font-size:14px;color:var(--muted);}
+
+.paper-box{margin:0 0 26px;padding:18px 20px;border-radius:16px;background:var(--paper);border:1px solid var(--line);border-left:4px solid var(--accent2);}
+.paper-box .pv{font:600 12px 'JetBrains Mono',monospace;color:var(--accent2);letter-spacing:.04em;margin:0 0 6px;}
+.paper-box b{display:block;font-size:17px;line-height:1.45;}
+.paper-box .pa{margin:6px 0 0;font-size:13.5px;color:var(--muted);line-height:1.6;}
+.paper-box .pl{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+.paper-box .pl a{font:600 12.5px 'JetBrains Mono',monospace;padding:5px 12px;border-radius:99px;border:1px solid var(--line);text-decoration:none;}
+.paper-box .pl a:hover{border-color:var(--accent);}
+.type{display:inline-block;padding:2px 9px;border-radius:99px;background:var(--accent);color:#fff;font:600 11.5px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;}
+.type.paper{background:var(--accent2);}.type.qa{background:#3f9f86;}.type.post{background:var(--muted);}
+.card .type{margin-bottom:8px;}.card .zh{margin-left:8px;font:500 11.5px 'JetBrains Mono',monospace;color:var(--muted);}
+.now-card{border-left:4px solid var(--accent);}
+.qa{padding:20px 0;border-bottom:1px solid var(--line);}
+.qa .qq{display:flex;gap:12px;font-weight:700;font-size:17px;line-height:1.55;margin:0 0 8px;}
+.qa .qq span,.qa .qa-a>span{flex:none;display:grid;place-items:center;width:28px;height:28px;border-radius:9px;background:var(--code);color:var(--accent);font-size:13px;}
+.qa .qa-a{display:flex;gap:12px;}.qa .qa-a>span{background:var(--accent);color:#fff;}.qa .qa-a article>:first-child{margin-top:0;}
+.qa time{display:block;margin:6px 0 0 40px;font:500 12px 'JetBrains Mono',monospace;color:var(--muted);}
+.ask{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:18px 0 8px;padding:16px 18px;border-radius:16px;background:var(--code);}
+.ask b{display:block;font-size:15.5px;}.ask small{display:block;color:var(--muted);font-size:13px;}
+.ask .btn{flex:none;margin:0;}.ask .btn[aria-disabled]{opacity:.55;pointer-events:none;}
+</style>
+<link rel="alternate" type="application/rss+xml" title="Niansia · Blog" href="/blog/en/feed.xml"><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BlogPosting", "headline": "VisionPulse: at every step of the reasoning, the model needs to see something different", "description": "VisionPulse finds that a model's reliance on the image changes from one reasoning step to the next, so at each step it keeps only the visual tokens needed right then. With 5% kept, accuracy barely moves and the reasoning gets shorter. I love the observation; but it saves compute rather than memory, the experiments are all on images, and the double explosion of long video plus long reasoning is still untouched.", "datePublished": "2026-07-31", "dateModified": "2026-07-31", "inLanguage": "en", "author": {"@type": "Person", "name": "Niansia", "url": "https://niansia.com/", "email": "mailto:niansia930202@gmail.com", "sameAs": ["https://github.com/niansia"]}, "mainEntityOfPage": "https://niansia.com/blog/en/2026-07-31-visionpulse/", "keywords": "vision-language models, visual token reduction, chain of thought, efficiency", "citation": {"@type": "ScholarlyArticle", "name": "VisionPulse: Dynamic Visual Sparsity for Efficient Multimodal Reasoning", "url": "https://arxiv.org/abs/2605.31457"}}</script>
+<script defer src="/assets/js/site-stats.js?v=2"></script>
+<script defer src="/assets/js/lightbox.js"></script>
+
+</head>
+<body>
+<header class="top"><a class="me" href="/" title="Back to Niansia&#x27;s website" data-nz-title="Niansia"><img src="/assets/icons/author.webp" alt="" width="24" height="24"><b>~/niansia</b></a> / <a href="/blog/en/">blog</a><span class="sp"></span><span class="langs"><a href="/blog/en/2026-07-31-visionpulse/" aria-current="page" hreflang="en">EN</a><a href="/blog/zh-tw/2026-07-31-visionpulse/" hreflang="zh-Hant">繁</a><a href="/blog/zh-cn/2026-07-31-visionpulse/" hreflang="zh-Hans">简</a></span></header>
+<main><p class="kicker">Paper note</p><h1>VisionPulse: at every step of the reasoning, the model needs to see something different</h1><p class="lede">VisionPulse finds that a model&#x27;s reliance on the image changes from one reasoning step to the next, so at each step it keeps only the visual tokens needed right then. With 5% kept, accuracy barely moves and the reasoning gets shorter. I love the observation; but it saves compute rather than memory, the experiments are all on images, and the double explosion of long video plus long reasoning is still untouched.</p><div class="meta"><time datetime="2026-07-31">2026-07-31</time><span>8 min read</span><span class="tag">vision-language models</span><span class="tag">visual token reduction</span><span class="tag">chain of thought</span><span class="tag">efficiency</span></div><aside class="paper-box"><p class="pv">ICML 2026 · Read closely</p><b lang="en">VisionPulse: Dynamic Visual Sparsity for Efficient Multimodal Reasoning</b><p class="pa" lang="en">Hengbo Xu, Shengjie Jin, Yanbiao Ma, Zhiwu Lu</p><div class="pl"><a href="https://arxiv.org/abs/2605.31457" target="_blank" rel="noopener noreferrer">Paper ↗</a></div></aside><article><h2>Why this paper</h2>
+<p>A few days ago I read V-Skip, which compresses from the reasoning side and warned me not to cut out what the model saw. This paper comes at it from the other side: it compresses the visual tokens.</p>
+<p>There are many ways to reduce visual tokens, FastV and VisionZip among them, but nearly all of them decide once, at prefill, which tokens to keep, and use that same set for the whole generation. That makes sense for a model that answers directly. Today's vision-language models, though, think for thousands of tokens before answering. Can the set chosen at the start really carry the whole chain? VisionPulse takes the question head-on, and it was accepted at ICML 2026, so I read it through.</p>
+<h2>What the paper does</h2>
+<p><strong>An observation first.</strong> While Qwen3-VL-4B-Thinking reasons, the authors record how much attention each generated token puts on the image (the paper calls it visual attention mass), and see three things:</p>
+<ol>
+<li><strong>Reliance comes in pulses.</strong> On purely textual steps such as "let's check the options", the model barely looks at the image; when it writes about a concrete object such as the square vent or the door handle, its look at the image spikes.</li>
+<li><strong>Where it looks keeps moving.</strong> The attended region shifts with whatever the model is writing about.</li>
+<li><strong>The start is when it knows least.</strong> At prefill the model is producing its first word, "So"; attention is diffuse and says almost nothing about what will matter later. That is exactly when static pruning makes its decision.</li>
+</ol>
+<p>They also describe what they call a coupled bottleneck: keeping every visual token available for the whole chain can pull the model toward irrelevant things. In their example, asked whether the traffic lights are green, the model sees stopped cars and concludes the light must be red, instead of looking at the light itself.</p>
+<p><strong>Then the method.</strong> VisionPulse needs no training:</p>
+<ul>
+<li>For every generated token, at layer 17 (the same layer as the FastV baseline), it computes the token's attention to each visual token, averages over heads to get an importance score, and keeps only the top K for the later layers.</li>
+<li>K is not fixed. The authors find that the total attention on the image correlates strongly with the number of visual tokens that actually receive attention (Pearson r between 0.82 and 0.95 across thresholds), so they set the step's budget to that total times the number of visual tokens. The total uses a softmax with temperature τ below 1 to suppress the long tail, and takes the maximum over heads to stay conservative.</li>
+<li>For a fair comparison, the budget is clamped: 5–10% of tokens for "≤10%", 1–5% for "≤5%".</li>
+</ul>
+<p>The main model is Qwen3-VL-4B-Thinking on seven benchmarks (CharXiv, InfoVQA, ChartQA, MMStar, RealWorldQA, MMVet, MIA-Bench), with Qwen3-VL-8B-Thinking and InternVL3.5-4B-Thinking to check that it carries over.</p>
+<h2>Results</h2>
+<p>Averages over the seven benchmarks (Qwen3-VL-4B-Thinking; length is the average number of generated tokens):</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Method</th>
+<th style="text-align: left;">Visual tokens</th>
+<th style="text-align: left;">Avg accuracy</th>
+<th style="text-align: left;">Avg length</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Original</td>
+<td style="text-align: left;">all</td>
+<td style="text-align: left;">72.68</td>
+<td style="text-align: left;">1,687</td>
+</tr>
+<tr>
+<td style="text-align: left;">VisionZip</td>
+<td style="text-align: left;">≤10%</td>
+<td style="text-align: left;">43.82</td>
+<td style="text-align: left;">2,603</td>
+</tr>
+<tr>
+<td style="text-align: left;">FastV</td>
+<td style="text-align: left;">≤10%</td>
+<td style="text-align: left;">38.09</td>
+<td style="text-align: left;">2,753</td>
+</tr>
+<tr>
+<td style="text-align: left;">LOOK-M</td>
+<td style="text-align: left;">≤10%</td>
+<td style="text-align: left;">54.84</td>
+<td style="text-align: left;">2,675</td>
+</tr>
+<tr>
+<td style="text-align: left;">VisionPulse</td>
+<td style="text-align: left;">≤10%</td>
+<td style="text-align: left;">72.69</td>
+<td style="text-align: left;">1,480</td>
+</tr>
+<tr>
+<td style="text-align: left;">VisionZip</td>
+<td style="text-align: left;">≤5%</td>
+<td style="text-align: left;">39.31</td>
+<td style="text-align: left;">1,996</td>
+</tr>
+<tr>
+<td style="text-align: left;">FastV</td>
+<td style="text-align: left;">≤5%</td>
+<td style="text-align: left;">35.69</td>
+<td style="text-align: left;">2,187</td>
+</tr>
+<tr>
+<td style="text-align: left;">LOOK-M</td>
+<td style="text-align: left;">≤5%</td>
+<td style="text-align: left;">44.62</td>
+<td style="text-align: left;">3,509</td>
+</tr>
+<tr>
+<td style="text-align: left;">VisionPulse</td>
+<td style="text-align: left;">≤5%</td>
+<td style="text-align: left;">71.35</td>
+<td style="text-align: left;">1,499</td>
+</tr>
+</tbody>
+</table>
+<p>A few more numbers:</p>
+<ul>
+<li><strong>It actually keeps less than 5%</strong>: in the ablation (RealWorldQA, MMVet, MIA-Bench), the dynamic budget keeps only 1.9% of visual tokens on average, with an average accuracy of 75.54 (original 75.74) and 16.6% shorter output. A fixed 1% gets 71.03 with 27.9% longer output; a fixed 5% gets 75.16; a random budget (3.0% on average) gets 72.93.</li>
+<li><strong>It carries over to other models</strong>: Qwen3-VL-8B-Thinking goes from 85.72 to 85.87 and InternVL3.5-4B-Thinking from 72.04 to 72.63, against 73.41 and 63.41 for FastV under the same setting.</li>
+<li><strong>Speed</strong>: with batch size 8 and 1,000 generated tokens, end-to-end latency is 1.20, 1.24 and 1.30 times faster at 8K, 16K and 32K context.</li>
+<li><strong>Many tokens are never looked at</strong>: the appendix shows that a sizeable share of visual tokens never cross the attention threshold during the entire chain.</li>
+</ul>
+<h2>Three things that stay with me</h2>
+<p><strong>First, prune the wrong tokens and the reasoning gets longer.</strong> I had assumed that cutting visual tokens would only make a model less accurate. It also makes it wordier. At ≤5%, LOOK-M generates 108% more tokens and still loses 38.6% of its accuracy (relative). The vent example in the appendix says it all: VisionZip and FastV both conclude "there is no vent in the image", and FastV gets there after writing "Wait, let me check again" over and over. Without the evidence, the model tries to make up for it with longer reasoning, and ends up both slower and wrong.</p>
+<p>This is the same story as POPE in V-Skip, told differently. There, once the visual evidence was cut from the chain, the model said "yes" more often; here, once the visual tokens are cut, the model starts going in circles. Accuracy alone is not enough to judge a compression method; output length and answer bias have to be watched too.</p>
+<p><strong>Second, it uses the same signal as V-Skip.</strong> VisionPulse's Figure 1, where the look at the image spikes on "square" and "handle", is essentially V-Skip's visual anchor. V-Skip uses the signal to decide which reasoning tokens must not be cut; VisionPulse uses it to decide how many visual tokens a step gets. Read together, the two papers say clearly that the reasoning chain and the visual tokens are not two separate costs. VisionPulse's Equation 1 even writes it out: total decoding cost is roughly proportional to g·(p+v) + g², where g is the reasoning length and v the number of visual tokens. The g times v term is the point.</p>
+<p><strong>Third, it saves compute, not memory.</strong> The paper doesn't say this outright; I'm inferring it from the method. Each step picks a different set, so the KV cache for every visual token has to stay; prefill runs as usual, the layers before 17 still see everything, and layer 17 must score every visual token before choosing. What is actually saved is the attention computation in the later layers, which also explains why the speed-up is only 1.2–1.3×. So "keep 5%" in the table means something different from a static method's "keep 5%", which really deletes the tokens and really frees memory. The paper doesn't report memory use; the appendix does try FastV deleting half the tokens at prefill followed by VisionPulse (average 69.4 → 70.4), which I think is the more practical setup.</p>
+<h2>Long video plus long reasoning: a double explosion nobody has tackled</h2>
+<p>By the end I noticed that this line of work is tested almost entirely on images. VisionPulse's own formula says "images or videos", and its related work notes that a video can take tens of thousands of visual tokens, yet all seven benchmarks are single images.</p>
+<p>That kept me thinking about video reasoning models, the Video-R1 generation that thinks at length before answering. Put them into the g·v term: a long video makes v tens of thousands, long reasoning makes g thousands, and the two blow up together, so the costs multiply. Most work handles one side only: methods that cut visual tokens are mostly tested on images with short reasoning, and methods that compress reasoning are mostly text-only. I have not yet seen anyone take on the case where both explode at once.</p>
+<p>Moving VisionPulse to video raises a few questions for me:</p>
+<ul>
+<li><strong>Does the budget formula still hold?</strong> The budget is total attention on the image times the number of visual tokens. Going from hundreds to tens of thousands of visual tokens flattens the softmax, and a temperature τ tuned on images may not transfer.</li>
+<li><strong>Where to look changes in time, not just in space.</strong> Reasoning about a video often moves from one moment to another. That makes per-step selection even more sensible, but also riskier: the frames nobody looked at early on may be exactly what the last question asks about.</li>
+<li><strong>Memory is the first wall.</strong> With long video, the first problem is usually not slowness but not fitting at all. An approach that keeps the whole KV cache doesn't help with the most urgent part.</li>
+</ul>
+<h2>Open questions</h2>
+<ul>
+<li><strong>A single run?</strong> Decoding uses temperature 0.7 and the paper doesn't say whether runs were repeated. MMVet has only 218 questions scored by GPT-4o-mini, so small gains such as a relative +1.4% may be within noise.</li>
+<li><strong>The baselines are pushed outside their range.</strong> FastV and VisionZip were designed to keep far more tokens, so collapsing at 5% is no surprise; and they really save memory, which VisionPulse does not. A comparison at equal memory would be fairer.</li>
+<li><strong>The coupled bottleneck rests mostly on examples.</strong> The traffic-light and vent cases are convincing, but they are hand-picked. I would like a statistic: how much of the shortened reasoning used to describe things unrelated to the question?</li>
+<li><strong>No code.</strong> I couldn't find released code when I read it.</li>
+</ul>
+<h2>What I want to try</h2>
+<ol>
+<li><strong>Measure memory</strong>: compare peak memory for the full model, VisionPulse, and FastV + VisionPulse, and see what difference it makes on a card with little memory.</li>
+<li><strong>Plot the attention curve on video</strong>: feed a video instead, check whether the look at the visual input spikes when a specific moment is mentioned, and whether it still tracks the number of attended tokens when there are tens of thousands.</li>
+<li><strong>Use output length as a health check for compression</strong>: for any compression method, record accuracy, output length and the share of "yes" answers together.</li>
+<li><strong>Look at the tokens nobody ever attends to</strong>: measure how many there are and whether their position or content follows a pattern.</li>
+</ol>
+<hr>
+<p>The paper's numbers were checked against the arXiv v1 PDF (29 May 2026). Scores in the table are the paper's absolute numbers; percentage changes in the text are relative to the original model.</p></article><div class="ask"><div><b>Questions &amp; answers</b><small>Questions sent anonymously, answered here.</small></div><a class="btn primary" href="https://forms.gle/yNUw4eLZeeqf3Arb6" target="_blank" rel="noopener noreferrer">Ask anonymously ↗</a></div><h2 style="margin-top:48px">More posts</h2><a class="card" href="/blog/en/2026-09-30-rine/"><span class="type paper">Paper note</span><b>RINE: do intermediate layers know “fake” better than the last one?</b><small>RINE detects generated images from CLIP&#x27;s intermediate layers, and my own experiments largely agree. Under real-world corruptions, though, the most useful layers change, and the breadth of augmentation matters more than which layer the features come from.</small></a><a class="card" href="/blog/en/2026-09-29-now/"><span class="type now">Now</span><b>September 2026: new projects and an exam gallery, CVPR prep begins</b><small>This month Taiwan Exam, its exam gallery, the in-browser LumiGrid and Adversarial Lab went live, and the site moved to niansia.com. Next up is the CVPR 2027 submission in mid-November.</small></a><a class="card" href="/blog/en/2026-09-14-reroute/"><span class="type paper">Paper note</span><b>Reroute: can dropped visual tokens come back later?</b><small>Reroute turns &quot;delete the low-scoring visual tokens&quot; into &quot;defer them, and let them come back&quot;, with no training, and the harder the compression, the more it recovers. We are studying how to recover and re-locate what a long video loses in compression, and this paper attacks the smallest version of that problem.</small></a><div class="btns"><a class="btn" href="/blog/en/">All posts</a><a class="btn primary" href="/#blog">Back to the portfolio</a></div></main>
+<aside class="author" aria-label="Made by Niansia"><a class="an-face" href="/" tabindex="-1" aria-hidden="true" data-nz-title="Niansia"><img src="/assets/icons/author.webp" alt="" width="56" height="56" loading="lazy"></a><div class="an-text"><b>Made by Niansia</b><small>M.S. student in computer science at NYCU, working on AI security, computer vision and vision-language models.</small></div><a class="btn primary an-go" href="/" data-nz-title="Niansia">Visit niansia.com →</a></aside>
+<footer>Questions or ideas? Email <a href="mailto:niansia930202@gmail.com">niansia930202@gmail.com</a> · <a href="/">niansia.com</a> · <a href="https://github.com/niansia">github.com/niansia</a><span class="stats" data-stats hidden> · <i class="live-dot"></i> <b data-stat="online">–</b> online · <b data-stat="total">–</b> visits</span></footer>
+</body>
+</html>

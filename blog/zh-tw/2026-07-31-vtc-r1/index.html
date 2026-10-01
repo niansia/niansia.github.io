@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VTC-R1：把推理過程印成圖片，當成模型的草稿紙 · Niansia</title>
+<meta name="description" content="VTC-R1 讓模型每想完一段，就把那段推理印成圖片，下一輪只看「圖片草稿」接著想：token 少了 3.4 倍，速度快 1.2 到 6.6 倍，準確率大多還更高。點子很漂亮，但它測的全是純文字的數學題，草稿讀得準不準也沒有量；換成本來就塞滿視覺 token 的影片推理，又是另一回事。">
+<link rel="canonical" href="https://niansia.com/blog/zh-tw/2026-07-31-vtc-r1/">
+<link rel="alternate" hreflang="en" href="https://niansia.com/blog/en/2026-07-31-vtc-r1/"><link rel="alternate" hreflang="zh-Hant-TW" href="https://niansia.com/blog/zh-tw/2026-07-31-vtc-r1/"><link rel="alternate" hreflang="zh-Hans-CN" href="https://niansia.com/blog/zh-cn/2026-07-31-vtc-r1/"><link rel="alternate" hreflang="x-default" href="https://niansia.com/blog/en/2026-07-31-vtc-r1/">
+<meta property="og:type" content="article"><meta property="og:site_name" content="Niansia">
+<meta property="og:title" content="VTC-R1：把推理過程印成圖片，當成模型的草稿紙 · Niansia"><meta property="og:description" content="VTC-R1 讓模型每想完一段，就把那段推理印成圖片，下一輪只看「圖片草稿」接著想：token 少了 3.4 倍，速度快 1.2 到 6.6 倍，準確率大多還更高。點子很漂亮，但它測的全是純文字的數學題，草稿讀得準不準也沒有量；換成本來就塞滿視覺 token 的影片推理，又是另一回事。">
+<meta property="og:url" content="https://niansia.com/blog/zh-tw/2026-07-31-vtc-r1/"><meta property="og:image" content="https://niansia.com/assets/og/blog-2026-07-31-vtc-r1-zh-tw.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta property="og:locale" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://niansia.com/assets/og/blog-2026-07-31-vtc-r1-zh-tw.jpg">
+
+<meta name="theme-color" content="#fbf6ee" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#15142a" media="(prefers-color-scheme: dark)">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://*.firebasedatabase.app; connect-src 'self' https://*.firebasedatabase.app wss://*.firebasedatabase.app; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; frame-src https://*.firebasedatabase.app; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml">
+<script src="/assets/js/page-transition.js?v=3"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&display=swap">
+<style>
+:root{--bg:#fbf6ee;--paper:#fffdf9;--ink:#2a2230;--muted:#766b73;--line:#2a22301a;--accent:#c0673a;--accent2:#8f6bb3;--code:#f3ece2;}
+@media(prefers-color-scheme:dark){:root{--bg:#15142a;--paper:#1c1a36;--ink:#f1ebe2;--muted:#aaa3bd;--line:#ffffff1a;--accent:#f0a878;--accent2:#b69ae6;--code:#26234a;}}
+*{box-sizing:border-box;}html{-webkit-text-size-adjust:100%;}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.85 Inter,'Noto Sans TC','Noto Sans SC',system-ui,sans-serif;}
+a{color:var(--accent);text-underline-offset:3px;}
+.top{max-width:1080px;margin:0 auto;padding:18px 20px;display:flex;align-items:center;gap:10px;font:500 13px 'JetBrains Mono',monospace;color:var(--muted);}
+.top a{color:var(--muted);text-decoration:none;}.top a:hover{color:var(--accent);}
+.top b{color:var(--ink);font-weight:500;}.top .sp{flex:1;}
+.langs a{padding:4px 9px;border-radius:99px;border:1px solid var(--line);margin-left:4px;}.langs a[aria-current]{color:var(--ink);border-color:var(--accent);}
+main{max-width:760px;margin:0 auto;padding:10px 20px 70px;}
+.kicker{font:500 12px 'JetBrains Mono',monospace;color:var(--accent);letter-spacing:.06em;text-transform:uppercase;margin:24px 0 8px;}
+h1{font-size:clamp(28px,4.4vw,42px);line-height:1.2;letter-spacing:-.02em;margin:0 0 14px;}
+.lede{font-size:18px;color:var(--muted);margin:0 0 16px;line-height:1.7;}
+.meta{display:flex;flex-wrap:wrap;gap:8px 14px;font:500 12.5px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;color:var(--muted);padding-bottom:22px;border-bottom:1px solid var(--line);margin-bottom:10px;}
+.meta span.tag{padding:2px 9px;border-radius:99px;background:var(--code);}
+article h2{font-size:23px;margin:40px 0 10px;letter-spacing:-.01em;}
+article h3{font-size:18px;margin:28px 0 8px;}
+article p,article li{color:var(--ink);}
+article code{font:14px 'JetBrains Mono',monospace;background:var(--code);padding:1px 6px;border-radius:6px;}
+article table{width:100%;border-collapse:collapse;margin:18px 0;font-size:14.5px;display:block;overflow-x:auto;}
+article th,article td{padding:8px 12px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap;}
+article th{font-weight:600;color:var(--muted);font-size:13px;}
+article td:not(:first-child),article th:not(:first-child){text-align:right;}
+article td[style*="left"],article th[style*="left"]{white-space:normal;min-width:6.5em;}   /* text tables (|:---|) wrap instead of scrolling */
+article strong{color:var(--ink);}
+article blockquote{margin:18px 0;padding:4px 18px;border-left:3px solid var(--accent);color:var(--muted);}
+.card{display:block;padding:18px 20px;margin:12px 0;border-radius:16px;background:var(--paper);border:1px solid var(--line);text-decoration:none;color:var(--ink);transition:transform .25s,border-color .25s;}
+.card:hover{transform:translateY(-2px);border-color:var(--accent);}
+.card b{display:block;font-size:18px;line-height:1.4;margin-bottom:4px;}.card small{display:block;color:var(--muted);font-size:14px;line-height:1.6;}
+.card i{display:block;font:normal 500 12px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;color:var(--accent);margin-top:8px;}
+.hero{width:100%;height:auto;border-radius:16px;border:1px solid var(--line);display:block;margin:6px 0 18px;}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px;}.chips span{font:500 12px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;padding:4px 11px;border-radius:99px;background:var(--code);}
+.btns{display:flex;flex-wrap:wrap;gap:10px;margin:22px 0;}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:12px;border:1px solid var(--line);background:var(--paper);color:var(--ink);text-decoration:none;font-weight:600;font-size:14px;}
+.btn.primary{background:var(--accent);border-color:transparent;color:var(--paper);}
+.btn:hover{border-color:var(--accent);}
+.note{font-size:13.5px;color:var(--muted);}
+.live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#34c38f;box-shadow:0 0 0 3px #34c38f33;vertical-align:1px;}footer b{color:var(--ink);font-weight:600;}
+figure.fig{margin:24px 0;}figure.fig a{display:block;border-radius:14px;overflow:hidden;border:1px solid var(--line);cursor:zoom-in;background:var(--code);}
+figure.fig img{display:block;width:100%;height:auto;transition:transform .4s;}figure.fig a:hover img{transform:scale(1.015);}
+figure.fig figcaption{margin-top:8px;font-size:13.5px;color:var(--muted);line-height:1.6;}
+.lb{position:fixed;inset:0;z-index:50;display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px;background:#0d0b16ee;}
+.lb.on{display:flex;}.lb img{max-width:100%;max-height:84vh;border-radius:10px;box-shadow:0 30px 80px #000a;}
+.lb p{margin:0;color:#e9e4f2;font-size:14px;text-align:center;max-width:760px;}
+.lb-x{position:absolute;top:14px;right:18px;width:40px;height:40px;border-radius:50%;border:1px solid #ffffff44;background:transparent;color:#fff;font-size:24px;cursor:pointer;}
+.log-entry{position:relative;padding:0 0 34px 26px;border-left:2px solid var(--line);}
+.log-entry:before{content:'';position:absolute;left:-7px;top:8px;width:12px;height:12px;border-radius:50%;background:var(--bg);border:2px solid var(--accent);}
+.log-entry time{font:500 12.5px 'JetBrains Mono',monospace;color:var(--accent);}
+.log-entry h2{margin:4px 0 6px!important;font-size:21px!important;}
+.log-entry h2 a{color:var(--ink);text-decoration:none;}
+.statement-link{display:flex;justify-content:space-between;align-items:center;}
+.top a.me{display:inline-flex;align-items:center;gap:8px;padding:3px 12px 3px 3px;border:1px solid var(--line);border-radius:99px;transition:border-color .2s;}.top a.me:hover{border-color:var(--accent);}.top a.me img{width:24px;height:24px;border-radius:50%;display:block;}
+.author{max-width:720px;margin:44px auto 0;padding:18px 20px;display:flex;align-items:center;gap:16px;border-radius:18px;background:var(--code);border:1px solid var(--line);}
+.author{box-sizing:border-box;}.author>*{flex:none;}
+.author .an-face img{display:block;width:56px;height:56px;border-radius:50%;border:2px solid var(--accent);}
+.author .an-text{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px;}
+.author .an-text b{font-size:15px;}.author .an-text small{font-size:13px;line-height:1.6;color:var(--muted);}
+.author .an-note{color:var(--ink)!important;}
+.author .an-go{margin:0;white-space:nowrap;}
+@media (max-width:760px){.author{margin:40px 16px 0;}}@media (max-width:600px){.author{flex-wrap:wrap;padding:16px;}.author .an-text{flex-basis:calc(100% - 72px);}.author .an-go{flex:1 1 100%;justify-content:center;text-align:center;}}
+footer{max-width:760px;margin:0 auto;padding:26px 20px 50px;border-top:1px solid var(--line);font-size:14px;color:var(--muted);}
+
+.paper-box{margin:0 0 26px;padding:18px 20px;border-radius:16px;background:var(--paper);border:1px solid var(--line);border-left:4px solid var(--accent2);}
+.paper-box .pv{font:600 12px 'JetBrains Mono',monospace;color:var(--accent2);letter-spacing:.04em;margin:0 0 6px;}
+.paper-box b{display:block;font-size:17px;line-height:1.45;}
+.paper-box .pa{margin:6px 0 0;font-size:13.5px;color:var(--muted);line-height:1.6;}
+.paper-box .pl{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+.paper-box .pl a{font:600 12.5px 'JetBrains Mono',monospace;padding:5px 12px;border-radius:99px;border:1px solid var(--line);text-decoration:none;}
+.paper-box .pl a:hover{border-color:var(--accent);}
+.type{display:inline-block;padding:2px 9px;border-radius:99px;background:var(--accent);color:#fff;font:600 11.5px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;}
+.type.paper{background:var(--accent2);}.type.qa{background:#3f9f86;}.type.post{background:var(--muted);}
+.card .type{margin-bottom:8px;}.card .zh{margin-left:8px;font:500 11.5px 'JetBrains Mono',monospace;color:var(--muted);}
+.now-card{border-left:4px solid var(--accent);}
+.qa{padding:20px 0;border-bottom:1px solid var(--line);}
+.qa .qq{display:flex;gap:12px;font-weight:700;font-size:17px;line-height:1.55;margin:0 0 8px;}
+.qa .qq span,.qa .qa-a>span{flex:none;display:grid;place-items:center;width:28px;height:28px;border-radius:9px;background:var(--code);color:var(--accent);font-size:13px;}
+.qa .qa-a{display:flex;gap:12px;}.qa .qa-a>span{background:var(--accent);color:#fff;}.qa .qa-a article>:first-child{margin-top:0;}
+.qa time{display:block;margin:6px 0 0 40px;font:500 12px 'JetBrains Mono',monospace;color:var(--muted);}
+.ask{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:18px 0 8px;padding:16px 18px;border-radius:16px;background:var(--code);}
+.ask b{display:block;font-size:15.5px;}.ask small{display:block;color:var(--muted);font-size:13px;}
+.ask .btn{flex:none;margin:0;}.ask .btn[aria-disabled]{opacity:.55;pointer-events:none;}
+</style>
+<link rel="alternate" type="application/rss+xml" title="Niansia · Blog" href="/blog/zh-tw/feed.xml"><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BlogPosting", "headline": "VTC-R1：把推理過程印成圖片，當成模型的草稿紙", "description": "VTC-R1 讓模型每想完一段，就把那段推理印成圖片，下一輪只看「圖片草稿」接著想：token 少了 3.4 倍，速度快 1.2 到 6.6 倍，準確率大多還更高。點子很漂亮，但它測的全是純文字的數學題，草稿讀得準不準也沒有量；換成本來就塞滿視覺 token 的影片推理，又是另一回事。", "datePublished": "2026-07-31", "dateModified": "2026-07-31", "inLanguage": "zh-Hant", "author": {"@type": "Person", "name": "Niansia", "url": "https://niansia.com/", "email": "mailto:niansia930202@gmail.com", "sameAs": ["https://github.com/niansia"]}, "mainEntityOfPage": "https://niansia.com/blog/zh-tw/2026-07-31-vtc-r1/", "keywords": "視覺語言模型, 思考鏈, 長推理, 輕量化", "citation": {"@type": "ScholarlyArticle", "name": "VTC-R1: Vision-Text Compression for Efficient Long-Context Reasoning", "url": "https://arxiv.org/abs/2601.22069"}}</script>
+<script defer src="/assets/js/site-stats.js?v=2"></script>
+<script defer src="/assets/js/lightbox.js"></script>
+
+</head>
+<body>
+<header class="top"><a class="me" href="/zh-tw/" title="回到 Niansia 的個人網站" data-nz-title="Niansia"><img src="/assets/icons/author.webp" alt="" width="24" height="24"><b>~/niansia</b></a> / <a href="/blog/zh-tw/">blog</a><span class="sp"></span><span class="langs"><a href="/blog/en/2026-07-31-vtc-r1/" hreflang="en">EN</a><a href="/blog/zh-tw/2026-07-31-vtc-r1/" aria-current="page" hreflang="zh-Hant">繁</a><a href="/blog/zh-cn/2026-07-31-vtc-r1/" hreflang="zh-Hans">简</a></span></header>
+<main><p class="kicker">論文筆記</p><h1>VTC-R1：把推理過程印成圖片，當成模型的草稿紙</h1><p class="lede">VTC-R1 讓模型每想完一段，就把那段推理印成圖片，下一輪只看「圖片草稿」接著想：token 少了 3.4 倍，速度快 1.2 到 6.6 倍，準確率大多還更高。點子很漂亮，但它測的全是純文字的數學題，草稿讀得準不準也沒有量；換成本來就塞滿視覺 token 的影片推理，又是另一回事。</p><div class="meta"><time datetime="2026-07-31">2026-07-31</time><span>4 分鐘閱讀</span><span class="tag">視覺語言模型</span><span class="tag">思考鏈</span><span class="tag">長推理</span><span class="tag">輕量化</span></div><aside class="paper-box"><p class="pv">arXiv 2026 · 精讀</p><b lang="en">VTC-R1: Vision-Text Compression for Efficient Long-Context Reasoning</b><p class="pa" lang="en">Yibo Wang, Yongcheng Jing, Shunyu Liu, Hao Guan, Rong-Cheng Tu, Chengyu Wang, Jun Huang, Dacheng Tao</p><div class="pl"><a href="https://arxiv.org/abs/2601.22069" target="_blank" rel="noopener noreferrer">論文 ↗</a><a href="https://github.com/w-yibo/VTC-R1" target="_blank" rel="noopener noreferrer">程式碼 ↗</a></div></aside><article><h2>為什麼讀這篇</h2>
+<p>去年 DeepSeek-OCR 和 Glyph 讓我印象很深：把一段文字印成圖片再給模型看，用的 token 可以少好幾倍，模型還讀得回來。我一直在想，文件可以這樣壓，那推理過程呢？會長篇思考的模型，最占空間的往往就是自己寫出來的那幾萬個 token。</p>
+<p>VTC-R1 做的就是這件事。我同一天也讀了 VisionPulse，它壓的是輸入的視覺 token；這篇反過來，把推理的文字變成視覺 token。兩篇方向相反，放在一起讀很有意思。</p>
+<h2>這篇在做什麼</h2>
+<p><strong>把長推理切成好幾輪。</strong> 每一輪，模型只看「問題＋之前每一輪推理印成的圖片」，接著寫下一段（每輪最多 8,192 個 token）；寫完就把這一段印成圖片加進去，最多 8 輪。系統提示寫得很直白：這些圖片記錄了你之前的推理，接著想，不要重來。</p>
+<p><strong>怎麼印。</strong> A4 大小（595×842）、72 dpi、9 號字。作者把 Glyph 預設的字型換成 DejaVuSans，因為原本的字型會把某些數學符號印錯。平均一張圖裝大約 1,600 個文字 token，渲染 0.12 秒、影像前處理 0.02 秒，大約佔總延遲的 4%。</p>
+<p><strong>訓練資料。</strong> 用 OpenR1-Math-Inf，它是 InftyThink 從 OpenR1-Math-220K（推理由 DeepSeek-R1 產生）切出來的分段版本。清理後 60,688 題，做成 10.6 萬筆訓練資料、10.5 萬張圖；1.81 億個文字 token 變成 5,400 萬個視覺 token，壓縮 3.4 倍。</p>
+<p><strong>模型和對照組。</strong> 在 Glyph（以 GLM-4.1V-9B-Base 為底、專門讀渲染文字的模型）和 Qwen3-VL-8B 上微調。對照組是同一份資料、一次寫完整段推理的一般 SFT，以及 TokenSkip（壓縮比 0.8；設成 0.6 時訓練會崩）。測試集是 GSM8K、MATH500、AIME25、AMC23，另外用 GPQA-Diamond 當沒看過的領域。</p>
+<h2>結果</h2>
+<p>Qwen3-VL-8B（延遲以秒計）：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">基準</th>
+<th style="text-align: left;">SFT</th>
+<th style="text-align: left;">VTC-R1</th>
+<th style="text-align: left;">SFT 延遲</th>
+<th style="text-align: left;">VTC-R1 延遲</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">GSM8K</td>
+<td style="text-align: left;">88.1</td>
+<td style="text-align: left;">94.7</td>
+<td style="text-align: left;">3.04</td>
+<td style="text-align: left;">0.46（6.6 倍）</td>
+</tr>
+<tr>
+<td style="text-align: left;">MATH500</td>
+<td style="text-align: left;">85.4</td>
+<td style="text-align: left;">90.0</td>
+<td style="text-align: left;">5.36</td>
+<td style="text-align: left;">2.49（2.2 倍）</td>
+</tr>
+<tr>
+<td style="text-align: left;">AIME25</td>
+<td style="text-align: left;">32.71</td>
+<td style="text-align: left;">30.00</td>
+<td style="text-align: left;">29.85</td>
+<td style="text-align: left;">12.02（2.5 倍）</td>
+</tr>
+<tr>
+<td style="text-align: left;">AMC23</td>
+<td style="text-align: left;">75.00</td>
+<td style="text-align: left;">77.97</td>
+<td style="text-align: left;">11.08</td>
+<td style="text-align: left;">6.45（1.7 倍）</td>
+</tr>
+<tr>
+<td style="text-align: left;">GPQA-Diamond</td>
+<td style="text-align: left;">37.4</td>
+<td style="text-align: left;">48.5</td>
+<td style="text-align: left;">26.88</td>
+<td style="text-align: left;">9.57（2.8 倍）</td>
+</tr>
+</tbody>
+</table>
+<p>其他幾個數字：</p>
+<ul>
+<li><strong>Glyph 上也一樣</strong>：SFT／TokenSkip／VTC-R1 在 MATH500 是 80.4／80.6／86.0，AMC23 是 60.94／59.53／64.38，GPQA-Diamond 是 38.4／35.9／46.0；延遲快 1.2 到 2.7 倍。</li>
+<li><strong>拿掉圖片會掉分</strong>：推理時不給之前的圖片，AIME25 從 26.25 掉到 23.33，AMC23 從 64.38 掉到 59.53，GPQA-Diamond 從 46.0 掉到 34.3（數字和 Glyph 的結果一致）。</li>
+<li><strong>訓練也比較快</strong>：18.93 小時，一般 SFT 要 38.92 小時，因為每一筆資料的長度被限制住了。</li>
+<li><strong>分段長度</strong>：2K、4K、6K 裡，4K 整體最好。</li>
+<li><strong>輪數越多越準</strong>：允許的輪數增加，準確率跟著上升，大約從第 5 輪開始收斂。</li>
+</ul>
+<h2>讀完最在意的三件事</h2>
+<p><strong>第一，點子很漂亮：不刪東西，只是寫小一點。</strong> V-Skip、TokenSkip 這些方法都是「刪掉不重要的 token」，難免刪錯；VTC-R1 一個字都不刪，只是換一種更省位置的寫法。就像考試時把算到一半的過程寫在草稿紙上，需要時回頭翻，不用全部記在腦子裡。渲染只佔 4% 的時間，訓練時間還減半，程式碼也公開了，這種「換表示法」的壓縮，我覺得比「挑哪些不要」優雅很多。</p>
+<p><strong>第二，草稿讀得準不準，論文沒有量。</strong> 方法那一節用機率的連鎖律證明「分段生成」和「一次生成」等價，但這只在模型拿到的是原本的文字時成立；VTC-R1 拿到的是文字印成的圖，模型得自己讀回來，讀錯就不等價了。DeepSeek-OCR 報告過，壓縮比小於 10 倍時 OCR 精確度大約 97%，到 20 倍時剩六成左右。VTC-R1 只壓 3.4 倍，照理說在幾乎無損的範圍，但那是 DeepSeek-OCR 自己的模型；Glyph 和 Qwen3-VL 讀 9 號字的推理能讀多準，論文沒有測。換字型的那段說明也顯示，印的細節會影響讀回的結果。「拿掉圖片會掉分」證明了草稿有被用到，但沒有證明它被讀對。</p>
+<p>有一個數字讓我有點在意：Qwen3-VL 上唯一變差的是 AIME25（32.71 → 30.00），偏偏是最難、推理最長、輪數最多的那一個，也就是最依賴圖片草稿的那一個。30 題各跑 16 次，差距換算起來不到一題，可能只是雜訊，但方向和我的直覺一致，推理越長，草稿裡的數字越多，讀錯一個的機會就越大。</p>
+<p><strong>第三，進步來自圖片，還是來自分段？</strong> VTC-R1 和一般 SFT 之間其實差了兩件事：推理被切成好幾輪，以及前面幾輪用圖片記住。分段資料本身來自 InftyThink，它用文字摘要當記憶，但論文沒有和它直接比，也沒有「同樣分段、記憶用原本的文字」的對照組。另外，兩邊的生成上限也不一樣：一般 SFT 最多 32,768 個 token，VTC-R1 是 8 輪 × 8,192，最多 65,536 個。</p>
+<p>延遲的算法也要注意：它是整批跑完的總時間除以生成次數，用 vLLM 批次推論，比較接近吞吐量。每一輪的上下文比較短，一次能塞進更多請求，這可能是 GSM8K 上 token 只少了 1.6 倍、延遲卻快了 6.6 倍的原因之一，不一定全是視覺壓縮的功勞。</p>
+<h2>放到影片推理上：視覺 token 本來就不夠用</h2>
+<p>VTC-R1 測的全是純文字題目，模型看到的圖只有自己的草稿。這讓我想到它和影片推理之間的距離：</p>
+<ul>
+<li><strong>草稿會和影片搶同一份預算。</strong> 影片推理的輸入本來就有好幾萬個視覺 token，再加上一頁頁的推理草稿，兩者擠在同一個視覺通道裡。像 VisionPulse 這類剪視覺 token 的方法，分不出哪些是影片裡的證據、哪些是模型自己的草稿，可能會把草稿剪掉。</li>
+<li><strong>記憶還是會一直長。</strong> 每一輪都多幾張圖，只是長得比文字慢 3.4 倍。DeepSeek-OCR 提過一個想法：把越舊的圖縮得越小，模擬人的遺忘。但對推理來說，哪一步可以模糊、哪一步不行，並不容易判斷。</li>
+<li><strong>同一天讀的兩篇，剛好各管一邊。</strong> VisionPulse 壓輸入的視覺 token，VTC-R1 壓推理鏈，而且一個只在圖片上測、一個只在純文字上測。影片推理模型（Video-R1 那一代）是兩邊同時變長的地方：影片讓視覺 token 爆炸，長推理讓推理鏈爆炸。這個交集，我目前還沒看到有人處理。</li>
+</ul>
+<h2>我的疑問</h2>
+<ul>
+<li><strong>等價性的證明不適用於有損的記憶。</strong> 連鎖律那段證明的是文字記憶，不是圖片記憶。</li>
+<li><strong>缺少「分段＋文字記憶」的對照組</strong>，包括和 InftyThink 直接比較。</li>
+<li><strong>生成上限不同</strong>：32,768 對 65,536。</li>
+<li><strong>延遲比較接近吞吐量</strong>，單一請求的延遲改善可能沒有這麼大。</li>
+<li><strong>「不需要額外訓練」要看怎麼解讀。</strong> 它不需要額外的壓縮模型或多階段訓練，但還是要用 10.6 萬筆資料做 SFT，而且模型要能接受數量和大小都不固定的圖片。</li>
+</ul>
+<h2>讀完之後想試的事</h2>
+<ol>
+<li><strong>草稿的讀回測驗</strong>：拿模型自己的圖片草稿，問它中間算出的某個數字或某條式子，看讀錯率怎麼隨字體大小、dpi 改變，找出開始崩的壓縮比。</li>
+<li><strong>補兩個對照組</strong>：「同樣分段、記憶用原文」和「同樣分段、記憶用摘要」，把分段的效果和圖片的效果分開。</li>
+<li><strong>量單一請求的延遲</strong>：批次大小設成 1，看加速還剩多少。</li>
+<li><strong>放進一道有圖的題目</strong>：題目本身有圖時再加上推理草稿，看模型會不會把草稿和題目的圖搞混，以及剪視覺 token 的方法會不會先剪掉草稿。</li>
+</ol>
+<hr>
+<p>論文的數字已對照 arXiv v2（2026 年 1 月 31 日）的 PDF；DeepSeek-OCR 的數字取自它的論文（arXiv 2510.18234）。</p></article><div class="ask"><div><b>Q&amp;A</b><small>匿名提問，在這裡回答。</small></div><a class="btn primary" href="https://forms.gle/yNUw4eLZeeqf3Arb6" target="_blank" rel="noopener noreferrer">匿名提問 ↗</a></div><h2 style="margin-top:48px">其他文章</h2><a class="card" href="/blog/zh-tw/2026-09-30-rine/"><span class="type paper">論文筆記</span><b>RINE：中間層真的比最後一層更懂「假」嗎？</b><small>RINE 用 CLIP 中間層的特徵偵測生成圖，和我自己的實驗結論大致相同；但在「野外干擾」下，最有用的層會換人，增強的廣度也比從哪一層拿特徵更關鍵。</small></a><a class="card" href="/blog/zh-tw/2026-09-29-now/"><span class="type now">近況</span><b>2026 年 9 月：作品與考卷分享區上線，開始準備 CVPR</b><small>這個月把 Taiwan Exam、考卷分享區、LumiGrid 網頁版和 Adversarial Lab 放上線，網站也搬到 niansia.com；接下來的重心是 11 月中的 CVPR 2027 投稿。</small></a><a class="card" href="/blog/zh-tw/2026-09-14-reroute/"><span class="type paper">論文筆記</span><b>Reroute：丟掉的視覺 token，晚點還能撿回來嗎？</b><small>Reroute 把「刪掉低分的視覺 token」改成「先延後，之後還能回來」，不用訓練，壓得越狠救回越多。我們正在研究長影片壓縮後，遺失的畫面怎麼找回、怎麼重新定位，這篇剛好從最小的地方切進去。</small></a><div class="btns"><a class="btn" href="/blog/zh-tw/">全部文章</a><a class="btn primary" href="/zh-tw/#blog">回到作品集</a></div></main>
+<aside class="author" aria-label="由 Niansia 製作"><a class="an-face" href="/zh-tw/" tabindex="-1" aria-hidden="true" data-nz-title="Niansia"><img src="/assets/icons/author.webp" alt="" width="56" height="56" loading="lazy"></a><div class="an-text"><b>由 Niansia 製作</b><small>陽明交大資工碩士生，研究 AI 安全、電腦視覺與視覺語言模型。</small></div><a class="btn primary an-go" href="/zh-tw/" data-nz-title="Niansia">前往 niansia.com →</a></aside>
+<footer>有問題或想法？寫信到 <a href="mailto:niansia930202@gmail.com">niansia930202@gmail.com</a> · <a href="/zh-tw/">niansia.com</a> · <a href="https://github.com/niansia">github.com/niansia</a><span class="stats" data-stats hidden> · <i class="live-dot"></i> <b data-stat="online">–</b> 人在線 · <b data-stat="total">–</b> 次造訪</span></footer>
+</body>
+</html>

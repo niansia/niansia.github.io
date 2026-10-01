@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VisionPulse：推理的每一步，要看的画面都不一样 · Niansia</title>
+<meta name="description" content="VisionPulse 发现模型推理时对图像的依赖会一步一步变化，于是每一步只留下当下需要的视觉 token，只留 5% 准确率几乎不掉，推理还变短。我很喜欢这个观察；但它省的是计算不是内存，实验也都是图片，「长视频加长推理链」这个双重爆炸，还没有人正面处理。">
+<link rel="canonical" href="https://niansia.com/blog/zh-cn/2026-07-31-visionpulse/">
+<link rel="alternate" hreflang="en" href="https://niansia.com/blog/en/2026-07-31-visionpulse/"><link rel="alternate" hreflang="zh-Hant-TW" href="https://niansia.com/blog/zh-tw/2026-07-31-visionpulse/"><link rel="alternate" hreflang="zh-Hans-CN" href="https://niansia.com/blog/zh-cn/2026-07-31-visionpulse/"><link rel="alternate" hreflang="x-default" href="https://niansia.com/blog/en/2026-07-31-visionpulse/">
+<meta property="og:type" content="article"><meta property="og:site_name" content="Niansia">
+<meta property="og:title" content="VisionPulse：推理的每一步，要看的画面都不一样 · Niansia"><meta property="og:description" content="VisionPulse 发现模型推理时对图像的依赖会一步一步变化，于是每一步只留下当下需要的视觉 token，只留 5% 准确率几乎不掉，推理还变短。我很喜欢这个观察；但它省的是计算不是内存，实验也都是图片，「长视频加长推理链」这个双重爆炸，还没有人正面处理。">
+<meta property="og:url" content="https://niansia.com/blog/zh-cn/2026-07-31-visionpulse/"><meta property="og:image" content="https://niansia.com/assets/og/blog-2026-07-31-visionpulse-zh-cn.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta property="og:locale" content="zh_CN">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://niansia.com/assets/og/blog-2026-07-31-visionpulse-zh-cn.jpg">
+
+<meta name="theme-color" content="#fbf6ee" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#15142a" media="(prefers-color-scheme: dark)">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://*.firebasedatabase.app; connect-src 'self' https://*.firebasedatabase.app wss://*.firebasedatabase.app; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; frame-src https://*.firebasedatabase.app; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml">
+<script src="/assets/js/page-transition.js?v=3"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;500;700&display=swap">
+<style>
+:root{--bg:#fbf6ee;--paper:#fffdf9;--ink:#2a2230;--muted:#766b73;--line:#2a22301a;--accent:#c0673a;--accent2:#8f6bb3;--code:#f3ece2;}
+@media(prefers-color-scheme:dark){:root{--bg:#15142a;--paper:#1c1a36;--ink:#f1ebe2;--muted:#aaa3bd;--line:#ffffff1a;--accent:#f0a878;--accent2:#b69ae6;--code:#26234a;}}
+*{box-sizing:border-box;}html{-webkit-text-size-adjust:100%;}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.85 Inter,'Noto Sans TC','Noto Sans SC',system-ui,sans-serif;}
+a{color:var(--accent);text-underline-offset:3px;}
+.top{max-width:1080px;margin:0 auto;padding:18px 20px;display:flex;align-items:center;gap:10px;font:500 13px 'JetBrains Mono',monospace;color:var(--muted);}
+.top a{color:var(--muted);text-decoration:none;}.top a:hover{color:var(--accent);}
+.top b{color:var(--ink);font-weight:500;}.top .sp{flex:1;}
+.langs a{padding:4px 9px;border-radius:99px;border:1px solid var(--line);margin-left:4px;}.langs a[aria-current]{color:var(--ink);border-color:var(--accent);}
+main{max-width:760px;margin:0 auto;padding:10px 20px 70px;}
+.kicker{font:500 12px 'JetBrains Mono',monospace;color:var(--accent);letter-spacing:.06em;text-transform:uppercase;margin:24px 0 8px;}
+h1{font-size:clamp(28px,4.4vw,42px);line-height:1.2;letter-spacing:-.02em;margin:0 0 14px;}
+.lede{font-size:18px;color:var(--muted);margin:0 0 16px;line-height:1.7;}
+.meta{display:flex;flex-wrap:wrap;gap:8px 14px;font:500 12.5px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;color:var(--muted);padding-bottom:22px;border-bottom:1px solid var(--line);margin-bottom:10px;}
+.meta span.tag{padding:2px 9px;border-radius:99px;background:var(--code);}
+article h2{font-size:23px;margin:40px 0 10px;letter-spacing:-.01em;}
+article h3{font-size:18px;margin:28px 0 8px;}
+article p,article li{color:var(--ink);}
+article code{font:14px 'JetBrains Mono',monospace;background:var(--code);padding:1px 6px;border-radius:6px;}
+article table{width:100%;border-collapse:collapse;margin:18px 0;font-size:14.5px;display:block;overflow-x:auto;}
+article th,article td{padding:8px 12px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap;}
+article th{font-weight:600;color:var(--muted);font-size:13px;}
+article td:not(:first-child),article th:not(:first-child){text-align:right;}
+article td[style*="left"],article th[style*="left"]{white-space:normal;min-width:6.5em;}   /* text tables (|:---|) wrap instead of scrolling */
+article strong{color:var(--ink);}
+article blockquote{margin:18px 0;padding:4px 18px;border-left:3px solid var(--accent);color:var(--muted);}
+.card{display:block;padding:18px 20px;margin:12px 0;border-radius:16px;background:var(--paper);border:1px solid var(--line);text-decoration:none;color:var(--ink);transition:transform .25s,border-color .25s;}
+.card:hover{transform:translateY(-2px);border-color:var(--accent);}
+.card b{display:block;font-size:18px;line-height:1.4;margin-bottom:4px;}.card small{display:block;color:var(--muted);font-size:14px;line-height:1.6;}
+.card i{display:block;font:normal 500 12px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;color:var(--accent);margin-top:8px;}
+.hero{width:100%;height:auto;border-radius:16px;border:1px solid var(--line);display:block;margin:6px 0 18px;}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px;}.chips span{font:500 12px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;padding:4px 11px;border-radius:99px;background:var(--code);}
+.btns{display:flex;flex-wrap:wrap;gap:10px;margin:22px 0;}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:12px;border:1px solid var(--line);background:var(--paper);color:var(--ink);text-decoration:none;font-weight:600;font-size:14px;}
+.btn.primary{background:var(--accent);border-color:transparent;color:var(--paper);}
+.btn:hover{border-color:var(--accent);}
+.note{font-size:13.5px;color:var(--muted);}
+.live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#34c38f;box-shadow:0 0 0 3px #34c38f33;vertical-align:1px;}footer b{color:var(--ink);font-weight:600;}
+figure.fig{margin:24px 0;}figure.fig a{display:block;border-radius:14px;overflow:hidden;border:1px solid var(--line);cursor:zoom-in;background:var(--code);}
+figure.fig img{display:block;width:100%;height:auto;transition:transform .4s;}figure.fig a:hover img{transform:scale(1.015);}
+figure.fig figcaption{margin-top:8px;font-size:13.5px;color:var(--muted);line-height:1.6;}
+.lb{position:fixed;inset:0;z-index:50;display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px;background:#0d0b16ee;}
+.lb.on{display:flex;}.lb img{max-width:100%;max-height:84vh;border-radius:10px;box-shadow:0 30px 80px #000a;}
+.lb p{margin:0;color:#e9e4f2;font-size:14px;text-align:center;max-width:760px;}
+.lb-x{position:absolute;top:14px;right:18px;width:40px;height:40px;border-radius:50%;border:1px solid #ffffff44;background:transparent;color:#fff;font-size:24px;cursor:pointer;}
+.log-entry{position:relative;padding:0 0 34px 26px;border-left:2px solid var(--line);}
+.log-entry:before{content:'';position:absolute;left:-7px;top:8px;width:12px;height:12px;border-radius:50%;background:var(--bg);border:2px solid var(--accent);}
+.log-entry time{font:500 12.5px 'JetBrains Mono',monospace;color:var(--accent);}
+.log-entry h2{margin:4px 0 6px!important;font-size:21px!important;}
+.log-entry h2 a{color:var(--ink);text-decoration:none;}
+.statement-link{display:flex;justify-content:space-between;align-items:center;}
+.top a.me{display:inline-flex;align-items:center;gap:8px;padding:3px 12px 3px 3px;border:1px solid var(--line);border-radius:99px;transition:border-color .2s;}.top a.me:hover{border-color:var(--accent);}.top a.me img{width:24px;height:24px;border-radius:50%;display:block;}
+.author{max-width:720px;margin:44px auto 0;padding:18px 20px;display:flex;align-items:center;gap:16px;border-radius:18px;background:var(--code);border:1px solid var(--line);}
+.author{box-sizing:border-box;}.author>*{flex:none;}
+.author .an-face img{display:block;width:56px;height:56px;border-radius:50%;border:2px solid var(--accent);}
+.author .an-text{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px;}
+.author .an-text b{font-size:15px;}.author .an-text small{font-size:13px;line-height:1.6;color:var(--muted);}
+.author .an-note{color:var(--ink)!important;}
+.author .an-go{margin:0;white-space:nowrap;}
+@media (max-width:760px){.author{margin:40px 16px 0;}}@media (max-width:600px){.author{flex-wrap:wrap;padding:16px;}.author .an-text{flex-basis:calc(100% - 72px);}.author .an-go{flex:1 1 100%;justify-content:center;text-align:center;}}
+footer{max-width:760px;margin:0 auto;padding:26px 20px 50px;border-top:1px solid var(--line);font-size:14px;color:var(--muted);}
+
+.paper-box{margin:0 0 26px;padding:18px 20px;border-radius:16px;background:var(--paper);border:1px solid var(--line);border-left:4px solid var(--accent2);}
+.paper-box .pv{font:600 12px 'JetBrains Mono',monospace;color:var(--accent2);letter-spacing:.04em;margin:0 0 6px;}
+.paper-box b{display:block;font-size:17px;line-height:1.45;}
+.paper-box .pa{margin:6px 0 0;font-size:13.5px;color:var(--muted);line-height:1.6;}
+.paper-box .pl{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+.paper-box .pl a{font:600 12.5px 'JetBrains Mono',monospace;padding:5px 12px;border-radius:99px;border:1px solid var(--line);text-decoration:none;}
+.paper-box .pl a:hover{border-color:var(--accent);}
+.type{display:inline-block;padding:2px 9px;border-radius:99px;background:var(--accent);color:#fff;font:600 11.5px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;}
+.type.paper{background:var(--accent2);}.type.qa{background:#3f9f86;}.type.post{background:var(--muted);}
+.card .type{margin-bottom:8px;}.card .zh{margin-left:8px;font:500 11.5px 'JetBrains Mono',monospace;color:var(--muted);}
+.now-card{border-left:4px solid var(--accent);}
+.qa{padding:20px 0;border-bottom:1px solid var(--line);}
+.qa .qq{display:flex;gap:12px;font-weight:700;font-size:17px;line-height:1.55;margin:0 0 8px;}
+.qa .qq span,.qa .qa-a>span{flex:none;display:grid;place-items:center;width:28px;height:28px;border-radius:9px;background:var(--code);color:var(--accent);font-size:13px;}
+.qa .qa-a{display:flex;gap:12px;}.qa .qa-a>span{background:var(--accent);color:#fff;}.qa .qa-a article>:first-child{margin-top:0;}
+.qa time{display:block;margin:6px 0 0 40px;font:500 12px 'JetBrains Mono',monospace;color:var(--muted);}
+.ask{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:18px 0 8px;padding:16px 18px;border-radius:16px;background:var(--code);}
+.ask b{display:block;font-size:15.5px;}.ask small{display:block;color:var(--muted);font-size:13px;}
+.ask .btn{flex:none;margin:0;}.ask .btn[aria-disabled]{opacity:.55;pointer-events:none;}
+</style>
+<link rel="alternate" type="application/rss+xml" title="Niansia · Blog" href="/blog/zh-cn/feed.xml"><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BlogPosting", "headline": "VisionPulse：推理的每一步，要看的画面都不一样", "description": "VisionPulse 发现模型推理时对图像的依赖会一步一步变化，于是每一步只留下当下需要的视觉 token，只留 5% 准确率几乎不掉，推理还变短。我很喜欢这个观察；但它省的是计算不是内存，实验也都是图片，「长视频加长推理链」这个双重爆炸，还没有人正面处理。", "datePublished": "2026-07-31", "dateModified": "2026-07-31", "inLanguage": "zh-Hans", "author": {"@type": "Person", "name": "Niansia", "url": "https://niansia.com/", "email": "mailto:niansia930202@gmail.com", "sameAs": ["https://github.com/niansia"]}, "mainEntityOfPage": "https://niansia.com/blog/zh-cn/2026-07-31-visionpulse/", "keywords": "视觉语言模型, 视觉 token 压缩, 思考链, 轻量化", "citation": {"@type": "ScholarlyArticle", "name": "VisionPulse: Dynamic Visual Sparsity for Efficient Multimodal Reasoning", "url": "https://arxiv.org/abs/2605.31457"}}</script>
+<script defer src="/assets/js/site-stats.js?v=2"></script>
+<script defer src="/assets/js/lightbox.js"></script>
+
+</head>
+<body>
+<header class="top"><a class="me" href="/zh-cn/" title="回到 Niansia 的个人网站" data-nz-title="Niansia"><img src="/assets/icons/author.webp" alt="" width="24" height="24"><b>~/niansia</b></a> / <a href="/blog/zh-cn/">blog</a><span class="sp"></span><span class="langs"><a href="/blog/en/2026-07-31-visionpulse/" hreflang="en">EN</a><a href="/blog/zh-tw/2026-07-31-visionpulse/" hreflang="zh-Hant">繁</a><a href="/blog/zh-cn/2026-07-31-visionpulse/" aria-current="page" hreflang="zh-Hans">简</a></span></header>
+<main><p class="kicker">论文笔记</p><h1>VisionPulse：推理的每一步，要看的画面都不一样</h1><p class="lede">VisionPulse 发现模型推理时对图像的依赖会一步一步变化，于是每一步只留下当下需要的视觉 token，只留 5% 准确率几乎不掉，推理还变短。我很喜欢这个观察；但它省的是计算不是内存，实验也都是图片，「长视频加长推理链」这个双重爆炸，还没有人正面处理。</p><div class="meta"><time datetime="2026-07-31">2026-07-31</time><span>5 分钟阅读</span><span class="tag">视觉语言模型</span><span class="tag">视觉 token 压缩</span><span class="tag">思考链</span><span class="tag">轻量化</span></div><aside class="paper-box"><p class="pv">ICML 2026 · 精读</p><b lang="en">VisionPulse: Dynamic Visual Sparsity for Efficient Multimodal Reasoning</b><p class="pa" lang="en">Hengbo Xu, Shengjie Jin, Yanbiao Ma, Zhiwu Lu</p><div class="pl"><a href="https://arxiv.org/abs/2605.31457" target="_blank" rel="noopener noreferrer">论文 ↗</a></div></aside><article><h2>为什么读这篇</h2>
+<p>前几天读 V-Skip，它从推理链那一侧压缩，提醒我不要把「看到的东西」一起删掉。这篇刚好从另一侧下手：压缩的是视觉 token。</p>
+<p>减少视觉 token 的方法很多，FastV、VisionZip 都是代表，但它们几乎都在一开始（prefill）就决定好留哪些，之后整段生成都用同一批。对直接回答的模型来说这很合理，可是现在的视觉语言模型会先想几千个 token 才回答，一开始选的那一批，真的能撑完整段推理吗？VisionPulse 正面回答了这个问题，也被 ICML 2026 接受，所以我把它读完。</p>
+<h2>这篇在做什么</h2>
+<p><strong>先看一个现象。</strong> 作者在 Qwen3-VL-4B-Thinking 推理时，记录每一步生成的 token 分给图片的注意力总量（论文叫 visual attention mass），看到三件事：</p>
+<ol>
+<li><strong>依赖是一阵一阵的。</strong> 写到「来看看选项」这种纯文本的步骤，几乎不看图；写到「方形通风口」、「门把」这种具体物体时，看图的量就冲上去。</li>
+<li><strong>看的位置一直在换。</strong> 注意力集中的区域，会跟着当下写到的东西移动。</li>
+<li><strong>一开始最不知道该看哪。</strong> prefill 时模型要生的第一个字只是「So」，注意力分散，对之后要看哪里几乎没有线索。静态剪枝偏偏就是在这个时间点做决定。</li>
+</ol>
+<p>另外还有一个他们叫「耦合瓶颈」的现象：整段推理一直开着全部的视觉 token，模型反而会被不相干的东西带走。论文的例子是问「红绿灯是绿的吗」，模型看到车都停着，就推论灯一定是红的，而不是直接看灯本身。</p>
+<p><strong>再看做法。</strong> VisionPulse 不需要训练：</p>
+<ul>
+<li>每生成一个 token，就在第 17 层（跟对照的 FastV 同一层）算这个 token 对每个视觉 token 的注意力，所有 head 平均当成重要度，之后的层只留前 K 名。</li>
+<li>K 不是固定的。作者发现「看图的总量」和「真正被看到的 token 数」高度相关（不同门槛下的 Pearson r 在 0.82 到 0.95 之间），所以直接用看图的总量乘上视觉 token 数当成这一步的预算。算总量时用了温度 τ 小于 1 的 softmax 压掉长尾，并取 head 里的最大值，比较保守。</li>
+<li>为了跟其他方法公平比较，预算会被夹在一个范围内：「≤10%」是 5%～10%，「≤5%」是 1%～5%。</li>
+</ul>
+<p>主要模型是 Qwen3-VL-4B-Thinking，在 CharXiv、InfoVQA、ChartQA、MMStar、RealWorldQA、MMVet、MIA-Bench 七个基准上测，另外用 Qwen3-VL-8B-Thinking 和 InternVL3.5-4B-Thinking 验证能不能推广。</p>
+<h2>结果</h2>
+<p>七个基准的平均（Qwen3-VL-4B-Thinking，长度是平均生成的 token 数）：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">方法</th>
+<th style="text-align: left;">视觉 token</th>
+<th style="text-align: left;">平均准确率</th>
+<th style="text-align: left;">平均长度</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">原模型</td>
+<td style="text-align: left;">全部</td>
+<td style="text-align: left;">72.68</td>
+<td style="text-align: left;">1,687</td>
+</tr>
+<tr>
+<td style="text-align: left;">VisionZip</td>
+<td style="text-align: left;">≤10%</td>
+<td style="text-align: left;">43.82</td>
+<td style="text-align: left;">2,603</td>
+</tr>
+<tr>
+<td style="text-align: left;">FastV</td>
+<td style="text-align: left;">≤10%</td>
+<td style="text-align: left;">38.09</td>
+<td style="text-align: left;">2,753</td>
+</tr>
+<tr>
+<td style="text-align: left;">LOOK-M</td>
+<td style="text-align: left;">≤10%</td>
+<td style="text-align: left;">54.84</td>
+<td style="text-align: left;">2,675</td>
+</tr>
+<tr>
+<td style="text-align: left;">VisionPulse</td>
+<td style="text-align: left;">≤10%</td>
+<td style="text-align: left;">72.69</td>
+<td style="text-align: left;">1,480</td>
+</tr>
+<tr>
+<td style="text-align: left;">VisionZip</td>
+<td style="text-align: left;">≤5%</td>
+<td style="text-align: left;">39.31</td>
+<td style="text-align: left;">1,996</td>
+</tr>
+<tr>
+<td style="text-align: left;">FastV</td>
+<td style="text-align: left;">≤5%</td>
+<td style="text-align: left;">35.69</td>
+<td style="text-align: left;">2,187</td>
+</tr>
+<tr>
+<td style="text-align: left;">LOOK-M</td>
+<td style="text-align: left;">≤5%</td>
+<td style="text-align: left;">44.62</td>
+<td style="text-align: left;">3,509</td>
+</tr>
+<tr>
+<td style="text-align: left;">VisionPulse</td>
+<td style="text-align: left;">≤5%</td>
+<td style="text-align: left;">71.35</td>
+<td style="text-align: left;">1,499</td>
+</tr>
+</tbody>
+</table>
+<p>其他几个数字：</p>
+<ul>
+<li><strong>实际留得比 5% 还少</strong>：消融实验（RealWorldQA、MMVet、MIA-Bench）里，动态预算平均只留 1.9% 的视觉 token，平均准确率 75.54（原模型 75.74），长度少 16.6%。固定留 1% 是 71.03，长度反而多 27.9%；固定留 5% 是 75.16；随机分配预算（平均 3.0%）是 72.93。</li>
+<li><strong>换模型也成立</strong>：Qwen3-VL-8B-Thinking 平均 85.72 → 85.87，InternVL3.5-4B-Thinking 72.04 → 72.63；同样条件下 FastV 是 73.41 和 63.41。</li>
+<li><strong>速度</strong>：批量 8、生成 1,000 个 token 时，端到端延迟在 8K、16K、32K 长的上下文分别快 1.20、1.24、1.30 倍。</li>
+<li><strong>很多 token 从头到尾没人看</strong>：附录统计，整段推理中注意力从没超过门槛的视觉 token 占了不小的比例。</li>
+</ul>
+<h2>读完最在意的三件事</h2>
+<p><strong>第一，压错了，推理会变长。</strong> 我原本以为剪掉视觉 token 只会让模型变笨，没想到还会变啰嗦。静态方法在 ≤5% 时，LOOK-M 的生成长度多了 108%，准确率还是掉了 38.6%（相对值）。附录那个通风口的例子很传神：VisionZip 和 FastV 都断定「图里没有通风口」，FastV 那一段还反复写「Wait, let me check again」绕了好几圈，看不到证据，就只能用更长的推理去补，最后又慢又错。</p>
+<p>这跟 V-Skip 里 POPE 的结果是同一件事的两种样子：V-Skip 是推理链里的视觉证据被删掉后，模型更爱说「有」；这里是视觉 token 被删掉后，模型开始绕圈。所以评估压缩方法时只看准确率不够，生成长度和回答的偏向也要一起看。</p>
+<p><strong>第二，它和 V-Skip 用的是同一个信号。</strong> VisionPulse 的图 1（写到「square」、「handle」时看图量冲高），几乎就是 V-Skip 说的「视觉锚点」。V-Skip 用这个信号决定推理链里哪些字不能删，VisionPulse 用它决定这一步要给多少视觉 token。两篇放在一起看，结论很清楚：推理链和视觉 token 不是两笔分开的成本。VisionPulse 的式 1 其实直接写出来了，解码的总成本大约和 g·(p+v) + g² 成正比，g 是推理长度，v 是视觉 token 数，关键就在 g 乘 v 那一项。</p>
+<p><strong>第三，它省的是计算，不是内存。</strong> 这点论文没有明讲，是我从方法推出来的：每一步要选的 token 都不一样，所以全部视觉 token 的 KV cache 都得留着；prefill 照常做，第 17 层以前照常看全部，第 17 层还要对全部视觉 token 算一次分数才能挑。真正省下来的只有之后那些层的注意力计算，这也解释了为什么加速只有 1.2 到 1.3 倍。所以表上的「留 5%」，和静态方法的「留 5%」意思不一样，后者是真的删掉、真的省下内存。论文没有报告显存，附录倒是试了「FastV 在 prefill 先删一半，再加 VisionPulse」（平均 69.4 → 70.4），我觉得这才是比较实际的用法。</p>
+<h2>长视频加长推理：还没有人处理的双重爆炸</h2>
+<p>读到最后我发现，这批工作的实验几乎都是图片。VisionPulse 的式子里写的是「图片或视频」，相关研究也提到视频可以有上万个视觉 token，但七个基准全是单张图。</p>
+<p>这让我一直在想视频推理模型，也就是 Video-R1 那一代会先长篇思考再回答的模型。放进 g·v 那一项来看，长视频让 v 变成好几万，长推理让 g 变成好几千，两个一起放大，成本是相乘的。现在的研究大多只处理一边：压视觉 token 的方法多半在图片上测、推理很短；压推理链的方法多半是纯文本。两边同时爆炸的情况，我还没看到有人正面处理。</p>
+<p>把 VisionPulse 搬到视频上，我想到几个问题：</p>
+<ul>
+<li><strong>预算公式会不会失准？</strong> 预算是「看图总量 × 视觉 token 数」。视觉 token 从几百变成几万时，softmax 会被摊得更平，在图片上调好的温度 τ 不一定适用。</li>
+<li><strong>该看的地方，不只在空间上换，也在时间上换。</strong> 推理一路讲下去，常常是从一个时刻讲到另一个时刻。这让「每一步重新选」更有道理，但也更危险：前面一直没被看过的那几帧，可能正是最后一个问题要问的。</li>
+<li><strong>内存才是第一个瓶颈。</strong> 对长视频来说，最先遇到的问题往往不是算得慢，而是根本放不下。保留全部 KV cache 的做法，在这里帮不上最急的那个忙。</li>
+</ul>
+<h2>我的疑问</h2>
+<ul>
+<li><strong>只跑一次？</strong> 解码温度是 0.7，论文没说有没有重复跑。MMVet 只有 218 题、用 GPT-4o-mini 评分，相对 +1.4% 这种小幅进步，可能在杂讯范围内。</li>
+<li><strong>对照组被放在不擅长的区间。</strong> FastV、VisionZip 原本设计的保留比例高很多，压到 5% 会崩溃并不意外；而且它们真的省下了内存，VisionPulse 没有。如果能在相同显存下比较，会更公平。</li>
+<li><strong>「耦合瓶颈」主要靠例子。</strong> 红绿灯和通风口的例子很有说服力，但都是挑出来的。我想看统计：变短的推理里，有多少原本是在描述和问题无关的东西？</li>
+<li><strong>没有代码。</strong> 我读的时候没有找到公开的代码。</li>
+</ul>
+<h2>读完之后想试的事</h2>
+<ol>
+<li><strong>量显存</strong>：比较完整模型、VisionPulse，以及 FastV + VisionPulse 的峰值显存，看在显存小的卡上实际差多少。</li>
+<li><strong>在视频上画看图量的曲线</strong>：输入换成视频，看每一步的看图量是不是在提到某个时刻时冲高，以及视觉 token 有几万个时，它和「真正被看到的 token 数」还相不相关。</li>
+<li><strong>把生成长度当成压缩的健康检查</strong>：以后看任何压缩方法，都一起记录准确率、生成长度和回答「有」的比例。</li>
+<li><strong>看看那些从头到尾没人看的 token</strong>：统计它们占多少、有没有位置或内容上的规律。</li>
+</ol>
+<hr>
+<p>论文的数字已对照 arXiv v1（2026 年 5 月 29 日）的 PDF。表格里是论文的绝对分数；文中的增减百分比，是相对于原模型的变化。</p></article><div class="ask"><div><b>Q&amp;A</b><small>匿名提问，在这里回答。</small></div><a class="btn primary" href="https://forms.gle/yNUw4eLZeeqf3Arb6" target="_blank" rel="noopener noreferrer">匿名提问 ↗</a></div><h2 style="margin-top:48px">其他文章</h2><a class="card" href="/blog/zh-cn/2026-09-30-rine/"><span class="type paper">论文笔记</span><b>RINE：中间层真的比最后一层更懂「假」吗？</b><small>RINE 用 CLIP 中间层的特征侦测生成图，和我自己的实验结论大致相同；但在「野外干扰」下，最有用的层会换人，增强的广度也比从哪一层拿特征更关键。</small></a><a class="card" href="/blog/zh-cn/2026-09-29-now/"><span class="type now">近况</span><b>2026 年 9 月：作品与考卷分享区上线，开始准备 CVPR</b><small>这个月把 Taiwan Exam、考卷分享区、LumiGrid 网页版和 Adversarial Lab 放上线，网站也搬到 niansia.com；接下来的重心是 11 月中的 CVPR 2027 投稿。</small></a><a class="card" href="/blog/zh-cn/2026-09-14-reroute/"><span class="type paper">论文笔记</span><b>Reroute：丢掉的视觉 token，晚点还能捡回来吗？</b><small>Reroute 把「删掉低分的视觉 token」改成「先延后，之后还能回来」，不用训练，压得越狠救回越多。我们正在研究长视频压缩后，遗失的画面怎么找回、怎么重新定位，这篇刚好从最小的地方切进去。</small></a><div class="btns"><a class="btn" href="/blog/zh-cn/">全部文章</a><a class="btn primary" href="/zh-cn/#blog">回到作品集</a></div></main>
+<aside class="author" aria-label="由 Niansia 制作"><a class="an-face" href="/zh-cn/" tabindex="-1" aria-hidden="true" data-nz-title="Niansia"><img src="/assets/icons/author.webp" alt="" width="56" height="56" loading="lazy"></a><div class="an-text"><b>由 Niansia 制作</b><small>阳明交大资工硕士生，研究 AI 安全、电脑视觉与视觉语言模型。</small></div><a class="btn primary an-go" href="/zh-cn/" data-nz-title="Niansia">前往 niansia.com →</a></aside>
+<footer>有问题或想法？写信到 <a href="mailto:niansia930202@gmail.com">niansia930202@gmail.com</a> · <a href="/zh-cn/">niansia.com</a> · <a href="https://github.com/niansia">github.com/niansia</a><span class="stats" data-stats hidden> · <i class="live-dot"></i> <b data-stat="online">–</b> 人在线 · <b data-stat="total">–</b> 次造访</span></footer>
+</body>
+</html>

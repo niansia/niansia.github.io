@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VTC-R1: printing the reasoning as images and using them as scratch paper · Niansia</title>
+<meta name="description" content="VTC-R1 renders each finished stretch of reasoning into images, and in the next round the model continues from that &quot;scratch paper&quot; alone. Tokens drop 3.4×, speed goes up 1.2–6.6×, and accuracy is mostly higher. It is a lovely idea, but every task is text-only math, nobody measures whether the scratch paper is read back correctly, and video reasoning, where visual tokens are already overflowing, is a different matter.">
+<link rel="canonical" href="https://niansia.com/blog/en/2026-07-31-vtc-r1/">
+<link rel="alternate" hreflang="en" href="https://niansia.com/blog/en/2026-07-31-vtc-r1/"><link rel="alternate" hreflang="zh-Hant-TW" href="https://niansia.com/blog/zh-tw/2026-07-31-vtc-r1/"><link rel="alternate" hreflang="zh-Hans-CN" href="https://niansia.com/blog/zh-cn/2026-07-31-vtc-r1/"><link rel="alternate" hreflang="x-default" href="https://niansia.com/blog/en/2026-07-31-vtc-r1/">
+<meta property="og:type" content="article"><meta property="og:site_name" content="Niansia">
+<meta property="og:title" content="VTC-R1: printing the reasoning as images and using them as scratch paper · Niansia"><meta property="og:description" content="VTC-R1 renders each finished stretch of reasoning into images, and in the next round the model continues from that &quot;scratch paper&quot; alone. Tokens drop 3.4×, speed goes up 1.2–6.6×, and accuracy is mostly higher. It is a lovely idea, but every task is text-only math, nobody measures whether the scratch paper is read back correctly, and video reasoning, where visual tokens are already overflowing, is a different matter.">
+<meta property="og:url" content="https://niansia.com/blog/en/2026-07-31-vtc-r1/"><meta property="og:image" content="https://niansia.com/assets/og/blog-2026-07-31-vtc-r1-en.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta property="og:locale" content="en">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://niansia.com/assets/og/blog-2026-07-31-vtc-r1-en.jpg">
+
+<meta name="theme-color" content="#fbf6ee" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#15142a" media="(prefers-color-scheme: dark)">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://*.firebasedatabase.app; connect-src 'self' https://*.firebasedatabase.app wss://*.firebasedatabase.app; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; frame-src https://*.firebasedatabase.app; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml">
+<script src="/assets/js/page-transition.js?v=3"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root{--bg:#fbf6ee;--paper:#fffdf9;--ink:#2a2230;--muted:#766b73;--line:#2a22301a;--accent:#c0673a;--accent2:#8f6bb3;--code:#f3ece2;}
+@media(prefers-color-scheme:dark){:root{--bg:#15142a;--paper:#1c1a36;--ink:#f1ebe2;--muted:#aaa3bd;--line:#ffffff1a;--accent:#f0a878;--accent2:#b69ae6;--code:#26234a;}}
+*{box-sizing:border-box;}html{-webkit-text-size-adjust:100%;}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.85 Inter,'Noto Sans TC','Noto Sans SC',system-ui,sans-serif;}
+a{color:var(--accent);text-underline-offset:3px;}
+.top{max-width:1080px;margin:0 auto;padding:18px 20px;display:flex;align-items:center;gap:10px;font:500 13px 'JetBrains Mono',monospace;color:var(--muted);}
+.top a{color:var(--muted);text-decoration:none;}.top a:hover{color:var(--accent);}
+.top b{color:var(--ink);font-weight:500;}.top .sp{flex:1;}
+.langs a{padding:4px 9px;border-radius:99px;border:1px solid var(--line);margin-left:4px;}.langs a[aria-current]{color:var(--ink);border-color:var(--accent);}
+main{max-width:760px;margin:0 auto;padding:10px 20px 70px;}
+.kicker{font:500 12px 'JetBrains Mono',monospace;color:var(--accent);letter-spacing:.06em;text-transform:uppercase;margin:24px 0 8px;}
+h1{font-size:clamp(28px,4.4vw,42px);line-height:1.2;letter-spacing:-.02em;margin:0 0 14px;}
+.lede{font-size:18px;color:var(--muted);margin:0 0 16px;line-height:1.7;}
+.meta{display:flex;flex-wrap:wrap;gap:8px 14px;font:500 12.5px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;color:var(--muted);padding-bottom:22px;border-bottom:1px solid var(--line);margin-bottom:10px;}
+.meta span.tag{padding:2px 9px;border-radius:99px;background:var(--code);}
+article h2{font-size:23px;margin:40px 0 10px;letter-spacing:-.01em;}
+article h3{font-size:18px;margin:28px 0 8px;}
+article p,article li{color:var(--ink);}
+article code{font:14px 'JetBrains Mono',monospace;background:var(--code);padding:1px 6px;border-radius:6px;}
+article table{width:100%;border-collapse:collapse;margin:18px 0;font-size:14.5px;display:block;overflow-x:auto;}
+article th,article td{padding:8px 12px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap;}
+article th{font-weight:600;color:var(--muted);font-size:13px;}
+article td:not(:first-child),article th:not(:first-child){text-align:right;}
+article td[style*="left"],article th[style*="left"]{white-space:normal;min-width:6.5em;}   /* text tables (|:---|) wrap instead of scrolling */
+article strong{color:var(--ink);}
+article blockquote{margin:18px 0;padding:4px 18px;border-left:3px solid var(--accent);color:var(--muted);}
+.card{display:block;padding:18px 20px;margin:12px 0;border-radius:16px;background:var(--paper);border:1px solid var(--line);text-decoration:none;color:var(--ink);transition:transform .25s,border-color .25s;}
+.card:hover{transform:translateY(-2px);border-color:var(--accent);}
+.card b{display:block;font-size:18px;line-height:1.4;margin-bottom:4px;}.card small{display:block;color:var(--muted);font-size:14px;line-height:1.6;}
+.card i{display:block;font:normal 500 12px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;color:var(--accent);margin-top:8px;}
+.hero{width:100%;height:auto;border-radius:16px;border:1px solid var(--line);display:block;margin:6px 0 18px;}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px;}.chips span{font:500 12px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;padding:4px 11px;border-radius:99px;background:var(--code);}
+.btns{display:flex;flex-wrap:wrap;gap:10px;margin:22px 0;}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:12px;border:1px solid var(--line);background:var(--paper);color:var(--ink);text-decoration:none;font-weight:600;font-size:14px;}
+.btn.primary{background:var(--accent);border-color:transparent;color:var(--paper);}
+.btn:hover{border-color:var(--accent);}
+.note{font-size:13.5px;color:var(--muted);}
+.live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#34c38f;box-shadow:0 0 0 3px #34c38f33;vertical-align:1px;}footer b{color:var(--ink);font-weight:600;}
+figure.fig{margin:24px 0;}figure.fig a{display:block;border-radius:14px;overflow:hidden;border:1px solid var(--line);cursor:zoom-in;background:var(--code);}
+figure.fig img{display:block;width:100%;height:auto;transition:transform .4s;}figure.fig a:hover img{transform:scale(1.015);}
+figure.fig figcaption{margin-top:8px;font-size:13.5px;color:var(--muted);line-height:1.6;}
+.lb{position:fixed;inset:0;z-index:50;display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px;background:#0d0b16ee;}
+.lb.on{display:flex;}.lb img{max-width:100%;max-height:84vh;border-radius:10px;box-shadow:0 30px 80px #000a;}
+.lb p{margin:0;color:#e9e4f2;font-size:14px;text-align:center;max-width:760px;}
+.lb-x{position:absolute;top:14px;right:18px;width:40px;height:40px;border-radius:50%;border:1px solid #ffffff44;background:transparent;color:#fff;font-size:24px;cursor:pointer;}
+.log-entry{position:relative;padding:0 0 34px 26px;border-left:2px solid var(--line);}
+.log-entry:before{content:'';position:absolute;left:-7px;top:8px;width:12px;height:12px;border-radius:50%;background:var(--bg);border:2px solid var(--accent);}
+.log-entry time{font:500 12.5px 'JetBrains Mono',monospace;color:var(--accent);}
+.log-entry h2{margin:4px 0 6px!important;font-size:21px!important;}
+.log-entry h2 a{color:var(--ink);text-decoration:none;}
+.statement-link{display:flex;justify-content:space-between;align-items:center;}
+.top a.me{display:inline-flex;align-items:center;gap:8px;padding:3px 12px 3px 3px;border:1px solid var(--line);border-radius:99px;transition:border-color .2s;}.top a.me:hover{border-color:var(--accent);}.top a.me img{width:24px;height:24px;border-radius:50%;display:block;}
+.author{max-width:720px;margin:44px auto 0;padding:18px 20px;display:flex;align-items:center;gap:16px;border-radius:18px;background:var(--code);border:1px solid var(--line);}
+.author{box-sizing:border-box;}.author>*{flex:none;}
+.author .an-face img{display:block;width:56px;height:56px;border-radius:50%;border:2px solid var(--accent);}
+.author .an-text{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px;}
+.author .an-text b{font-size:15px;}.author .an-text small{font-size:13px;line-height:1.6;color:var(--muted);}
+.author .an-note{color:var(--ink)!important;}
+.author .an-go{margin:0;white-space:nowrap;}
+@media (max-width:760px){.author{margin:40px 16px 0;}}@media (max-width:600px){.author{flex-wrap:wrap;padding:16px;}.author .an-text{flex-basis:calc(100% - 72px);}.author .an-go{flex:1 1 100%;justify-content:center;text-align:center;}}
+footer{max-width:760px;margin:0 auto;padding:26px 20px 50px;border-top:1px solid var(--line);font-size:14px;color:var(--muted);}
+
+.paper-box{margin:0 0 26px;padding:18px 20px;border-radius:16px;background:var(--paper);border:1px solid var(--line);border-left:4px solid var(--accent2);}
+.paper-box .pv{font:600 12px 'JetBrains Mono',monospace;color:var(--accent2);letter-spacing:.04em;margin:0 0 6px;}
+.paper-box b{display:block;font-size:17px;line-height:1.45;}
+.paper-box .pa{margin:6px 0 0;font-size:13.5px;color:var(--muted);line-height:1.6;}
+.paper-box .pl{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+.paper-box .pl a{font:600 12.5px 'JetBrains Mono',monospace;padding:5px 12px;border-radius:99px;border:1px solid var(--line);text-decoration:none;}
+.paper-box .pl a:hover{border-color:var(--accent);}
+.type{display:inline-block;padding:2px 9px;border-radius:99px;background:var(--accent);color:#fff;font:600 11.5px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;}
+.type.paper{background:var(--accent2);}.type.qa{background:#3f9f86;}.type.post{background:var(--muted);}
+.card .type{margin-bottom:8px;}.card .zh{margin-left:8px;font:500 11.5px 'JetBrains Mono',monospace;color:var(--muted);}
+.now-card{border-left:4px solid var(--accent);}
+.qa{padding:20px 0;border-bottom:1px solid var(--line);}
+.qa .qq{display:flex;gap:12px;font-weight:700;font-size:17px;line-height:1.55;margin:0 0 8px;}
+.qa .qq span,.qa .qa-a>span{flex:none;display:grid;place-items:center;width:28px;height:28px;border-radius:9px;background:var(--code);color:var(--accent);font-size:13px;}
+.qa .qa-a{display:flex;gap:12px;}.qa .qa-a>span{background:var(--accent);color:#fff;}.qa .qa-a article>:first-child{margin-top:0;}
+.qa time{display:block;margin:6px 0 0 40px;font:500 12px 'JetBrains Mono',monospace;color:var(--muted);}
+.ask{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:18px 0 8px;padding:16px 18px;border-radius:16px;background:var(--code);}
+.ask b{display:block;font-size:15.5px;}.ask small{display:block;color:var(--muted);font-size:13px;}
+.ask .btn{flex:none;margin:0;}.ask .btn[aria-disabled]{opacity:.55;pointer-events:none;}
+</style>
+<link rel="alternate" type="application/rss+xml" title="Niansia · Blog" href="/blog/en/feed.xml"><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BlogPosting", "headline": "VTC-R1: printing the reasoning as images and using them as scratch paper", "description": "VTC-R1 renders each finished stretch of reasoning into images, and in the next round the model continues from that \"scratch paper\" alone. Tokens drop 3.4×, speed goes up 1.2–6.6×, and accuracy is mostly higher. It is a lovely idea, but every task is text-only math, nobody measures whether the scratch paper is read back correctly, and video reasoning, where visual tokens are already overflowing, is a different matter.", "datePublished": "2026-07-31", "dateModified": "2026-07-31", "inLanguage": "en", "author": {"@type": "Person", "name": "Niansia", "url": "https://niansia.com/", "email": "mailto:niansia930202@gmail.com", "sameAs": ["https://github.com/niansia"]}, "mainEntityOfPage": "https://niansia.com/blog/en/2026-07-31-vtc-r1/", "keywords": "vision-language models, chain of thought, long reasoning, efficiency", "citation": {"@type": "ScholarlyArticle", "name": "VTC-R1: Vision-Text Compression for Efficient Long-Context Reasoning", "url": "https://arxiv.org/abs/2601.22069"}}</script>
+<script defer src="/assets/js/site-stats.js?v=2"></script>
+<script defer src="/assets/js/lightbox.js"></script>
+
+</head>
+<body>
+<header class="top"><a class="me" href="/" title="Back to Niansia&#x27;s website" data-nz-title="Niansia"><img src="/assets/icons/author.webp" alt="" width="24" height="24"><b>~/niansia</b></a> / <a href="/blog/en/">blog</a><span class="sp"></span><span class="langs"><a href="/blog/en/2026-07-31-vtc-r1/" aria-current="page" hreflang="en">EN</a><a href="/blog/zh-tw/2026-07-31-vtc-r1/" hreflang="zh-Hant">繁</a><a href="/blog/zh-cn/2026-07-31-vtc-r1/" hreflang="zh-Hans">简</a></span></header>
+<main><p class="kicker">Paper note</p><h1>VTC-R1: printing the reasoning as images and using them as scratch paper</h1><p class="lede">VTC-R1 renders each finished stretch of reasoning into images, and in the next round the model continues from that &quot;scratch paper&quot; alone. Tokens drop 3.4×, speed goes up 1.2–6.6×, and accuracy is mostly higher. It is a lovely idea, but every task is text-only math, nobody measures whether the scratch paper is read back correctly, and video reasoning, where visual tokens are already overflowing, is a different matter.</p><div class="meta"><time datetime="2026-07-31">2026-07-31</time><span>7 min read</span><span class="tag">vision-language models</span><span class="tag">chain of thought</span><span class="tag">long reasoning</span><span class="tag">efficiency</span></div><aside class="paper-box"><p class="pv">arXiv 2026 · Read closely</p><b lang="en">VTC-R1: Vision-Text Compression for Efficient Long-Context Reasoning</b><p class="pa" lang="en">Yibo Wang, Yongcheng Jing, Shunyu Liu, Hao Guan, Rong-Cheng Tu, Chengyu Wang, Jun Huang, Dacheng Tao</p><div class="pl"><a href="https://arxiv.org/abs/2601.22069" target="_blank" rel="noopener noreferrer">Paper ↗</a><a href="https://github.com/w-yibo/VTC-R1" target="_blank" rel="noopener noreferrer">Code ↗</a></div></aside><article><h2>Why this paper</h2>
+<p>DeepSeek-OCR and Glyph made a strong impression on me last year: print a passage as an image, show the image to the model, and it takes several times fewer tokens yet the model can still read it back. I kept wondering: if documents can be compressed this way, what about reasoning? For models that think at length, the biggest thing in the context is often the tens of thousands of tokens they wrote themselves.</p>
+<p>VTC-R1 does exactly that. I read VisionPulse on the same day; it compresses the input's visual tokens. This paper goes the other way and turns the reasoning text into visual tokens. The two point in opposite directions, which made them fun to read together.</p>
+<h2>What the paper does</h2>
+<p><strong>Split long reasoning into rounds.</strong> In each round the model sees only the question plus images of every earlier round's reasoning, and writes the next stretch (at most 8,192 tokens per round). That stretch is then printed into images and added to the pile, for up to 8 rounds. The system prompt is blunt: these images record your previous reasoning; continue, don't restart.</p>
+<p><strong>How it prints.</strong> A4 pages (595×842) at 72 dpi with a 9-point font. The authors swapped Glyph's default font for DejaVuSans because the original rendered some math symbols wrong. One image holds about 1,600 text tokens on average; rendering takes 0.12 s and image preprocessing 0.02 s, about 4% of total latency.</p>
+<p><strong>Training data.</strong> OpenR1-Math-Inf, the segmented version that InftyThink cut from OpenR1-Math-220K (reasoning written by DeepSeek-R1). After cleaning, 60,688 problems become 106K training instances with 105K images; 181M text tokens turn into 54M visual tokens, a 3.4× compression.</p>
+<p><strong>Models and baselines.</strong> Fine-tuned on Glyph (a model built on GLM-4.1V-9B-Base for reading rendered text) and on Qwen3-VL-8B. The baselines are standard SFT on the same data with the whole chain written in one pass, and TokenSkip (compression ratio 0.8; training collapsed at 0.6). The test sets are GSM8K, MATH500, AIME25 and AMC23, with GPQA-Diamond as an unseen domain.</p>
+<h2>Results</h2>
+<p>Qwen3-VL-8B (latency in seconds):</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Benchmark</th>
+<th style="text-align: left;">SFT</th>
+<th style="text-align: left;">VTC-R1</th>
+<th style="text-align: left;">SFT latency</th>
+<th style="text-align: left;">VTC-R1 latency</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">GSM8K</td>
+<td style="text-align: left;">88.1</td>
+<td style="text-align: left;">94.7</td>
+<td style="text-align: left;">3.04</td>
+<td style="text-align: left;">0.46 (6.6×)</td>
+</tr>
+<tr>
+<td style="text-align: left;">MATH500</td>
+<td style="text-align: left;">85.4</td>
+<td style="text-align: left;">90.0</td>
+<td style="text-align: left;">5.36</td>
+<td style="text-align: left;">2.49 (2.2×)</td>
+</tr>
+<tr>
+<td style="text-align: left;">AIME25</td>
+<td style="text-align: left;">32.71</td>
+<td style="text-align: left;">30.00</td>
+<td style="text-align: left;">29.85</td>
+<td style="text-align: left;">12.02 (2.5×)</td>
+</tr>
+<tr>
+<td style="text-align: left;">AMC23</td>
+<td style="text-align: left;">75.00</td>
+<td style="text-align: left;">77.97</td>
+<td style="text-align: left;">11.08</td>
+<td style="text-align: left;">6.45 (1.7×)</td>
+</tr>
+<tr>
+<td style="text-align: left;">GPQA-Diamond</td>
+<td style="text-align: left;">37.4</td>
+<td style="text-align: left;">48.5</td>
+<td style="text-align: left;">26.88</td>
+<td style="text-align: left;">9.57 (2.8×)</td>
+</tr>
+</tbody>
+</table>
+<p>A few more numbers:</p>
+<ul>
+<li><strong>The same on Glyph</strong>: SFT / TokenSkip / VTC-R1 score 80.4 / 80.6 / 86.0 on MATH500, 60.94 / 59.53 / 64.38 on AMC23 and 38.4 / 35.9 / 46.0 on GPQA-Diamond, with 1.2–2.7× lower latency.</li>
+<li><strong>Taking away the images hurts</strong>: without the earlier images at inference, AIME25 drops from 26.25 to 23.33, AMC23 from 64.38 to 59.53 and GPQA-Diamond from 46.0 to 34.3 (the numbers match Glyph's results).</li>
+<li><strong>Training is faster too</strong>: 18.93 hours against 38.92 for standard SFT, because each training example's length is capped.</li>
+<li><strong>Segment length</strong>: of 2K, 4K and 6K, 4K is best overall.</li>
+<li><strong>More rounds, more accuracy</strong>: as the allowed number of rounds grows, accuracy rises and levels off from about the fifth round.</li>
+</ul>
+<h2>Three things that stay with me</h2>
+<p><strong>First, a lovely idea: delete nothing, just write smaller.</strong> V-Skip, TokenSkip and the like all delete the tokens deemed unimportant, and sometimes delete the wrong ones. VTC-R1 deletes nothing; it just writes the same thing in a more compact form. It is like jotting half-finished working on scratch paper during an exam and flipping back when you need it, instead of holding it all in your head. Rendering costs 4% of the time, training time is halved, and the code is public. Compression by changing the representation feels far more elegant to me than choosing what to throw away.</p>
+<p><strong>Second, nobody checks whether the scratch paper is read correctly.</strong> The method section uses the chain rule to show that generating in rounds is equivalent to generating in one pass, but that holds only when the model receives the original text. VTC-R1 gives it images of the text, which it has to read back itself; misread them and the equivalence is gone. DeepSeek-OCR reported about 97% OCR precision below 10× compression and around 60% at 20×. At 3.4×, VTC-R1 should sit in the nearly lossless range, but that was DeepSeek-OCR's own model; how accurately Glyph and Qwen3-VL read 9-point reasoning is not measured. The note about swapping fonts shows that printing details do affect what comes back. "Removing the images hurts" proves the scratch paper is used, not that it is read correctly.</p>
+<p>One number bothers me a little. The only benchmark where Qwen3-VL gets worse is AIME25 (32.71 → 30.00), which is the hardest, has the longest reasoning and the most rounds, in other words the one that leans hardest on the scratch paper. With 30 problems sampled 16 times each, the gap is less than one problem and may just be noise, but it points the way my intuition does: the longer the reasoning, the more numbers on the scratch paper, and the better the odds of misreading one.</p>
+<p><strong>Third, does the gain come from the images or from the rounds?</strong> VTC-R1 differs from standard SFT in two ways: the reasoning is split into rounds, and earlier rounds are remembered as images. The segmented data itself comes from InftyThink, which uses text summaries as memory, but the paper does not compare with it directly, and there is no baseline with the same rounds and the original text as memory. The generation limits also differ: standard SFT may write up to 32,768 tokens, VTC-R1 up to 8 rounds of 8,192, or 65,536.</p>
+<p>The latency measure needs care too. It is the wall-clock time for the whole batch divided by the number of generations under vLLM batch inference, which is closer to throughput. Each round has a shorter context, so more requests fit at once; that may be part of why GSM8K gets 6.6× faster with only 1.6× fewer tokens, and not all of it is the visual compression.</p>
+<h2>Moving it to video reasoning: visual tokens are already scarce</h2>
+<p>Every task in VTC-R1 is text-only; the only images the model sees are its own notes. That made me think about how far this is from video reasoning:</p>
+<ul>
+<li><strong>The scratch paper competes with the video for the same budget.</strong> A video question already brings tens of thousands of visual tokens; add page after page of reasoning notes and both squeeze through the same visual channel. A method that prunes visual tokens, such as VisionPulse, cannot tell evidence from the video apart from the model's own notes, and might cut the notes.</li>
+<li><strong>Memory still keeps growing.</strong> Each round adds a few images; the memory just grows 3.4× slower than text would. DeepSeek-OCR suggested shrinking older images more and more to imitate human forgetting. For reasoning, though, deciding which step can be blurred and which cannot is not easy.</li>
+<li><strong>The two papers I read that day each cover one side.</strong> VisionPulse compresses the input's visual tokens, VTC-R1 compresses the reasoning chain, and one is tested only on images while the other is tested only on text. Video reasoning models, the Video-R1 generation, are where both grow at once: the video makes visual tokens explode and long reasoning makes the chain explode. I have not yet seen anyone work on that intersection.</li>
+</ul>
+<h2>Open questions</h2>
+<ul>
+<li><strong>The equivalence proof doesn't cover lossy memory.</strong> The chain-rule argument is about text memory, not image memory.</li>
+<li><strong>No baseline with rounds plus text memory</strong>, including a direct comparison with InftyThink.</li>
+<li><strong>Different generation limits</strong>: 32,768 versus 65,536.</li>
+<li><strong>Latency is closer to throughput</strong>, so the improvement for a single request may be smaller.</li>
+<li><strong>"No extra training" depends on how you read it.</strong> No extra compression model or multi-stage training is needed, but it still takes SFT on 106K examples, and the model must accept a varying number and size of images.</li>
+</ul>
+<h2>What I want to try</h2>
+<ol>
+<li><strong>A read-back test for the scratch paper</strong>: show the model its own image notes and ask for a specific intermediate number or equation, see how the error rate changes with font size and dpi, and find the compression ratio where it breaks.</li>
+<li><strong>Two more baselines</strong>: same rounds with the original text as memory, and same rounds with summaries as memory, to separate the effect of the rounds from the effect of the images.</li>
+<li><strong>Measure single-request latency</strong>: set batch size to 1 and see how much of the speed-up is left.</li>
+<li><strong>Add a question that has its own image</strong>: with an image in the question plus the reasoning notes, check whether the model confuses its notes with the question's image, and whether a visual-token pruner cuts the notes first.</li>
+</ol>
+<hr>
+<p>The paper's numbers were checked against the arXiv v2 PDF (31 January 2026); the DeepSeek-OCR figures come from its paper (arXiv 2510.18234).</p></article><div class="ask"><div><b>Questions &amp; answers</b><small>Questions sent anonymously, answered here.</small></div><a class="btn primary" href="https://forms.gle/yNUw4eLZeeqf3Arb6" target="_blank" rel="noopener noreferrer">Ask anonymously ↗</a></div><h2 style="margin-top:48px">More posts</h2><a class="card" href="/blog/en/2026-09-30-rine/"><span class="type paper">Paper note</span><b>RINE: do intermediate layers know “fake” better than the last one?</b><small>RINE detects generated images from CLIP&#x27;s intermediate layers, and my own experiments largely agree. Under real-world corruptions, though, the most useful layers change, and the breadth of augmentation matters more than which layer the features come from.</small></a><a class="card" href="/blog/en/2026-09-29-now/"><span class="type now">Now</span><b>September 2026: new projects and an exam gallery, CVPR prep begins</b><small>This month Taiwan Exam, its exam gallery, the in-browser LumiGrid and Adversarial Lab went live, and the site moved to niansia.com. Next up is the CVPR 2027 submission in mid-November.</small></a><a class="card" href="/blog/en/2026-09-14-reroute/"><span class="type paper">Paper note</span><b>Reroute: can dropped visual tokens come back later?</b><small>Reroute turns &quot;delete the low-scoring visual tokens&quot; into &quot;defer them, and let them come back&quot;, with no training, and the harder the compression, the more it recovers. We are studying how to recover and re-locate what a long video loses in compression, and this paper attacks the smallest version of that problem.</small></a><div class="btns"><a class="btn" href="/blog/en/">All posts</a><a class="btn primary" href="/#blog">Back to the portfolio</a></div></main>
+<aside class="author" aria-label="Made by Niansia"><a class="an-face" href="/" tabindex="-1" aria-hidden="true" data-nz-title="Niansia"><img src="/assets/icons/author.webp" alt="" width="56" height="56" loading="lazy"></a><div class="an-text"><b>Made by Niansia</b><small>M.S. student in computer science at NYCU, working on AI security, computer vision and vision-language models.</small></div><a class="btn primary an-go" href="/" data-nz-title="Niansia">Visit niansia.com →</a></aside>
+<footer>Questions or ideas? Email <a href="mailto:niansia930202@gmail.com">niansia930202@gmail.com</a> · <a href="/">niansia.com</a> · <a href="https://github.com/niansia">github.com/niansia</a><span class="stats" data-stats hidden> · <i class="live-dot"></i> <b data-stat="online">–</b> online · <b data-stat="total">–</b> visits</span></footer>
+</body>
+</html>

@@ -110,6 +110,44 @@ window.NIANSIA_BLOG = {
     "url": "/blog/en/2026-08-06-act2see/"
    },
    {
+    "slug": "2026-07-31-vtc-r1",
+    "type": "paper",
+    "title": "VTC-R1: printing the reasoning as images and using them as scratch paper",
+    "description": "VTC-R1 renders each finished stretch of reasoning into images, and in the next round the model continues from that \"scratch paper\" alone. Tokens drop 3.4×, speed goes up 1.2–6.6×, and accuracy is mostly higher. It is a lovely idea, but every task is text-only math, nobody measures whether the scratch paper is read back correctly, and video reasoning, where visual tokens are already overflowing, is a different matter.",
+    "date": "2026-07-31",
+    "minutes": 7,
+    "tags": [
+     "vision-language models",
+     "chain of thought",
+     "long reasoning",
+     "efficiency"
+    ],
+    "lang": "en",
+    "paper": "VTC-R1: Vision-Text Compression for Efficient Long-Context Reasoning",
+    "venue": "arXiv 2026",
+    "depth": "deep",
+    "url": "/blog/en/2026-07-31-vtc-r1/"
+   },
+   {
+    "slug": "2026-07-31-visionpulse",
+    "type": "paper",
+    "title": "VisionPulse: at every step of the reasoning, the model needs to see something different",
+    "description": "VisionPulse finds that a model's reliance on the image changes from one reasoning step to the next, so at each step it keeps only the visual tokens needed right then. With 5% kept, accuracy barely moves and the reasoning gets shorter. I love the observation; but it saves compute rather than memory, the experiments are all on images, and the double explosion of long video plus long reasoning is still untouched.",
+    "date": "2026-07-31",
+    "minutes": 8,
+    "tags": [
+     "vision-language models",
+     "visual token reduction",
+     "chain of thought",
+     "efficiency"
+    ],
+    "lang": "en",
+    "paper": "VisionPulse: Dynamic Visual Sparsity for Efficient Multimodal Reasoning",
+    "venue": "ICML 2026",
+    "depth": "deep",
+    "url": "/blog/en/2026-07-31-visionpulse/"
+   },
+   {
     "slug": "2026-07-26-vskip",
     "type": "paper",
     "title": "V-Skip: when you shorten the reasoning, don't cut out what the model saw",
@@ -238,6 +276,44 @@ window.NIANSIA_BLOG = {
     "url": "/blog/zh-tw/2026-08-06-act2see/"
    },
    {
+    "slug": "2026-07-31-vtc-r1",
+    "type": "paper",
+    "title": "VTC-R1：把推理過程印成圖片，當成模型的草稿紙",
+    "description": "VTC-R1 讓模型每想完一段，就把那段推理印成圖片，下一輪只看「圖片草稿」接著想：token 少了 3.4 倍，速度快 1.2 到 6.6 倍，準確率大多還更高。點子很漂亮，但它測的全是純文字的數學題，草稿讀得準不準也沒有量；換成本來就塞滿視覺 token 的影片推理，又是另一回事。",
+    "date": "2026-07-31",
+    "minutes": 4,
+    "tags": [
+     "視覺語言模型",
+     "思考鏈",
+     "長推理",
+     "輕量化"
+    ],
+    "lang": "zh-TW",
+    "paper": "VTC-R1: Vision-Text Compression for Efficient Long-Context Reasoning",
+    "venue": "arXiv 2026",
+    "depth": "deep",
+    "url": "/blog/zh-tw/2026-07-31-vtc-r1/"
+   },
+   {
+    "slug": "2026-07-31-visionpulse",
+    "type": "paper",
+    "title": "VisionPulse：推理的每一步，要看的畫面都不一樣",
+    "description": "VisionPulse 發現模型推理時對影像的依賴會一步一步變化，於是每一步只留下當下需要的視覺 token，只留 5% 準確率幾乎不掉，推理還變短。我很喜歡這個觀察；但它省的是計算不是記憶體，實驗也都是圖片，「長影片加長推理鏈」這個雙重爆炸，還沒有人正面處理。",
+    "date": "2026-07-31",
+    "minutes": 5,
+    "tags": [
+     "視覺語言模型",
+     "視覺 token 壓縮",
+     "思考鏈",
+     "輕量化"
+    ],
+    "lang": "zh-TW",
+    "paper": "VisionPulse: Dynamic Visual Sparsity for Efficient Multimodal Reasoning",
+    "venue": "ICML 2026",
+    "depth": "deep",
+    "url": "/blog/zh-tw/2026-07-31-visionpulse/"
+   },
+   {
     "slug": "2026-07-26-vskip",
     "type": "paper",
     "title": "V-Skip：把推理鏈壓短，別連「看到的東西」一起刪掉",
@@ -364,6 +440,44 @@ window.NIANSIA_BLOG = {
     "venue": "arXiv 2026",
     "depth": "deep",
     "url": "/blog/zh-cn/2026-08-06-act2see/"
+   },
+   {
+    "slug": "2026-07-31-vtc-r1",
+    "type": "paper",
+    "title": "VTC-R1：把推理过程印成图片，当成模型的草稿纸",
+    "description": "VTC-R1 让模型每想完一段，就把那段推理印成图片，下一轮只看「图片草稿」接着想：token 少了 3.4 倍，速度快 1.2 到 6.6 倍，准确率大多还更高。点子很漂亮，但它测的全是纯文本的数学题，草稿读得准不准也没有量；换成本来就塞满视觉 token 的视频推理，又是另一回事。",
+    "date": "2026-07-31",
+    "minutes": 4,
+    "tags": [
+     "视觉语言模型",
+     "思考链",
+     "长推理",
+     "轻量化"
+    ],
+    "lang": "zh-CN",
+    "paper": "VTC-R1: Vision-Text Compression for Efficient Long-Context Reasoning",
+    "venue": "arXiv 2026",
+    "depth": "deep",
+    "url": "/blog/zh-cn/2026-07-31-vtc-r1/"
+   },
+   {
+    "slug": "2026-07-31-visionpulse",
+    "type": "paper",
+    "title": "VisionPulse：推理的每一步，要看的画面都不一样",
+    "description": "VisionPulse 发现模型推理时对图像的依赖会一步一步变化，于是每一步只留下当下需要的视觉 token，只留 5% 准确率几乎不掉，推理还变短。我很喜欢这个观察；但它省的是计算不是内存，实验也都是图片，「长视频加长推理链」这个双重爆炸，还没有人正面处理。",
+    "date": "2026-07-31",
+    "minutes": 5,
+    "tags": [
+     "视觉语言模型",
+     "视觉 token 压缩",
+     "思考链",
+     "轻量化"
+    ],
+    "lang": "zh-CN",
+    "paper": "VisionPulse: Dynamic Visual Sparsity for Efficient Multimodal Reasoning",
+    "venue": "ICML 2026",
+    "depth": "deep",
+    "url": "/blog/zh-cn/2026-07-31-visionpulse/"
    },
    {
     "slug": "2026-07-26-vskip",
