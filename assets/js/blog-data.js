@@ -94,7 +94,7 @@ window.NIANSIA_BLOG = {
     "slug": "2026-09-14-reroute",
     "type": "paper",
     "title": "Reroute: can dropped visual tokens come back later?",
-    "description": "Reroute turns \"delete the low-scoring visual tokens\" into \"defer them, and let them come back\", with no training, and the harder the compression, the more it recovers. We are studying how to recover and re-locate what a long video loses in compression, and this paper attacks the smallest version of that problem.",
+    "description": "Reroute turns \"delete the low-scoring visual tokens\" into \"defer them, and let them come back\", with no training, and the harder the compression, the more it recovers. It works on images; after reading it I kept wondering what the same idea would run into on long video.",
     "date": "2026-09-14",
     "minutes": 6,
     "tags": [
@@ -298,7 +298,7 @@ window.NIANSIA_BLOG = {
     "slug": "2026-09-14-reroute",
     "type": "paper",
     "title": "Reroute：丟掉的視覺 token，晚點還能撿回來嗎？",
-    "description": "Reroute 把「刪掉低分的視覺 token」改成「先延後，之後還能回來」，不用訓練，壓得越狠救回越多。我們正在研究長影片壓縮後，遺失的畫面怎麼找回、怎麼重新定位，這篇剛好從最小的地方切進去。",
+    "description": "Reroute 把「刪掉低分的視覺 token」改成「先延後，之後還能回來」，不用訓練，壓得越狠救回越多。它處理的是圖片；我讀完一直在想，同樣的想法放到長影片上會碰到什麼。",
     "date": "2026-09-14",
     "minutes": 4,
     "tags": [
@@ -502,7 +502,7 @@ window.NIANSIA_BLOG = {
     "slug": "2026-09-14-reroute",
     "type": "paper",
     "title": "Reroute：丢掉的视觉 token，晚点还能捡回来吗？",
-    "description": "Reroute 把「删掉低分的视觉 token」改成「先延后，之后还能回来」，不用训练，压得越狠救回越多。我们正在研究长视频压缩后，遗失的画面怎么找回、怎么重新定位，这篇刚好从最小的地方切进去。",
+    "description": "Reroute 把「删掉低分的视觉 token」改成「先延后，之后还能回来」，不用训练，压得越狠救回越多。它处理的是图片；我读完一直在想，同样的想法放到长视频上会碰到什么。",
     "date": "2026-09-14",
     "minutes": 4,
     "tags": [

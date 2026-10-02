@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Reroute：丢掉的视觉 token，晚点还能捡回来吗？ · Niansia</title>
-<meta name="description" content="Reroute 把「删掉低分的视觉 token」改成「先延后，之后还能回来」，不用训练，压得越狠救回越多。我们正在研究长视频压缩后，遗失的画面怎么找回、怎么重新定位，这篇刚好从最小的地方切进去。">
+<meta name="description" content="Reroute 把「删掉低分的视觉 token」改成「先延后，之后还能回来」，不用训练，压得越狠救回越多。它处理的是图片；我读完一直在想，同样的想法放到长视频上会碰到什么。">
 <link rel="canonical" href="https://niansia.com/blog/zh-cn/2026-09-14-reroute/">
 <link rel="alternate" hreflang="en" href="https://niansia.com/blog/en/2026-09-14-reroute/"><link rel="alternate" hreflang="zh-Hant-TW" href="https://niansia.com/blog/zh-tw/2026-09-14-reroute/"><link rel="alternate" hreflang="zh-Hans-CN" href="https://niansia.com/blog/zh-cn/2026-09-14-reroute/"><link rel="alternate" hreflang="x-default" href="https://niansia.com/blog/en/2026-09-14-reroute/">
 <meta property="og:type" content="article"><meta property="og:site_name" content="Niansia">
-<meta property="og:title" content="Reroute：丢掉的视觉 token，晚点还能捡回来吗？ · Niansia"><meta property="og:description" content="Reroute 把「删掉低分的视觉 token」改成「先延后，之后还能回来」，不用训练，压得越狠救回越多。我们正在研究长视频压缩后，遗失的画面怎么找回、怎么重新定位，这篇刚好从最小的地方切进去。">
+<meta property="og:title" content="Reroute：丢掉的视觉 token，晚点还能捡回来吗？ · Niansia"><meta property="og:description" content="Reroute 把「删掉低分的视觉 token」改成「先延后，之后还能回来」，不用训练，压得越狠救回越多。它处理的是图片；我读完一直在想，同样的想法放到长视频上会碰到什么。">
 <meta property="og:url" content="https://niansia.com/blog/zh-cn/2026-09-14-reroute/"><meta property="og:image" content="https://niansia.com/assets/og/blog-2026-09-14-reroute-zh-cn.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
 <meta property="og:locale" content="zh_CN">
 <meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://niansia.com/assets/og/blog-2026-09-14-reroute-zh-cn.jpg">
@@ -102,16 +102,16 @@ footer{max-width:760px;margin:0 auto;padding:26px 20px 50px;border-top:1px solid
 .ask b{display:block;font-size:15.5px;}.ask small{display:block;color:var(--muted);font-size:13px;}
 .ask .btn{flex:none;margin:0;}.ask .btn[aria-disabled]{opacity:.55;pointer-events:none;}
 </style>
-<link rel="alternate" type="application/rss+xml" title="Niansia · Blog" href="/blog/zh-cn/feed.xml"><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BlogPosting", "headline": "Reroute：丢掉的视觉 token，晚点还能捡回来吗？", "description": "Reroute 把「删掉低分的视觉 token」改成「先延后，之后还能回来」，不用训练，压得越狠救回越多。我们正在研究长视频压缩后，遗失的画面怎么找回、怎么重新定位，这篇刚好从最小的地方切进去。", "datePublished": "2026-09-14", "dateModified": "2026-09-14", "inLanguage": "zh-Hans", "author": {"@type": "Person", "name": "Niansia", "url": "https://niansia.com/", "email": "mailto:niansia930202@gmail.com", "sameAs": ["https://github.com/niansia"]}, "mainEntityOfPage": "https://niansia.com/blog/zh-cn/2026-09-14-reroute/", "keywords": "视觉语言模型, 视觉 token 压缩, 定位, 长视频", "citation": {"@type": "ScholarlyArticle", "name": "Reroute, Don’t Remove: Recoverable Visual Token Routing for Vision-Language Models", "url": "https://arxiv.org/abs/2606.12412"}}</script>
+<link rel="alternate" type="application/rss+xml" title="Niansia · Blog" href="/blog/zh-cn/feed.xml"><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BlogPosting", "headline": "Reroute：丢掉的视觉 token，晚点还能捡回来吗？", "description": "Reroute 把「删掉低分的视觉 token」改成「先延后，之后还能回来」，不用训练，压得越狠救回越多。它处理的是图片；我读完一直在想，同样的想法放到长视频上会碰到什么。", "datePublished": "2026-09-14", "dateModified": "2026-09-14", "inLanguage": "zh-Hans", "author": {"@type": "Person", "name": "Niansia", "url": "https://niansia.com/", "email": "mailto:niansia930202@gmail.com", "sameAs": ["https://github.com/niansia"]}, "mainEntityOfPage": "https://niansia.com/blog/zh-cn/2026-09-14-reroute/", "keywords": "视觉语言模型, 视觉 token 压缩, 定位, 长视频", "citation": {"@type": "ScholarlyArticle", "name": "Reroute, Don’t Remove: Recoverable Visual Token Routing for Vision-Language Models", "url": "https://arxiv.org/abs/2606.12412"}}</script>
 <script defer src="/assets/js/site-stats.js?v=2"></script>
 <script defer src="/assets/js/lightbox.js"></script>
 
 </head>
 <body>
 <header class="top"><a class="me" href="/zh-cn/" title="回到 Niansia 的个人网站" data-nz-title="Niansia"><img src="/assets/icons/author.webp" alt="" width="24" height="24"><b>~/niansia</b></a> / <a href="/blog/zh-cn/">blog</a><span class="sp"></span><span class="langs"><a href="/blog/en/2026-09-14-reroute/" hreflang="en">EN</a><a href="/blog/zh-tw/2026-09-14-reroute/" hreflang="zh-Hant">繁</a><a href="/blog/zh-cn/2026-09-14-reroute/" aria-current="page" hreflang="zh-Hans">简</a></span></header>
-<main><p class="kicker">论文笔记</p><h1>Reroute：丢掉的视觉 token，晚点还能捡回来吗？</h1><p class="lede">Reroute 把「删掉低分的视觉 token」改成「先延后，之后还能回来」，不用训练，压得越狠救回越多。我们正在研究长视频压缩后，遗失的画面怎么找回、怎么重新定位，这篇刚好从最小的地方切进去。</p><div class="meta"><time datetime="2026-09-14">2026-09-14</time><span>4 分钟阅读</span><span class="tag">视觉语言模型</span><span class="tag">视觉 token 压缩</span><span class="tag">定位</span><span class="tag">长视频</span></div><aside class="paper-box"><p class="pv">arXiv 2026 · 精读</p><b lang="en">Reroute, Don’t Remove: Recoverable Visual Token Routing for Vision-Language Models</b><p class="pa" lang="en">Cheng-Yu Yang, Shao-Yuan Lo, Yu-Lun Liu</p><div class="pl"><a href="https://arxiv.org/abs/2606.12412" target="_blank" rel="noopener noreferrer">论文 ↗</a><a href="https://github.com/elmma/mllm-reroute" target="_blank" rel="noopener noreferrer">代码 ↗</a></div></aside><article><h2>为什么读这篇</h2>
-<p>我们最近在研究的问题是：长视频的画面太多，一定要压缩才放得进模型，可是后面的问题偏偏问到被压掉的细节时怎么办？那一块要怎么找回来，又要怎么重新定位到它原本在视频里的位置？</p>
-<p>现在大部分减少视觉 token 的方法都是同一个套路：打分数、留下高分的、把其他的删掉，这篇却直接质疑「删掉」这个动作本身。它处理的是图片，不是视频，但问的问题跟我们一模一样：被丢掉的东西，还有没有机会回来？</p>
+<main><p class="kicker">论文笔记</p><h1>Reroute：丢掉的视觉 token，晚点还能捡回来吗？</h1><p class="lede">Reroute 把「删掉低分的视觉 token」改成「先延后，之后还能回来」，不用训练，压得越狠救回越多。它处理的是图片；我读完一直在想，同样的想法放到长视频上会碰到什么。</p><div class="meta"><time datetime="2026-09-14">2026-09-14</time><span>4 分钟阅读</span><span class="tag">视觉语言模型</span><span class="tag">视觉 token 压缩</span><span class="tag">定位</span><span class="tag">长视频</span></div><aside class="paper-box"><p class="pv">arXiv 2026 · 精读</p><b lang="en">Reroute, Don’t Remove: Recoverable Visual Token Routing for Vision-Language Models</b><p class="pa" lang="en">Cheng-Yu Yang, Shao-Yuan Lo, Yu-Lun Liu</p><div class="pl"><a href="https://arxiv.org/abs/2606.12412" target="_blank" rel="noopener noreferrer">论文 ↗</a><a href="https://github.com/elmma/mllm-reroute" target="_blank" rel="noopener noreferrer">代码 ↗</a></div></aside><article><h2>为什么读这篇</h2>
+<p>现在大部分减少视觉 token 的方法都是同一个套路：打分数、留下高分的、把其他的删掉，这篇却直接质疑「删掉」这个动作本身：被丢掉的东西，还有没有机会回来？</p>
+<p>这个问题在长视频上会更尖锐。画面太多，一定要压缩才放得进模型，可是后面的问题偏偏可能问到被压掉的细节。Reroute 处理的是图片，不是视频，但它从最小的地方切进了这个问题，所以我把它读完。</p>
 <h2>这篇在做什么</h2>
 <p><strong>先看一个现象。</strong> 一个视觉 token 重不重要，会随着解码器的深度改变。论文追踪了「穿绿色上衣的男人」这个描述里，真正落在目标框内的一个 token：它的注意力百分位在第 3 层（FastV 做决定的地方）只有 0.11，在第 8 层（PDrop 做决定的地方）是 0.25，所以两种方法都会把它删掉；可是到第 25 层，它爬到了 0.97。浅层看起来跟背景没两样的 token，到了深层却是关键证据。</p>
 <p><strong>做法很简单。</strong> Reroute 沿用原本剪枝方法的打分方式（文本对图像的注意力）和同样的分段调度，只改「打完分之后做什么」：</p>
@@ -166,23 +166,21 @@ footer{max-width:760px;margin:0 auto;padding:26px 20px 50px;border-top:1px solid
 </ul>
 <h2>附录里我最在意的两件事</h2>
 <p><strong>第一，位置编号比想像中重要。</strong> 剪枝之后，留下的 token 可以重新编成连续的位置，也可以保留原本的位置编号。在 LLaVA-1.5 上用 FastV 留 192 个 token 时，重新编号会让 RefCOCO testA 从 27.8 掉到 1.9，几乎完全失去定位能力，token 本身还在，但模型已经不知道它「原本在哪里」。</p>
-<p>这对我们的问题是很直接的提醒：「找回来」只做了一半，还要能「放回正确的位置」。视频多了时间轴，一个 token 回来时如果时间位置错了，模型就会把它当成另一个时刻的画面。</p>
-<p><strong>第二，Qwen3-VL 上反而变差。</strong> 附录的 Qwen3-VL-8B 实验里，砍掉三分之二的 token 时，PDrop 是 69.5%，加上 Reroute 反而掉到 57.2%；只有在砍掉 88.9% 这种极端情况，才从 12.9% 进步到 19.1%。作者的解释是 Qwen3-VL 有 DeepStack（在前几层额外注入视觉特征），手动设置的调度得配合架构调整。这个结果只放在附录，正文没有提；但我们手上用的正是 Qwen3-VL 系列，对我们来说它反而是最重要的一张表。</p>
+<p>这个结果提醒我，位置信息和 token 本身一样重要。视频多了时间轴，这件事只会更重要。</p>
+<p><strong>第二，Qwen3-VL 上反而变差。</strong> 附录的 Qwen3-VL-8B 实验里，砍掉三分之二的 token 时，PDrop 是 69.5%，加上 Reroute 反而掉到 57.2%；只有在砍掉 88.9% 这种极端情况，才从 12.9% 进步到 19.1%。作者的解释是 Qwen3-VL 有 DeepStack（在前几层额外注入视觉特征），手动设置的调度得配合架构调整。这个结果只放在附录，正文没有提；但现在很多人用的正是 Qwen3-VL 系列，我觉得它反而是最重要的一张表。</p>
 <h2>放到长视频上：我在想的事</h2>
 <p>图片只有几百个 token，视频就不一样了。读完之后我一直在想，把「延后而不删除」搬到长视频上，会碰到哪些问题：</p>
 <ol>
-<li><strong>候选池本身就是负担。</strong> Reroute 延后的 token 还留在串行里，只是不参与计算。图片的 576 个 token 当然留得住，长视频动辄几万个，全部的表示都留在显卡上，本身就是我们想解决的内存问题。所以在视频上，「延后」可能要变成「先放到别的地方」：常用的留在显卡，其他的放到主内存，甚至需要时再从原始画面重算。</li>
-<li><strong>重新定位需要便宜的索引。</strong> Reroute 每次重新排名，都要拿所有候选 token 算一次注意力。如果候选 token 不在显卡上，就需要一个便宜的方法，先决定「大概在哪一段时间」，再决定「那一段里的哪些 token」，也就是先在时间上定位，再在空间上定位。</li>
+<li><strong>候选池本身就是负担。</strong> Reroute 延后的 token 还留在串行里，只是不参与计算。图片的 576 个 token 当然留得住，长视频动辄几万个，全部的表示都留在显卡上，本身就是内存问题。</li>
+<li><strong>重新排名的成本会跟着变大。</strong> Reroute 每到一个决策点，都要拿所有候选 token 算一次注意力。候选从几百个变成几万个时，光是「重新排名」这一步就不便宜了。</li>
 <li><strong>跳过太久的表示会不会过期？</strong> 被延后的 token，表示停在它被跳过的那一层；如果好几段之后才回来，它带的还是浅层的特征，却要和深层的文本一起计算。论文没有分析这件事，而在视频里可能更严重：一个 token 可能同时在「深度」和「时间」上都落后。</li>
-<li><strong>两种找回，其实可以接在一起。</strong> 八月读的 Act2See 是回到原始视频去找画面，成本高，但什么都找得到；Reroute 是在模型内部把 token 捡回来，便宜，但只捡得回当初有编码进去的东西。长视频大概两种都需要：先在内部找，找不到再回去看原始视频。</li>
 </ol>
-<p>读完这两篇，我越来越觉得「压缩」和「找回」应该一起设计，而不是压完就算了。</p>
 <h2>我的疑问</h2>
 <ul>
 <li><strong>实际速度没有量。</strong> 论文报的是理论上的 TFLOPs 和 KV cache，作者也承认实际延迟取决于 gather／scatter 的实作。在家用显卡上实际跑多快，才是我最在意的。</li>
 <li><strong>Qwen3.5 的大进步，有多少来自「回来」？</strong> 作者的解释是混合架构里的线性注意力层需要完整的串行排列，而 Reroute 刚好没有把 token 移走。那么进步里有多少来自「保留串行排列」、有多少来自「让 token 回来」？如果有一组「保留排列但禁止回来」的对照，会清楚很多。</li>
 <li><strong>有一个数字怪怪的。</strong> VQA 表里，PDrop 留 192 个 token 时 TextVQA 是 46.9，留得更少的 128 个 token 却是 56.2。这一格如果有问题，192 个 token 那一组的平均差距就会被放大。</li>
-<li><strong>救回来之后还是差很多。</strong> 就算加了 Reroute，Qwen2.5-VL 砍掉 88.9% 时也只剩原本的 18.6%。能找回一些，但离「完整找回」还有很长的距离，这也是我们想往下做的地方。</li>
+<li><strong>救回来之后还是差很多。</strong> 就算加了 Reroute，Qwen2.5-VL 砍掉 88.9% 时也只剩原本的 18.6%。能找回一些，但离「完整找回」还有很长的距离。</li>
 </ul>
 <h2>读完之后想试的事</h2>
 <ol>
@@ -192,7 +190,7 @@ footer{max-width:760px;margin:0 auto;padding:26px 20px 50px;border-top:1px solid
 <li>在自己的显卡上量实际延迟，看 gather／scatter 的额外成本有多大。</li>
 </ol>
 <hr>
-<p>论文的数字已对照 arXiv 网页版（v1）。我们自己的研究还在进行中，这里只写问题和想法，做法和结果等整理好之后再公开。</p></article><div class="ask"><div><b>Q&amp;A</b><small>匿名提问，在这里回答。</small></div><a class="btn primary" href="https://forms.gle/yNUw4eLZeeqf3Arb6" target="_blank" rel="noopener noreferrer">匿名提问 ↗</a></div><h2 style="margin-top:48px">其他文章</h2><a class="card" href="/blog/zh-cn/2026-10-01-siglip2/"><span class="type paper">论文笔记</span><b>SigLIP 2：为什么一个「看图说话」的模型特别会抓假图？</b><small>把骨干从 CLIP 换成 SigLIP 2，干扰图的分数一下子跳了一大截，比我花好几天调的任何技巧都有效。读完论文，我有两个猜测：一是它后段加入的自监督目标，二是它没有 CLS token、我改用 patch 平均。好的骨干提高起点，好的训练方法把起点推得更远。</small></a><a class="card" href="/blog/zh-cn/2026-10-01-ntire2026-report/"><span class="type paper">论文笔记</span><b>NTIRE 2026 比赛报告：冠军赢在模型，还是赢在数据？</b><small>这份报告是我专题的「考卷」。读完才发现，前两名除了模型大，训练数据也大得多、新得多，甚至涵盖了官方训练集刻意留给测试集的商用生成器。排行榜的差距同时混了模型、数据和运算，比较时要拆开来看。</small></a><a class="card" href="/blog/zh-cn/2026-09-30-rine/"><span class="type paper">论文笔记</span><b>RINE：中间层真的比最后一层更懂「假」吗？</b><small>RINE 用 CLIP 中间层的特征侦测生成图，和我自己的实验结论大致相同；但在「野外干扰」下，最有用的层会换人，增强的广度也比从哪一层拿特征更关键。</small></a><div class="btns"><a class="btn" href="/blog/zh-cn/">全部文章</a><a class="btn primary" href="/zh-cn/#blog">回到作品集</a></div></main>
+<p>论文的数字已对照 arXiv 网页版（v1）。</p></article><div class="ask"><div><b>Q&amp;A</b><small>匿名提问，在这里回答。</small></div><a class="btn primary" href="https://forms.gle/yNUw4eLZeeqf3Arb6" target="_blank" rel="noopener noreferrer">匿名提问 ↗</a></div><h2 style="margin-top:48px">其他文章</h2><a class="card" href="/blog/zh-cn/2026-10-01-siglip2/"><span class="type paper">论文笔记</span><b>SigLIP 2：为什么一个「看图说话」的模型特别会抓假图？</b><small>把骨干从 CLIP 换成 SigLIP 2，干扰图的分数一下子跳了一大截，比我花好几天调的任何技巧都有效。读完论文，我有两个猜测：一是它后段加入的自监督目标，二是它没有 CLS token、我改用 patch 平均。好的骨干提高起点，好的训练方法把起点推得更远。</small></a><a class="card" href="/blog/zh-cn/2026-10-01-ntire2026-report/"><span class="type paper">论文笔记</span><b>NTIRE 2026 比赛报告：冠军赢在模型，还是赢在数据？</b><small>这份报告是我专题的「考卷」。读完才发现，前两名除了模型大，训练数据也大得多、新得多，甚至涵盖了官方训练集刻意留给测试集的商用生成器。排行榜的差距同时混了模型、数据和运算，比较时要拆开来看。</small></a><a class="card" href="/blog/zh-cn/2026-09-30-rine/"><span class="type paper">论文笔记</span><b>RINE：中间层真的比最后一层更懂「假」吗？</b><small>RINE 用 CLIP 中间层的特征侦测生成图，和我自己的实验结论大致相同；但在「野外干扰」下，最有用的层会换人，增强的广度也比从哪一层拿特征更关键。</small></a><div class="btns"><a class="btn" href="/blog/zh-cn/">全部文章</a><a class="btn primary" href="/zh-cn/#blog">回到作品集</a></div></main>
 <aside class="author" aria-label="由 Niansia 制作"><a class="an-face" href="/zh-cn/" tabindex="-1" aria-hidden="true" data-nz-title="Niansia"><img src="/assets/icons/author.webp" alt="" width="56" height="56" loading="lazy"></a><div class="an-text"><b>由 Niansia 制作</b><small>阳明交大资工硕士生，研究 AI 安全、电脑视觉与视觉语言模型。</small></div><a class="btn primary an-go" href="/zh-cn/" data-nz-title="Niansia">前往 niansia.com →</a></aside>
 <footer>有问题或想法？写信到 <a href="mailto:niansia930202@gmail.com">niansia930202@gmail.com</a> · <a href="/zh-cn/">niansia.com</a> · <a href="https://github.com/niansia">github.com/niansia</a><span class="stats" data-stats hidden> · <i class="live-dot"></i> <b data-stat="online">–</b> 人在线 · <b data-stat="total">–</b> 次造访</span></footer>
 </body>
