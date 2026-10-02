@@ -944,6 +944,16 @@ html.film-open .yuki,html.film-open .yuki-chat{visibility:hidden;}
 }
 @media(max-height:700px) and (min-width:721px){.desktop-bar{height:52px;min-height:52px;}.desktop-footer{display:none;}.home-cards{margin-top:20px;}}
 @media(pointer:coarse){.icon-button{min-width:40px;min-height:40px;}.cursor-buddy{display:none!important;}}
+/* Phones: the top bar needs ~417px at the sizes above, so narrow screens drop the dividers and tighten the buttons
+   (after the coarse-pointer minimum, which would otherwise widen them back). */
+@media(max-width:430px){
+  .desktop{padding:0 8px;}.desktop-bar{gap:6px;}.desktop-controls{gap:0;}.control-divider{display:none;}
+  .desktop-controls :is(.icon-button,.bar-pill){width:36px;min-width:36px;}
+  .language-switch button,.lang-pill{width:28px;}
+  .language-switch:has([data-lang='zh-TW'][aria-pressed='true']) .lang-pill{transform:translateX(30px);}.language-switch:has([data-lang='zh-CN'][aria-pressed='true']) .lang-pill{transform:translateX(60px);}
+}
+@media(max-width:370px){.desktop-controls :is(.icon-button,.bar-pill){width:34px;min-width:34px;}}
+@media(max-width:340px){.brand strong{display:none;}.window-note{font-size:0;}.window-note .window-clock{font-size:11px;}}   /* keep the clock, drop "portfolio / v.03" */
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important;}.cursor-buddy,.fx-layer{display:none!important;}}
 /* The motion menu's four switches (see applyMotion in lab-terminal.js). Background & interface stills everything except
    Yuki and the pointer effects, which have their own switches. */
