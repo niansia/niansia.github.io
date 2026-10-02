@@ -3,9 +3,10 @@
    - Focus: a focus timer (25/5 or 50/10) and today's count.
    - Mock exam: pick a GSAT or AST subject and she proctors it with the official time (CEEC 116 handbook: 國綜 and 國寫
      90 min; English, Math A and Math B 100; Social Studies and Science 110; every AST subject 80). A confirmation, a
-     five-second countdown, then only "end exam" is offered, no pause. Leaving the page (another tab, window or app) is a
-     strike: the first brings a warning on return, the second voids the attempt, as in a real exam room. A reload is not
-     a strike, but a page left for longer than a few seconds is (a heartbeat records when the page was last open).
+     five-second countdown, then only "end exam" is offered, no pause. Leaving the page is a strike: another tab at
+     once; another window, app or system popup after a 10-second countdown shown on the page. The first strike brings a
+     warning on return, the second voids the attempt, as in a real exam room. A reload is not a strike, but a page left
+     for longer than a few seconds is (a heartbeat records when the page was last open).
    Timers run on end times, so a throttled background tab or a reload does not lose them; nothing leaves the browser.
    Needs assets/js/yuki-cat.js and the cat sheet; without them the companion stays hidden. */
 (() => {
@@ -29,7 +30,7 @@
     subj: {chinese: '國綜', writing: '國寫', english: '英文', 'math-a': '數學A', 'math-b': '數學B', social: '社會', science: '自然',
       'math-ja': '數學甲', 'math-yi': '數學乙', physics: '物理', chemistry: '化學', biology: '生物', history: '歷史', geography: '地理', civics: '公民與社會'},
     pickNote: '選一科，我照大考中心公布的時間幫你監考', source: '時間依 116 學年度考試簡章',
-    askTitle: (s, m) => `開始「${s}」模擬考？`, askBody: m => `作答時間 ${m} 分鐘。開始後只能結束考試，不能暫停；切換分頁、視窗或 App 會被記違規：第一次警告，第二次本次考試作廢。`,
+    askTitle: (s, m) => `開始「${s}」模擬考？`, askBody: m => `作答時間 ${m} 分鐘。開始後只能結束考試，不能暫停；切換分頁、視窗或 App 會被記違規：第一次警告，第二次本次考試作廢。系統通知之類的小窗跳出時，有 10 秒可以點回這個頁面。`,
     askTip: '題本請先印出來，或用另一台裝置打開，這個頁面只負責計時。', go: '開始考試', cancel: '取消', begin: '開始作答！',
     examOn: s => `${s} 模擬考中`, strikes: n => `違規 ${n}/2`, end: '結束考試',
     endTitle: '要提前結束這場考試嗎？', endBody: m => `會記錄為提前交卷（已作答 ${m} 分鐘）。`, endYes: '結束考試', endNo: '繼續考試',
@@ -37,7 +38,7 @@
     voidTitle: '本次考試作廢', voidBody: '切換視窗，本次考試成績作廢。請遵守考試規則～', ok: '好',
     upTitle: '時間到！', upBody: s => `請停筆，雙手離開桌面～「${s}」模擬考完成，辛苦了！`,
     earlyTitle: '已交卷', earlyBody: (s, m) => `「${s}」作答 ${m} 分鐘。下次試試寫完整場吧！`,
-    away: '⚠ 考試中，請回到考試頁面', recent: '最近：', status: {done: '完成', early: '提前交卷', void: '作廢'},
+    away: '⚠ 考試中，請回到考試頁面', graceTitle: '有系統小窗跳出來了嗎？', graceBody: '考試頁面失去焦點了，請點一下這個頁面回到考試；倒數結束會記一次違規。', graceStruck: '已經記一次違規了，請回到考試頁面。', recent: '最近：', status: {done: '完成', early: '提前交卷', void: '作廢'},
     remind: m => `剩下 ${m} 分鐘，記得檢查答案卡～`, lockTab: '考試中不能切換',
     say: {hello: ['我陪你讀書～', '寫一份模擬考吧，我在旁邊', '累了就摸摸我'], focus: ['專心，我不吵你', '一起加油', '我在這裡陪你'],
       rest: ['辛苦了！休息一下，喝口水', '完成一輪了，伸個懶腰吧', '做得好～休息時間'], back: ['休息結束，回來繼續吧', '再一輪就好！'],
@@ -51,7 +52,7 @@
     subj: {chinese: '国综', writing: '国写', english: '英文', 'math-a': '数学A', 'math-b': '数学B', social: '社会', science: '自然',
       'math-ja': '数学甲', 'math-yi': '数学乙', physics: '物理', chemistry: '化学', biology: '生物', history: '历史', geography: '地理', civics: '公民与社会'},
     pickNote: '选一科，我照大考中心公布的时间帮你监考', source: '时间依 116 学年度考试简章',
-    askTitle: (s, m) => `开始“${s}”模拟考？`, askBody: m => `作答时间 ${m} 分钟。开始后只能结束考试，不能暂停；切换标签页、窗口或 App 会被记违规：第一次警告，第二次本次考试作废。`,
+    askTitle: (s, m) => `开始“${s}”模拟考？`, askBody: m => `作答时间 ${m} 分钟。开始后只能结束考试，不能暂停；切换标签页、窗口或 App 会被记违规：第一次警告，第二次本次考试作废。系统通知之类的小窗跳出时，有 10 秒可以点回这个页面。`,
     askTip: '题本请先打印出来，或用另一台设备打开，这个页面只负责计时。', go: '开始考试', cancel: '取消', begin: '开始作答！',
     examOn: s => `${s} 模拟考中`, strikes: n => `违规 ${n}/2`, end: '结束考试',
     endTitle: '要提前结束这场考试吗？', endBody: m => `会记录为提前交卷（已作答 ${m} 分钟）。`, endYes: '结束考试', endNo: '继续考试',
@@ -59,7 +60,7 @@
     voidTitle: '本次考试作废', voidBody: '切换窗口，本次考试成绩作废。请遵守考试规则～', ok: '好',
     upTitle: '时间到！', upBody: s => `请停笔，双手离开桌面～“${s}”模拟考完成，辛苦了！`,
     earlyTitle: '已交卷', earlyBody: (s, m) => `“${s}”作答 ${m} 分钟。下次试试写完整场吧！`,
-    away: '⚠ 考试中，请回到考试页面', recent: '最近：', status: {done: '完成', early: '提前交卷', void: '作废'},
+    away: '⚠ 考试中，请回到考试页面', graceTitle: '有系统小窗跳出来了吗？', graceBody: '考试页面失去焦点了，请点一下这个页面回到考试；倒数结束会记一次违规。', graceStruck: '已经记一次违规了，请回到考试页面。', recent: '最近：', status: {done: '完成', early: '提前交卷', void: '作废'},
     remind: m => `剩下 ${m} 分钟，记得检查答题卡～`, lockTab: '考试中不能切换',
     say: {hello: ['我陪你读书～', '写一份模拟考吧，我在旁边', '累了就摸摸我'], focus: ['专心，我不吵你', '一起加油', '我在这里陪你'],
       rest: ['辛苦了！休息一下，喝口水', '完成一轮了，伸个懒腰吧', '做得好～休息时间'], back: ['休息结束，回来继续吧', '再一轮就好！'],
@@ -119,6 +120,7 @@
     </section>
     <button type="button" class="sb-cat" aria-label="${T.open}" aria-expanded="false"><span class="yuki-cat" aria-hidden="true"></span><em class="sb-chip"></em></button>
     <button type="button" class="sb-call" data-sb="show" hidden>🐾 <span>${T.show}</span></button>
+    <div class="sb-grace" role="alert" hidden><b>⚠ ${T.graceTitle}</b><strong class="sb-grace-n"></strong><span class="sb-grace-msg"></span></div>
     <div class="sb-modal" hidden><div class="sb-dialog" role="alertdialog" aria-modal="true" aria-labelledby="sb-dlg-title"></div></div>`;
   const $ = s => root.querySelector(s), catEl = $('.yuki-cat');
 
@@ -265,17 +267,42 @@
     if (pending === 'void') { X = null; saveX(); dialog(card(T.voidTitle, T.voidBody), [['ok', T.ok, true]]); paintDialogCat('crouch'); pose('crouch', 'sit', 2600); }
     pending = ''; paint();
   }
-  let leaving = false, blurTimer = 0;
+  /* Focus lost while the page stays visible (a system notification, another window or app): a banner says so and counts
+     down GRACE seconds. Clicking back into the page cancels it; when it runs out, that trip becomes a strike and the
+     banner says so until the visitor returns, which brings the usual warning or void dialog. */
+  const GRACE = 10;
+  let leaving = false, graceTimer = 0, graceLeft = 0;
+  function graceBanner(text, n) {
+    const g = $('.sb-grace');
+    g.querySelector('.sb-grace-msg').textContent = text;
+    g.querySelector('.sb-grace-n').textContent = n ?? '';
+    g.querySelector('.sb-grace-n').hidden = n === undefined;
+    g.hidden = false;
+  }
+  function stopGrace(keepBanner) {
+    clearInterval(graceTimer); graceTimer = 0;
+    if (!keepBanner) $('.sb-grace').hidden = true;
+  }
+  function startGrace() {
+    if (graceTimer || awayNow || !examOn()) return;
+    graceLeft = GRACE; graceBanner(T.graceBody, graceLeft);
+    graceTimer = setInterval(() => {
+      if (document.hasFocus() || !examOn()) { stopGrace(); return; }
+      graceLeft -= 1;
+      if (graceLeft > 0) { graceBanner(T.graceBody, graceLeft); return; }
+      stopGrace(true); strike();
+      graceBanner(pending === 'void' ? T.voidBody : T.graceStruck);
+    }, 1000);
+  }
   addEventListener('pagehide', () => { leaving = true; });   // a reload is not a strike; the heartbeat catches a page left for longer
   addEventListener('pageshow', () => { leaving = false; });
   document.addEventListener('visibilitychange', () => {
     if (document.hidden && counting) { clearTimeout(countdown); counting = false; closeDialog(); restPose(); }   // left during the countdown: it simply does not start
-    if (document.hidden) strike(); else back();
+    if (document.hidden) { stopGrace(); strike(); } else back();   // another tab counts at once, without the grace
     tick();
   });
-  // Another window or app while the tab stays visible: a short grace so a stray system popup does not count.
-  addEventListener('blur', () => { if (!examOn()) return; clearTimeout(blurTimer); blurTimer = setTimeout(() => { if (!document.hasFocus()) strike(); }, 1200); });
-  addEventListener('focus', () => { clearTimeout(blurTimer); if (!document.hidden) back(); });
+  addEventListener('blur', () => { if (examOn() && !document.hidden) startGrace(); });
+  addEventListener('focus', () => { stopGrace(); if (!document.hidden) back(); });
 
   function tick() {
     if (running() && remaining() <= 0) finish();
@@ -390,6 +417,10 @@
 .sb-bye{display:block;margin:6px auto 0;border:0;background:none;color:var(--muted,#766b73);font-weight:500;font-size:12px;text-decoration:underline;}
 .sb.is-away .sb-cat,.sb.is-away .sb-bubble{display:none;}
 .sb-call{font-size:12px;box-shadow:0 6px 16px -10px #2a223066;}
+.sb-grace{position:fixed;left:50%;top:16px;z-index:61;transform:translateX(-50%);display:grid;grid-template-columns:auto auto;align-items:center;gap:2px 14px;width:min(460px,calc(100vw - 24px));padding:12px 16px;border-radius:16px;background:var(--paper,#fffdf9);border:2px solid #f59e0b;box-shadow:0 18px 44px -18px #2a2230aa;color:var(--ink,#2a2230);}
+.sb-grace b{grid-column:1;font-size:14.5px;}
+.sb-grace .sb-grace-n{grid-column:2;grid-row:1 / span 2;font:800 40px/1 'JetBrains Mono',ui-monospace,monospace;color:#c2410c;font-variant-numeric:tabular-nums;}
+.sb-grace .sb-grace-msg{grid-column:1;font-size:13px;line-height:1.6;color:var(--muted,#766b73);}
 .sb-modal{position:fixed;inset:0;z-index:60;display:grid;place-items:center;padding:16px;background:#1d152466;backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);}
 .sb-modal[hidden]{display:none;}
 .sb-dialog{width:min(380px,100%);padding:18px 20px 16px;border-radius:20px;background:var(--paper,#fffdf9);border:1px solid var(--line,#2a22301a);box-shadow:0 30px 70px -30px #2a2230aa;text-align:center;}
