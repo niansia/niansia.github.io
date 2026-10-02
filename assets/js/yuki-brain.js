@@ -5,6 +5,7 @@
   'use strict';
   const MARK = {project:'', lang:'', theme:''};
   const PROJECT_ALIASES = {
+    'adversarial-lab':['adversarial lab','adversarial-lab','對抗實驗室','对抗实验室'], lumigrid:['lumigrid','lumi grid','lumi-grid'],
     'taiwan-exam':['taiwan exam','taiwan-exam','taiwanexam','學測','学测','模擬考','模拟考','學測模擬考'],
     kcrashlab:['kcrashlab','kcrash lab','kcrash','crashlab'], contextsec:['contextsec','context sec','context-sec'],
     merriv:['merriv'], 'ai-repo-gardener':['ai repo gardener','ai-repo-gardener','repo gardener','gardener'],
@@ -14,6 +15,7 @@
   };
   // Extra retrieval vocabulary so topical questions ("anything about drivers?") find the right project.
   const PROJECT_TOPICS = {
+    'adversarial-lab':'adversarial attack attacks robustness classifier fgsm pgd perturbation mnist 對抗 攻擊 擾動 穩健 分類器 試玩',
     'taiwan-exam':'exam exams test gsat cap education pdf 考試 考卷 學測 會考 出題 題目 教育 模擬考 試題',
     kcrashlab:'windows driver drivers kernel crash reliability reproducible simulation 驅動 驅動程式 核心 當機 可靠性 模擬 重現',
     contextsec:'security ai security coding agent agents controls risk product security 安全 資安 程式代理 風險 控制',

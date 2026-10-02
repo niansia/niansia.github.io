@@ -1248,46 +1248,104 @@
   }
 
   /* ---------- chat panel ---------- */
+  /* ---------- answer modes ----------
+     Three tiers, switched at the top of the chat and remembered: "fast" is the original small model (yuki-brain.js);
+     "trained" (the default) first asks the site-trained model in yuki-pro.js, which answers knowledge questions from the
+     site data, and hands everything else to the small model; "1.5B" is the WebGPU language model in yuki-llm.js. Leaving
+     1.5B unloads it from the graphics card (the weights stay cached, so coming back skips the download). */
+  const MODES = ['fast', 'pro', 'llm'];
+  const MC = {
+    en: {label: 'Answer mode', fast: 'Fast', pro: 'Trained', llm: '1.5B',
+      tip: {fast: 'Original small model: common questions, fastest', pro: 'Trained for this site: projects, comparisons, the blog and site features, answered from the site data', llm: 'Yuki 1.5B language model: about 880 MB to download once, runs on your graphics card, slower'},
+      foot: {fast: 'Fast mode: a small neural network running on this device. Nothing you type leaves this page.', pro: 'Trained mode: a small model trained for this site, answering from the site data. Nothing you type leaves this page.', llm: 'Yuki 1.5B: a language model on your graphics card; replies are slower. Nothing you type leaves this page.'},
+      to: {fast: 'Fast mode: the original small model.', pro: 'Trained mode! Ask me about projects, comparisons, the blog or the site.', llm: '1.5B mode: I write my own sentences, a little slower.'},
+      freed: 'I let go of the 1.5B model, so the page runs lighter. Its download stays saved for next time.', size: 'about 880 MB', styles: 'Open styles'},
+    'zh-TW': {label: '回答模式', fast: '快速', pro: '特訓', llm: '1.5B',
+      tip: {fast: '原始小模型：認得常見問題，最快', pro: '為這個網站特別訓練：作品、比較、部落格和網站功能，答案取自網站資料', llm: 'Yuki 1.5B 語言模型：第一次下載約 880 MB，跑在你的顯示卡上，比較慢'},
+      foot: {fast: '快速模式：在本機運作的小型神經網路，你輸入的內容不會離開這個頁面。', pro: '特訓模式：為這個網站訓練的小模型，答案取自網站資料；內容不會離開這個頁面。', llm: 'Yuki 1.5B：在你的顯示卡上運作的語言模型，回覆較慢；內容不會離開這個頁面。'},
+      to: {fast: '切換到快速模式：最原始的小模型。', pro: '特訓模式！作品、比較、部落格和網站功能都可以問我。', llm: '1.5B 模式：我會自己想句子，會慢一點喔。'},
+      freed: '已經把 1.5B 從顯示卡放下來，網頁會比較順；下載過的檔案會留著，下次不用重下。', size: '約 880 MB', styles: '打開風格選單'},
+    'zh-CN': {label: '回答模式', fast: '快速', pro: '特训', llm: '1.5B',
+      tip: {fast: '原始小模型：认得常见问题，最快', pro: '为这个网站特别训练：作品、比较、博客和网站功能，答案取自网站资料', llm: 'Yuki 1.5B 语言模型：第一次下载约 880 MB，跑在你的显卡上，比较慢'},
+      foot: {fast: '快速模式：在本机运行的小型神经网络，你输入的内容不会离开这个页面。', pro: '特训模式：为这个网站训练的小模型，答案取自网站资料；内容不会离开这个页面。', llm: 'Yuki 1.5B：在你的显卡上运行的语言模型，回复较慢；内容不会离开这个页面。'},
+      to: {fast: '切换到快速模式：最原始的小模型。', pro: '特训模式！作品、比较、博客和网站功能都可以问我。', llm: '1.5B 模式：我会自己想句子，会慢一点哦。'},
+      freed: '已经把 1.5B 从显卡放下来，网页会比较顺；下载过的文件会留着，下次不用重下。', size: '约 880 MB', styles: '打开风格菜单'}};
+  const mc = () => MC[app.locale()] || MC.en;
+  let chatModel = MODES.includes(app.store.get('yuki-model', '')) ? app.store.get('yuki-model', '') : 'pro';
+  const Pro = () => window.YukiPro;
   function renderChatShell() {
-    const c = t();
-    chat.innerHTML = `<header><span class="chat-avatar" aria-hidden="true"></span><div class="chat-title"><strong id="yuki-chat-title">${c.chatTitle}</strong><small class="chat-status"></small></div><button type="button" class="brain-badge" data-llm-toggle title="${esc(c.llmTitle)}" aria-expanded="false">${svg('brain')}<span>local NN</span></button><button type="button" class="chat-close" aria-label="${c.close}">${svg('close')}</button></header>
+    const c = t(), m = mc();
+    chat.innerHTML = `<header><span class="chat-avatar" aria-hidden="true"></span><div class="chat-title"><strong id="yuki-chat-title">${c.chatTitle}</strong><small class="chat-status"></small></div>
+      <div class="chat-models" role="radiogroup" aria-label="${esc(m.label)}">${MODES.map(k => `<button type="button" role="radio" data-model="${k}" aria-checked="${k === chatModel}" title="${esc(m.tip[k])}">${k === 'llm' ? svg('brain') : ''}<span>${esc(m[k])}</span></button>`).join('')}</div>
+      <button type="button" class="chat-close" aria-label="${c.close}">${svg('close')}</button></header>
       <div class="llm-card" hidden></div>
       <div class="chat-log" role="log" aria-live="polite" aria-relevant="additions"></div>
       <div class="chat-chips"></div>
       <form class="chat-form"><label class="sr-only" for="yuki-chat-input">${c.chatPlaceholder}</label><input id="yuki-chat-input" placeholder="${esc(c.chatPlaceholder)}" autocomplete="off" maxlength="400"><button type="submit" aria-label="${c.chatSend}">${svg('send')}</button></form>
-      <p class="chat-foot">${svg('brain')} ${c.chatSubtitle}</p>`;
-    messages.forEach(m => appendMessage(m, false));
+      <p class="chat-foot">${svg('brain')} <span>${esc(m.foot[chatModel])}</span></p>`;
+    messages.forEach(m_ => appendMessage(m_, false));
     renderChips(); paintState(); paintLLM();
+  }
+  function paintModes() {
+    const m = mc(), st = LLM()?.state();
+    chat.querySelectorAll('[data-model]').forEach(b => b.setAttribute('aria-checked', String(b.dataset.model === chatModel)));
+    const llmBtn = chat.querySelector('[data-model="llm"] span');
+    if (llmBtn) llmBtn.textContent = st === 'loading' ? `${Math.round(llmProgress * 100)}%` : m.llm;
+    chat.querySelector('[data-model="llm"]')?.classList.toggle('is-loading', st === 'loading');
+    const foot = chat.querySelector('.chat-foot span'); if (foot) foot.textContent = m.foot[chatModel];
+    chat.classList.toggle('is-llm', chatModel === 'llm' && st === 'ready');
+  }
+  async function setModel(next) {
+    if (!MODES.includes(next) || next === chatModel) return;
+    const was = chatModel; chatModel = next; app.store.set('yuki-model', next);
+    if (next === 'pro') Pro()?.load().catch(() => {});
+    if (was === 'llm' && LLM() && LLM().state() !== 'idle') {   // free the graphics card; the weights stay in the browser cache
+      LLM().unload().then(() => { paintLLM(); pushMessage({who: 'yuki', text: mc().freed}); }).catch(() => {});
+    }
+    if (next === 'llm' && LLM()?.wanted() && LLM().state() === 'idle') {   // downloaded before: reload from the cache straight away
+      if (!llmSupport) llmSupport = await LLM().support();
+      if (llmSupport.ok) wakeLLM();
+    }
+    pushMessage({who: 'yuki', text: mc().to[next]});
+    paintLLM();
   }
 
   /* ---------- full-size Yuki (WebGPU language model) ---------- */
   const LLM = () => window.YukiLLM;
-  let llmHistory = [], llmProgress = 0, llmSupport = null, llmCardOpen = null;
+  let llmHistory = [], llmProgress = 0, llmSupport = null, llmPaint = 0;
   const QUICK = new Set(['set_theme', 'set_language', 'motion', 'follow_toggle', 'trail_style', 'cursor_size', 'pet_pat', 'pet_feed', 'pet_play',
     'pet_sleep', 'pet_wake', 'pet_lie', 'pet_trick', 'hide', 'show', 'nav_home']);
+  // The 1.5B card shows only in 1.5B mode until the model is ready: the download button, or the progress while it loads.
   async function paintLLM() {
-    const card = chat.querySelector('.llm-card'), badge = chat.querySelector('.brain-badge');
+    const card = chat.querySelector('.llm-card');
+    paintModes();
     if (!card || !LLM()) return;
-    // Until the weights are published, the site shows only the small on-device model.
-    if (!LLM().published()) { card.hidden = true; badge.disabled = true; return; }
     const c = t(), st = LLM().state();
-    badge.querySelector('span').textContent = st === 'ready' ? 'Yuki 1.5B' : st === 'loading' ? `${Math.round(llmProgress * 100)}%` : 'local NN';
-    badge.classList.toggle('is-llm', st === 'ready'); badge.classList.toggle('is-loading', st === 'loading');
-    if (llmCardOpen === null) llmCardOpen = app.store.get('yuki-llm-card', 'open') !== 'closed';
-    card.hidden = st === 'ready' || !llmCardOpen;
-    badge.setAttribute('aria-expanded', String(!card.hidden));
+    card.hidden = chatModel !== 'llm' || st === 'ready' || !LLM().published();
     if (card.hidden) return;
     if (!llmSupport) llmSupport = await LLM().support();
     const note = !llmSupport.ok ? {webgpu: c.llmNoGpu, f16: c.llmNoF16, unpublished: c.llmUnpublished}[llmSupport.reason] : st === 'error' ? c.llmError : '';
+    const bar = card.querySelector('.llm-progress i');
+    if (st === 'loading' && bar) {   // progress only: update in place instead of rebuilding the card
+      bar.style.width = `${Math.max(3, llmProgress * 100)}%`;
+      card.querySelector('.llm-progress').setAttribute('aria-valuenow', String(Math.round(llmProgress * 100)));
+      card.querySelector('.llm-status').textContent = `${c.llmLoading} ${Math.round(llmProgress * 100)}%`;
+      return;
+    }
     card.innerHTML = `<div class="llm-head"><strong>✨ ${c.llmTitle}</strong><button type="button" data-llm-dismiss aria-label="${c.llmDismiss}">${svg('close')}</button></div><p>${c.llmBody}</p>
       ${st === 'loading' ? `<div class="llm-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(llmProgress * 100)}"><i style="width:${Math.max(3, llmProgress * 100)}%"></i></div><small class="llm-status">${c.llmLoading} ${Math.round(llmProgress * 100)}%</small>`
-        : `${note ? `<small class="llm-note">${note}</small>` : ''}<button type="button" class="llm-wake" data-llm-wake ${llmSupport.ok ? '' : 'disabled'}>${st === 'error' ? c.llmRetry : c.llmWake}</button>`}`;
+        : `${note ? `<small class="llm-note">${note}</small>` : ''}<button type="button" class="llm-wake" data-llm-wake ${llmSupport.ok ? '' : 'disabled'}>${st === 'error' ? c.llmRetry : `${c.llmWake}（${mc().size}）`}</button>`}`;
   }
   function wakeLLM() {
     if (!LLM() || LLM().state() === 'loading') return;
     llmProgress = 0;
-    LLM().load(report => { llmProgress = report.progress ?? llmProgress; paintLLM(); })
-      .then(() => { paintLLM(); notify(app.locale() === 'en' ? 'Mm… I feel so much smarter now! Ask me anything about Niansia.' : app.locale() === 'zh-CN' ? '嗯……感觉脑袋清楚多了！关于 Niansia 的事都可以问我。' : '嗯……感覺腦袋清楚多了！關於 Niansia 的事都可以問我。'); })
+    // WebLLM reports progress very often: repaint at most four times a second.
+    const tick = report => { llmProgress = report.progress ?? llmProgress; const n = performance.now(); if (n - llmPaint > 250) { llmPaint = n; paintLLM(); } };
+    LLM().load(tick)
+      .then(() => {
+        if (chatModel !== 'llm') { LLM().unload().catch(() => {}); return; }   // switched away while it was loading
+        paintLLM(); notify(app.locale() === 'en' ? 'Mm… I feel so much smarter now! Ask me anything about Niansia.' : app.locale() === 'zh-CN' ? '嗯……感觉脑袋清楚多了！关于 Niansia 的事都可以问我。' : '嗯……感覺腦袋清楚多了！關於 Niansia 的事都可以問我。');
+      })
       .catch(() => paintLLM());
     paintLLM();
   }
@@ -1372,7 +1430,9 @@
       chat.hidden = false; chat.classList.remove('is-in'); void chat.offsetWidth; chat.classList.add('is-in');
       unread = 0; paintState(); placeChat();
       brain?.load().catch(() => {});
-      if (LLM()?.wanted() && LLM().state() === 'idle') LLM().support().then(s => { llmSupport = s; if (s.ok) wakeLLM(); });
+      if (chatModel !== 'fast') Pro()?.load().catch(() => {});
+      // In 1.5B mode a model downloaded before reloads from the cache; the first download always waits for the button.
+      if (chatModel === 'llm' && LLM()?.wanted() && LLM().state() === 'idle') LLM().support().then(s => { llmSupport = s; if (s.ok) wakeLLM(); });
     }
     renderChips();
     const input = chat.querySelector('input');
@@ -1400,17 +1460,18 @@
     pushMessage({who: 'you', text});
     gain(0, 2, 0, 1);
     typing(true);
-    if (LLM()?.ready() && !(await quickIntent(text)) && await sendLLM(text)) { renderChips(); return; }
+    if (chatModel === 'llm' && LLM()?.ready() && !(await quickIntent(text)) && await sendLLM(text)) { renderChips(); return; }
     const started = performance.now();
-    const reply = await think(text);
+    // Trained mode (and 1.5B mode while the model is not ready yet): the site-trained model first, the small model for the rest.
+    const reply = (chatModel !== 'fast' && await proReply(text)) || await think(text);
     const wait = motion() ? clamp(380 + reply.text.length * 14, 500, 1500) - (performance.now() - started) : 0;
     setTimeout(() => { typing(false); pushMessage({who: 'yuki', text: reply.text, links: reply.links, meta: reply.meta}); reply.after?.(); renderChips(); if (LLM()?.ready()) remember(text, reply.text); }, Math.max(0, wait));
   }
   chat.addEventListener('submit', event => { event.preventDefault(); const input = chat.querySelector('input'); const v = input.value; input.value = ''; send(v); });
   chat.addEventListener('click', event => {
     if (event.target.closest('.chat-close')) { closeChat(); return; }
-    if (event.target.closest('[data-llm-toggle]')) { llmCardOpen = !llmCardOpen; app.store.set('yuki-llm-card', llmCardOpen ? 'open' : 'closed'); paintLLM(); return; }
-    if (event.target.closest('[data-llm-dismiss]')) { llmCardOpen = false; app.store.set('yuki-llm-card', 'closed'); paintLLM(); return; }
+    const mode = event.target.closest('[data-model]'); if (mode) { setModel(mode.dataset.model); return; }
+    if (event.target.closest('[data-llm-dismiss]')) { setModel('pro'); return; }   // closing the 1.5B card without loading it goes back to trained mode
     if (event.target.closest('[data-llm-wake]')) { wakeLLM(); return; }
     const chip = event.target.closest('[data-chip]'); if (chip) send(chip.dataset.chip);
     const link = event.target.closest('[data-link]');
@@ -1438,6 +1499,33 @@
     if (!info) return 'offline';
     return `${info.params.toLocaleString()} params · ${info.intents} intents · ${Math.round(info.metrics.heldout * 100)}% held-out`;
   }
+  // Her condition colours the local models' replies; answers about Niansia stay complete (pet actions speak for themselves).
+  function tone(text, intent) {
+    if (!text || /^pet_|^(compliment|love|hide|show)$/.test(intent)) return text;
+    if (asleep && S.out.exhausted) return nl('leadTired') + text;
+    if (S.out.sulky) return nl('leadSulky') + text;
+    if (S.out.starving) return text + nl('tailHungry');
+    return text;
+  }
+  // Trained mode: a knowledge answer from yuki-pro.js, or null so the small model answers instead.
+  async function proReply(text) {
+    const P = Pro(); if (!P) return null;
+    try { await P.load(); } catch { return null; }
+    const {view, projectId} = app.view();
+    const a = P.answer(text, {locale: app.locale(), projectId: view === 'projects' ? projectId : '', seen: S.seen, themes: app.themes?.length});
+    if (!a) return null;
+    const links = a.links.map(l => ({label: l.label, run: () => {
+      if (l.project) { const item = byId(l.project); if (item) openProject(item, false); }
+      else if (l.view) app.navigate(l.view, '', {quiet: true});
+      else if (/^https?:/.test(l.href)) window.open(l.href, '_blank', 'noopener');
+      else if (l.href) location.href = l.href;
+    }}));
+    if (a.models) MODES.filter(k => k !== chatModel).forEach(k => links.push({label: `${mc()[k]} ↺`, run: () => setModel(k)}));
+    if (a.styles) links.push({label: mc().styles, run: () => app.openStyles?.()});
+    if (a.open) { const item = byId(a.open); if (item) openProject(item); }
+    if (a.intent.startsWith('p_') && pose !== 'sleep') setPose('happy', 2, 900);
+    return {text: tone(a.text, a.intent), links, meta: `${mc().pro} · ${a.intent} · ${Math.round(a.confidence * 100)}%`};
+  }
   async function think(raw) {
     const text = raw.trim();
     const tour = window.YUKI_TOUR;
@@ -1461,12 +1549,7 @@
     if (conf < .38 && intent !== 'oos') intent = ret[0]?.score > .12 ? 'project_find' : 'oos';
     if (intent === 'oos' && ret[0]?.score > .2) intent = 'project_find';
     const reply = perform(intent, {ent, ret, text});
-    // Her condition colours the small model's replies too; answers about Niansia stay complete (pet actions speak for themselves).
-    if (reply.text && !/^pet_|^(compliment|love|hide|show)$/.test(intent)) {
-      if (asleep && S.out.exhausted) reply.text = nl('leadTired') + reply.text;
-      else if (S.out.sulky) reply.text = nl('leadSulky') + reply.text;
-      else if (S.out.starving) reply.text += nl('tailHungry');
-    }
+    reply.text = tone(reply.text, intent);
     reply.meta = ok ? `${intent} · ${Math.round(conf * 100)}%` : 'rules';
     if (!ok) reply.text = `${reply.text}\n${t().brainOff}`;
     return reply;

@@ -22,7 +22,7 @@
     [/^@lang (en|zh-TW|zh-CN)$/], [/^@pet (pat|feed|play|lie|sleep|wake|trick|hide|show)$/], [/^@trail (hearts|paws|stars|petals|off)$/],
     [/^@cursor (s|m|l)$/], [/^@follow (on|off)$/], [/^@motion (on|off)$/]
   ];
-  let engine = null, state = 'idle', loading = null, template = null, lastError = '';
+  let engine = null, worker = null, state = 'idle', loading = null, template = null, lastError = '';
 
   async function support() {
     if (!navigator.gpu) return {ok: false, reason: 'webgpu'};
@@ -51,7 +51,7 @@
     loading = (async () => {
       const webllm = await import(WEBLLM);
       const appConfig = {model_list: [{model: modelUrl(), model_id: MODEL_ID, model_lib: MODEL_LIB, low_resource_required: true, overrides: {context_window_size: 4096}}]};
-      const worker = new Worker('/assets/js/yuki-llm-worker.js', {type: 'module'});
+      worker = new Worker('/assets/js/yuki-llm-worker.js', {type: 'module'});
       engine = await webllm.CreateWebWorkerMLCEngine(worker, MODEL_ID, {appConfig, initProgressCallback: report => onProgress?.(report)});
       state = 'ready';
       try { localStorage.setItem('niansia-yuki-llm', 'on'); } catch {}
@@ -88,8 +88,16 @@
     const {commands, body} = split(raw);
     return {raw: raw.trim(), text: body, commands: validate(commands), seconds: (performance.now() - started) / 1000};
   }
+  /* Back to a smaller answer mode: release the graphics card. The weights stay in the browser cache, so loading again
+     only reads them back (no second download). Ending the worker frees whatever the engine kept. */
+  async function unload() {
+    if (loading) { try { await loading; } catch {} }
+    try { await engine?.unload(); } catch {}
+    worker?.terminate();
+    engine = null; worker = null; loading = null; state = 'idle';
+  }
   window.YukiLLM = {
-    support, load, reply, split, validate,
+    support, load, unload, reply, split, validate,
     ready: () => state === 'ready', state: () => state, error: () => lastError,
     stats: async () => engine ? engine.runtimeStatsText() : '',
     wanted: () => store('niansia-yuki-llm') === 'on',

@@ -141,17 +141,17 @@ Object.assign(window.NIANSIA_COPY['zh-CN'], {
 });
 /* Full-size Yuki (on-device 1.5B language model). */
 Object.assign(window.NIANSIA_COPY.en, {
-  llmTitle:'Wake up full Yuki', llmBody:'A 1.5B-parameter language model fine-tuned with QLoRA. She understands longer questions and follow-ups. First load downloads about 1 GB, then stays cached in your browser. Everything runs on your device.',
+  llmTitle:'Wake up full Yuki', llmBody:'A 1.5B-parameter language model fine-tuned with QLoRA. She understands longer questions and follow-ups. First load downloads about 880 MB, then stays cached in your browser. It needs a graphics card: on built-in graphics it is very slow. Everything runs on your device.',
   llmWake:'Wake her up', llmLoading:'Waking up…', llmRetry:'Try again', llmError:'Couldn’t load the model. The small model will keep you company.',
   llmNoGpu:'This browser has no WebGPU, so the small model will keep you company. Try desktop Chrome or Edge.', llmNoF16:'This GPU lacks 16-bit shader support needed by the model.', llmUnpublished:'The full model hasn’t been published yet.', llmDismiss:'Hide'
 });
 Object.assign(window.NIANSIA_COPY['zh-TW'], {
-  llmTitle:'喚醒完整版 Yuki', llmBody:'以 QLoRA 微調的 1.5B 參數語言模型，聽得懂更長的問題與追問。首次需下載約 1 GB，之後會快取在瀏覽器；全程在你的裝置上運作。',
+  llmTitle:'喚醒完整版 Yuki', llmBody:'以 QLoRA 微調的 1.5B 參數語言模型，聽得懂更長的問題與追問。首次需下載約 880 MB，之後會快取在瀏覽器；需要獨立顯示卡，內建顯示卡會非常慢。全程在你的裝置上運作。',
   llmWake:'喚醒她', llmLoading:'正在喚醒…', llmRetry:'再試一次', llmError:'模型載入失敗，先由小模型陪你。',
   llmNoGpu:'這個瀏覽器不支援 WebGPU，先由小模型陪你。可以試試桌機版 Chrome 或 Edge。', llmNoF16:'這張顯示卡不支援模型需要的 16 位元著色器。', llmUnpublished:'完整版模型還沒發布。', llmDismiss:'收起'
 });
 Object.assign(window.NIANSIA_COPY['zh-CN'], {
-  llmTitle:'唤醒完整版 Yuki', llmBody:'以 QLoRA 微调的 1.5B 参数语言模型，听得懂更长的问题与追问。首次需下载约 1 GB，之后会缓存在浏览器；全程在你的设备上运行。',
+  llmTitle:'唤醒完整版 Yuki', llmBody:'以 QLoRA 微调的 1.5B 参数语言模型，听得懂更长的问题与追问。首次需下载约 880 MB，之后会缓存在浏览器；需要独立显卡，集成显卡会非常慢。全程在你的设备上运行。',
   llmWake:'唤醒她', llmLoading:'正在唤醒…', llmRetry:'再试一次', llmError:'模型加载失败，先由小模型陪你。',
   llmNoGpu:'这个浏览器不支持 WebGPU，先由小模型陪你。可以试试桌面版 Chrome 或 Edge。', llmNoF16:'这张显卡不支持模型需要的 16 位着色器。', llmUnpublished:'完整版模型还没发布。', llmDismiss:'收起'
 });/* Wardrobe and festival themes. */
