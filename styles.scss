@@ -969,6 +969,13 @@ button.brain-badge:hover{transform:translateY(-1px);border-color:var(--accent);}
 .llm-wake{padding:7px 14px;border-radius:99px;font-size:12px;background:linear-gradient(135deg,var(--accent),color-mix(in srgb,var(--accent) 60%,var(--accent-2)));color:var(--on-accent);transition:transform .25s var(--spring),box-shadow .25s;}
 .llm-wake:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 18px -8px var(--accent);}
 .llm-wake:disabled{opacity:.45;cursor:not-allowed;}
+/* warning before loading the 1.5B model on a phone, built-in graphics or a software GPU */
+.llm-warn{display:grid;gap:4px;margin:0 0 10px;padding:9px 11px;border-radius:11px;font-size:11.5px;line-height:1.6;color:color-mix(in srgb,#c2410c 78%,var(--ink));background:color-mix(in srgb,#f59e0b 12%,var(--surface));border:1px solid color-mix(in srgb,#f59e0b 40%,transparent);}
+.llm-warn b{font-size:12px;}
+.llm-warn small{font:10px var(--mono);color:var(--muted);}
+.llm-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px;}
+.llm-anyway{padding:6px 12px;border-radius:99px;font-size:11.5px;color:var(--muted);border:1px solid var(--line);background:var(--surface);transition:color .2s,border-color .2s;}
+.llm-anyway:hover,.llm-anyway:focus-visible{color:var(--accent);border-color:var(--accent);}
 .llm-progress{height:8px;border-radius:99px;background:var(--line);overflow:hidden;}
 .llm-progress i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--fx-2),var(--fx-1));transition:width .4s var(--ease);background-size:200% 100%;animation:shimmer 2s linear infinite;}
 .llm-status{display:block;margin-top:6px;font:10px var(--mono);color:var(--muted);}

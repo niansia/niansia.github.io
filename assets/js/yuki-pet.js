@@ -1259,17 +1259,32 @@
       tip: {fast: 'Original small model: common questions, fastest', pro: 'Trained for this site: projects, comparisons, the blog and site features, answered from the site data', llm: 'Yuki 1.5B language model: about 880 MB to download once, runs on your graphics card, slower'},
       foot: {fast: 'Fast mode: a small neural network running on this device. Nothing you type leaves this page.', pro: 'Trained mode: a small model trained for this site, answering from the site data. Nothing you type leaves this page.', llm: 'Yuki 1.5B: a language model on your graphics card; replies are slower. Nothing you type leaves this page.'},
       to: {fast: 'Fast mode: the original small model.', pro: 'Trained mode! Ask me about projects, comparisons, the blog or the site.', llm: '1.5B mode: I write my own sentences, a little slower.'},
-      freed: 'I let go of the 1.5B model, so the page runs lighter. Its download stays saved for next time.', size: 'about 880 MB', styles: 'Open styles'},
+      freed: 'I let go of the 1.5B model, so the page runs lighter. Its download stays saved for next time.', size: 'about 880 MB', styles: 'Open styles',
+      warn: {phone: ['You’re on a phone or tablet', 'The 1.5B model downloads about 880 MB, runs very slowly on a phone and heats it up, and if memory runs out the browser may simply close the tab. Trained mode answers the same questions about the projects and the site.'],
+        igpu: ['Your browser is using built-in graphics', 'On built-in graphics each 1.5B reply can take a minute or two, and the whole page stutters meanwhile.'],
+        soft: ['No graphics acceleration available', 'Your browser is emulating the graphics card in software, so the 1.5B model will barely run. Trained mode is the better choice here.']},
+      winHint: 'If this computer has a dedicated graphics card, set your browser to “High performance” in Windows Settings → System → Display → Graphics, then restart the browser.',
+      gpu: 'Detected graphics', keep: 'Use trained mode', anyway: 'I understand, load it anyway'},
     'zh-TW': {label: '回答模式', fast: '快速', pro: '特訓', llm: '1.5B',
       tip: {fast: '原始小模型：認得常見問題，最快', pro: '為這個網站特別訓練：作品、比較、部落格和網站功能，答案取自網站資料', llm: 'Yuki 1.5B 語言模型：第一次下載約 880 MB，跑在你的顯示卡上，比較慢'},
       foot: {fast: '快速模式：在本機運作的小型神經網路，你輸入的內容不會離開這個頁面。', pro: '特訓模式：為這個網站訓練的小模型，答案取自網站資料；內容不會離開這個頁面。', llm: 'Yuki 1.5B：在你的顯示卡上運作的語言模型，回覆較慢；內容不會離開這個頁面。'},
       to: {fast: '切換到快速模式：最原始的小模型。', pro: '特訓模式！作品、比較、部落格和網站功能都可以問我。', llm: '1.5B 模式：我會自己想句子，會慢一點喔。'},
-      freed: '已經把 1.5B 從顯示卡放下來，網頁會比較順；下載過的檔案會留著，下次不用重下。', size: '約 880 MB', styles: '打開風格選單'},
+      freed: '已經把 1.5B 從顯示卡放下來，網頁會比較順；下載過的檔案會留著，下次不用重下。', size: '約 880 MB', styles: '打開風格選單',
+      warn: {phone: ['你正在用手機或平板', '1.5B 要下載約 880 MB，手機跑起來會非常慢、容易發燙，記憶體不夠時瀏覽器可能直接把分頁關掉。特訓模式一樣能回答作品和網站的問題。'],
+        igpu: ['瀏覽器正在用內建顯示卡', '用內建顯示卡跑 1.5B，每則回覆可能要一兩分鐘，期間整個網頁會卡頓。'],
+        soft: ['瀏覽器沒有可用的顯示卡加速', '目前是用軟體模擬顯示卡，1.5B 幾乎跑不動，建議用特訓模式。']},
+      winHint: '如果電腦有獨立顯示卡，可以到 Windows「設定 → 系統 → 顯示器 → 圖形」把瀏覽器設成「高效能」，重開瀏覽器後再試。',
+      gpu: '偵測到的顯示卡', keep: '改用特訓模式', anyway: '我了解，還是要載入'},
     'zh-CN': {label: '回答模式', fast: '快速', pro: '特训', llm: '1.5B',
       tip: {fast: '原始小模型：认得常见问题，最快', pro: '为这个网站特别训练：作品、比较、博客和网站功能，答案取自网站资料', llm: 'Yuki 1.5B 语言模型：第一次下载约 880 MB，跑在你的显卡上，比较慢'},
       foot: {fast: '快速模式：在本机运行的小型神经网络，你输入的内容不会离开这个页面。', pro: '特训模式：为这个网站训练的小模型，答案取自网站资料；内容不会离开这个页面。', llm: 'Yuki 1.5B：在你的显卡上运行的语言模型，回复较慢；内容不会离开这个页面。'},
       to: {fast: '切换到快速模式：最原始的小模型。', pro: '特训模式！作品、比较、博客和网站功能都可以问我。', llm: '1.5B 模式：我会自己想句子，会慢一点哦。'},
-      freed: '已经把 1.5B 从显卡放下来，网页会比较顺；下载过的文件会留着，下次不用重下。', size: '约 880 MB', styles: '打开风格菜单'}};
+      freed: '已经把 1.5B 从显卡放下来，网页会比较顺；下载过的文件会留着，下次不用重下。', size: '约 880 MB', styles: '打开风格菜单',
+      warn: {phone: ['你正在用手机或平板', '1.5B 要下载约 880 MB，手机跑起来会非常慢、容易发烫，内存不够时浏览器可能直接把标签页关掉。特训模式一样能回答作品和网站的问题。'],
+        igpu: ['浏览器正在用集成显卡', '用集成显卡跑 1.5B，每条回复可能要一两分钟，期间整个网页会卡顿。'],
+        soft: ['浏览器没有可用的显卡加速', '目前是用软件模拟显卡，1.5B 几乎跑不动，建议用特训模式。']},
+      winHint: '如果电脑有独立显卡，可以到 Windows“设置 → 系统 → 屏幕 → 显示卡”把浏览器设成“高性能”，重启浏览器后再试。',
+      gpu: '检测到的显卡', keep: '改用特训模式', anyway: '我了解，还是要加载'}};
   const mc = () => MC[app.locale()] || MC.en;
   let chatModel = MODES.includes(app.store.get('yuki-model', '')) ? app.store.get('yuki-model', '') : 'pro';
   const Pro = () => window.YukiPro;
@@ -1304,7 +1319,7 @@
     }
     if (next === 'llm' && LLM()?.wanted() && LLM().state() === 'idle') {   // downloaded before: reload from the cache straight away
       if (!llmSupport) llmSupport = await LLM().support();
-      if (llmSupport.ok) wakeLLM();
+      if (llmSupport.ok && !needsAck()) wakeLLM();
     }
     pushMessage({who: 'yuki', text: mc().to[next]});
     paintLLM();
@@ -1332,10 +1347,17 @@
       card.querySelector('.llm-status').textContent = `${c.llmLoading} ${Math.round(llmProgress * 100)}%`;
       return;
     }
+    const m = mc(), size = app.locale() === 'en' ? ` (${m.size})` : `（${m.size}）`, risk = riskOf(llmSupport), dev = llmSupport.device || {};
+    const warn = st !== 'loading' && needsAck() ? `<div class="llm-warn" role="alert"><b>⚠ ${esc(m.warn[risk][0])}</b><span>${esc(m.warn[risk][1])}${risk === 'igpu' && dev.windows ? ' ' + esc(m.winHint) : ''}</span>${dev.vendor ? `<small>${esc(m.gpu)}：${esc(dev.vendor)}${dev.architecture ? ' · ' + esc(dev.architecture) : ''}</small>` : ''}</div>
+      <div class="llm-actions"><button type="button" class="llm-wake" data-llm-keep>${esc(m.keep)}</button><button type="button" class="llm-anyway" data-llm-anyway>${esc(m.anyway)}${size}</button></div>` : '';
     card.innerHTML = `<div class="llm-head"><strong>✨ ${c.llmTitle}</strong><button type="button" data-llm-dismiss aria-label="${c.llmDismiss}">${svg('close')}</button></div><p>${c.llmBody}</p>
       ${st === 'loading' ? `<div class="llm-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(llmProgress * 100)}"><i style="width:${Math.max(3, llmProgress * 100)}%"></i></div><small class="llm-status">${c.llmLoading} ${Math.round(llmProgress * 100)}%</small>`
-        : `${note ? `<small class="llm-note">${note}</small>` : ''}<button type="button" class="llm-wake" data-llm-wake ${llmSupport.ok ? '' : 'disabled'}>${st === 'error' ? c.llmRetry : `${c.llmWake}（${mc().size}）`}</button>`}`;
+        : warn || `${note ? `<small class="llm-note">${note}</small>` : ''}<button type="button" class="llm-wake" data-llm-wake ${llmSupport.ok ? '' : 'disabled'}>${st === 'error' ? c.llmRetry : c.llmWake + size}</button>`}`;
   }
+  // A phone, built-in graphics or no GPU acceleration: the card warns first, until the visitor chooses to load it anyway
+  // (remembered per kind of risk, so a later visit reloads from the cache without asking again).
+  const riskOf = s => !s?.ok ? '' : s.device?.mobile ? 'phone' : s.device?.fallback ? 'soft' : s.device?.integrated ? 'igpu' : '';
+  const needsAck = () => { const r = riskOf(llmSupport); return !!r && app.store.get('yuki-llm-ack', '') !== r; };
   function wakeLLM() {
     if (!LLM() || LLM().state() === 'loading') return;
     llmProgress = 0;
@@ -1432,7 +1454,7 @@
       brain?.load().catch(() => {});
       if (chatModel !== 'fast') Pro()?.load().catch(() => {});
       // In 1.5B mode a model downloaded before reloads from the cache; the first download always waits for the button.
-      if (chatModel === 'llm' && LLM()?.wanted() && LLM().state() === 'idle') LLM().support().then(s => { llmSupport = s; if (s.ok) wakeLLM(); });
+      if (chatModel === 'llm' && LLM()?.wanted() && LLM().state() === 'idle') LLM().support().then(s => { llmSupport = s; if (s.ok && !needsAck()) wakeLLM(); });
     }
     renderChips();
     const input = chat.querySelector('input');
@@ -1473,6 +1495,8 @@
     const mode = event.target.closest('[data-model]'); if (mode) { setModel(mode.dataset.model); return; }
     if (event.target.closest('[data-llm-dismiss]')) { setModel('pro'); return; }   // closing the 1.5B card without loading it goes back to trained mode
     if (event.target.closest('[data-llm-wake]')) { wakeLLM(); return; }
+    if (event.target.closest('[data-llm-keep]')) { setModel('pro'); return; }
+    if (event.target.closest('[data-llm-anyway]')) { app.store.set('yuki-llm-ack', riskOf(llmSupport)); wakeLLM(); return; }
     const chip = event.target.closest('[data-chip]'); if (chip) send(chip.dataset.chip);
     const link = event.target.closest('[data-link]');
     if (link) link.closest('.chat-msg')._links?.[Number(link.dataset.link)]?.run?.();

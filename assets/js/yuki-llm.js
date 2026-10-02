@@ -24,15 +24,30 @@
   ];
   let engine = null, worker = null, state = 'idle', loading = null, template = null, lastError = '';
 
+  /* What the 1.5B model would run on, so yuki-pet.js can warn before an 880 MB download that will crawl: a phone or
+     tablet, built-in graphics (on a laptop with two GPUs Chrome on Windows often hands WebGPU the integrated one even
+     when asked for high performance), or no GPU at all (a software fallback). Intel counts as built-in unless it is an
+     Arc card (architecture *-hpg); mobile GPU vendors count as built-in; Apple and NVIDIA are left alone; AMD only when the
+     description names the integrated "Radeon(TM) Graphics" or Vega, since Chrome usually hides the model name. */
+  function deviceOf(info = {}) {
+    const ua = navigator.userAgent || '';
+    const mobile = !!navigator.userAgentData?.mobile || /Android|iPhone|iPad|iPod|Mobile/i.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+    const vendor = String(info.vendor || '').toLowerCase(), architecture = String(info.architecture || '').toLowerCase(), desc = String(info.description || '').toLowerCase();
+    const integrated = (vendor === 'intel' && !/hpg|arc/.test(architecture + ' ' + desc)) || /qualcomm|arm|mali|adreno|imagination|powervr|samsung/.test(vendor)
+      || /radeon\(tm\) graphics|vega|uhd graphics|iris/.test(desc);
+    return {mobile, integrated, fallback: !!info.isFallbackAdapter, vendor, architecture, windows: /Windows/.test(ua)};
+  }
   async function support() {
-    if (!navigator.gpu) return {ok: false, reason: 'webgpu'};
+    if (!navigator.gpu) return {ok: false, reason: 'webgpu', device: deviceOf()};
+    let device;
     try {
-      const adapter = await navigator.gpu.requestAdapter();
-      if (!adapter) return {ok: false, reason: 'webgpu'};
-      if (!adapter.features.has('shader-f16')) return {ok: false, reason: 'f16'};
-    } catch { return {ok: false, reason: 'webgpu'}; }
-    if (!modelUrl()) return {ok: false, reason: 'unpublished'};
-    return {ok: true};
+      const adapter = await navigator.gpu.requestAdapter({powerPreference: 'high-performance'});
+      if (!adapter) return {ok: false, reason: 'webgpu', device: deviceOf()};
+      device = deviceOf(adapter.info || await adapter.requestAdapterInfo?.().catch(() => ({})) || {});
+      if (!adapter.features.has('shader-f16')) return {ok: false, reason: 'f16', device};
+    } catch { return {ok: false, reason: 'webgpu', device: deviceOf()}; }
+    if (!modelUrl()) return {ok: false, reason: 'unpublished', device};
+    return {ok: true, device};
   }
   const fill = (text, vars) => text.replace(/\{(\w+)\}/g, (m, k) => vars[k] ?? m);
   async function prompt(now) {
