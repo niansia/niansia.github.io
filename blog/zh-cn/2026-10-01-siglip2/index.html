@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SigLIP 2：为什么一个「看图说话」的模型特别会抓假图？ · Niansia</title>
+<meta name="description" content="把骨干从 CLIP 换成 SigLIP 2，干扰图的分数一下子跳了一大截，比我花好几天调的任何技巧都有效。读完论文，我有两个猜测：一是它后段加入的自监督目标，二是它没有 CLS token、我改用 patch 平均。好的骨干提高起点，好的训练方法把起点推得更远。">
+<link rel="canonical" href="https://niansia.com/blog/zh-cn/2026-10-01-siglip2/">
+<link rel="alternate" hreflang="en" href="https://niansia.com/blog/en/2026-10-01-siglip2/"><link rel="alternate" hreflang="zh-Hant-TW" href="https://niansia.com/blog/zh-tw/2026-10-01-siglip2/"><link rel="alternate" hreflang="zh-Hans-CN" href="https://niansia.com/blog/zh-cn/2026-10-01-siglip2/"><link rel="alternate" hreflang="x-default" href="https://niansia.com/blog/en/2026-10-01-siglip2/">
+<meta property="og:type" content="article"><meta property="og:site_name" content="Niansia">
+<meta property="og:title" content="SigLIP 2：为什么一个「看图说话」的模型特别会抓假图？ · Niansia"><meta property="og:description" content="把骨干从 CLIP 换成 SigLIP 2，干扰图的分数一下子跳了一大截，比我花好几天调的任何技巧都有效。读完论文，我有两个猜测：一是它后段加入的自监督目标，二是它没有 CLS token、我改用 patch 平均。好的骨干提高起点，好的训练方法把起点推得更远。">
+<meta property="og:url" content="https://niansia.com/blog/zh-cn/2026-10-01-siglip2/"><meta property="og:image" content="https://niansia.com/assets/og/blog-2026-10-01-siglip2-zh-cn.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta property="og:locale" content="zh_CN">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://niansia.com/assets/og/blog-2026-10-01-siglip2-zh-cn.jpg">
+
+<meta name="theme-color" content="#fbf6ee" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#15142a" media="(prefers-color-scheme: dark)">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://*.firebasedatabase.app; connect-src 'self' https://*.firebasedatabase.app wss://*.firebasedatabase.app; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; frame-src https://*.firebasedatabase.app; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml">
+<script src="/assets/js/page-transition.js?v=3"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;500;700&display=swap">
+<style>
+:root{--bg:#fbf6ee;--paper:#fffdf9;--ink:#2a2230;--muted:#766b73;--line:#2a22301a;--accent:#c0673a;--accent2:#8f6bb3;--code:#f3ece2;}
+@media(prefers-color-scheme:dark){:root{--bg:#15142a;--paper:#1c1a36;--ink:#f1ebe2;--muted:#aaa3bd;--line:#ffffff1a;--accent:#f0a878;--accent2:#b69ae6;--code:#26234a;}}
+*{box-sizing:border-box;}html{-webkit-text-size-adjust:100%;}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.85 Inter,'Noto Sans TC','Noto Sans SC',system-ui,sans-serif;}
+a{color:var(--accent);text-underline-offset:3px;}
+.top{max-width:1080px;margin:0 auto;padding:18px 20px;display:flex;align-items:center;gap:10px;font:500 13px 'JetBrains Mono',monospace;color:var(--muted);}
+.top a{color:var(--muted);text-decoration:none;}.top a:hover{color:var(--accent);}
+.top b{color:var(--ink);font-weight:500;}.top .sp{flex:1;}
+.langs a{padding:4px 9px;border-radius:99px;border:1px solid var(--line);margin-left:4px;}.langs a[aria-current]{color:var(--ink);border-color:var(--accent);}
+main{max-width:760px;margin:0 auto;padding:10px 20px 70px;}
+.kicker{font:500 12px 'JetBrains Mono',monospace;color:var(--accent);letter-spacing:.06em;text-transform:uppercase;margin:24px 0 8px;}
+h1{font-size:clamp(28px,4.4vw,42px);line-height:1.2;letter-spacing:-.02em;margin:0 0 14px;}
+.lede{font-size:18px;color:var(--muted);margin:0 0 16px;line-height:1.7;}
+.meta{display:flex;flex-wrap:wrap;gap:8px 14px;font:500 12.5px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;color:var(--muted);padding-bottom:22px;border-bottom:1px solid var(--line);margin-bottom:10px;}
+.meta span.tag{padding:2px 9px;border-radius:99px;background:var(--code);}
+article h2{font-size:23px;margin:40px 0 10px;letter-spacing:-.01em;}
+article h3{font-size:18px;margin:28px 0 8px;}
+article p,article li{color:var(--ink);}
+article code{font:14px 'JetBrains Mono',monospace;background:var(--code);padding:1px 6px;border-radius:6px;}
+article table{width:100%;border-collapse:collapse;margin:18px 0;font-size:14.5px;display:block;overflow-x:auto;}
+article th,article td{padding:8px 12px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap;}
+article th{font-weight:600;color:var(--muted);font-size:13px;}
+article td:not(:first-child),article th:not(:first-child){text-align:right;}
+article td[style*="left"],article th[style*="left"]{white-space:normal;min-width:6.5em;}   /* text tables (|:---|) wrap instead of scrolling */
+article strong{color:var(--ink);}
+article blockquote{margin:18px 0;padding:4px 18px;border-left:3px solid var(--accent);color:var(--muted);}
+.card{display:block;padding:18px 20px;margin:12px 0;border-radius:16px;background:var(--paper);border:1px solid var(--line);text-decoration:none;color:var(--ink);transition:transform .25s,border-color .25s;}
+.card:hover{transform:translateY(-2px);border-color:var(--accent);}
+.card b{display:block;font-size:18px;line-height:1.4;margin-bottom:4px;}.card small{display:block;color:var(--muted);font-size:14px;line-height:1.6;}
+.card i{display:block;font:normal 500 12px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;color:var(--accent);margin-top:8px;}
+.hero{width:100%;height:auto;border-radius:16px;border:1px solid var(--line);display:block;margin:6px 0 18px;}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px;}.chips span{font:500 12px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;padding:4px 11px;border-radius:99px;background:var(--code);}
+.btns{display:flex;flex-wrap:wrap;gap:10px;margin:22px 0;}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:12px;border:1px solid var(--line);background:var(--paper);color:var(--ink);text-decoration:none;font-weight:600;font-size:14px;}
+.btn.primary{background:var(--accent);border-color:transparent;color:var(--paper);}
+.btn:hover{border-color:var(--accent);}
+.note{font-size:13.5px;color:var(--muted);}
+.live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#34c38f;box-shadow:0 0 0 3px #34c38f33;vertical-align:1px;}footer b{color:var(--ink);font-weight:600;}
+figure.fig{margin:24px 0;}figure.fig a{display:block;border-radius:14px;overflow:hidden;border:1px solid var(--line);cursor:zoom-in;background:var(--code);}
+figure.fig img{display:block;width:100%;height:auto;transition:transform .4s;}figure.fig a:hover img{transform:scale(1.015);}
+figure.fig figcaption{margin-top:8px;font-size:13.5px;color:var(--muted);line-height:1.6;}
+.lb{position:fixed;inset:0;z-index:50;display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px;background:#0d0b16ee;}
+.lb.on{display:flex;}.lb img{max-width:100%;max-height:84vh;border-radius:10px;box-shadow:0 30px 80px #000a;}
+.lb p{margin:0;color:#e9e4f2;font-size:14px;text-align:center;max-width:760px;}
+.lb-x{position:absolute;top:14px;right:18px;width:40px;height:40px;border-radius:50%;border:1px solid #ffffff44;background:transparent;color:#fff;font-size:24px;cursor:pointer;}
+.log-entry{position:relative;padding:0 0 34px 26px;border-left:2px solid var(--line);}
+.log-entry:before{content:'';position:absolute;left:-7px;top:8px;width:12px;height:12px;border-radius:50%;background:var(--bg);border:2px solid var(--accent);}
+.log-entry time{font:500 12.5px 'JetBrains Mono',monospace;color:var(--accent);}
+.log-entry h2{margin:4px 0 6px!important;font-size:21px!important;}
+.log-entry h2 a{color:var(--ink);text-decoration:none;}
+.statement-link{display:flex;justify-content:space-between;align-items:center;}
+.top a.me{display:inline-flex;align-items:center;gap:8px;padding:3px 12px 3px 3px;border:1px solid var(--line);border-radius:99px;transition:border-color .2s;}.top a.me:hover{border-color:var(--accent);}.top a.me img{width:24px;height:24px;border-radius:50%;display:block;}
+.author{max-width:720px;margin:44px auto 0;padding:18px 20px;display:flex;align-items:center;gap:16px;border-radius:18px;background:var(--code);border:1px solid var(--line);}
+.author{box-sizing:border-box;}.author>*{flex:none;}
+.author .an-face img{display:block;width:56px;height:56px;border-radius:50%;border:2px solid var(--accent);}
+.author .an-text{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px;}
+.author .an-text b{font-size:15px;}.author .an-text small{font-size:13px;line-height:1.6;color:var(--muted);}
+.author .an-note{color:var(--ink)!important;}
+.author .an-go{margin:0;white-space:nowrap;}
+@media (max-width:760px){.author{margin:40px 16px 0;}}@media (max-width:600px){.author{flex-wrap:wrap;padding:16px;}.author .an-text{flex-basis:calc(100% - 72px);}.author .an-go{flex:1 1 100%;justify-content:center;text-align:center;}}
+footer{max-width:760px;margin:0 auto;padding:26px 20px 50px;border-top:1px solid var(--line);font-size:14px;color:var(--muted);}
+
+.paper-box{margin:0 0 26px;padding:18px 20px;border-radius:16px;background:var(--paper);border:1px solid var(--line);border-left:4px solid var(--accent2);}
+.paper-box .pv{font:600 12px 'JetBrains Mono',monospace;color:var(--accent2);letter-spacing:.04em;margin:0 0 6px;}
+.paper-box b{display:block;font-size:17px;line-height:1.45;}
+.paper-box .pa{margin:6px 0 0;font-size:13.5px;color:var(--muted);line-height:1.6;}
+.paper-box .pl{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+.paper-box .pl a{font:600 12.5px 'JetBrains Mono',monospace;padding:5px 12px;border-radius:99px;border:1px solid var(--line);text-decoration:none;}
+.paper-box .pl a:hover{border-color:var(--accent);}
+.type{display:inline-block;padding:2px 9px;border-radius:99px;background:var(--accent);color:#fff;font:600 11.5px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;}
+.type.paper{background:var(--accent2);}.type.qa{background:#3f9f86;}.type.post{background:var(--muted);}
+.card .type{margin-bottom:8px;}.card .zh{margin-left:8px;font:500 11.5px 'JetBrains Mono',monospace;color:var(--muted);}
+.now-card{border-left:4px solid var(--accent);}
+.qa{padding:20px 0;border-bottom:1px solid var(--line);}
+.qa .qq{display:flex;gap:12px;font-weight:700;font-size:17px;line-height:1.55;margin:0 0 8px;}
+.qa .qq span,.qa .qa-a>span{flex:none;display:grid;place-items:center;width:28px;height:28px;border-radius:9px;background:var(--code);color:var(--accent);font-size:13px;}
+.qa .qa-a{display:flex;gap:12px;}.qa .qa-a>span{background:var(--accent);color:#fff;}.qa .qa-a article>:first-child{margin-top:0;}
+.qa time{display:block;margin:6px 0 0 40px;font:500 12px 'JetBrains Mono',monospace;color:var(--muted);}
+.ask{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:18px 0 8px;padding:16px 18px;border-radius:16px;background:var(--code);}
+.ask b{display:block;font-size:15.5px;}.ask small{display:block;color:var(--muted);font-size:13px;}
+.ask .btn{flex:none;margin:0;}.ask .btn[aria-disabled]{opacity:.55;pointer-events:none;}
+</style>
+<link rel="alternate" type="application/rss+xml" title="Niansia · Blog" href="/blog/zh-cn/feed.xml"><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BlogPosting", "headline": "SigLIP 2：为什么一个「看图说话」的模型特别会抓假图？", "description": "把骨干从 CLIP 换成 SigLIP 2，干扰图的分数一下子跳了一大截，比我花好几天调的任何技巧都有效。读完论文，我有两个猜测：一是它后段加入的自监督目标，二是它没有 CLS token、我改用 patch 平均。好的骨干提高起点，好的训练方法把起点推得更远。", "datePublished": "2026-10-01", "dateModified": "2026-10-01", "inLanguage": "zh-Hans", "author": {"@type": "Person", "name": "Niansia", "url": "https://niansia.com/", "email": "mailto:niansia930202@gmail.com", "sameAs": ["https://github.com/niansia"]}, "mainEntityOfPage": "https://niansia.com/blog/zh-cn/2026-10-01-siglip2/", "keywords": "AI 生成图侦测, 视觉语言模型, 预训练, 稳健性", "citation": {"@type": "ScholarlyArticle", "name": "SigLIP 2: Multilingual Vision-Language Encoders with Improved Semantic Understanding, Localization, and Dense Features", "url": "https://arxiv.org/abs/2502.14786"}}</script>
+<script defer src="/assets/js/site-stats.js?v=2"></script>
+<script defer src="/assets/js/lightbox.js"></script>
+
+</head>
+<body>
+<header class="top"><a class="me" href="/zh-cn/" title="回到 Niansia 的个人网站" data-nz-title="Niansia"><img src="/assets/icons/author.webp" alt="" width="24" height="24"><b>~/niansia</b></a> / <a href="/blog/zh-cn/">blog</a><span class="sp"></span><span class="langs"><a href="/blog/en/2026-10-01-siglip2/" hreflang="en">EN</a><a href="/blog/zh-tw/2026-10-01-siglip2/" hreflang="zh-Hant">繁</a><a href="/blog/zh-cn/2026-10-01-siglip2/" aria-current="page" hreflang="zh-Hans">简</a></span></header>
+<main><p class="kicker">论文笔记</p><h1>SigLIP 2：为什么一个「看图说话」的模型特别会抓假图？</h1><p class="lede">把骨干从 CLIP 换成 SigLIP 2，干扰图的分数一下子跳了一大截，比我花好几天调的任何技巧都有效。读完论文，我有两个猜测：一是它后段加入的自监督目标，二是它没有 CLS token、我改用 patch 平均。好的骨干提高起点，好的训练方法把起点推得更远。</p><div class="meta"><time datetime="2026-10-01">2026-10-01</time><span>4 分钟阅读</span><span class="tag">AI 生成图侦测</span><span class="tag">视觉语言模型</span><span class="tag">预训练</span><span class="tag">稳健性</span></div><aside class="paper-box"><p class="pv">arXiv 2025 · 精读</p><b lang="en">SigLIP 2: Multilingual Vision-Language Encoders with Improved Semantic Understanding, Localization, and Dense Features</b><p class="pa" lang="en">Michael Tschannen, Alexey Gritsenko, Xiao Wang, Muhammad Ferjad Naeem, et al.</p><div class="pl"><a href="https://arxiv.org/abs/2502.14786" target="_blank" rel="noopener noreferrer">论文 ↗</a><a href="https://github.com/google-research/big_vision/tree/main/big_vision/configs/proj/image_text/README_siglip2.md" target="_blank" rel="noopener noreferrer">代码 ↗</a></div></aside><article><h2>为什么读这篇</h2>
+<p>最近实验里最大的意外，是把骨干从 CLIP-L 换成 SigLIP2 So400m：同样的冻结特征、同样的测试方式，干扰图的 AUC 一下子跳了一大截，比我花好几天调整的任何技巧都有效。更奇怪的是，SigLIP2 <strong>只用最后一层</strong>，就已经赢过 CLIP <strong>串了好几层</strong>的版本。我想知道它在训练时到底多学了什么。</p>
+<h2>这篇在做什么</h2>
+<p>SigLIP 2 是 Google 的图文编码器。初代 SigLIP 的特色是用 sigmoid 损失取代 CLIP 的 softmax 对比损失；第二代把几种原本各自发展的训练方法合成一套：</p>
+<ul>
+<li><strong>原本的 sigmoid 图文损失</strong>，全程使用。</li>
+<li><strong>LocCa 的描述式预训练</strong>，也是全程使用：接一个文本解码器，学写图片描述、写局部区域的描述，以及根据描述找出位置。</li>
+<li><strong>自我蒸馏和遮罩预测</strong>（来自 SILC 和 TIPS），只在<strong>最后 20% 的训练</strong>才加入。自我蒸馏是让学生只看局部裁切（8 个局部视角），去对齐老师（学生参数的 EMA）看整张图得到的表示；遮罩预测是把学生输入的一半 patch 换成遮罩，要它猜出老师在那些位置的特征。论文说目的是让<strong>没有经过池化的 patch 特征</strong>有更好的局部语意。</li>
+<li><strong>数据</strong>：WebLI 的 100 亿张图、120 亿段替代文本，涵盖 109 种语言，加上去偏差处理；最小的两个模型还另外做了主动数据筛选。</li>
+</ul>
+<p>模型有 ViT-B（8,600 万）、L（3.03 亿）、So400m（4 亿）、g（10 亿）四种大小，在所有尺寸上都胜过第一代，定位和密集预测进步特别明显。池化用的是 MAP head（注意力池化），<strong>没有 CLS token</strong>。另外还有保留原始长宽比、支持多种分辨率的 NaFlex 版本。</p>
+<h2>和我的实验对照</h2>
+<p><strong>我的猜测一：自监督目标让特征更「抗干扰」。</strong> CLIP 只学「这张图和哪段文本配对」，只要语意对了，其他细节可以忽略；SigLIP 2 额外要求模型在只看到局部、或一半被遮住的输入时，仍要给出和完整图一致的表示。它处理的是裁切和遮挡，不是 JPEG 或杂讯，但精神上很像我在 LoRA 里加的「干净版和干扰版要一致」。如果这个猜测对，SigLIP 2 等于在预训练阶段就先帮我做了一部分「不变性」的工作，所以冻结特征就很强。</p>
+<p>不过读完全文，我发现这两个损失只在最后 20% 才加入；优势也可能来自全程都有的 LocCa，写局部区域的描述，同样会逼每个 patch 记住细节。两者我目前分不开，而且论文本身完全没有讨论假图侦测或干扰稳健性，这些都只是我的推论。</p>
+<p><strong>我的猜测二：「没有 CLS token」反而可能是优点。</strong> 因为 SigLIP 系列没有 CLS token，我在抽特征时，每一层改用「所有 patch 的平均」。平均本身就是一种去杂讯：局部被压缩、加杂讯、盖上浮水印的地方，会被其他区域平均掉；CLIP 的 CLS token 则可能被少数受损的区域带偏。</p>
+<p>读完论文之后，这个猜测和猜测一刚好接得起来：SigLIP 2 后段特别加强的，正是没有经过池化的 patch 特征，而 patch 平均用的就是这些特征。另外，同一天稍早读的 <a href="/blog/zh-cn/2026-10-01-ntire2026-report/">NTIRE 2026 报告</a>里，第 5 名比较过 CLS token、注意力池化和多层串接，最后也是「最后一层 patch 平均」最稳。</p>
+<p>这个猜测很容易验证：<strong>把 CLIP 的每层特征也改成 patch 平均</strong>，看分数会不会上升。如果会，那 SigLIP2 的优势有一部分其实来自我的特征取法，而不完全是模型本身。这是我读完最想做的实验，而且只要几分钟。</p>
+<p><strong>和比赛队伍的关系。</strong> 比赛第 5 名用 SigLIP2-giant（10 亿参数、384 分辨率），第 6 名用了两个 SigLIP So400m 加两个 CLIP，第 7 名也有一个 384 分辨率的 SigLIP 2 分支，看来不只我，大家都发现这个家族适合这个任务。我用的是小一号的 So400m、224 分辨率。我之前测过 CLIP 从 224 提高到 336 完全没帮助，所以暂时不打算追高分辨率，把预算留给数据和微调。</p>
+<h2>我的看法</h2>
+<p>这篇让我学到一件事：<strong>选对预训练模型，比在下游加各种巧思更重要。</strong> 我前几天在 CLIP 上做了多深度特征、干扰副本、LoRA，花了好几天才把分数推上去；换成 SigLIP2，第一步就差不多到了。这有点让人沮丧，但也很实际，如果我一开始就先做骨干筛选，可以省下不少时间。之后做新题目，我会先花一两个小时用便宜的方法筛选骨干，再投入大量运算。</p>
+<p>但我也不觉得前面的努力白费。自己产生干扰的训练方法在 SigLIP2 上一样大幅有效，合并不同骨干也还能再加分。好的骨干提高起点，好的训练方法把起点推得更远，两者是相加的。</p>
+<p>另外，论文强调的「多语言」和「公平性」看似和我的任务无关，但它代表训练数据更多元。假图侦测最怕的就是没看过的内容和风格，数据多元的预训练模型，泛化能力可能本来就比较好。</p>
+<h2>读完之后想试的事</h2>
+<ol>
+<li><strong>CLIP 改用每层 patch 平均</strong>（几分钟）：验证「没有 CLS、改用平均」是不是 SigLIP2 优势的一部分。</li>
+<li><strong>SigLIP2 LoRA 微调</strong>（大约五个小时）：在 CLIP 上，LoRA 带来不小的进步，SigLIP2 应该也还有空间。</li>
+<li><strong>保留长宽比的 NaFlex 版本</strong>：我最弱的一类是改变长宽比的裁切，保留长宽比的 SigLIP2 或许能直接处理。不过我之前在 CLIP 上试保留长宽比没有用；而且论文写到，NaFlex 版本为了简化<strong>没有做</strong>自我蒸馏和遮罩预测，如果猜测一是对的，它反而可能少了那一部分的好处，所以预期不要太高。</li>
+<li><strong>把「局部对整体」借进 LoRA</strong>：除了干净版对干扰版，也加上局部裁切对整张图的一致性，看能不能补强长宽比裁切这一类。</li>
+</ol>
+<hr>
+<p>论文内容已对照 arXiv v1 的 PDF。我自己的实验还在进行中，这里只写大致的趋势，完整的数字和设置等整理好之后再公开。</p></article><div class="ask"><div><b>Q&amp;A</b><small>匿名提问，在这里回答。</small></div><a class="btn primary" href="https://forms.gle/yNUw4eLZeeqf3Arb6" target="_blank" rel="noopener noreferrer">匿名提问 ↗</a></div><h2 style="margin-top:48px">其他文章</h2><a class="card" href="/blog/zh-cn/2026-10-01-ntire2026-report/"><span class="type paper">论文笔记</span><b>NTIRE 2026 比赛报告：冠军赢在模型，还是赢在数据？</b><small>这份报告是我专题的「考卷」。读完才发现，前两名除了模型大，训练数据也大得多、新得多，甚至涵盖了官方训练集刻意留给测试集的商用生成器。排行榜的差距同时混了模型、数据和运算，比较时要拆开来看。</small></a><a class="card" href="/blog/zh-cn/2026-09-30-rine/"><span class="type paper">论文笔记</span><b>RINE：中间层真的比最后一层更懂「假」吗？</b><small>RINE 用 CLIP 中间层的特征侦测生成图，和我自己的实验结论大致相同；但在「野外干扰」下，最有用的层会换人，增强的广度也比从哪一层拿特征更关键。</small></a><a class="card" href="/blog/zh-cn/2026-09-29-now/"><span class="type now">近况</span><b>2026 年 9 月：作品与考卷分享区上线，开始准备 CVPR</b><small>这个月把 Taiwan Exam、考卷分享区、LumiGrid 网页版和 Adversarial Lab 放上线，网站也搬到 niansia.com；接下来的重心是 11 月中的 CVPR 2027 投稿。</small></a><div class="btns"><a class="btn" href="/blog/zh-cn/">全部文章</a><a class="btn primary" href="/zh-cn/#blog">回到作品集</a></div></main>
+<aside class="author" aria-label="由 Niansia 制作"><a class="an-face" href="/zh-cn/" tabindex="-1" aria-hidden="true" data-nz-title="Niansia"><img src="/assets/icons/author.webp" alt="" width="56" height="56" loading="lazy"></a><div class="an-text"><b>由 Niansia 制作</b><small>阳明交大资工硕士生，研究 AI 安全、电脑视觉与视觉语言模型。</small></div><a class="btn primary an-go" href="/zh-cn/" data-nz-title="Niansia">前往 niansia.com →</a></aside>
+<footer>有问题或想法？写信到 <a href="mailto:niansia930202@gmail.com">niansia930202@gmail.com</a> · <a href="/zh-cn/">niansia.com</a> · <a href="https://github.com/niansia">github.com/niansia</a><span class="stats" data-stats hidden> · <i class="live-dot"></i> <b data-stat="online">–</b> 人在线 · <b data-stat="total">–</b> 次造访</span></footer>
+</body>
+</html>

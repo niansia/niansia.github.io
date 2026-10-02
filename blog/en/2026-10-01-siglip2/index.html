@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SigLIP 2: why is a model trained to describe images so good at catching fakes? · Niansia</title>
+<meta name="description" content="Swapping my backbone from CLIP to SigLIP 2 made the score on distorted images jump, more than any trick I had spent days tuning. After reading the paper I have two guesses, the self-supervised losses added late in training and the missing CLS token that made me use patch averages. A good backbone raises the starting point; good training pushes it further.">
+<link rel="canonical" href="https://niansia.com/blog/en/2026-10-01-siglip2/">
+<link rel="alternate" hreflang="en" href="https://niansia.com/blog/en/2026-10-01-siglip2/"><link rel="alternate" hreflang="zh-Hant-TW" href="https://niansia.com/blog/zh-tw/2026-10-01-siglip2/"><link rel="alternate" hreflang="zh-Hans-CN" href="https://niansia.com/blog/zh-cn/2026-10-01-siglip2/"><link rel="alternate" hreflang="x-default" href="https://niansia.com/blog/en/2026-10-01-siglip2/">
+<meta property="og:type" content="article"><meta property="og:site_name" content="Niansia">
+<meta property="og:title" content="SigLIP 2: why is a model trained to describe images so good at catching fakes? · Niansia"><meta property="og:description" content="Swapping my backbone from CLIP to SigLIP 2 made the score on distorted images jump, more than any trick I had spent days tuning. After reading the paper I have two guesses, the self-supervised losses added late in training and the missing CLS token that made me use patch averages. A good backbone raises the starting point; good training pushes it further.">
+<meta property="og:url" content="https://niansia.com/blog/en/2026-10-01-siglip2/"><meta property="og:image" content="https://niansia.com/assets/og/blog-2026-10-01-siglip2-en.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta property="og:locale" content="en">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://niansia.com/assets/og/blog-2026-10-01-siglip2-en.jpg">
+
+<meta name="theme-color" content="#fbf6ee" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#15142a" media="(prefers-color-scheme: dark)">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://*.firebasedatabase.app; connect-src 'self' https://*.firebasedatabase.app wss://*.firebasedatabase.app; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; frame-src https://*.firebasedatabase.app; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml">
+<script src="/assets/js/page-transition.js?v=3"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root{--bg:#fbf6ee;--paper:#fffdf9;--ink:#2a2230;--muted:#766b73;--line:#2a22301a;--accent:#c0673a;--accent2:#8f6bb3;--code:#f3ece2;}
+@media(prefers-color-scheme:dark){:root{--bg:#15142a;--paper:#1c1a36;--ink:#f1ebe2;--muted:#aaa3bd;--line:#ffffff1a;--accent:#f0a878;--accent2:#b69ae6;--code:#26234a;}}
+*{box-sizing:border-box;}html{-webkit-text-size-adjust:100%;}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.85 Inter,'Noto Sans TC','Noto Sans SC',system-ui,sans-serif;}
+a{color:var(--accent);text-underline-offset:3px;}
+.top{max-width:1080px;margin:0 auto;padding:18px 20px;display:flex;align-items:center;gap:10px;font:500 13px 'JetBrains Mono',monospace;color:var(--muted);}
+.top a{color:var(--muted);text-decoration:none;}.top a:hover{color:var(--accent);}
+.top b{color:var(--ink);font-weight:500;}.top .sp{flex:1;}
+.langs a{padding:4px 9px;border-radius:99px;border:1px solid var(--line);margin-left:4px;}.langs a[aria-current]{color:var(--ink);border-color:var(--accent);}
+main{max-width:760px;margin:0 auto;padding:10px 20px 70px;}
+.kicker{font:500 12px 'JetBrains Mono',monospace;color:var(--accent);letter-spacing:.06em;text-transform:uppercase;margin:24px 0 8px;}
+h1{font-size:clamp(28px,4.4vw,42px);line-height:1.2;letter-spacing:-.02em;margin:0 0 14px;}
+.lede{font-size:18px;color:var(--muted);margin:0 0 16px;line-height:1.7;}
+.meta{display:flex;flex-wrap:wrap;gap:8px 14px;font:500 12.5px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;color:var(--muted);padding-bottom:22px;border-bottom:1px solid var(--line);margin-bottom:10px;}
+.meta span.tag{padding:2px 9px;border-radius:99px;background:var(--code);}
+article h2{font-size:23px;margin:40px 0 10px;letter-spacing:-.01em;}
+article h3{font-size:18px;margin:28px 0 8px;}
+article p,article li{color:var(--ink);}
+article code{font:14px 'JetBrains Mono',monospace;background:var(--code);padding:1px 6px;border-radius:6px;}
+article table{width:100%;border-collapse:collapse;margin:18px 0;font-size:14.5px;display:block;overflow-x:auto;}
+article th,article td{padding:8px 12px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap;}
+article th{font-weight:600;color:var(--muted);font-size:13px;}
+article td:not(:first-child),article th:not(:first-child){text-align:right;}
+article td[style*="left"],article th[style*="left"]{white-space:normal;min-width:6.5em;}   /* text tables (|:---|) wrap instead of scrolling */
+article strong{color:var(--ink);}
+article blockquote{margin:18px 0;padding:4px 18px;border-left:3px solid var(--accent);color:var(--muted);}
+.card{display:block;padding:18px 20px;margin:12px 0;border-radius:16px;background:var(--paper);border:1px solid var(--line);text-decoration:none;color:var(--ink);transition:transform .25s,border-color .25s;}
+.card:hover{transform:translateY(-2px);border-color:var(--accent);}
+.card b{display:block;font-size:18px;line-height:1.4;margin-bottom:4px;}.card small{display:block;color:var(--muted);font-size:14px;line-height:1.6;}
+.card i{display:block;font:normal 500 12px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;color:var(--accent);margin-top:8px;}
+.hero{width:100%;height:auto;border-radius:16px;border:1px solid var(--line);display:block;margin:6px 0 18px;}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px;}.chips span{font:500 12px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;padding:4px 11px;border-radius:99px;background:var(--code);}
+.btns{display:flex;flex-wrap:wrap;gap:10px;margin:22px 0;}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:12px;border:1px solid var(--line);background:var(--paper);color:var(--ink);text-decoration:none;font-weight:600;font-size:14px;}
+.btn.primary{background:var(--accent);border-color:transparent;color:var(--paper);}
+.btn:hover{border-color:var(--accent);}
+.note{font-size:13.5px;color:var(--muted);}
+.live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#34c38f;box-shadow:0 0 0 3px #34c38f33;vertical-align:1px;}footer b{color:var(--ink);font-weight:600;}
+figure.fig{margin:24px 0;}figure.fig a{display:block;border-radius:14px;overflow:hidden;border:1px solid var(--line);cursor:zoom-in;background:var(--code);}
+figure.fig img{display:block;width:100%;height:auto;transition:transform .4s;}figure.fig a:hover img{transform:scale(1.015);}
+figure.fig figcaption{margin-top:8px;font-size:13.5px;color:var(--muted);line-height:1.6;}
+.lb{position:fixed;inset:0;z-index:50;display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px;background:#0d0b16ee;}
+.lb.on{display:flex;}.lb img{max-width:100%;max-height:84vh;border-radius:10px;box-shadow:0 30px 80px #000a;}
+.lb p{margin:0;color:#e9e4f2;font-size:14px;text-align:center;max-width:760px;}
+.lb-x{position:absolute;top:14px;right:18px;width:40px;height:40px;border-radius:50%;border:1px solid #ffffff44;background:transparent;color:#fff;font-size:24px;cursor:pointer;}
+.log-entry{position:relative;padding:0 0 34px 26px;border-left:2px solid var(--line);}
+.log-entry:before{content:'';position:absolute;left:-7px;top:8px;width:12px;height:12px;border-radius:50%;background:var(--bg);border:2px solid var(--accent);}
+.log-entry time{font:500 12.5px 'JetBrains Mono',monospace;color:var(--accent);}
+.log-entry h2{margin:4px 0 6px!important;font-size:21px!important;}
+.log-entry h2 a{color:var(--ink);text-decoration:none;}
+.statement-link{display:flex;justify-content:space-between;align-items:center;}
+.top a.me{display:inline-flex;align-items:center;gap:8px;padding:3px 12px 3px 3px;border:1px solid var(--line);border-radius:99px;transition:border-color .2s;}.top a.me:hover{border-color:var(--accent);}.top a.me img{width:24px;height:24px;border-radius:50%;display:block;}
+.author{max-width:720px;margin:44px auto 0;padding:18px 20px;display:flex;align-items:center;gap:16px;border-radius:18px;background:var(--code);border:1px solid var(--line);}
+.author{box-sizing:border-box;}.author>*{flex:none;}
+.author .an-face img{display:block;width:56px;height:56px;border-radius:50%;border:2px solid var(--accent);}
+.author .an-text{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px;}
+.author .an-text b{font-size:15px;}.author .an-text small{font-size:13px;line-height:1.6;color:var(--muted);}
+.author .an-note{color:var(--ink)!important;}
+.author .an-go{margin:0;white-space:nowrap;}
+@media (max-width:760px){.author{margin:40px 16px 0;}}@media (max-width:600px){.author{flex-wrap:wrap;padding:16px;}.author .an-text{flex-basis:calc(100% - 72px);}.author .an-go{flex:1 1 100%;justify-content:center;text-align:center;}}
+footer{max-width:760px;margin:0 auto;padding:26px 20px 50px;border-top:1px solid var(--line);font-size:14px;color:var(--muted);}
+
+.paper-box{margin:0 0 26px;padding:18px 20px;border-radius:16px;background:var(--paper);border:1px solid var(--line);border-left:4px solid var(--accent2);}
+.paper-box .pv{font:600 12px 'JetBrains Mono',monospace;color:var(--accent2);letter-spacing:.04em;margin:0 0 6px;}
+.paper-box b{display:block;font-size:17px;line-height:1.45;}
+.paper-box .pa{margin:6px 0 0;font-size:13.5px;color:var(--muted);line-height:1.6;}
+.paper-box .pl{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+.paper-box .pl a{font:600 12.5px 'JetBrains Mono',monospace;padding:5px 12px;border-radius:99px;border:1px solid var(--line);text-decoration:none;}
+.paper-box .pl a:hover{border-color:var(--accent);}
+.type{display:inline-block;padding:2px 9px;border-radius:99px;background:var(--accent);color:#fff;font:600 11.5px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;}
+.type.paper{background:var(--accent2);}.type.qa{background:#3f9f86;}.type.post{background:var(--muted);}
+.card .type{margin-bottom:8px;}.card .zh{margin-left:8px;font:500 11.5px 'JetBrains Mono',monospace;color:var(--muted);}
+.now-card{border-left:4px solid var(--accent);}
+.qa{padding:20px 0;border-bottom:1px solid var(--line);}
+.qa .qq{display:flex;gap:12px;font-weight:700;font-size:17px;line-height:1.55;margin:0 0 8px;}
+.qa .qq span,.qa .qa-a>span{flex:none;display:grid;place-items:center;width:28px;height:28px;border-radius:9px;background:var(--code);color:var(--accent);font-size:13px;}
+.qa .qa-a{display:flex;gap:12px;}.qa .qa-a>span{background:var(--accent);color:#fff;}.qa .qa-a article>:first-child{margin-top:0;}
+.qa time{display:block;margin:6px 0 0 40px;font:500 12px 'JetBrains Mono',monospace;color:var(--muted);}
+.ask{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:18px 0 8px;padding:16px 18px;border-radius:16px;background:var(--code);}
+.ask b{display:block;font-size:15.5px;}.ask small{display:block;color:var(--muted);font-size:13px;}
+.ask .btn{flex:none;margin:0;}.ask .btn[aria-disabled]{opacity:.55;pointer-events:none;}
+</style>
+<link rel="alternate" type="application/rss+xml" title="Niansia · Blog" href="/blog/en/feed.xml"><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BlogPosting", "headline": "SigLIP 2: why is a model trained to describe images so good at catching fakes?", "description": "Swapping my backbone from CLIP to SigLIP 2 made the score on distorted images jump, more than any trick I had spent days tuning. After reading the paper I have two guesses, the self-supervised losses added late in training and the missing CLS token that made me use patch averages. A good backbone raises the starting point; good training pushes it further.", "datePublished": "2026-10-01", "dateModified": "2026-10-01", "inLanguage": "en", "author": {"@type": "Person", "name": "Niansia", "url": "https://niansia.com/", "email": "mailto:niansia930202@gmail.com", "sameAs": ["https://github.com/niansia"]}, "mainEntityOfPage": "https://niansia.com/blog/en/2026-10-01-siglip2/", "keywords": "AI-generated image detection, vision-language models, pretraining, robustness", "citation": {"@type": "ScholarlyArticle", "name": "SigLIP 2: Multilingual Vision-Language Encoders with Improved Semantic Understanding, Localization, and Dense Features", "url": "https://arxiv.org/abs/2502.14786"}}</script>
+<script defer src="/assets/js/site-stats.js?v=2"></script>
+<script defer src="/assets/js/lightbox.js"></script>
+
+</head>
+<body>
+<header class="top"><a class="me" href="/" title="Back to Niansia&#x27;s website" data-nz-title="Niansia"><img src="/assets/icons/author.webp" alt="" width="24" height="24"><b>~/niansia</b></a> / <a href="/blog/en/">blog</a><span class="sp"></span><span class="langs"><a href="/blog/en/2026-10-01-siglip2/" aria-current="page" hreflang="en">EN</a><a href="/blog/zh-tw/2026-10-01-siglip2/" hreflang="zh-Hant">繁</a><a href="/blog/zh-cn/2026-10-01-siglip2/" hreflang="zh-Hans">简</a></span></header>
+<main><p class="kicker">Paper note</p><h1>SigLIP 2: why is a model trained to describe images so good at catching fakes?</h1><p class="lede">Swapping my backbone from CLIP to SigLIP 2 made the score on distorted images jump, more than any trick I had spent days tuning. After reading the paper I have two guesses, the self-supervised losses added late in training and the missing CLS token that made me use patch averages. A good backbone raises the starting point; good training pushes it further.</p><div class="meta"><time datetime="2026-10-01">2026-10-01</time><span>5 min read</span><span class="tag">AI-generated image detection</span><span class="tag">vision-language models</span><span class="tag">pretraining</span><span class="tag">robustness</span></div><aside class="paper-box"><p class="pv">arXiv 2025 · Read closely</p><b lang="en">SigLIP 2: Multilingual Vision-Language Encoders with Improved Semantic Understanding, Localization, and Dense Features</b><p class="pa" lang="en">Michael Tschannen, Alexey Gritsenko, Xiao Wang, Muhammad Ferjad Naeem, et al.</p><div class="pl"><a href="https://arxiv.org/abs/2502.14786" target="_blank" rel="noopener noreferrer">Paper ↗</a><a href="https://github.com/google-research/big_vision/tree/main/big_vision/configs/proj/image_text/README_siglip2.md" target="_blank" rel="noopener noreferrer">Code ↗</a></div></aside><article><h2>Why this paper</h2>
+<p>The biggest surprise in my recent experiments came from swapping the backbone from CLIP-L to SigLIP2 So400m. With the same frozen features and the same evaluation, the AUC on distorted images jumped a long way, more than any trick I had spent days tuning. Stranger still, SigLIP2 using <strong>only its last layer</strong> already beat CLIP with <strong>several layers concatenated</strong>. I wanted to know what it learns during training that CLIP doesn't.</p>
+<h2>What the paper does</h2>
+<p>SigLIP 2 is Google's image-text encoder. The first SigLIP replaced CLIP's softmax contrastive loss with a sigmoid loss; the second version combines several separately developed training methods into one recipe:</p>
+<ul>
+<li><strong>The original sigmoid image-text loss</strong>, used throughout.</li>
+<li><strong>LocCa-style captioning pretraining</strong>, also used throughout: a text decoder learns to write image captions, describe local regions, and locate a region from its description.</li>
+<li><strong>Self-distillation and masked prediction</strong> (from SILC and TIPS), added only for the <strong>last 20% of training</strong>. Self-distillation has a student that sees only local crops (8 local views) match the representation a teacher (an EMA of the student) computes from the full image; masked prediction replaces half of the student's input patches with mask tokens and asks it to predict the teacher's features at those positions. The paper says the goal is better local semantics in the <strong>un-pooled patch features</strong>.</li>
+<li><strong>Data</strong>: WebLI's 10 billion images and 12 billion alt-texts in 109 languages, with de-biasing; the two smallest models also get active data curation.</li>
+</ul>
+<p>The models come in four sizes, ViT-B (86M), L (303M), So400m (400M) and g (1B). They beat the first version at every size, with especially clear gains on localization and dense prediction. Pooling uses a MAP head (attention pooling) and there is <strong>no CLS token</strong>. There is also a NaFlex variant that keeps the native aspect ratio and supports several resolutions.</p>
+<h2>Compared with my experiments</h2>
+<p><strong>Guess one: the self-supervised losses make the features more robust to distortion.</strong> CLIP only learns which caption goes with which image, so once the semantics are right, other details can be ignored. SigLIP 2 additionally asks the model to give a representation consistent with the full image when it sees only part of it, or half of it is masked out. That is about crops and occlusion, not JPEG or noise, but in spirit it resembles the "clean and distorted copies should agree" term I added to my LoRA training. If the guess is right, SigLIP 2 has already done part of the invariance work for me during pretraining, which is why its frozen features are so strong.</p>
+<p>Reading the full paper, though, I found that these two losses are only added in the last 20% of training. The advantage could equally come from LocCa, which runs throughout: describing local regions also forces every patch to retain detail. I can't separate the two yet, and the paper never discusses fake-image detection or robustness to distortion, so all of this is my own inference.</p>
+<p><strong>Guess two: having no CLS token may actually help.</strong> Because the SigLIP family has no CLS token, I take the average of all patch tokens at each layer instead. Averaging is a form of denoising in itself: regions that were compressed, noised or watermarked get averaged out by the rest of the image, while CLIP's CLS token may be pulled off course by a few damaged regions.</p>
+<p>After reading the paper, this guess connects neatly with the first one: what SigLIP 2 strengthens late in training is exactly the un-pooled patch features, and a patch average is built from those features. Also, in the <a href="/blog/en/2026-10-01-ntire2026-report/">NTIRE 2026 report</a> I read earlier the same day, fifth place compared the CLS token, attention pooling and multi-layer concatenation, and found the average over final-layer patches the most stable.</p>
+<p>This guess is easy to test: <strong>switch CLIP's per-layer features to patch averages too</strong> and see whether the score rises. If it does, part of SigLIP2's advantage actually comes from how I extract features, not entirely from the model. It is the experiment I most want to run after reading, and it takes only a few minutes.</p>
+<p><strong>Links to the challenge teams.</strong> Fifth place in the challenge used SigLIP2-giant (1B parameters, 384 px), sixth place used two SigLIP So400m models plus two CLIP models, and seventh place also has a 384 px SigLIP 2 branch. It seems I'm not the only one who found this family suits the task. I use the smaller So400m at 224 px. Earlier, raising CLIP from 224 to 336 did nothing for me, so for now I won't chase higher resolution and will keep the budget for data and fine-tuning.</p>
+<h2>My view</h2>
+<p>The lesson I take from this paper: <strong>choosing the right pretrained model matters more than clever additions downstream.</strong> Over several days on CLIP I added multi-depth features, distorted copies and LoRA to push the score up; with SigLIP2 the very first step got roughly as far. That is a little discouraging, but also very practical: had I screened backbones first, I would have saved a lot of time. On my next project I will spend an hour or two screening backbones with cheap methods before committing serious compute.</p>
+<p>I don't think the earlier work was wasted, though. Training with my own distortions helps SigLIP2 just as much, and combining different backbones still adds more. A good backbone raises the starting point and good training pushes it further; the two add up.</p>
+<p>The paper's emphasis on multilinguality and fairness may look unrelated to my task, but it means more diverse training data. What fake detection fears most is content and styles it has never seen, so a model pretrained on more diverse data may simply generalize better.</p>
+<h2>What I want to try</h2>
+<ol>
+<li><strong>Per-layer patch averages for CLIP</strong> (a few minutes): check whether "no CLS, use the average" is part of SigLIP2's advantage.</li>
+<li><strong>LoRA fine-tuning of SigLIP2</strong> (about five hours): on CLIP, LoRA brought a solid gain, and SigLIP2 should have room too.</li>
+<li><strong>The aspect-preserving NaFlex variant</strong>: my weakest category is crops that change the aspect ratio, which an aspect-preserving SigLIP2 might handle directly. But keeping the aspect ratio didn't help on CLIP, and the paper says NaFlex, for simplicity, <strong>skips</strong> self-distillation and masked prediction; if guess one is right, it may lose part of that benefit. So I'm keeping expectations low.</li>
+<li><strong>Borrow "local versus global" for my LoRA</strong>: besides clean versus distorted, add consistency between local crops and the full image, and see whether that helps the aspect-ratio crops.</li>
+</ol>
+<hr>
+<p>The paper's content was checked against the arXiv v1 PDF. My own experiments are still in progress, so this note gives only rough trends; full numbers and settings will be published once they are written up.</p></article><div class="ask"><div><b>Questions &amp; answers</b><small>Questions sent anonymously, answered here.</small></div><a class="btn primary" href="https://forms.gle/yNUw4eLZeeqf3Arb6" target="_blank" rel="noopener noreferrer">Ask anonymously ↗</a></div><h2 style="margin-top:48px">More posts</h2><a class="card" href="/blog/en/2026-10-01-ntire2026-report/"><span class="type paper">Paper note</span><b>The NTIRE 2026 challenge report: did the winners win on models or on data?</b><small>This report is the exam paper for my project. Reading it, I found that the top two teams had not only bigger models but far bigger and newer training data, including the commercial generators the official training set deliberately kept for testing. The leaderboard gap mixes model, data and compute, and comparisons have to pull them apart.</small></a><a class="card" href="/blog/en/2026-09-30-rine/"><span class="type paper">Paper note</span><b>RINE: do intermediate layers know “fake” better than the last one?</b><small>RINE detects generated images from CLIP&#x27;s intermediate layers, and my own experiments largely agree. Under real-world corruptions, though, the most useful layers change, and the breadth of augmentation matters more than which layer the features come from.</small></a><a class="card" href="/blog/en/2026-09-29-now/"><span class="type now">Now</span><b>September 2026: new projects and an exam gallery, CVPR prep begins</b><small>This month Taiwan Exam, its exam gallery, the in-browser LumiGrid and Adversarial Lab went live, and the site moved to niansia.com. Next up is the CVPR 2027 submission in mid-November.</small></a><div class="btns"><a class="btn" href="/blog/en/">All posts</a><a class="btn primary" href="/#blog">Back to the portfolio</a></div></main>
+<aside class="author" aria-label="Made by Niansia"><a class="an-face" href="/" tabindex="-1" aria-hidden="true" data-nz-title="Niansia"><img src="/assets/icons/author.webp" alt="" width="56" height="56" loading="lazy"></a><div class="an-text"><b>Made by Niansia</b><small>M.S. student in computer science at NYCU, working on AI security, computer vision and vision-language models.</small></div><a class="btn primary an-go" href="/" data-nz-title="Niansia">Visit niansia.com →</a></aside>
+<footer>Questions or ideas? Email <a href="mailto:niansia930202@gmail.com">niansia930202@gmail.com</a> · <a href="/">niansia.com</a> · <a href="https://github.com/niansia">github.com/niansia</a><span class="stats" data-stats hidden> · <i class="live-dot"></i> <b data-stat="online">–</b> online · <b data-stat="total">–</b> visits</span></footer>
+</body>
+</html>

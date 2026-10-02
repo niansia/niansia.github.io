@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NTIRE 2026 比賽報告：冠軍贏在模型，還是贏在資料？ · Niansia</title>
+<meta name="description" content="這份報告是我專題的「考卷」。讀完才發現，前兩名除了模型大，訓練資料也大得多、新得多，甚至涵蓋了官方訓練集刻意留給測試集的商用生成器。排行榜的差距同時混了模型、資料和運算，比較時要拆開來看。">
+<link rel="canonical" href="https://niansia.com/blog/zh-tw/2026-10-01-ntire2026-report/">
+<link rel="alternate" hreflang="en" href="https://niansia.com/blog/en/2026-10-01-ntire2026-report/"><link rel="alternate" hreflang="zh-Hant-TW" href="https://niansia.com/blog/zh-tw/2026-10-01-ntire2026-report/"><link rel="alternate" hreflang="zh-Hans-CN" href="https://niansia.com/blog/zh-cn/2026-10-01-ntire2026-report/"><link rel="alternate" hreflang="x-default" href="https://niansia.com/blog/en/2026-10-01-ntire2026-report/">
+<meta property="og:type" content="article"><meta property="og:site_name" content="Niansia">
+<meta property="og:title" content="NTIRE 2026 比賽報告：冠軍贏在模型，還是贏在資料？ · Niansia"><meta property="og:description" content="這份報告是我專題的「考卷」。讀完才發現，前兩名除了模型大，訓練資料也大得多、新得多，甚至涵蓋了官方訓練集刻意留給測試集的商用生成器。排行榜的差距同時混了模型、資料和運算，比較時要拆開來看。">
+<meta property="og:url" content="https://niansia.com/blog/zh-tw/2026-10-01-ntire2026-report/"><meta property="og:image" content="https://niansia.com/assets/og/blog-2026-10-01-ntire2026-report-zh-tw.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta property="og:locale" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://niansia.com/assets/og/blog-2026-10-01-ntire2026-report-zh-tw.jpg">
+
+<meta name="theme-color" content="#fbf6ee" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#15142a" media="(prefers-color-scheme: dark)">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://*.firebasedatabase.app; connect-src 'self' https://*.firebasedatabase.app wss://*.firebasedatabase.app; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; frame-src https://*.firebasedatabase.app; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml">
+<script src="/assets/js/page-transition.js?v=3"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&display=swap">
+<style>
+:root{--bg:#fbf6ee;--paper:#fffdf9;--ink:#2a2230;--muted:#766b73;--line:#2a22301a;--accent:#c0673a;--accent2:#8f6bb3;--code:#f3ece2;}
+@media(prefers-color-scheme:dark){:root{--bg:#15142a;--paper:#1c1a36;--ink:#f1ebe2;--muted:#aaa3bd;--line:#ffffff1a;--accent:#f0a878;--accent2:#b69ae6;--code:#26234a;}}
+*{box-sizing:border-box;}html{-webkit-text-size-adjust:100%;}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.85 Inter,'Noto Sans TC','Noto Sans SC',system-ui,sans-serif;}
+a{color:var(--accent);text-underline-offset:3px;}
+.top{max-width:1080px;margin:0 auto;padding:18px 20px;display:flex;align-items:center;gap:10px;font:500 13px 'JetBrains Mono',monospace;color:var(--muted);}
+.top a{color:var(--muted);text-decoration:none;}.top a:hover{color:var(--accent);}
+.top b{color:var(--ink);font-weight:500;}.top .sp{flex:1;}
+.langs a{padding:4px 9px;border-radius:99px;border:1px solid var(--line);margin-left:4px;}.langs a[aria-current]{color:var(--ink);border-color:var(--accent);}
+main{max-width:760px;margin:0 auto;padding:10px 20px 70px;}
+.kicker{font:500 12px 'JetBrains Mono',monospace;color:var(--accent);letter-spacing:.06em;text-transform:uppercase;margin:24px 0 8px;}
+h1{font-size:clamp(28px,4.4vw,42px);line-height:1.2;letter-spacing:-.02em;margin:0 0 14px;}
+.lede{font-size:18px;color:var(--muted);margin:0 0 16px;line-height:1.7;}
+.meta{display:flex;flex-wrap:wrap;gap:8px 14px;font:500 12.5px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;color:var(--muted);padding-bottom:22px;border-bottom:1px solid var(--line);margin-bottom:10px;}
+.meta span.tag{padding:2px 9px;border-radius:99px;background:var(--code);}
+article h2{font-size:23px;margin:40px 0 10px;letter-spacing:-.01em;}
+article h3{font-size:18px;margin:28px 0 8px;}
+article p,article li{color:var(--ink);}
+article code{font:14px 'JetBrains Mono',monospace;background:var(--code);padding:1px 6px;border-radius:6px;}
+article table{width:100%;border-collapse:collapse;margin:18px 0;font-size:14.5px;display:block;overflow-x:auto;}
+article th,article td{padding:8px 12px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap;}
+article th{font-weight:600;color:var(--muted);font-size:13px;}
+article td:not(:first-child),article th:not(:first-child){text-align:right;}
+article td[style*="left"],article th[style*="left"]{white-space:normal;min-width:6.5em;}   /* text tables (|:---|) wrap instead of scrolling */
+article strong{color:var(--ink);}
+article blockquote{margin:18px 0;padding:4px 18px;border-left:3px solid var(--accent);color:var(--muted);}
+.card{display:block;padding:18px 20px;margin:12px 0;border-radius:16px;background:var(--paper);border:1px solid var(--line);text-decoration:none;color:var(--ink);transition:transform .25s,border-color .25s;}
+.card:hover{transform:translateY(-2px);border-color:var(--accent);}
+.card b{display:block;font-size:18px;line-height:1.4;margin-bottom:4px;}.card small{display:block;color:var(--muted);font-size:14px;line-height:1.6;}
+.card i{display:block;font:normal 500 12px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;color:var(--accent);margin-top:8px;}
+.hero{width:100%;height:auto;border-radius:16px;border:1px solid var(--line);display:block;margin:6px 0 18px;}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px;}.chips span{font:500 12px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;padding:4px 11px;border-radius:99px;background:var(--code);}
+.btns{display:flex;flex-wrap:wrap;gap:10px;margin:22px 0;}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:12px;border:1px solid var(--line);background:var(--paper);color:var(--ink);text-decoration:none;font-weight:600;font-size:14px;}
+.btn.primary{background:var(--accent);border-color:transparent;color:var(--paper);}
+.btn:hover{border-color:var(--accent);}
+.note{font-size:13.5px;color:var(--muted);}
+.live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#34c38f;box-shadow:0 0 0 3px #34c38f33;vertical-align:1px;}footer b{color:var(--ink);font-weight:600;}
+figure.fig{margin:24px 0;}figure.fig a{display:block;border-radius:14px;overflow:hidden;border:1px solid var(--line);cursor:zoom-in;background:var(--code);}
+figure.fig img{display:block;width:100%;height:auto;transition:transform .4s;}figure.fig a:hover img{transform:scale(1.015);}
+figure.fig figcaption{margin-top:8px;font-size:13.5px;color:var(--muted);line-height:1.6;}
+.lb{position:fixed;inset:0;z-index:50;display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px;background:#0d0b16ee;}
+.lb.on{display:flex;}.lb img{max-width:100%;max-height:84vh;border-radius:10px;box-shadow:0 30px 80px #000a;}
+.lb p{margin:0;color:#e9e4f2;font-size:14px;text-align:center;max-width:760px;}
+.lb-x{position:absolute;top:14px;right:18px;width:40px;height:40px;border-radius:50%;border:1px solid #ffffff44;background:transparent;color:#fff;font-size:24px;cursor:pointer;}
+.log-entry{position:relative;padding:0 0 34px 26px;border-left:2px solid var(--line);}
+.log-entry:before{content:'';position:absolute;left:-7px;top:8px;width:12px;height:12px;border-radius:50%;background:var(--bg);border:2px solid var(--accent);}
+.log-entry time{font:500 12.5px 'JetBrains Mono',monospace;color:var(--accent);}
+.log-entry h2{margin:4px 0 6px!important;font-size:21px!important;}
+.log-entry h2 a{color:var(--ink);text-decoration:none;}
+.statement-link{display:flex;justify-content:space-between;align-items:center;}
+.top a.me{display:inline-flex;align-items:center;gap:8px;padding:3px 12px 3px 3px;border:1px solid var(--line);border-radius:99px;transition:border-color .2s;}.top a.me:hover{border-color:var(--accent);}.top a.me img{width:24px;height:24px;border-radius:50%;display:block;}
+.author{max-width:720px;margin:44px auto 0;padding:18px 20px;display:flex;align-items:center;gap:16px;border-radius:18px;background:var(--code);border:1px solid var(--line);}
+.author{box-sizing:border-box;}.author>*{flex:none;}
+.author .an-face img{display:block;width:56px;height:56px;border-radius:50%;border:2px solid var(--accent);}
+.author .an-text{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px;}
+.author .an-text b{font-size:15px;}.author .an-text small{font-size:13px;line-height:1.6;color:var(--muted);}
+.author .an-note{color:var(--ink)!important;}
+.author .an-go{margin:0;white-space:nowrap;}
+@media (max-width:760px){.author{margin:40px 16px 0;}}@media (max-width:600px){.author{flex-wrap:wrap;padding:16px;}.author .an-text{flex-basis:calc(100% - 72px);}.author .an-go{flex:1 1 100%;justify-content:center;text-align:center;}}
+footer{max-width:760px;margin:0 auto;padding:26px 20px 50px;border-top:1px solid var(--line);font-size:14px;color:var(--muted);}
+
+.paper-box{margin:0 0 26px;padding:18px 20px;border-radius:16px;background:var(--paper);border:1px solid var(--line);border-left:4px solid var(--accent2);}
+.paper-box .pv{font:600 12px 'JetBrains Mono',monospace;color:var(--accent2);letter-spacing:.04em;margin:0 0 6px;}
+.paper-box b{display:block;font-size:17px;line-height:1.45;}
+.paper-box .pa{margin:6px 0 0;font-size:13.5px;color:var(--muted);line-height:1.6;}
+.paper-box .pl{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+.paper-box .pl a{font:600 12.5px 'JetBrains Mono',monospace;padding:5px 12px;border-radius:99px;border:1px solid var(--line);text-decoration:none;}
+.paper-box .pl a:hover{border-color:var(--accent);}
+.type{display:inline-block;padding:2px 9px;border-radius:99px;background:var(--accent);color:#fff;font:600 11.5px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;}
+.type.paper{background:var(--accent2);}.type.qa{background:#3f9f86;}.type.post{background:var(--muted);}
+.card .type{margin-bottom:8px;}.card .zh{margin-left:8px;font:500 11.5px 'JetBrains Mono',monospace;color:var(--muted);}
+.now-card{border-left:4px solid var(--accent);}
+.qa{padding:20px 0;border-bottom:1px solid var(--line);}
+.qa .qq{display:flex;gap:12px;font-weight:700;font-size:17px;line-height:1.55;margin:0 0 8px;}
+.qa .qq span,.qa .qa-a>span{flex:none;display:grid;place-items:center;width:28px;height:28px;border-radius:9px;background:var(--code);color:var(--accent);font-size:13px;}
+.qa .qa-a{display:flex;gap:12px;}.qa .qa-a>span{background:var(--accent);color:#fff;}.qa .qa-a article>:first-child{margin-top:0;}
+.qa time{display:block;margin:6px 0 0 40px;font:500 12px 'JetBrains Mono',monospace;color:var(--muted);}
+.ask{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:18px 0 8px;padding:16px 18px;border-radius:16px;background:var(--code);}
+.ask b{display:block;font-size:15.5px;}.ask small{display:block;color:var(--muted);font-size:13px;}
+.ask .btn{flex:none;margin:0;}.ask .btn[aria-disabled]{opacity:.55;pointer-events:none;}
+</style>
+<link rel="alternate" type="application/rss+xml" title="Niansia · Blog" href="/blog/zh-tw/feed.xml"><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BlogPosting", "headline": "NTIRE 2026 比賽報告：冠軍贏在模型，還是贏在資料？", "description": "這份報告是我專題的「考卷」。讀完才發現，前兩名除了模型大，訓練資料也大得多、新得多，甚至涵蓋了官方訓練集刻意留給測試集的商用生成器。排行榜的差距同時混了模型、資料和運算，比較時要拆開來看。", "datePublished": "2026-10-01", "dateModified": "2026-10-01", "inLanguage": "zh-Hant", "author": {"@type": "Person", "name": "Niansia", "url": "https://niansia.com/", "email": "mailto:niansia930202@gmail.com", "sameAs": ["https://github.com/niansia"]}, "mainEntityOfPage": "https://niansia.com/blog/zh-tw/2026-10-01-ntire2026-report/", "keywords": "AI 生成圖偵測, 穩健性, 比賽, 資料", "citation": {"@type": "ScholarlyArticle", "name": "NTIRE 2026 Challenge on Robust AI-Generated Image Detection in the Wild", "url": "https://arxiv.org/abs/2604.11487"}}</script>
+<script defer src="/assets/js/site-stats.js?v=2"></script>
+<script defer src="/assets/js/lightbox.js"></script>
+
+</head>
+<body>
+<header class="top"><a class="me" href="/zh-tw/" title="回到 Niansia 的個人網站" data-nz-title="Niansia"><img src="/assets/icons/author.webp" alt="" width="24" height="24"><b>~/niansia</b></a> / <a href="/blog/zh-tw/">blog</a><span class="sp"></span><span class="langs"><a href="/blog/en/2026-10-01-ntire2026-report/" hreflang="en">EN</a><a href="/blog/zh-tw/2026-10-01-ntire2026-report/" aria-current="page" hreflang="zh-Hant">繁</a><a href="/blog/zh-cn/2026-10-01-ntire2026-report/" hreflang="zh-Hans">简</a></span></header>
+<main><p class="kicker">論文筆記</p><h1>NTIRE 2026 比賽報告：冠軍贏在模型，還是贏在資料？</h1><p class="lede">這份報告是我專題的「考卷」。讀完才發現，前兩名除了模型大，訓練資料也大得多、新得多，甚至涵蓋了官方訓練集刻意留給測試集的商用生成器。排行榜的差距同時混了模型、資料和運算，比較時要拆開來看。</p><div class="meta"><time datetime="2026-10-01">2026-10-01</time><span>5 分鐘閱讀</span><span class="tag">AI 生成圖偵測</span><span class="tag">穩健性</span><span class="tag">比賽</span><span class="tag">資料</span></div><aside class="paper-box"><p class="pv">CVPR 2026 NTIRE Workshop · 精讀</p><b lang="en">NTIRE 2026 Challenge on Robust AI-Generated Image Detection in the Wild</b><p class="pa" lang="en">Aleksandr Gushchin, Khaled Abud, Ekaterina Shumitskaya, et al. (54 authors)</p><div class="pl"><a href="https://arxiv.org/abs/2604.11487" target="_blank" rel="noopener noreferrer">論文 ↗</a></div></aside><article><h2>為什麼讀這篇</h2>
+<p>這是我整個專題的「考卷」。前幾天我一直拿排行榜上的數字當目標，卻沒有仔細讀每一隊到底怎麼做。最近換了骨幹，分數進步了一大截，我開始好奇：前兩名和其他隊伍之間那段明顯的落差，到底是怎麼來的？是我追得上的嗎？</p>
+<h2>報告重點</h2>
+<p><strong>資料。</strong> 10 萬 8,750 張真實照片和 18 萬 5,750 張生成圖，來自 2022 到 2026 年的 42 個生成模型，開源和商用的都有。生成圖的提示詞是從對應的真實照片描述改寫來的，解析度、長寬比、JPEG 品質也對齊真實照片，目的是讓偵測器學到和內容無關的特徵。</p>
+<p>有個設計我之前沒注意到：<strong>官方訓練集只有 20 個開源生成器</strong>，表現最好的開源模型和所有商用模型（Nano Banana、Grok Imagine 等）都留在驗證集和測試集，越後面的階段，新模型的比例越高。</p>
+<p><strong>干擾。</strong> 穩健賽道的每張圖會被連續套上 1 到 5 種干擾，整個比賽一共用了 36 種，從高斯模糊、白雜訊，到隱形浮水印、神經網路壓縮、去浮水印的對抗攻擊都有；每個階段用的干擾組合不同，也越來越難。</p>
+<p><strong>規模與排名。</strong> 511 人報名，20 隊交出有效的最終方案。公開和隱藏測試集各約 2,500 張，最終名次看兩者的平均 Robust AUC。報告的結論是：多數方案都是多個 Transformer 模型組成的專家架構，表現雖然進步很多，但<strong>問題還沒有被解決</strong>，設計、訓練策略和資料整理都還有空間。</p>
+<p>前幾名的做法（依報告所述）：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">名次</th>
+<th style="text-align: left;">隊伍</th>
+<th style="text-align: left;">公開測試集</th>
+<th style="text-align: left;">最終（平均）</th>
+<th style="text-align: left;">骨幹</th>
+<th style="text-align: left;">訓練資料</th>
+<th style="text-align: left;">運算</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">MICV</td>
+<td style="text-align: left;">0.974</td>
+<td style="text-align: left;">0.972</td>
+<td style="text-align: left;">兩組共 6 個 DINOv3，512 px，全參數微調</td>
+<td style="text-align: left;">數百萬張：官方 + GenImage 等公開資料集 + 自己用開源與商用生成器產生的圖</td>
+<td style="text-align: left;">32 張 A100，10 epoch 約 8 小時</td>
+</tr>
+<tr>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">Ant International</td>
+<td style="text-align: left;">0.973</td>
+<td style="text-align: left;">0.972</td>
+<td style="text-align: left;">兩個 DINOv3-7B 專家，共 140 億參數</td>
+<td style="text-align: left;">約 100 萬張：官方 + 自己生成 + 兩個公開資料集</td>
+<td style="text-align: left;">B200（數量和時間沒寫）</td>
+</tr>
+<tr>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">TeleAI-TeleGuard</td>
+<td style="text-align: left;">0.922</td>
+<td style="text-align: left;">0.925</td>
+<td style="text-align: left;">EVA-CLIP + LoRA</td>
+<td style="text-align: left;">官方 + So-Fake、Chameleon</td>
+<td style="text-align: left;">8 張 A800，5 epoch</td>
+</tr>
+<tr>
+<td style="text-align: left;">5</td>
+<td style="text-align: left;">Vincentlc</td>
+<td style="text-align: left;">0.863</td>
+<td style="text-align: left;">0.873</td>
+<td style="text-align: left;">SigLIP2-giant，384 px，線性分類頭</td>
+<td style="text-align: left;">報告裡沒提到外部資料</td>
+<td style="text-align: left;">沒寫</td>
+</tr>
+</tbody>
+</table>
+<h2>讀完最大的感想：差距有一大塊來自資料</h2>
+<p>我原本以為冠軍強在「模型大」。讀完才發現，前兩名除了模型大，<strong>訓練資料也大得多、新得多</strong>：第 1 名透過官方 API 去產生 Seedream、Kling、GPT-Image、Nano Banana Pro 這些商用模型的圖，第 2 名用了大約 100 萬張。我目前只用了官方訓練資料的一小部分，而且全部來自官方，和第 2 名差了不只一個數量級。</p>
+<p>對照附錄的生成器清單之後，我更確定這一點。公開測試集裡有 Nano Banana Pro、Seedream 5 Lite，隱藏測試集裡有 Nano Banana 2、GPT Image 1.5，都是官方訓練集刻意沒放的商用模型，第 1 名自己產生的，正好是同幾家的圖。比賽允許外部資料，這完全合規；但它表示排行榜的差距裡，有一部分是在比「誰看過更多種生成器」，不全是模型本身的能力。</p>
+<p>這讓我重新思考自己的研究問題。我想回答的是「小模型能多接近大模型」，但排行榜上的差距同時混了<strong>模型大小、資料量和覆蓋的生成器、運算量</strong>三件事。只比最後的分數，就分不出輸在哪裡。所以我覺得比較時應該拆開來：</p>
+<ul>
+<li>和沒有用外部資料的隊伍比，例如第 5 名 Vincentlc（報告裡沒提到外部資料）。他用 10 億參數的 SigLIP2-giant、384 解析度，條件和我比較接近。</li>
+<li>和用大量外部資料的前兩名比，就要誠實寫出條件不同。</li>
+</ul>
+<h2>和我的實驗對照</h2>
+<p><strong>印證的地方：</strong></p>
+<ol>
+<li><strong>訓練時加入干擾是關鍵。</strong> 幾乎每一隊都有自己的干擾管線：第 2 名分成乾淨、輕度（1～3 種）、中度（3～6 種）、重度（固定 6 種）四級；第 5 名讓每一張訓練圖都經過官方的干擾函式，並說這是穩健分數進步的主因。這和我最大的發現一致：同樣的特徵，只是加入自己產生的干擾，干擾圖的分數就大幅上升。</li>
+<li><strong>「直接壓扁成正方形」不比保留長寬比差。</strong> 第 5 名特別提到他們用 squish，不管長寬比直接縮放到 384，理由是隨機裁切可能切掉局部的鑑識線索。我之前也試過保留長寬比的版本，結果沒有比較好，兩邊各自得到相同的選擇，讓我比較安心。</li>
+<li><strong>不同模型才會互補。</strong> 多數方案都是多個模型合併。第 7 名 Reagvis Labs 的說法很清楚：CLIP／SigLIP 這類圖文特徵、SRM 這類殘差鑑識特徵、EVA-02 這類遮罩預訓練特徵，錯在不同的圖上。我也發現 SigLIP2 加 CLIP 的合併有幫助，兩個 CLIP 合併卻幾乎沒用，重點不在模型數量，而在看事情的角度要不同。</li>
+<li><strong>patch 平均比 CLS 穩。</strong> 第 5 名比較過 CLS token、注意力池化、多層特徵串接，最後是「最後一層所有 patch 的平均」最穩定。這剛好呼應我在 SigLIP2 上的取法，也是我接下來想在 CLIP 上驗證的事（細節寫在 <a href="/blog/zh-tw/2026-10-01-siglip2/">SigLIP 2 那篇</a>）。不過他們說多層串接沒有比較好，和我在 CLIP 上看到的不同，可能跟骨幹或設定有關，值得再查。</li>
+</ol>
+<p><strong>要誠實承認的地方：</strong> 第 3 名 TeleAI 的「成對訓練」是把乾淨圖和它的干擾版放進同一批，讓兩者的預測（KL）和特徵（MSE）彼此接近。這和我在 LoRA 裡用的「乾淨版與干擾版特徵要一致」是很接近的想法。我的實作細節不同（我用停止梯度的餘弦一致性，加上自己的干擾與神經壓縮串接），但這個大方向不是我首創的，之後寫研究筆記時要註明。</p>
+<p><strong>不一樣的地方：</strong> 第 7 名用了 8 種視角的測試時增強（翻轉、多尺度中央裁切、角落裁切、模糊、JPEG），我自己試的翻轉與多處裁切卻完全沒有效果。我猜原因是他們有一個直接看原始像素殘差的鑑識 CNN，這類模型對裁切位置比較敏感；而我的模型幾乎只看整張縮放後的視角，換裁切位置自然沒差。</p>
+<h2>我的看法</h2>
+<p>我覺得這份報告最有價值的一句話，是主辦單位說「問題還沒有被解決」。前兩名用了巨大的資源，最難的干擾組合下仍然會錯。對我來說，與其追求用一台筆電「打敗」32 張 A100，更有意義的問題是：<strong>在每一個資源等級下，最有效率的做法是什麼？</strong></p>
+<p>報告裡剛好有兩個數字可以對照：第 2 名的完整推論在一張 A100 上每秒大約處理 2.2 張圖，要用掉 78 GB 顯存；第 7 名把六個模型輪流載入，峰值顯存不到 4 GB。分數差了一截，顯存卻差了二十倍左右。同樣只用官方資料、同樣不到 10 億參數，能做到多好；每多加一倍資料，能換到多少分數，這條「成本對分數」的曲線，可能比單一名次更有研究價值。</p>
+<p>當然，我也不想放棄追上前段班。只是讀完之後我知道，接下來最大的槓桿很可能不是換更大的模型，而是<strong>資料</strong>。</p>
+<h2>讀完之後想做的事</h2>
+<ol>
+<li><strong>先用完官方資料</strong>：下載更多官方訓練分片，量出「資料加倍 → 分數變化」的曲線。</li>
+<li><strong>評估外部資料要不要用</strong>：比賽允許外部資料，但我要想清楚授權問題，而且這會讓「小模型對大模型」的比較變得不乾淨。我傾向把「只用官方資料」當主要結果，外部資料當補充實驗。</li>
+<li><strong>干擾分級</strong>：參考第 2 名的四級干擾，把我現在隨機串接 1～5 種的做法改成有輕重之分的課程式訓練，看能不能補強最難的組合。</li>
+<li><strong>研究筆記加上「相關做法」一節</strong>：寫清楚哪些想法和比賽隊伍相同（成對訓練、squish、干擾管線），哪些是我自己的發現（多深度特徵在干擾下的取捨、測試時增強為什麼沒用、為什麼跨骨幹才互補）。</li>
+</ol>
+<hr>
+<p>報告的數字已對照 arXiv v1 的 PDF；最終名次以公開與隱藏兩個測試集的平均 Robust AUC 計算。我自己的實驗還在進行中，這裡只寫大致的趨勢，完整的數字和設定等整理好之後再公開。</p></article><div class="ask"><div><b>Q&amp;A</b><small>匿名提問，在這裡回答。</small></div><a class="btn primary" href="https://forms.gle/yNUw4eLZeeqf3Arb6" target="_blank" rel="noopener noreferrer">匿名提問 ↗</a></div><h2 style="margin-top:48px">其他文章</h2><a class="card" href="/blog/zh-tw/2026-10-01-siglip2/"><span class="type paper">論文筆記</span><b>SigLIP 2：為什麼一個「看圖說話」的模型特別會抓假圖？</b><small>把骨幹從 CLIP 換成 SigLIP 2，干擾圖的分數一下子跳了一大截，比我花好幾天調的任何技巧都有效。讀完論文，我有兩個猜測：一是它後段加入的自監督目標，二是它沒有 CLS token、我改用 patch 平均。好的骨幹提高起點，好的訓練方法把起點推得更遠。</small></a><a class="card" href="/blog/zh-tw/2026-09-30-rine/"><span class="type paper">論文筆記</span><b>RINE：中間層真的比最後一層更懂「假」嗎？</b><small>RINE 用 CLIP 中間層的特徵偵測生成圖，和我自己的實驗結論大致相同；但在「野外干擾」下，最有用的層會換人，增強的廣度也比從哪一層拿特徵更關鍵。</small></a><a class="card" href="/blog/zh-tw/2026-09-29-now/"><span class="type now">近況</span><b>2026 年 9 月：作品與考卷分享區上線，開始準備 CVPR</b><small>這個月把 Taiwan Exam、考卷分享區、LumiGrid 網頁版和 Adversarial Lab 放上線，網站也搬到 niansia.com；接下來的重心是 11 月中的 CVPR 2027 投稿。</small></a><div class="btns"><a class="btn" href="/blog/zh-tw/">全部文章</a><a class="btn primary" href="/zh-tw/#blog">回到作品集</a></div></main>
+<aside class="author" aria-label="由 Niansia 製作"><a class="an-face" href="/zh-tw/" tabindex="-1" aria-hidden="true" data-nz-title="Niansia"><img src="/assets/icons/author.webp" alt="" width="56" height="56" loading="lazy"></a><div class="an-text"><b>由 Niansia 製作</b><small>陽明交大資工碩士生，研究 AI 安全、電腦視覺與視覺語言模型。</small></div><a class="btn primary an-go" href="/zh-tw/" data-nz-title="Niansia">前往 niansia.com →</a></aside>
+<footer>有問題或想法？寫信到 <a href="mailto:niansia930202@gmail.com">niansia930202@gmail.com</a> · <a href="/zh-tw/">niansia.com</a> · <a href="https://github.com/niansia">github.com/niansia</a><span class="stats" data-stats hidden> · <i class="live-dot"></i> <b data-stat="online">–</b> 人在線 · <b data-stat="total">–</b> 次造訪</span></footer>
+</body>
+</html>

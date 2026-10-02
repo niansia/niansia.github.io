@@ -3,6 +3,44 @@ window.NIANSIA_BLOG = {
  "posts": {
   "en": [
    {
+    "slug": "2026-10-01-siglip2",
+    "type": "paper",
+    "title": "SigLIP 2: why is a model trained to describe images so good at catching fakes?",
+    "description": "Swapping my backbone from CLIP to SigLIP 2 made the score on distorted images jump, more than any trick I had spent days tuning. After reading the paper I have two guesses, the self-supervised losses added late in training and the missing CLS token that made me use patch averages. A good backbone raises the starting point; good training pushes it further.",
+    "date": "2026-10-01",
+    "minutes": 5,
+    "tags": [
+     "AI-generated image detection",
+     "vision-language models",
+     "pretraining",
+     "robustness"
+    ],
+    "lang": "en",
+    "paper": "SigLIP 2: Multilingual Vision-Language Encoders with Improved Semantic Understanding, Localization, and Dense Features",
+    "venue": "arXiv 2025",
+    "depth": "deep",
+    "url": "/blog/en/2026-10-01-siglip2/"
+   },
+   {
+    "slug": "2026-10-01-ntire2026-report",
+    "type": "paper",
+    "title": "The NTIRE 2026 challenge report: did the winners win on models or on data?",
+    "description": "This report is the exam paper for my project. Reading it, I found that the top two teams had not only bigger models but far bigger and newer training data, including the commercial generators the official training set deliberately kept for testing. The leaderboard gap mixes model, data and compute, and comparisons have to pull them apart.",
+    "date": "2026-10-01",
+    "minutes": 7,
+    "tags": [
+     "AI-generated image detection",
+     "robustness",
+     "competitions",
+     "data"
+    ],
+    "lang": "en",
+    "paper": "NTIRE 2026 Challenge on Robust AI-Generated Image Detection in the Wild",
+    "venue": "CVPR 2026 NTIRE Workshop",
+    "depth": "deep",
+    "url": "/blog/en/2026-10-01-ntire2026-report/"
+   },
+   {
     "slug": "2026-09-30-rine",
     "type": "paper",
     "title": "RINE: do intermediate layers know “fake” better than the last one?",
@@ -169,6 +207,44 @@ window.NIANSIA_BLOG = {
   ],
   "zh-TW": [
    {
+    "slug": "2026-10-01-siglip2",
+    "type": "paper",
+    "title": "SigLIP 2：為什麼一個「看圖說話」的模型特別會抓假圖？",
+    "description": "把骨幹從 CLIP 換成 SigLIP 2，干擾圖的分數一下子跳了一大截，比我花好幾天調的任何技巧都有效。讀完論文，我有兩個猜測：一是它後段加入的自監督目標，二是它沒有 CLS token、我改用 patch 平均。好的骨幹提高起點，好的訓練方法把起點推得更遠。",
+    "date": "2026-10-01",
+    "minutes": 4,
+    "tags": [
+     "AI 生成圖偵測",
+     "視覺語言模型",
+     "預訓練",
+     "穩健性"
+    ],
+    "lang": "zh-TW",
+    "paper": "SigLIP 2: Multilingual Vision-Language Encoders with Improved Semantic Understanding, Localization, and Dense Features",
+    "venue": "arXiv 2025",
+    "depth": "deep",
+    "url": "/blog/zh-tw/2026-10-01-siglip2/"
+   },
+   {
+    "slug": "2026-10-01-ntire2026-report",
+    "type": "paper",
+    "title": "NTIRE 2026 比賽報告：冠軍贏在模型，還是贏在資料？",
+    "description": "這份報告是我專題的「考卷」。讀完才發現，前兩名除了模型大，訓練資料也大得多、新得多，甚至涵蓋了官方訓練集刻意留給測試集的商用生成器。排行榜的差距同時混了模型、資料和運算，比較時要拆開來看。",
+    "date": "2026-10-01",
+    "minutes": 5,
+    "tags": [
+     "AI 生成圖偵測",
+     "穩健性",
+     "比賽",
+     "資料"
+    ],
+    "lang": "zh-TW",
+    "paper": "NTIRE 2026 Challenge on Robust AI-Generated Image Detection in the Wild",
+    "venue": "CVPR 2026 NTIRE Workshop",
+    "depth": "deep",
+    "url": "/blog/zh-tw/2026-10-01-ntire2026-report/"
+   },
+   {
     "slug": "2026-09-30-rine",
     "type": "paper",
     "title": "RINE：中間層真的比最後一層更懂「假」嗎？",
@@ -334,6 +410,44 @@ window.NIANSIA_BLOG = {
    }
   ],
   "zh-CN": [
+   {
+    "slug": "2026-10-01-siglip2",
+    "type": "paper",
+    "title": "SigLIP 2：为什么一个「看图说话」的模型特别会抓假图？",
+    "description": "把骨干从 CLIP 换成 SigLIP 2，干扰图的分数一下子跳了一大截，比我花好几天调的任何技巧都有效。读完论文，我有两个猜测：一是它后段加入的自监督目标，二是它没有 CLS token、我改用 patch 平均。好的骨干提高起点，好的训练方法把起点推得更远。",
+    "date": "2026-10-01",
+    "minutes": 4,
+    "tags": [
+     "AI 生成图侦测",
+     "视觉语言模型",
+     "预训练",
+     "稳健性"
+    ],
+    "lang": "zh-CN",
+    "paper": "SigLIP 2: Multilingual Vision-Language Encoders with Improved Semantic Understanding, Localization, and Dense Features",
+    "venue": "arXiv 2025",
+    "depth": "deep",
+    "url": "/blog/zh-cn/2026-10-01-siglip2/"
+   },
+   {
+    "slug": "2026-10-01-ntire2026-report",
+    "type": "paper",
+    "title": "NTIRE 2026 比赛报告：冠军赢在模型，还是赢在数据？",
+    "description": "这份报告是我专题的「考卷」。读完才发现，前两名除了模型大，训练数据也大得多、新得多，甚至涵盖了官方训练集刻意留给测试集的商用生成器。排行榜的差距同时混了模型、数据和运算，比较时要拆开来看。",
+    "date": "2026-10-01",
+    "minutes": 5,
+    "tags": [
+     "AI 生成图侦测",
+     "稳健性",
+     "比赛",
+     "数据"
+    ],
+    "lang": "zh-CN",
+    "paper": "NTIRE 2026 Challenge on Robust AI-Generated Image Detection in the Wild",
+    "venue": "CVPR 2026 NTIRE Workshop",
+    "depth": "deep",
+    "url": "/blog/zh-cn/2026-10-01-ntire2026-report/"
+   },
    {
     "slug": "2026-09-30-rine",
     "type": "paper",

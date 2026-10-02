@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The NTIRE 2026 challenge report: did the winners win on models or on data? · Niansia</title>
+<meta name="description" content="This report is the exam paper for my project. Reading it, I found that the top two teams had not only bigger models but far bigger and newer training data, including the commercial generators the official training set deliberately kept for testing. The leaderboard gap mixes model, data and compute, and comparisons have to pull them apart.">
+<link rel="canonical" href="https://niansia.com/blog/en/2026-10-01-ntire2026-report/">
+<link rel="alternate" hreflang="en" href="https://niansia.com/blog/en/2026-10-01-ntire2026-report/"><link rel="alternate" hreflang="zh-Hant-TW" href="https://niansia.com/blog/zh-tw/2026-10-01-ntire2026-report/"><link rel="alternate" hreflang="zh-Hans-CN" href="https://niansia.com/blog/zh-cn/2026-10-01-ntire2026-report/"><link rel="alternate" hreflang="x-default" href="https://niansia.com/blog/en/2026-10-01-ntire2026-report/">
+<meta property="og:type" content="article"><meta property="og:site_name" content="Niansia">
+<meta property="og:title" content="The NTIRE 2026 challenge report: did the winners win on models or on data? · Niansia"><meta property="og:description" content="This report is the exam paper for my project. Reading it, I found that the top two teams had not only bigger models but far bigger and newer training data, including the commercial generators the official training set deliberately kept for testing. The leaderboard gap mixes model, data and compute, and comparisons have to pull them apart.">
+<meta property="og:url" content="https://niansia.com/blog/en/2026-10-01-ntire2026-report/"><meta property="og:image" content="https://niansia.com/assets/og/blog-2026-10-01-ntire2026-report-en.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta property="og:locale" content="en">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://niansia.com/assets/og/blog-2026-10-01-ntire2026-report-en.jpg">
+
+<meta name="theme-color" content="#fbf6ee" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#15142a" media="(prefers-color-scheme: dark)">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://*.firebasedatabase.app; connect-src 'self' https://*.firebasedatabase.app wss://*.firebasedatabase.app; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; frame-src https://*.firebasedatabase.app; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml">
+<script src="/assets/js/page-transition.js?v=3"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root{--bg:#fbf6ee;--paper:#fffdf9;--ink:#2a2230;--muted:#766b73;--line:#2a22301a;--accent:#c0673a;--accent2:#8f6bb3;--code:#f3ece2;}
+@media(prefers-color-scheme:dark){:root{--bg:#15142a;--paper:#1c1a36;--ink:#f1ebe2;--muted:#aaa3bd;--line:#ffffff1a;--accent:#f0a878;--accent2:#b69ae6;--code:#26234a;}}
+*{box-sizing:border-box;}html{-webkit-text-size-adjust:100%;}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.85 Inter,'Noto Sans TC','Noto Sans SC',system-ui,sans-serif;}
+a{color:var(--accent);text-underline-offset:3px;}
+.top{max-width:1080px;margin:0 auto;padding:18px 20px;display:flex;align-items:center;gap:10px;font:500 13px 'JetBrains Mono',monospace;color:var(--muted);}
+.top a{color:var(--muted);text-decoration:none;}.top a:hover{color:var(--accent);}
+.top b{color:var(--ink);font-weight:500;}.top .sp{flex:1;}
+.langs a{padding:4px 9px;border-radius:99px;border:1px solid var(--line);margin-left:4px;}.langs a[aria-current]{color:var(--ink);border-color:var(--accent);}
+main{max-width:760px;margin:0 auto;padding:10px 20px 70px;}
+.kicker{font:500 12px 'JetBrains Mono',monospace;color:var(--accent);letter-spacing:.06em;text-transform:uppercase;margin:24px 0 8px;}
+h1{font-size:clamp(28px,4.4vw,42px);line-height:1.2;letter-spacing:-.02em;margin:0 0 14px;}
+.lede{font-size:18px;color:var(--muted);margin:0 0 16px;line-height:1.7;}
+.meta{display:flex;flex-wrap:wrap;gap:8px 14px;font:500 12.5px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;color:var(--muted);padding-bottom:22px;border-bottom:1px solid var(--line);margin-bottom:10px;}
+.meta span.tag{padding:2px 9px;border-radius:99px;background:var(--code);}
+article h2{font-size:23px;margin:40px 0 10px;letter-spacing:-.01em;}
+article h3{font-size:18px;margin:28px 0 8px;}
+article p,article li{color:var(--ink);}
+article code{font:14px 'JetBrains Mono',monospace;background:var(--code);padding:1px 6px;border-radius:6px;}
+article table{width:100%;border-collapse:collapse;margin:18px 0;font-size:14.5px;display:block;overflow-x:auto;}
+article th,article td{padding:8px 12px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap;}
+article th{font-weight:600;color:var(--muted);font-size:13px;}
+article td:not(:first-child),article th:not(:first-child){text-align:right;}
+article td[style*="left"],article th[style*="left"]{white-space:normal;min-width:6.5em;}   /* text tables (|:---|) wrap instead of scrolling */
+article strong{color:var(--ink);}
+article blockquote{margin:18px 0;padding:4px 18px;border-left:3px solid var(--accent);color:var(--muted);}
+.card{display:block;padding:18px 20px;margin:12px 0;border-radius:16px;background:var(--paper);border:1px solid var(--line);text-decoration:none;color:var(--ink);transition:transform .25s,border-color .25s;}
+.card:hover{transform:translateY(-2px);border-color:var(--accent);}
+.card b{display:block;font-size:18px;line-height:1.4;margin-bottom:4px;}.card small{display:block;color:var(--muted);font-size:14px;line-height:1.6;}
+.card i{display:block;font:normal 500 12px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;color:var(--accent);margin-top:8px;}
+.hero{width:100%;height:auto;border-radius:16px;border:1px solid var(--line);display:block;margin:6px 0 18px;}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px;}.chips span{font:500 12px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;padding:4px 11px;border-radius:99px;background:var(--code);}
+.btns{display:flex;flex-wrap:wrap;gap:10px;margin:22px 0;}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:12px;border:1px solid var(--line);background:var(--paper);color:var(--ink);text-decoration:none;font-weight:600;font-size:14px;}
+.btn.primary{background:var(--accent);border-color:transparent;color:var(--paper);}
+.btn:hover{border-color:var(--accent);}
+.note{font-size:13.5px;color:var(--muted);}
+.live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#34c38f;box-shadow:0 0 0 3px #34c38f33;vertical-align:1px;}footer b{color:var(--ink);font-weight:600;}
+figure.fig{margin:24px 0;}figure.fig a{display:block;border-radius:14px;overflow:hidden;border:1px solid var(--line);cursor:zoom-in;background:var(--code);}
+figure.fig img{display:block;width:100%;height:auto;transition:transform .4s;}figure.fig a:hover img{transform:scale(1.015);}
+figure.fig figcaption{margin-top:8px;font-size:13.5px;color:var(--muted);line-height:1.6;}
+.lb{position:fixed;inset:0;z-index:50;display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px;background:#0d0b16ee;}
+.lb.on{display:flex;}.lb img{max-width:100%;max-height:84vh;border-radius:10px;box-shadow:0 30px 80px #000a;}
+.lb p{margin:0;color:#e9e4f2;font-size:14px;text-align:center;max-width:760px;}
+.lb-x{position:absolute;top:14px;right:18px;width:40px;height:40px;border-radius:50%;border:1px solid #ffffff44;background:transparent;color:#fff;font-size:24px;cursor:pointer;}
+.log-entry{position:relative;padding:0 0 34px 26px;border-left:2px solid var(--line);}
+.log-entry:before{content:'';position:absolute;left:-7px;top:8px;width:12px;height:12px;border-radius:50%;background:var(--bg);border:2px solid var(--accent);}
+.log-entry time{font:500 12.5px 'JetBrains Mono',monospace;color:var(--accent);}
+.log-entry h2{margin:4px 0 6px!important;font-size:21px!important;}
+.log-entry h2 a{color:var(--ink);text-decoration:none;}
+.statement-link{display:flex;justify-content:space-between;align-items:center;}
+.top a.me{display:inline-flex;align-items:center;gap:8px;padding:3px 12px 3px 3px;border:1px solid var(--line);border-radius:99px;transition:border-color .2s;}.top a.me:hover{border-color:var(--accent);}.top a.me img{width:24px;height:24px;border-radius:50%;display:block;}
+.author{max-width:720px;margin:44px auto 0;padding:18px 20px;display:flex;align-items:center;gap:16px;border-radius:18px;background:var(--code);border:1px solid var(--line);}
+.author{box-sizing:border-box;}.author>*{flex:none;}
+.author .an-face img{display:block;width:56px;height:56px;border-radius:50%;border:2px solid var(--accent);}
+.author .an-text{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px;}
+.author .an-text b{font-size:15px;}.author .an-text small{font-size:13px;line-height:1.6;color:var(--muted);}
+.author .an-note{color:var(--ink)!important;}
+.author .an-go{margin:0;white-space:nowrap;}
+@media (max-width:760px){.author{margin:40px 16px 0;}}@media (max-width:600px){.author{flex-wrap:wrap;padding:16px;}.author .an-text{flex-basis:calc(100% - 72px);}.author .an-go{flex:1 1 100%;justify-content:center;text-align:center;}}
+footer{max-width:760px;margin:0 auto;padding:26px 20px 50px;border-top:1px solid var(--line);font-size:14px;color:var(--muted);}
+
+.paper-box{margin:0 0 26px;padding:18px 20px;border-radius:16px;background:var(--paper);border:1px solid var(--line);border-left:4px solid var(--accent2);}
+.paper-box .pv{font:600 12px 'JetBrains Mono',monospace;color:var(--accent2);letter-spacing:.04em;margin:0 0 6px;}
+.paper-box b{display:block;font-size:17px;line-height:1.45;}
+.paper-box .pa{margin:6px 0 0;font-size:13.5px;color:var(--muted);line-height:1.6;}
+.paper-box .pl{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+.paper-box .pl a{font:600 12.5px 'JetBrains Mono',monospace;padding:5px 12px;border-radius:99px;border:1px solid var(--line);text-decoration:none;}
+.paper-box .pl a:hover{border-color:var(--accent);}
+.type{display:inline-block;padding:2px 9px;border-radius:99px;background:var(--accent);color:#fff;font:600 11.5px 'JetBrains Mono','Noto Sans TC','Noto Sans SC',monospace;}
+.type.paper{background:var(--accent2);}.type.qa{background:#3f9f86;}.type.post{background:var(--muted);}
+.card .type{margin-bottom:8px;}.card .zh{margin-left:8px;font:500 11.5px 'JetBrains Mono',monospace;color:var(--muted);}
+.now-card{border-left:4px solid var(--accent);}
+.qa{padding:20px 0;border-bottom:1px solid var(--line);}
+.qa .qq{display:flex;gap:12px;font-weight:700;font-size:17px;line-height:1.55;margin:0 0 8px;}
+.qa .qq span,.qa .qa-a>span{flex:none;display:grid;place-items:center;width:28px;height:28px;border-radius:9px;background:var(--code);color:var(--accent);font-size:13px;}
+.qa .qa-a{display:flex;gap:12px;}.qa .qa-a>span{background:var(--accent);color:#fff;}.qa .qa-a article>:first-child{margin-top:0;}
+.qa time{display:block;margin:6px 0 0 40px;font:500 12px 'JetBrains Mono',monospace;color:var(--muted);}
+.ask{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:18px 0 8px;padding:16px 18px;border-radius:16px;background:var(--code);}
+.ask b{display:block;font-size:15.5px;}.ask small{display:block;color:var(--muted);font-size:13px;}
+.ask .btn{flex:none;margin:0;}.ask .btn[aria-disabled]{opacity:.55;pointer-events:none;}
+</style>
+<link rel="alternate" type="application/rss+xml" title="Niansia · Blog" href="/blog/en/feed.xml"><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BlogPosting", "headline": "The NTIRE 2026 challenge report: did the winners win on models or on data?", "description": "This report is the exam paper for my project. Reading it, I found that the top two teams had not only bigger models but far bigger and newer training data, including the commercial generators the official training set deliberately kept for testing. The leaderboard gap mixes model, data and compute, and comparisons have to pull them apart.", "datePublished": "2026-10-01", "dateModified": "2026-10-01", "inLanguage": "en", "author": {"@type": "Person", "name": "Niansia", "url": "https://niansia.com/", "email": "mailto:niansia930202@gmail.com", "sameAs": ["https://github.com/niansia"]}, "mainEntityOfPage": "https://niansia.com/blog/en/2026-10-01-ntire2026-report/", "keywords": "AI-generated image detection, robustness, competitions, data", "citation": {"@type": "ScholarlyArticle", "name": "NTIRE 2026 Challenge on Robust AI-Generated Image Detection in the Wild", "url": "https://arxiv.org/abs/2604.11487"}}</script>
+<script defer src="/assets/js/site-stats.js?v=2"></script>
+<script defer src="/assets/js/lightbox.js"></script>
+
+</head>
+<body>
+<header class="top"><a class="me" href="/" title="Back to Niansia&#x27;s website" data-nz-title="Niansia"><img src="/assets/icons/author.webp" alt="" width="24" height="24"><b>~/niansia</b></a> / <a href="/blog/en/">blog</a><span class="sp"></span><span class="langs"><a href="/blog/en/2026-10-01-ntire2026-report/" aria-current="page" hreflang="en">EN</a><a href="/blog/zh-tw/2026-10-01-ntire2026-report/" hreflang="zh-Hant">繁</a><a href="/blog/zh-cn/2026-10-01-ntire2026-report/" hreflang="zh-Hans">简</a></span></header>
+<main><p class="kicker">Paper note</p><h1>The NTIRE 2026 challenge report: did the winners win on models or on data?</h1><p class="lede">This report is the exam paper for my project. Reading it, I found that the top two teams had not only bigger models but far bigger and newer training data, including the commercial generators the official training set deliberately kept for testing. The leaderboard gap mixes model, data and compute, and comparisons have to pull them apart.</p><div class="meta"><time datetime="2026-10-01">2026-10-01</time><span>7 min read</span><span class="tag">AI-generated image detection</span><span class="tag">robustness</span><span class="tag">competitions</span><span class="tag">data</span></div><aside class="paper-box"><p class="pv">CVPR 2026 NTIRE Workshop · Read closely</p><b lang="en">NTIRE 2026 Challenge on Robust AI-Generated Image Detection in the Wild</b><p class="pa" lang="en">Aleksandr Gushchin, Khaled Abud, Ekaterina Shumitskaya, et al. (54 authors)</p><div class="pl"><a href="https://arxiv.org/abs/2604.11487" target="_blank" rel="noopener noreferrer">Paper ↗</a></div></aside><article><h2>Why this paper</h2>
+<p>This is the exam paper for my whole project. For days I had used the leaderboard numbers as targets without reading closely how each team got there. After a recent backbone change my score jumped noticeably, and I started to wonder where the clear gap between the top two teams and everyone else comes from, and whether it is a gap I could close.</p>
+<h2>What the report says</h2>
+<p><strong>Data.</strong> 108,750 real photos and 185,750 generated images from 42 generators released between 2022 and 2026, open-source and commercial. Prompts for the generated images are rewritten from captions of matching real photos, and resolution, aspect ratio and JPEG quality are aligned with the real set, so detectors have to learn features that don't depend on content.</p>
+<p>One design choice I had missed: <strong>the official training set covers only 20 open-source generators</strong>. The strongest open models and all the commercial ones (Nano Banana, Grok Imagine and others) are kept for validation and test, with newer models making up a growing share in each later stage.</p>
+<p><strong>Distortions.</strong> In the robust track every image goes through 1 to 5 consecutive distortions, 36 types across the challenge, from Gaussian blur and white noise to invisible watermarks, neural compression and adversarial watermark removal. Each stage uses a different mix, and the mixes get harder.</p>
+<p><strong>Scale and ranking.</strong> 511 people registered and 20 teams submitted valid final solutions. The public and hidden test sets have about 2,500 images each, and the final rank uses the average robust AUC over the two. The report concludes that most solutions are expert ensembles of several Transformer models and that, although performance has improved a lot, <strong>the problem is not yet solved</strong>, with room left in design, training strategy and data curation.</p>
+<p>The top teams, as described in the report:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Rank</th>
+<th style="text-align: left;">Team</th>
+<th style="text-align: left;">Public test</th>
+<th style="text-align: left;">Final (avg)</th>
+<th style="text-align: left;">Backbone</th>
+<th style="text-align: left;">Training data</th>
+<th style="text-align: left;">Compute</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">MICV</td>
+<td style="text-align: left;">0.974</td>
+<td style="text-align: left;">0.972</td>
+<td style="text-align: left;">6 DINOv3 models in two groups, 512 px, full fine-tuning</td>
+<td style="text-align: left;">Millions of images: official + GenImage and other public sets + their own images from open and commercial generators</td>
+<td style="text-align: left;">32 A100s, 10 epochs in about 8 hours</td>
+</tr>
+<tr>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">Ant International</td>
+<td style="text-align: left;">0.973</td>
+<td style="text-align: left;">0.972</td>
+<td style="text-align: left;">Two DINOv3-7B experts, 14B parameters in total</td>
+<td style="text-align: left;">About 1M images: official + self-generated + two public sets</td>
+<td style="text-align: left;">B200s (count and time not given)</td>
+</tr>
+<tr>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">TeleAI-TeleGuard</td>
+<td style="text-align: left;">0.922</td>
+<td style="text-align: left;">0.925</td>
+<td style="text-align: left;">EVA-CLIP + LoRA</td>
+<td style="text-align: left;">Official + So-Fake and Chameleon</td>
+<td style="text-align: left;">8 A800s, 5 epochs</td>
+</tr>
+<tr>
+<td style="text-align: left;">5</td>
+<td style="text-align: left;">Vincentlc</td>
+<td style="text-align: left;">0.863</td>
+<td style="text-align: left;">0.873</td>
+<td style="text-align: left;">SigLIP2-giant, 384 px, linear head</td>
+<td style="text-align: left;">No external data mentioned</td>
+<td style="text-align: left;">Not given</td>
+</tr>
+</tbody>
+</table>
+<h2>The big takeaway: much of the gap is data</h2>
+<p>I had assumed the winners were strong because their models were big. Reading the report, the top two also had <strong>far bigger and newer training data</strong>: the winner used official APIs to generate images from commercial models such as Seedream, Kling, GPT-Image and Nano Banana Pro, and the runner-up trained on about a million images. I currently use only a small part of the official training data, all of it official, more than an order of magnitude less than the runner-up.</p>
+<p>The generator lists in the appendix made me even surer. The public test set includes Nano Banana Pro and Seedream 5 Lite, and the hidden test set includes Nano Banana 2 and GPT Image 1.5, all commercial models the official training set deliberately left out, and the winner's self-generated images come from exactly those families. External data was allowed, so this is entirely within the rules; but it means part of the leaderboard gap measures who has seen more kinds of generators, not only how capable the model is.</p>
+<p>That made me rethink my own research question. I want to know how close a small model can get to a large one, but the leaderboard gap mixes three things at once: <strong>model size, data volume and generator coverage, and compute</strong>. Comparing final scores alone cannot tell you where you lose. So I think comparisons should be split:</p>
+<ul>
+<li>Against teams that used no external data, such as Vincentlc in fifth place (the report mentions none). With a 1B-parameter SigLIP2-giant at 384 px, its conditions are the closest to mine.</li>
+<li>Against the top two, with their large external data, stating honestly that the conditions differ.</li>
+</ul>
+<h2>Compared with my experiments</h2>
+<p><strong>Where they agree:</strong></p>
+<ol>
+<li><strong>Adding distortions during training is key.</strong> Nearly every team has its own distortion pipeline. The runner-up uses four levels: clean, mild (1–3 distortions), moderate (3–6) and heavy (a fixed 6). Fifth place runs every training image through the official distortion function and calls it the main driver of their robust score. That matches my biggest finding: with the same features, just adding distortions I generate myself raises the score on distorted images by a large margin.</li>
+<li><strong>Squashing to a square is no worse than keeping the aspect ratio.</strong> Fifth place resizes straight to 384 regardless of aspect ratio ("squish"), arguing that random crops can cut away local forensic cues. I had tried an aspect-preserving version and it was no better. Reaching the same choice independently is reassuring.</li>
+<li><strong>Only different models complement each other.</strong> Most solutions are ensembles. Seventh place, Reagvis Labs, puts it clearly: image-text features (CLIP/SigLIP), residual forensic features (SRM) and masked-image-modelling features (EVA-02) fail on different images. I also found that SigLIP2 plus CLIP helps while two CLIP models together barely do. What matters is not the number of models but how differently they see.</li>
+<li><strong>Patch averages are steadier than the CLS token.</strong> Fifth place compared the CLS token, attention pooling and multi-layer concatenation, and found the average over all final-layer patch tokens the most stable. That echoes how I extract SigLIP2 features, and it is what I want to test on CLIP next (details in the <a href="/blog/en/2026-10-01-siglip2/">SigLIP 2 note</a>). They also say multi-layer concatenation didn't help, unlike what I saw on CLIP; that may depend on the backbone or setup and is worth checking.</li>
+</ol>
+<p><strong>What I have to admit:</strong> third place, TeleAI, uses pairwise training: each clean image and its distorted copy go into the same batch, and their predictions (KL) and features (MSE) are pulled together. That is very close to the "clean and distorted features should agree" idea in my LoRA training. My details differ (a stop-gradient cosine consistency, plus my own chain of distortions and neural compression), but the general direction is not mine, and my research notes should say so.</p>
+<p><strong>Where they differ:</strong> seventh place uses 8-view test-time augmentation (flips, multi-scale centre crops, corner crops, blur, JPEG), whereas the flips and multiple crops I tried had no effect at all. My guess is that their ensemble includes a forensic CNN that looks directly at raw pixel residuals, which is sensitive to crop position, while my model relies almost entirely on the whole resized image, so moving the crop changes nothing.</p>
+<h2>My view</h2>
+<p>The most valuable line in the report, to me, is the organisers saying the problem is not yet solved. The top two used enormous resources and still make mistakes on the hardest distortion mixes. For me, rather than trying to "beat" 32 A100s with a laptop, the more meaningful question is: <strong>what is the most efficient approach at each level of resources?</strong></p>
+<p>The report happens to give two numbers to compare: the runner-up's full inference processes about 2.2 images per second on one A100 using 78 GB of memory, while seventh place loads its six models one at a time and peaks below 4 GB. The scores differ by a margin; the memory differs by roughly twenty times. How far can you get with official data only and under a billion parameters, and how much score does each doubling of data buy? That cost-versus-score curve may be worth more as research than any single rank.</p>
+<p>I don't want to give up on catching the front of the pack, of course. But after reading this I know the biggest lever next is probably not a bigger model; it is <strong>data</strong>.</p>
+<h2>What I want to do next</h2>
+<ol>
+<li><strong>Use all the official data first</strong>: download more official training shards and measure how the score changes each time the data doubles.</li>
+<li><strong>Decide on external data</strong>: the challenge allows it, but I need to think through licensing, and it would muddy the small-versus-large comparison. I lean towards official-data-only as the main result and external data as a supplementary experiment.</li>
+<li><strong>Graded distortions</strong>: following the runner-up's four levels, turn my current random chain of 1–5 distortions into a curriculum with light and heavy stages, to see whether it shores up the hardest mixes.</li>
+<li><strong>Add a "related approaches" section to my research notes</strong>: say clearly which ideas I share with challenge teams (pairwise training, squish, distortion pipelines) and which are my own findings (the trade-off of multi-depth features under distortion, why test-time augmentation does nothing, why only cross-backbone ensembles complement).</li>
+</ol>
+<hr>
+<p>The report's numbers were checked against the arXiv v1 PDF; final ranks use the average robust AUC over the public and hidden test sets. My own experiments are still in progress, so this note gives only rough trends; full numbers and settings will be published once they are written up.</p></article><div class="ask"><div><b>Questions &amp; answers</b><small>Questions sent anonymously, answered here.</small></div><a class="btn primary" href="https://forms.gle/yNUw4eLZeeqf3Arb6" target="_blank" rel="noopener noreferrer">Ask anonymously ↗</a></div><h2 style="margin-top:48px">More posts</h2><a class="card" href="/blog/en/2026-10-01-siglip2/"><span class="type paper">Paper note</span><b>SigLIP 2: why is a model trained to describe images so good at catching fakes?</b><small>Swapping my backbone from CLIP to SigLIP 2 made the score on distorted images jump, more than any trick I had spent days tuning. After reading the paper I have two guesses, the self-supervised losses added late in training and the missing CLS token that made me use patch averages. A good backbone raises the starting point; good training pushes it further.</small></a><a class="card" href="/blog/en/2026-09-30-rine/"><span class="type paper">Paper note</span><b>RINE: do intermediate layers know “fake” better than the last one?</b><small>RINE detects generated images from CLIP&#x27;s intermediate layers, and my own experiments largely agree. Under real-world corruptions, though, the most useful layers change, and the breadth of augmentation matters more than which layer the features come from.</small></a><a class="card" href="/blog/en/2026-09-29-now/"><span class="type now">Now</span><b>September 2026: new projects and an exam gallery, CVPR prep begins</b><small>This month Taiwan Exam, its exam gallery, the in-browser LumiGrid and Adversarial Lab went live, and the site moved to niansia.com. Next up is the CVPR 2027 submission in mid-November.</small></a><div class="btns"><a class="btn" href="/blog/en/">All posts</a><a class="btn primary" href="/#blog">Back to the portfolio</a></div></main>
+<aside class="author" aria-label="Made by Niansia"><a class="an-face" href="/" tabindex="-1" aria-hidden="true" data-nz-title="Niansia"><img src="/assets/icons/author.webp" alt="" width="56" height="56" loading="lazy"></a><div class="an-text"><b>Made by Niansia</b><small>M.S. student in computer science at NYCU, working on AI security, computer vision and vision-language models.</small></div><a class="btn primary an-go" href="/" data-nz-title="Niansia">Visit niansia.com →</a></aside>
+<footer>Questions or ideas? Email <a href="mailto:niansia930202@gmail.com">niansia930202@gmail.com</a> · <a href="/">niansia.com</a> · <a href="https://github.com/niansia">github.com/niansia</a><span class="stats" data-stats hidden> · <i class="live-dot"></i> <b data-stat="online">–</b> online · <b data-stat="total">–</b> visits</span></footer>
+</body>
+</html>
