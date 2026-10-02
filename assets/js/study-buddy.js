@@ -10,6 +10,9 @@
    The panel can swap Yuki for an exam proctor (an original character, assets/study/proctor/*.webp, cut from a sheet by
    tools/build_proctor_assets.py): same timers and rules, stricter lines in the voice of a cram-school teacher. With him,
    leaving the page during a focus round is called out too (no strike outside an exam), and he talks now and then.
+   Coming back from another tab (an exam strike, or a trip away from a running focus round) plays the jeep: an army jeep
+   drives in from the right, the companion is lifted into its back seat, "you cheated, the jeep is waiting outside", and
+   it drives off to the left; the companion is back in the corner afterwards and the usual dialog follows.
    Timers run on end times, so a throttled background tab or a reload does not lose them; nothing leaves the browser.
    Needs assets/js/yuki-cat.js and the cat sheet; without them the companion stays hidden. */
 (() => {
@@ -45,7 +48,9 @@
     remind: m => `剩下 ${m} 分鐘，記得檢查答案卡～`, lockTab: '考試中不能切換',
     say: {hello: ['我陪你讀書～', '寫一份模擬考吧，我在旁邊', '累了就摸摸我'], focus: ['專心，我不吵你', '一起加油', '我在這裡陪你'],
       rest: ['辛苦了！休息一下，喝口水', '完成一輪了，伸個懶腰吧', '做得好～休息時間'], back: ['休息結束，回來繼續吧', '再一輪就好！'],
-      pat: ['呼嚕呼嚕……♡', '讀書辛苦了', '喵～'], proctor: ['開始作答！我會安靜監考～', '專心寫，我在旁邊看著喔', '加油！不會的先跳過'], patExam: ['噓～考試中', '專心寫題目！', '（安靜地看著你）']}
+      pat: ['呼嚕呼嚕……♡', '讀書辛苦了', '喵～'], proctor: ['開始作答！我會安靜監考～', '專心寫，我在旁邊看著喔', '加油！不會的先跳過'], patExam: ['噓～考試中', '專心寫題目！', '（安靜地看著你）'],
+      jeep: ['嚇死我了……專心讀書啦', '差點被載走！不要再切出去了喔']},
+    jeepSay: {exam: '你作弊！吉普車在外面等你。', focus: '切出去偷懶？吉普車在外面等你。'}
   } : {
     name: '陪读 Yuki', open: '打开陪读面板', close: '收起', hide: '让 Yuki 先离开', show: '叫 Yuki 回来陪读',
     exam: {gsat: '116 学测', ast: '116 分科测验'}, short: {gsat: '学测', ast: '分科'}, left: n => `还有 ${n} 天`, today: '就是今天，加油！', week: ['日', '一', '二', '三', '四', '五', '六'],
@@ -67,7 +72,9 @@
     remind: m => `剩下 ${m} 分钟，记得检查答题卡～`, lockTab: '考试中不能切换',
     say: {hello: ['我陪你读书～', '写一份模拟考吧，我在旁边', '累了就摸摸我'], focus: ['专心，我不吵你', '一起加油', '我在这里陪你'],
       rest: ['辛苦了！休息一下，喝口水', '完成一轮了，伸个懒腰吧', '做得好～休息时间'], back: ['休息结束，回来继续吧', '再一轮就好！'],
-      pat: ['呼噜呼噜……♡', '读书辛苦了', '喵～'], proctor: ['开始作答！我会安静监考～', '专心写，我在旁边看着哦', '加油！不会的先跳过'], patExam: ['嘘～考试中', '专心写题目！', '（安静地看着你）']}
+      pat: ['呼噜呼噜……♡', '读书辛苦了', '喵～'], proctor: ['开始作答！我会安静监考～', '专心写，我在旁边看着哦', '加油！不会的先跳过'], patExam: ['嘘～考试中', '专心写题目！', '（安静地看着你）'],
+      jeep: ['吓死我了……专心读书啦', '差点被载走！不要再切出去了哦']},
+    jeepSay: {exam: '你作弊！吉普车在外面等你。', focus: '切出去偷懒？吉普车在外面等你。'}
   };
   // The proctor's lines: the same moments as Yuki's, plus `leave` (back from another tab during a focus round) and `idle`.
   const P = tw ? {"name": "監考老師", "hide": "讓監考老師先離開", "show": "請監考老師回來", "who": "陪讀", "whoYuki": "Yuki", "whoProf": "監考老師", "warnTitle": "這樣切出去，會當兵的啦！", "warnBody": "考試中不能切換視窗！不想計時就按「結束考試」；再切一次，本次考試作廢。", "voidTitle": "本次考試作廢", "voidBody": "切出去兩次，作廢。高高興興去考試，快快樂樂去當兵——下次不要再切出去了。", "upTitle": "時間到，筆放下！收卷！", "say": {"hello": ["監考老師到。手機蓋起來，眼睛看題目。", "準備好就開始，我幫你看時間。", "該記的一個都不能少，少一個就全部都不要記了。"], "focus": ["計時開始。不怕是一種幸福，題目來就寫。", "開始！早讀晚讀還是要讀，現在讀最划算。", "開始。逃得了和尚逃不了廟，該背的遲早要背。"], "rest": ["收卷！休息一下。喝水可以，滑手機不行。", "一輪結束。起來走走，看看遠方。", "筆放下，休息時間。考上好學校，回來請老師喝一瓶好茶。"], "back": ["休息時間到，回座位！", "回座位。這一輪考的是你自己，不是隔壁。"], "pat": ["摸我也沒用，題目還是要寫。", "有問題舉手，沒問題寫題目。", "老師也是人，難免少一個負號；你算完記得驗算。"], "proctor": ["開始作答。我在後面看著。", "開始！不會的先跳過，那種題目是給電腦做的，人不要硬解。", "開始作答，答案卡記得畫。"], "patExam": ["考試中不要回頭！", "看題目，不要看我。", "專心寫，我都看得到。"], "leave": ["這樣切出去，會當兵的啦！", "切出去滑一下？滑著滑著就滑去成功嶺了。", "剛剛那幾分鐘，國安局都看到了。小心被抓去當兵。", "一心多用？你以為你幾位元？1 位元都不到。專心。", "逃得了和尚逃不了廟，該讀的遲早要讀。回來！"], "idle": ["這題是民國 84 年的考古題，當年這樣做的人，現在應該升上校了。", "肚子餓了才種稻子？等稻子熟了早就餓死了。現在不讀，考前來不及。", "不會的題目別硬微，微完變更大坨，火更大。先跳過。", "會的題目拿到分叫實力展現；不會的硬做，叫展個鬼。", "「恰有一解」的恰，不是很兇的意思。題目看清楚。", "題庫沒人在問為什麼的，先寫，寫多了就懂了。", "唸不完怎麼辦？賭不會考？別賭了，繼續讀。", "你家前後左右都賣豆漿，你家的極限就是豆漿。身邊都在讀書，你的極限就是上榜。", "隔壁著火你家跟著燒，叫連續燒；你一輪接一輪讀，叫連續讀。", "愛吃海產的去中山，愛吃肉包的去中正，愛喝牛奶的去中興。先過一階再挑。", "五位數乘五位數心算比計算機快的，站出來讓大家崇拜一下。沒有就乖乖算。", "讀書不能ㄨㄚˊㄨㄚˊ，ㄨㄚˊ 完還是要讀。", "這會驚動國安局的。好好讀，不要被抓去當兵。", "螞蟻呼吸的聲音都聽得到？那你半夜會聽到行軍的聲音，扣、扣、扣……", "高高興興去考試，快快樂樂去當兵——你不會，你現在有在讀。", "房子不會有 i 坪。算出奇怪的東西，趕快回頭檢查。", "人都會犯錯，對牆壁吐舌頭一千次也會咬到一次。錯了改掉就好。"]}} : {"name": "监考老师", "hide": "让监考老师先离开", "show": "请监考老师回来", "who": "陪读", "whoYuki": "Yuki", "whoProf": "监考老师", "warnTitle": "这样切出去，会当兵的啦！", "warnBody": "考试中不能切换窗口！不想计时就按“结束考试”；再切一次，本次考试作废。", "voidTitle": "本次考试作废", "voidBody": "切出去两次，作废。高高兴兴去考试，快快乐乐去当兵——下次不要再切出去了。", "upTitle": "时间到，笔放下！收卷！", "say": {"hello": ["监考老师到。手机盖起来，眼睛看题目。", "准备好就开始，我帮你看时间。", "该记的一个都不能少，少一个就全部都不要记了。"], "focus": ["计时开始。不怕是一种幸福，题目来就写。", "开始！早读晚读还是要读，现在读最划算。", "开始。逃得了和尚逃不了庙，该背的迟早要背。"], "rest": ["收卷！休息一下。喝水可以，刷手机不行。", "一轮结束。起来走走，看看远方。", "笔放下，休息时间。考上好学校，回来请老师喝一瓶好茶。"], "back": ["休息时间到，回座位！", "回座位。这一轮考的是你自己，不是隔壁。"], "pat": ["摸我也没用，题目还是要写。", "有问题举手，没问题写题目。", "老师也是人，难免少一个负号；你算完记得验算。"], "proctor": ["开始作答。我在后面看着。", "开始！不会的先跳过，那种题目是给电脑做的，人不要硬解。", "开始作答，答题卡记得画。"], "patExam": ["考试中不要回头！", "看题目，不要看我。", "专心写，我都看得到。"], "leave": ["这样切出去，会当兵的啦！", "切出去刷一下？刷着刷着就刷去成功岭了。", "刚刚那几分钟，国安局都看到了。小心被抓去当兵。", "一心多用？你以为你几比特？1 比特都不到。专心。", "逃得了和尚逃不了庙，该读的迟早要读。回来！"], "idle": ["这题是民国 84 年的考古题，当年这样做的人，现在应该升上校了。", "肚子饿了才种稻子？等稻子熟了早就饿死了。现在不读，考前来不及。", "不会的题目别硬微，微完变更大坨，火更大。先跳过。", "会的题目拿到分叫实力展现；不会的硬做，叫展个鬼。", "“恰有一解”的恰，不是很凶的意思。题目看清楚。", "题库没人在问为什么的，先写，写多了就懂了。", "念不完怎么办？赌不会考？别赌了，继续读。", "你家前后左右都卖豆浆，你家的极限就是豆浆。身边都在读书，你的极限就是上榜。", "隔壁着火你家跟着烧，叫连续烧；你一轮接一轮读，叫连续读。", "爱吃海产的去中山，爱吃肉包的去中正，爱喝牛奶的去中兴。先过一阶再挑。", "五位数乘五位数心算比计算机快的，站出来让大家崇拜一下。没有就乖乖算。", "读书不能ㄨㄚˊㄨㄚˊ，ㄨㄚˊ 完还是要读。", "这会惊动国安局的。好好读，不要被抓去当兵。", "蚂蚁呼吸的声音都听得到？那你半夜会听到行军的声音，扣、扣、扣……", "高高兴兴去考试，快快乐乐去当兵——你不会，你现在有在读。", "房子不会有 i 坪。算出奇怪的东西，赶快回头检查。", "人都会犯错，对墙壁吐舌头一千次也会咬到一次。错了改掉就好。"]}};
@@ -299,9 +306,90 @@
   function back() {
     if (!awayNow && !pending) return;
     awayNow = false;
-    if (pending === 'warn') { dialog(card(tx('warnTitle'), tx('warnBody')), [['ok', T.warnOk, true]]); paintDialogCat('swipe'); pose('swipe', 'sit', 1500); }
-    if (pending === 'void') { X = null; saveX(); dialog(card(tx('voidTitle'), tx('voidBody')), [['ok', T.ok, true]]); paintDialogCat('crouch'); pose('crouch', 'sit', 2600); }
-    pending = ''; paint();
+    const was = pending; pending = '';
+    if (was === 'void') { X = null; saveX(); }
+    paint();
+    if (!was) return;
+    jeep(T.jeepSay.exam, () => {
+      if (was === 'warn') { dialog(card(tx('warnTitle'), tx('warnBody')), [['ok', T.warnOk, true]]); paintDialogCat('swipe'); pose('swipe', 'sit', 1500); }
+      if (was === 'void') { dialog(card(tx('voidTitle'), tx('voidBody')), [['ok', T.ok, true]]); paintDialogCat('crouch'); pose('crouch', 'sit', 2600); }
+    });
+  }
+
+  /* ---------- the jeep ---------- */
+  // An army jeep facing left, in two layers so the passenger sits between them: the back (spare tyre, seats, driver in a
+  // white helmet, windscreen) and the front (body, wheels). Drawn in the proctor's palette and outline colour.
+  const JEEP_BACK = `<svg class="sb-jeep-back" viewBox="0 0 240 132" aria-hidden="true"><g stroke="#3a3a40" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">
+    <circle cx="225" cy="72" r="15" fill="#4a4a50"/><circle cx="225" cy="72" r="6" fill="#b4aac7"/>
+    <rect x="150" y="38" width="54" height="26" rx="6" fill="#5e6640"/><rect x="134" y="40" width="12" height="24" rx="4" fill="#5e6640"/>
+    <rect x="112" y="48" width="28" height="16" rx="6" fill="#5e6640"/><circle cx="126" cy="38" r="10" fill="#f2d3ba"/>
+    <path d="M114 37a12 12 0 0 1 24 0z" fill="#fff"/><path d="M112 37h28" fill="none"/><rect x="118" y="38" width="15" height="5" rx="2" fill="#3a3a40" stroke-width="1"/>
+    <path d="M110 52l-6 6" fill="none"/><path d="M96 60l10-38h6l-10 38z" fill="#dfe8ee" fill-opacity=".7"/></g></svg>`;
+  const JEEP_FRONT = `<svg class="sb-jeep-front" viewBox="0 0 240 132" aria-hidden="true"><g stroke="#3a3a40" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M12 74q0-12 12-12h74l8-4h104q10 0 10 10v32q0 8-8 8H20q-8 0-8-8z" fill="#7a8450"/>
+    <rect x="106" y="66" width="44" height="32" rx="4" fill="none" stroke="#5e6640" stroke-width="2"/><path d="M140 76h6" fill="none" stroke-width="2.5"/>
+    <path d="M18 80h72" fill="none" stroke="#5e6640" stroke-width="2"/>
+    <circle cx="17" cy="72" r="6" fill="#fff1cf"/><rect x="2" y="94" width="24" height="8" rx="3" fill="#4a4a50"/>
+    <g transform="translate(60 106)"><g class="sb-wheel"><circle r="20" fill="#3a3a40"/><circle r="8" fill="#b4aac7"/><path d="M-14 0H14M0-14V14" stroke="#b4aac7" stroke-width="2.5"/></g></g>
+    <g transform="translate(184 106)"><g class="sb-wheel"><circle r="20" fill="#3a3a40"/><circle r="8" fill="#b4aac7"/><path d="M-14 0H14M0-14V14" stroke="#b4aac7" stroke-width="2.5"/></g></g></g></svg>`;
+  let jeepOn = false;
+  function honk() {
+    if (!S.sound) return;
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      [0, .22].forEach(t => {
+        const o = ctx.createOscillator(), g = ctx.createGain(), at = ctx.currentTime + t;
+        o.type = 'square'; o.frequency.value = 392;
+        g.gain.setValueAtTime(0, at); g.gain.linearRampToValueAtTime(.05, at + .01); g.gain.setValueAtTime(.05, at + .13); g.gain.linearRampToValueAtTime(0, at + .16);
+        o.connect(g).connect(ctx.destination); o.start(at); o.stop(at + .18);
+      });
+      setTimeout(() => ctx.close(), 900);
+    } catch {}
+  }
+  // the companion as a passenger: Yuki crouching, the proctor shouting
+  function rider(box) {
+    if (isProf()) { box.innerHTML = `<img src="${profSrc('shout')}" alt="">`; return; }
+    box.innerHTML = '<span class="yuki-cat"></span>'; Cat.paint(box.firstChild, 'crouch');
+  }
+  function jeep(text, done) {
+    const pet = $('.sb-cat');
+    if (reduced || jeepOn || root.classList.contains('is-away') || !pet.animate) { done(); return; }
+    jeepOn = true;
+    const W = innerWidth, w = Math.min(400, W * .8), h = w * 132 / 240;
+    const layer = document.createElement('div');
+    layer.className = 'sb-jeep-layer is-moving';
+    layer.innerHTML = `<div class="sb-jeep" style="width:${w}px;height:${h}px"><div class="sb-jeep-car">${JEEP_BACK}<span class="sb-jeep-seat"></span>${JEEP_FRONT}</div>
+      <i class="sb-puff"></i><i class="sb-puff"></i><i class="sb-puff"></i><p class="sb-jeep-say" hidden></p></div>`;
+    root.append(layer);
+    const car = layer.querySelector('.sb-jeep'), seat = layer.querySelector('.sb-jeep-seat'), bubble = layer.querySelector('.sb-jeep-say');
+    // the passenger's box: the companion's own proportions, sitting in the back seat with the lower part behind the body
+    const ph = isProf() ? h * .7 : h * .56, pw = isProf() ? ph * 96 / 140 : ph * pet.offsetWidth / pet.offsetHeight;
+    Object.assign(seat.style, {width: `${pw}px`, height: `${ph}px`, left: `${w * 177 / 240 - pw / 2}px`, top: `${h * 68 / 132 - ph}px`, opacity: 0});
+    rider(seat);
+    bubble.textContent = text;
+    const at = x => `translate(${x}px, -50%)`;
+    const finish = () => { layer.remove(); root.classList.remove('is-taken'); jeepOn = false; hop(); done(); };
+    honk();
+    car.animate([{transform: at(W + 30)}, {transform: at((W - w) / 2)}], {duration: 1400, easing: 'cubic-bezier(.15,.7,.3,1)', fill: 'forwards'}).finished
+      .then(() => {
+        layer.classList.remove('is-moving');
+        const from = pet.getBoundingClientRect(), to = seat.getBoundingClientRect();
+        const fly = document.createElement('span');
+        fly.className = 'sb-jeep-fly'; rider(fly);
+        Object.assign(fly.style, {left: `${from.left}px`, top: `${from.top}px`, width: `${from.width}px`, height: `${from.height}px`});
+        layer.append(fly); root.classList.add('is-taken');
+        const dx = to.left + to.width / 2 - (from.left + from.width / 2), dy = to.bottom - from.bottom, k = to.height / from.height;
+        return fly.animate([{transform: 'translate(0, 0) scale(1)'},
+          {transform: `translate(${dx * .5}px, ${dy * .5 - 90}px) scale(${(1 + k) / 2}) rotate(-14deg)`},
+          {transform: `translate(${dx}px, ${dy}px) scale(${k})`}], {duration: 750, easing: 'ease-in-out', fill: 'forwards'}).finished
+          .then(() => { fly.remove(); seat.style.opacity = 1; });
+      })
+      .then(() => { bubble.hidden = false; return new Promise(r => setTimeout(r, 2000)); })
+      .then(() => {
+        bubble.hidden = true; layer.classList.add('is-moving'); honk();
+        return car.animate([{transform: at((W - w) / 2)}, {transform: at(-w - 60)}], {duration: 1300, easing: 'cubic-bezier(.6,0,.85,.4)', fill: 'forwards'}).finished;
+      })
+      .then(finish, finish);
   }
   /* Focus lost while the page stays visible (a system notification, another window or app): a banner says so and counts
      down GRACE seconds. Clicking back into the page cancels it; when it runs out, that trip becomes a strike and the
@@ -337,10 +425,13 @@
     if (document.hidden && counting) { clearTimeout(countdown); counting = false; closeDialog(); restPose(); }   // left during the countdown: it simply does not start
     if (document.hidden) { stopGrace(); strike(); hiddenAt = Date.now(); }   // another tab counts at once, without the grace
     else {
-      // the proctor notices a trip away from a focus round too (only a telling-off: no strikes outside an exam)
-      if (isProf() && !examOn() && running() && S.phase === 'focus' && hiddenAt && Date.now() - hiddenAt > 2000 && !store.get('hidden', false)) {
+      // a trip away from a running focus round brings the jeep too (only a telling-off: no strikes outside an exam)
+      if (!examOn() && running() && S.phase === 'focus' && hiddenAt && Date.now() - hiddenAt > 2000 && !store.get('hidden', false)) {
         const away = Math.round((Date.now() - hiddenAt) / 1000);
-        pose('swipe', 'curl', 2600); say(`${pick(P.say.leave)}${tw ? `（離開 ${away} 秒）` : `（离开 ${away} 秒）`}`, 6500);
+        jeep(T.jeepSay.focus, () => {
+          pose('swipe', 'curl', 2600);
+          say(isProf() ? `${pick(P.say.leave)}${tw ? `（離開 ${away} 秒）` : `（离开 ${away} 秒）`}` : pick(T.say.jeep), 6500);
+        });
       }
       hiddenAt = 0; back();
     }
@@ -510,6 +601,27 @@
 @keyframes sb-shake{0%,100%{transform:translateX(0) rotate(0);}20%{transform:translateX(-6px) rotate(-4deg);}40%{transform:translateX(6px) rotate(4deg);}60%{transform:translateX(-4px) rotate(-2deg);}80%{transform:translateX(3px) rotate(1deg);}}
 @keyframes sb-ring{0%,100%{transform:rotate(0);}25%{transform:rotate(-3deg);}75%{transform:rotate(3deg);}}
 @media(max-width:600px){.sb{right:10px;bottom:10px;}.sb-cat{width:calc(var(--sbw) * .75);height:calc(var(--sbh) * .75);}.sb.is-prof .sb-cat{width:72px;height:105px;}}
+.sb.is-taken .sb-cat,.sb.is-taken .sb-bubble{visibility:hidden;}
+.sb-jeep-layer{position:fixed;inset:0;z-index:58;pointer-events:none;overflow:hidden;}
+.sb-jeep{position:absolute;left:0;top:50%;transform:translate(120vw,-50%);}
+.sb-jeep-car,.sb-jeep-car svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;}
+.sb-jeep-layer.is-moving .sb-jeep-car{animation:sb-bump .2s ease-in-out infinite alternate;}
+.sb-wheel{transform-box:fill-box;transform-origin:center;}
+.sb-jeep-layer.is-moving .sb-wheel{animation:sb-spin .32s linear infinite;}
+.sb-jeep-seat{position:absolute;display:block;transition:opacity .15s;}
+.sb-jeep-seat .yuki-cat,.sb-jeep-fly .yuki-cat{display:block;}
+.sb-jeep-seat img,.sb-jeep-fly img{display:block;width:100%;height:100%;object-fit:contain;object-position:50% 100%;}
+.sb-jeep-fly{position:fixed;display:block;transform-origin:50% 100%;}
+.sb-puff{position:absolute;right:-4%;bottom:14%;width:16px;height:16px;border-radius:50%;background:#d8d3c8;opacity:0;}
+.sb-jeep-layer.is-moving .sb-puff{animation:sb-puff .8s ease-out infinite;}
+.sb-puff:nth-of-type(2){animation-delay:.27s!important;}.sb-puff:nth-of-type(3){animation-delay:.54s!important;}
+.sb-jeep-say{position:absolute;left:50%;bottom:calc(100% + 16px);transform:translateX(-50%);margin:0;padding:12px 20px;border-radius:18px;border:3px solid #c2410c;background:var(--paper,#fffdf9);color:#c2410c;font-weight:800;font-size:21px;line-height:1.4;white-space:nowrap;box-shadow:0 14px 34px -16px #2a2230aa;animation:sb-say .5s ease-out both;}
+.sb-jeep-say::after{content:'';position:absolute;left:50%;top:100%;margin-left:-9px;border:9px solid transparent;border-top-color:#c2410c;}
+@keyframes sb-say{0%{transform:translateX(-50%) scale(.4);opacity:0;}35%{transform:translateX(-50%) scale(1.1);opacity:1;}100%{transform:translateX(-50%) scale(1);}}
+@keyframes sb-bump{from{transform:translateY(0);}to{transform:translateY(-2px);}}
+@keyframes sb-spin{to{transform:rotate(-360deg);}}
+@keyframes sb-puff{0%{transform:translate(0,0) scale(.4);opacity:.85;}100%{transform:translate(34px,-16px) scale(1.7);opacity:0;}}
+@media(max-width:600px){.sb-jeep-say{font-size:17px;white-space:normal;width:max-content;max-width:calc(100vw - 40px);}}
 @media(prefers-reduced-motion:reduce){.sb-cat,.sb-cat *,.sb-dlg-prof{animation:none!important;}}`;
 
   Cat.load().then(L => {
