@@ -244,7 +244,7 @@ def shell(*, loc: str, title: str, desc: str, url: str, og: str, alternates: dic
 {FONTS_BY_LOC[loc]}
 <style>{CSS}{extra_css}</style>
 {head_extra}{ld}
-<script defer src="/assets/js/site-stats.js?v=2"></script>
+<script defer src="/assets/js/site-stats.js?v=3"></script>
 <script defer src="/assets/js/lightbox.js"></script>
 {"".join(f'<script defer src="{x}"></script>' for x in scripts)}
 </head>

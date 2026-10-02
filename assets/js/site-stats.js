@@ -1,6 +1,8 @@
 /* Visitor counters on Firebase Realtime Database: total visits, visits today (Asia/Taipei) and readers online now.
    Counts only — no cookies, no personal data. Elements opt in with [data-stat="total|today|online"]; containers with
-   [data-stats] stay hidden until the first numbers arrive. `?stats=demo` shows fake numbers for layout checks. */
+   [data-stats] stay hidden until the first numbers arrive. `?stats=demo` shows fake numbers for layout checks.
+   The visit whose own +1 makes the total a multiple of 100 gets a one-time celebration (celebrate.js, loaded only then);
+   `?stats=party` previews it. */
 (() => {
   // Only the Realtime Database is used, which needs no API key; what may be read or written is enforced by the database rules.
   const CONFIG = {databaseURL: 'https://niansia-site-default-rtdb.asia-southeast1.firebasedatabase.app', projectId: 'niansia-site'};
@@ -26,8 +28,20 @@
   new MutationObserver(schedule).observe(document.documentElement, {childList: true, subtree: true});
   const update = patch => { Object.assign(S, patch, {ready: true}); schedule(); dispatchEvent(new CustomEvent('niansia:stats', {detail: S})); };
 
-  if (new URLSearchParams(location.search).get('stats') === 'demo') { update({total: 12873, today: 214, online: 3}); return; }
+  const party = (n, preview = false) => {
+    if (window.NIANSIA_PARTY) { window.NIANSIA_PARTY(n, preview); return; }
+    const s = document.createElement('script');
+    s.src = '/assets/js/celebrate.js?v=1'; s.async = true;
+    s.onload = () => window.NIANSIA_PARTY?.(n, preview);
+    document.head.append(s);
+  };
+  const mode = new URLSearchParams(location.search).get('stats');
+  if (mode === 'demo') { update({total: 12873, today: 214, online: 3}); return; }
+  if (mode === 'party') { update({total: 300, today: 37, online: 2}); party(300, true); return; }
   if (!CONFIG || navigator.webdriver) return;   // automated browsers (tests, crawlers) are not counted
+  // A milestone this tab won but has not shown yet (the visitor left the first page before it played) shows here instead.
+  let pending = ''; try { pending = sessionStorage.getItem('niansia-party') || ''; } catch {}
+  if (/^\d+$/.test(pending)) party(Number(pending));
 
   const dayKey = () => new Date(Date.now() + 8 * 3600e3).toISOString().slice(0, 10).replace(/-/g, '');
   const rid = () => Array.from(crypto.getRandomValues(new Uint8Array(12)), b => 'abcdefghijklmnopqrstuvwxyz0123456789'[b % 36]).join('');
@@ -38,7 +52,15 @@
     const day = dayKey();
     // one visit per browser session
     let counted = false; try { counted = sessionStorage.getItem('niansia-visit') === '1'; sessionStorage.setItem('niansia-visit', '1'); } catch {}
-    if (!counted) { runTransaction(ref(base, 'stats/total'), v => (v || 0) + 1).catch(() => {}); runTransaction(ref(base, `stats/days/${day}`), v => (v || 0) + 1).catch(() => {}); }
+    if (!counted) {
+      // The rules accept exactly +1 per write, so the value this transaction commits belongs to this visit alone: only the
+      // visit that lands on a multiple of 100 celebrates (never someone who merely sees the total at 300), and only once.
+      runTransaction(ref(base, 'stats/total'), v => (v || 0) + 1).then(r => {
+        const n = r.committed ? Number(r.snapshot.val()) : 0;
+        if (n > 0 && n % 100 === 0) { try { sessionStorage.setItem('niansia-party', String(n)); } catch {} party(n); }
+      }).catch(() => {});
+      runTransaction(ref(base, `stats/days/${day}`), v => (v || 0) + 1).catch(() => {});
+    }
     onValue(ref(base, 'stats/total'), s => update({total: s.val() || 0}));
     onValue(ref(base, `stats/days/${day}`), s => update({today: s.val() || 0}));
     // presence: one entry per browser tab, refreshed every minute.
