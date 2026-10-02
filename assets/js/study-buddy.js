@@ -11,7 +11,7 @@
    tools/build_proctor_assets.py): same timers and rules, stricter lines in the voice of a cram-school teacher. With him,
    leaving the page during a focus round is called out too (no strike outside an exam), and he talks now and then.
    Coming back from another tab (an exam strike, or a trip away from a running focus round) plays the jeep: an army jeep
-   drives in from the right, the companion is lifted into its back seat, "you cheated, the jeep is waiting outside", and
+   (a generated picture, assets/study/jeep/) drives in from the right, the companion is lifted into its back seat, "you cheated, the jeep is waiting outside", and
    it drives off to the left; the companion is back in the corner afterwards and the usual dialog follows.
    Timers run on end times, so a throttled background tab or a reload does not lose them; nothing leaves the browser.
    Needs assets/js/yuki-cat.js and the cat sheet; without them the companion stays hidden. */
@@ -317,21 +317,15 @@
   }
 
   /* ---------- the jeep ---------- */
-  // An army jeep facing left, in two layers so the passenger sits between them: the back (spare tyre, seats, driver in a
-  // white helmet, windscreen) and the front (body, wheels). Drawn in the proctor's palette and outline colour.
-  const JEEP_BACK = `<svg class="sb-jeep-back" viewBox="0 0 240 132" aria-hidden="true"><g stroke="#3a3a40" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">
-    <circle cx="225" cy="72" r="15" fill="#4a4a50"/><circle cx="225" cy="72" r="6" fill="#b4aac7"/>
-    <rect x="150" y="38" width="54" height="26" rx="6" fill="#5e6640"/><rect x="134" y="40" width="12" height="24" rx="4" fill="#5e6640"/>
-    <rect x="112" y="48" width="28" height="16" rx="6" fill="#5e6640"/><circle cx="126" cy="38" r="10" fill="#f2d3ba"/>
-    <path d="M114 37a12 12 0 0 1 24 0z" fill="#fff"/><path d="M112 37h28" fill="none"/><rect x="118" y="38" width="15" height="5" rx="2" fill="#3a3a40" stroke-width="1"/>
-    <path d="M110 52l-6 6" fill="none"/><path d="M96 60l10-38h6l-10 38z" fill="#dfe8ee" fill-opacity=".7"/></g></svg>`;
-  const JEEP_FRONT = `<svg class="sb-jeep-front" viewBox="0 0 240 132" aria-hidden="true"><g stroke="#3a3a40" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">
-    <path d="M12 74q0-12 12-12h74l8-4h104q10 0 10 10v32q0 8-8 8H20q-8 0-8-8z" fill="#7a8450"/>
-    <rect x="106" y="66" width="44" height="32" rx="4" fill="none" stroke="#5e6640" stroke-width="2"/><path d="M140 76h6" fill="none" stroke-width="2.5"/>
-    <path d="M18 80h72" fill="none" stroke="#5e6640" stroke-width="2"/>
-    <circle cx="17" cy="72" r="6" fill="#fff1cf"/><rect x="2" y="94" width="24" height="8" rx="3" fill="#4a4a50"/>
-    <g transform="translate(60 106)"><g class="sb-wheel"><circle r="20" fill="#3a3a40"/><circle r="8" fill="#b4aac7"/><path d="M-14 0H14M0-14V14" stroke="#b4aac7" stroke-width="2.5"/></g></g>
-    <g transform="translate(184 106)"><g class="sb-wheel"><circle r="20" fill="#3a3a40"/><circle r="8" fill="#b4aac7"/><path d="M-14 0H14M0-14V14" stroke="#b4aac7" stroke-width="2.5"/></g></g></g></svg>`;
+  // The jeep is a generated picture (assets/study/jeep/, cut by tools/build_jeep_assets.py): drawn twice with the
+  // passenger in between (the front copy clipped to below the side panel's top edge), plus the two wheels as discs that
+  // turn while it drives. layout.json says where the wheels, the panel edge and the rear seat are.
+  const JEEP = '/assets/study/jeep/';
+  let jeepLayout = null;
+  fetch(`${JEEP}layout.json?v=1`).then(r => r.json()).then(j => {
+    jeepLayout = j;
+    ['jeep', 'wheel-front', 'wheel-rear'].forEach(n => { new Image().src = `${JEEP}${n}.webp?v=1`; });
+  }).catch(() => {});
   let jeepOn = false;
   function honk() {
     if (!S.sound) return;
@@ -353,18 +347,23 @@
   }
   function jeep(text, done) {
     const pet = $('.sb-cat');
-    if (reduced || jeepOn || root.classList.contains('is-away') || !pet.animate) { done(); return; }
+    const J = jeepLayout;
+    if (reduced || jeepOn || !J || root.classList.contains('is-away') || !pet.animate) { done(); return; }
     jeepOn = true;
-    const W = innerWidth, w = Math.min(400, W * .8), h = w * 132 / 240;
+    const W = innerWidth, w = Math.min(440, W * .86), h = w * J.height / J.width;
+    const img = `${JEEP}jeep.webp?v=1`;
+    const wheelsHtml = J.wheels.map(o => `<img class="sb-jeep-wheel" src="${JEEP}wheel-${o.name}.webp?v=1" alt="" style="left:${(o.cx - o.r) * w}px;top:${o.cy * h - o.r * w}px;width:${2 * o.r * w}px;height:${2 * o.r * w}px">`).join('');
     const layer = document.createElement('div');
     layer.className = 'sb-jeep-layer is-moving';
-    layer.innerHTML = `<div class="sb-jeep" style="width:${w}px;height:${h}px"><div class="sb-jeep-car">${JEEP_BACK}<span class="sb-jeep-seat"></span>${JEEP_FRONT}</div>
+    layer.innerHTML = `<div class="sb-jeep" style="width:${w}px;height:${h}px"><div class="sb-jeep-car"><img class="sb-jeep-img" src="${img}" alt=""><span class="sb-jeep-seat"></span>
+      <img class="sb-jeep-img" src="${img}" alt="" style="clip-path:inset(${J.panel * 100}% 0 0 0)"></div>${wheelsHtml}
       <i class="sb-puff"></i><i class="sb-puff"></i><i class="sb-puff"></i><p class="sb-jeep-say" hidden></p></div>`;
     root.append(layer);
     const car = layer.querySelector('.sb-jeep'), seat = layer.querySelector('.sb-jeep-seat'), bubble = layer.querySelector('.sb-jeep-say');
-    // the passenger's box: the companion's own proportions, sitting in the back seat with the lower part behind the body
-    const ph = isProf() ? h * .7 : h * .56, pw = isProf() ? ph * 96 / 140 : ph * pet.offsetWidth / pet.offsetHeight;
-    Object.assign(seat.style, {width: `${pw}px`, height: `${ph}px`, left: `${w * 177 / 240 - pw / 2}px`, top: `${h * 68 / 132 - ph}px`, opacity: 0});
+    // the passenger's box: the companion's own proportions, in the rear seat with the lower part behind the side panel
+    const ph = isProf() ? h * .58 : h * .42, pw = isProf() ? ph * 96 / 140 : ph * pet.offsetWidth / pet.offsetHeight;
+    const sink = isProf() ? h * .12 : h * .07;   // how much of the passenger hides behind the door
+    Object.assign(seat.style, {width: `${pw}px`, height: `${ph}px`, left: `${J.seat * w - pw / 2}px`, top: `${J.panel * h + sink - ph}px`, opacity: 0});
     rider(seat);
     bubble.textContent = text;
     const at = x => `translate(${x}px, -50%)`;
@@ -604,18 +603,19 @@
 .sb.is-taken .sb-cat,.sb.is-taken .sb-bubble{visibility:hidden;}
 .sb-jeep-layer{position:fixed;inset:0;z-index:58;pointer-events:none;overflow:hidden;}
 .sb-jeep{position:absolute;left:0;top:50%;transform:translate(120vw,-50%);}
-.sb-jeep-car,.sb-jeep-car svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;}
+.sb-jeep-car{position:absolute;inset:0;}
+.sb-jeep-img{position:absolute;inset:0;width:100%;height:100%;display:block;}
+.sb-jeep-wheel{position:absolute;display:block;}
 .sb-jeep-layer.is-moving .sb-jeep-car{animation:sb-bump .2s ease-in-out infinite alternate;}
-.sb-wheel{transform-box:fill-box;transform-origin:center;}
-.sb-jeep-layer.is-moving .sb-wheel{animation:sb-spin .32s linear infinite;}
+.sb-jeep-layer.is-moving .sb-jeep-wheel{animation:sb-spin .38s linear infinite;}
 .sb-jeep-seat{position:absolute;display:block;transition:opacity .15s;}
 .sb-jeep-seat .yuki-cat,.sb-jeep-fly .yuki-cat{display:block;}
 .sb-jeep-seat img,.sb-jeep-fly img{display:block;width:100%;height:100%;object-fit:contain;object-position:50% 100%;}
 .sb-jeep-fly{position:fixed;display:block;transform-origin:50% 100%;}
-.sb-puff{position:absolute;right:-4%;bottom:14%;width:16px;height:16px;border-radius:50%;background:#d8d3c8;opacity:0;}
+.sb-puff{position:absolute;right:-3%;bottom:16%;width:18px;height:18px;border-radius:50%;background:#d8d3c8;opacity:0;}
 .sb-jeep-layer.is-moving .sb-puff{animation:sb-puff .8s ease-out infinite;}
 .sb-puff:nth-of-type(2){animation-delay:.27s!important;}.sb-puff:nth-of-type(3){animation-delay:.54s!important;}
-.sb-jeep-say{position:absolute;left:50%;bottom:calc(100% + 16px);transform:translateX(-50%);margin:0;padding:12px 20px;border-radius:18px;border:3px solid #c2410c;background:var(--paper,#fffdf9);color:#c2410c;font-weight:800;font-size:21px;line-height:1.4;white-space:nowrap;box-shadow:0 14px 34px -16px #2a2230aa;animation:sb-say .5s ease-out both;}
+.sb-jeep-say{position:absolute;left:50%;bottom:calc(100% + 6px);transform:translateX(-50%);margin:0;padding:12px 20px;border-radius:18px;border:3px solid #c2410c;background:var(--paper,#fffdf9);color:#c2410c;font-weight:800;font-size:21px;line-height:1.4;white-space:nowrap;box-shadow:0 14px 34px -16px #2a2230aa;animation:sb-say .5s ease-out both;}
 .sb-jeep-say::after{content:'';position:absolute;left:50%;top:100%;margin-left:-9px;border:9px solid transparent;border-top-color:#c2410c;}
 @keyframes sb-say{0%{transform:translateX(-50%) scale(.4);opacity:0;}35%{transform:translateX(-50%) scale(1.1);opacity:1;}100%{transform:translateX(-50%) scale(1);}}
 @keyframes sb-bump{from{transform:translateY(0);}to{transform:translateY(-2px);}}

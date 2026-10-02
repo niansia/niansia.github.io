@@ -800,7 +800,7 @@ def build_exams(data: dict) -> list[str]:
         out.write_text(shell(loc=loc, title=f'{U["title"]} · Niansia', desc=U["lede"], url=f"/exams/{seg}/", og=f"/assets/og/exams-{seg}.jpg",
                              alternates={l: f"/exams/{s}/" for s, l in segs.items()}, body=body, jsonld=ld, crumbs=" / exams", og_type="website",
                              extra_css=EXAM_CSS, author_note=U["author_note"],
-                             scripts=("/assets/js/exam-filter.js?v=1", "/assets/js/yuki-cat.js?v=3", "/assets/js/study-buddy.js?v=5")), encoding="utf-8")
+                             scripts=("/assets/js/exam-filter.js?v=1", "/assets/js/yuki-cat.js?v=3", "/assets/js/study-buddy.js?v=6")), encoding="utf-8")
         urls.append(f"/exams/{seg}/")
     (ROOT / "exams" / "index.html").write_text(
         '<!doctype html><html><head><meta charset="utf-8"><title>Taiwan Exam · Niansia</title><link rel="canonical" href="' + SITE + '/exams/zh-tw/">'

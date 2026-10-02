@@ -1,0 +1,24 @@
+Original generation prompt (built-in image_gen, transparent_background=false):
+
+Use case: game-style sprite for a website animation.
+Create ONE original cartoon military jeep seen exactly from the SIDE, facing LEFT (the front of the jeep points to the left edge of the image). It belongs to the same illustration set as a friendly exam-proctor mascot for a Taiwanese study website, so match that style.
+The jeep: a classic open-top military jeep in muted olive green, no roof and no canvas cover, a folded-down windscreen frame at the front, a spare tyre on the back, round headlight, simple front bumper. Chunky, cute and slightly rounded proportions, like a toy, not realistic.
+A driver sits in the front seat, facing left, both hands on the steering wheel: a stern but comedic military-police style driver wearing a plain WHITE helmet and dark sunglasses, olive uniform. Only head, shoulders and arms are visible above the door. The driver must not resemble any real person.
+The REAR seat must be EMPTY and clearly visible: a passenger will be placed there later by the website. Along the side of the body, the top edge of the door/side panel is one straight horizontal line from the front seat to the back of the jeep, so a passenger behind it looks like they are sitting inside.
+Wheels: two wheels, each a perfect circle, fully visible and not covered by the fenders, dark gray tyre with a light gray-lilac hub and four simple spokes.
+Style: soft flat vector illustration with a Taiwanese stationery / picture-book feel. Clean simple shapes, gentle rounded outlines in dark gray #3A3A40 (no harsh black), minimal soft shading, no gradients, no texture, no 3D, no motion lines, no dust, no smoke.
+Colours: olive green body #7A8450 with darker olive details #5E6640, dark gray tyres, gray-lilac #B4AAC7 hubs, buttercream #FFF1CF headlight, warm light skin tone for the driver.
+Composition: wide landscape canvas (3:2). The whole jeep is visible and centered, occupying about 85% of the canvas width, nothing cropped. No ground, no road, no shadow under the jeep.
+Background: one perfectly flat solid MAGENTA #FF00FF background, the same colour everywhere, with no glow, no gradient, no vignette, no shadow. (A truly transparent background is also fine.)
+No text anywhere: no letters, no numbers, no Chinese characters, no licence plate text, no stars or national insignia, no flags, no logos, no speech bubbles, no watermark, no border.
+
+Final correction prompt (built-in image_gen, original jeep used as edit target, transparent_background=true):
+
+Use case: precise-object-edit, website animation sprite.
+Edit the attached jeep image. Keep exactly the same cute original driver, white helmet, dark sunglasses, olive uniform, side-view left-facing jeep identity, colours, empty rear seat, straight horizontal side-panel top edge, spare tyre, fully exposed round wheels and four-spoke lilac hubs.
+Correct the windshield geometry: completely fold the windshield frame DOWN and FORWARD toward the LEFT, lying nearly flat horizontally along the hood. There must be no upright or diagonally raised windshield frame in front of the driver. The front points left, so the frame folds left over the hood.
+Keep the whole jeep fully visible on a 3:2 landscape canvas with comfortable clear margins, about 85% of canvas width.
+Use clean SOLID flat colour fills, softly rounded dark-gray #3A3A40 outlines, no texture, no grain, no gradient, no 3D. Background must be truly transparent with a real alpha channel and absolutely no remaining shadow, glow, halo, ground, road, vignette or magenta. Transparent space between and around all car and driver parts. No added motion lines, dust, smoke, letters, Chinese characters, numbers, logos, flags, insignia or watermark. Generate only the one jeep.
+
+Selected deliverable: jeep-source.png, 1536 x 1024 RGBA, genuine transparent alpha background. The windshield is folded horizontally toward the front (left). Generated-image preview may display RGB hidden in alpha-zero pixels; the saved PNG has transparent background and all outer-edge alpha values are zero.
+

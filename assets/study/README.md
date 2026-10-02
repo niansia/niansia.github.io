@@ -30,3 +30,7 @@ No text anywhere: no letters, no Chinese characters, no numbers, no speech bubbl
 ```
 
 The generator ignored the background request and drew a black background with a glow around each pose; the build script handles that (see its header). If the sheet is regenerated with a truly transparent or white background, the `ERASE` boxes in the script can go.
+
+# Jeep
+
+`jeep-source.png` is generated artwork (ChatGPT, prompt in `jeep-source-prompt.txt`): an army jeep from the side, facing left, a driver in a white helmet and sunglasses, an empty rear seat. When someone leaves the page (an exam strike, or a running focus round) it drives in from the right, takes the companion away in the rear seat and drives off to the left. `tools/build_jeep_assets.py` writes `jeep/`: the trimmed jeep, the two wheels as discs that turn while it drives, and `layout.json` (wheel centres, the side panel's top edge, the rear seat). The page draws the jeep twice with the passenger in between, the front copy clipped below the panel edge.
