@@ -33,6 +33,41 @@
   }
   const index = name => Math.max(0, layout ? layout.frames.indexOf(name) : 0);
   const anchor = name => layout?.anchors?.[name] || [.75, .2, .4];
+  // Where her wardrobe (yuki-wardrobe.js `cat`) sits on each frame, in cell pixels of the current sheets (350x306;
+  // re-measure if tools/build_cat.py is rerun with new art). head: [x, y, head width, tilt°] on the crown between the
+  // ears, tilted with the head; neck: [x, y, tilt°] at the throat under the chin, or null where it is tucked away.
+  const WEAR = {
+    stand: {head: [271, 82, 86, 0], neck: [274, 156, 0]}, walkA: {head: [281, 96, 84, 5], neck: [283, 170, 3]},
+    walkB: {head: [273, 91, 82, -1], neck: [283, 164, 0]}, leap: {head: [278, 156, 78, -5], neck: [287, 225, 0]},
+    sit: {head: [222, 71, 78, -2], neck: [227, 141, 0]}, belly: {head: [306, 234, 72, 119], neck: [228, 190, 119]},
+    curl: {head: [249, 166, 80, 18], neck: null}, happy: {head: [243, 84, 86, -3], neck: [251, 163, 0]},
+    stretch: {head: [232, 200, 84, -12], neck: [222, 262, 50]}, crouch: {head: [258, 195, 74, -3], neck: [268, 270, 0]},
+    lie: {head: [234, 140, 76, -5], neck: [244, 213, 0]}, swipe: {head: [198, 31, 66, -25], neck: [219, 92, -25]},
+    groom: {head: [242, 97, 74, 7], neck: null}
+  };
+  // As fractions of the cell (x, y; w of the cell width), plus the cell's width / height for vertical offsets.
+  function wear(name) {
+    const w = WEAR[name] || WEAR.stand, [cw, ch] = layout?.cell || [350, 306];
+    const at = ([x, y, s, rot]) => ({x: x / cw, y: y / ch, w: s / cw, rot});
+    return {head: at(w.head), neck: w.neck && at([w.neck[0], w.neck[1], w.head[2], w.neck[2]]), ratio: cw / ch};
+  }
+  // Put the pieces ({head, neck}: {id, svg, w, ax, ay, dx, dy, rot} or null) on frame `name` inside `box`, which covers
+  // the cat's cell. A piece's dx/dy (in head widths) turn with the head, so a pin stays by her ear when she tilts it.
+  function dress(box, name, pieces) {
+    const at = wear(name);
+    for (const slot of ['neck', 'head']) {
+      let el = box.querySelector(`.ycw-${slot}`);
+      if (!el) { el = document.createElement('i'); el.className = `ycw ycw-${slot}`; box.append(el); }
+      const item = pieces[slot], p = at[slot];
+      el.hidden = !item || !p;
+      if (el.hidden) { el.dataset.id = ''; continue; }
+      if (el.dataset.id !== item.id) { el.innerHTML = item.svg; el.dataset.id = item.id; }
+      const t = p.rot * Math.PI / 180, dx = item.dx || 0, dy = item.dy || 0;
+      const x = p.x + (dx * Math.cos(t) - dy * Math.sin(t)) * p.w, y = p.y + (dx * Math.sin(t) + dy * Math.cos(t)) * p.w * at.ratio;
+      Object.assign(el.style, {left: `${(x * 100).toFixed(2)}%`, top: `${(y * 100).toFixed(2)}%`, width: `${(p.w * item.w * 100).toFixed(2)}%`});
+      el.style.setProperty('--ox', `${item.ax * 100}%`); el.style.setProperty('--oy', `${item.ay * 100}%`); el.style.setProperty('--r', `${p.rot + (item.rot || 0)}deg`);
+    }
+  }
   function paint(el, name) { el.style.setProperty('--cf', index(name)); el.dataset.cat = name; }
 
   // A puff of smoke over an element: soft clouds swell, hide the change at their thickest, then drift off.
@@ -92,10 +127,14 @@
 .yuki[data-form='cat'] .yp-hand{width:calc(var(--aw) * var(--w) * 1.25);top:calc(var(--ay) * var(--h) - var(--aw) * var(--w) * .78);}   /* the palm rests on her crown, not over her face */
 .yuki[data-form='cat'] .yp-juggle.yp-bat{width:calc(var(--w) * .15);left:calc(var(--w) * .37);top:calc(var(--h) * .2);}   /* the yarn over her paws while she lies on her back */
 .yuki[data-form='cat'] .yuki-shadow{width:calc(var(--w) * .8);}
+.yuki-catwear{position:absolute;inset:0;pointer-events:none;}
+.ycw{position:absolute;display:block;transform-origin:var(--ox,50%) var(--oy,50%);transform:translate(calc(var(--ox,50%) * -1),calc(var(--oy,50%) * -1)) rotate(var(--r,0deg));filter:drop-shadow(0 1px 1px #0002);animation:ycw-in .4s ease-out;}
+.ycw[hidden]{display:none;}.ycw svg{display:block;width:100%;height:auto;overflow:visible;}
 @keyframes cat-breathe{50%{transform:scale(1.01,1.022);}}
 @keyframes cat-kick{from{transform:rotate(-2.5deg);}to{transform:rotate(2.5deg) translateY(-1.5%);}}
 @keyframes cat-glee{from{transform:translateY(0);}to{transform:translateY(-2.5%) scale(1.01,1.02);}}
 @keyframes cat-trot{from{transform:translateY(0) rotate(-1.2deg);}to{transform:translateY(-3%) rotate(1.2deg);}}
+@keyframes ycw-in{from{opacity:0;}}
 @keyframes cat-flip{0%{transform:scaleY(1);}50%{transform:scaleY(.06) translateY(3%);}100%{transform:scaleY(1);}}
 .cat-smoke-layer{position:fixed;z-index:60;width:0;height:0;pointer-events:none;}
 .cat-smoke{position:absolute;border-radius:50%;background:radial-gradient(circle at 42% 38%,#fff 0,#fbf8ff 38%,#efe7fdcc 58%,#e6dcfb00 72%);}
@@ -104,5 +143,5 @@
 @media (prefers-reduced-motion:reduce){.yuki-cat{animation:none!important;}}`;
     document.head.append(css);
   }
-  window.YukiCat = {load, frameFor, has, index, anchor, paint, smoke, base: BASE, layout: () => layout};
+  window.YukiCat = {load, frameFor, has, index, anchor, wear, dress, paint, smoke, base: BASE, layout: () => layout};
 })();

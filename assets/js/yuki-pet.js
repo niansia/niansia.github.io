@@ -197,7 +197,7 @@
       <svg class="bed-back" viewBox="0 0 200 62" preserveAspectRatio="none"><ellipse class="bed-rim" cx="100" cy="27" rx="98" ry="25"/><ellipse class="bed-hole" cx="100" cy="27" rx="84" ry="15"/></svg>
       <svg class="bed-front" viewBox="0 0 200 62" preserveAspectRatio="none"><defs><linearGradient id="yuki-bed-front" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="bed-front-top"/><stop offset="1" class="bed-front-bottom"/></linearGradient></defs><path fill="url(#yuki-bed-front)" d="M2 27A98 34 0 0 0 198 27L186 27A86 16 0 0 1 14 27Z"/><path class="bed-stitch" d="M22 40Q100 64 178 40"/></svg></div>
     <div class="yuki-tailbox" aria-hidden="true"><i class="yuki-tail"></i></div>
-    <button type="button" class="yuki-hit" aria-haspopup="true" aria-expanded="false"><span class="yuki-figure"><span class="yuki-sprite"><i class="ys-body"></i><i class="ys-head"></i></span><span class="yuki-cat" aria-hidden="true"></span><span class="yuki-headbox"><span class="yuki-acc" aria-hidden="true" hidden></span><span class="yuki-headprops" aria-hidden="true"></span></span><span class="yuki-props" aria-hidden="true"></span></span></button>
+    <button type="button" class="yuki-hit" aria-haspopup="true" aria-expanded="false"><span class="yuki-figure"><span class="yuki-sprite"><i class="ys-body"></i><i class="ys-head"></i></span><span class="yuki-cat" aria-hidden="true"><span class="yuki-catwear"></span></span><span class="yuki-headbox"><span class="yuki-acc" aria-hidden="true" hidden></span><span class="yuki-headprops" aria-hidden="true"></span></span><span class="yuki-props" aria-hidden="true"></span></span></button>
     <div class="yuki-blanket" aria-hidden="true"></div><div class="yuki-bowl" aria-hidden="true"><i class="bowl-fish"></i><i class="bowl-dish"></i></div>
     <div class="yuki-fx" aria-hidden="true"></div><svg class="yuki-wand" aria-hidden="true" hidden><path class="wand-rod"/><path class="wand-string"/><g class="wand-tip"></g></svg>
     <div class="yuki-bubble" role="status" aria-live="polite" hidden><p></p><div class="bubble-actions"></div></div>
@@ -223,13 +223,21 @@
      choice is remembered. The catgirl stays the default; the cat has her own frames and a few cat-only moves. */
   const Cat = () => window.YukiCat;
   let form = Cat() && app.store.get('yuki-form', 'girl') === 'cat' ? 'cat' : 'girl', morphing = false, girlHeads = "url('/assets/lab/yuki/heads.webp')";
+  // The cat keeps a wardrobe of her own (head + neck pieces, yuki-wardrobe.js `cat`); the catgirl's choices stay as they are.
+  let catHead = app.store.get('yuki-cat-head', 'auto'), catNeck = app.store.get('yuki-cat-neck', 'auto'), wearView = '';
   const CAT_LINES = {
     en: {toCat: 'Poof! Nya~ Now I’m a real cat.', toGirl: 'Poof! Back to my usual self~', roll: 'Roll, roll… belly rubs, please!', sit: 'Lying down. Pats?',
-      missing: 'My cat form isn’t ready yet… soon!', toCatBtn: 'Turn into a cat', toGirlBtn: 'Back to catgirl', wearNote: 'Outfits are for my catgirl form.'},
+      missing: 'My cat form isn’t ready yet… soon!', toCatBtn: 'Turn into a cat', toGirlBtn: 'Back to catgirl',
+      girlWear: 'Catgirl', catWear: 'Cat', wearToCat: 'Pick something and I’ll turn into a cat to wear it.', wearToGirl: 'Pick something and I’ll turn back into a catgirl to wear it.',
+      looksLabel: 'Themed looks', lookNone: 'Bare', headLabel: 'On my head', neckLabel: 'Round my neck', wearLine: 'Nya~ do I look good?'},
     'zh-TW': {toCat: '砰！喵～我變成真正的貓咪了。', toGirl: '砰！變回平常的樣子了～', roll: '滾來滾去……摸摸肚子嘛！', sit: '趴下來了，要摸摸嗎？',
-      missing: '貓咪的樣子還沒準備好……快了！', toCatBtn: '變成貓咪', toGirlBtn: '變回貓娘', wearNote: '衣服是貓娘型態穿的喔。'},
+      missing: '貓咪的樣子還沒準備好……快了！', toCatBtn: '變成貓咪', toGirlBtn: '變回貓娘',
+      girlWear: '貓娘衣櫃', catWear: '貓咪衣櫃', wearToCat: '挑一件喜歡的，我會變成貓咪穿上。', wearToGirl: '挑一件喜歡的，我會變回貓娘穿上。',
+      looksLabel: '主題裝扮', lookNone: '素顏', headLabel: '頭飾', neckLabel: '頸飾', wearLine: '喵～這樣好看嗎？'},
     'zh-CN': {toCat: '砰！喵～我变成真正的猫咪了。', toGirl: '砰！变回平常的样子了～', roll: '滚来滚去……摸摸肚子嘛！', sit: '趴下来了，要摸摸吗？',
-      missing: '猫咪的样子还没准备好……快了！', toCatBtn: '变成猫咪', toGirlBtn: '变回猫娘', wearNote: '衣服是猫娘形态穿的哦。'}};
+      missing: '猫咪的样子还没准备好……快了！', toCatBtn: '变成猫咪', toGirlBtn: '变回猫娘',
+      girlWear: '猫娘衣柜', catWear: '猫咪衣柜', wearToCat: '挑一件喜欢的，我会变成猫咪穿上。', wearToGirl: '挑一件喜欢的，我会变回猫娘穿上。',
+      looksLabel: '主题装扮', lookNone: '素颜', headLabel: '头饰', neckLabel: '颈饰', wearLine: '喵～这样好看吗？'}};
   const cl = key => (CAT_LINES[app.locale()] || CAT_LINES.en)[key];
   const festival = () => window.NIANSIA_FESTIVAL?.active() || null;
   const wardrobe = () => window.YukiWardrobe;
@@ -336,7 +344,7 @@
   function setFrame(f) {
     frame = f; pet.dataset.frame = String(f); pet.style.setProperty('--f', f);
     const a = form === 'cat' ? null : anchors[f];
-    if (a) { pet.style.setProperty('--ax', a[0]); pet.style.setProperty('--ay', a[1]); pet.style.setProperty('--aw', a[2]); pet.style.setProperty('--neck', `${((a[1] + NECK) * 100).toFixed(1)}%`); }
+    if (a) { pet.style.setProperty('--ax', a[0]); pet.style.setProperty('--ay', a[1]); pet.style.setProperty('--aw', a[2]); pet.style.setProperty('--acy', a[3] ?? a[1]); pet.style.setProperty('--neck', `${((a[1] + NECK) * 100).toFixed(1)}%`); }
     paintCat();
   }
   // Rolling onto her back (or back onto her paws) is a quick squash-and-flip, with the frame swapped halfway.
@@ -350,8 +358,20 @@
     clearTimeout(catTimer);
     const flip = motion() && catShown && (name === 'belly') !== (catShown === 'belly');
     catShown = name;
-    if (flip) { retrigger('is-flipping'); catTimer = setTimeout(() => Cat().paint(el, catShown), 200); }
-    else Cat().paint(el, name);
+    if (flip) { retrigger('is-flipping'); catTimer = setTimeout(() => { Cat().paint(el, catShown); paintCatWear(); }, 200); }
+    else { Cat().paint(el, name); paintCatWear(); }
+  }
+  // auto = what the festival dresses her in (none on ordinary days); none = bare.
+  function catWearIds() {
+    const fest = festival(), auto = fest && wardrobe()?.cat?.festival(fest.primary.accessory);
+    const pick = (choice, slot) => choice === 'auto' ? auto?.[slot] || '' : choice === 'none' ? '' : choice;
+    return {head: pick(catHead, 'head'), neck: pick(catNeck, 'neck')};
+  }
+  function paintCatWear() {
+    const W = wardrobe()?.cat, box = $('.yuki-catwear');
+    if (!W || !box || !catShown || !Cat()?.dress) return;
+    const ids = catWearIds(), piece = (table, id) => table[id] ? {id, ...table[id]} : null;
+    Cat().dress(box, catShown, {head: piece(W.head, ids.head), neck: piece(W.neck, ids.neck)});
   }
   function setPose(next, f, ms, after = 'idle') {
     clearTimeout(poseTimer);
@@ -418,7 +438,8 @@
   }
   function say(text, {ms, actions = []} = {}) {
     if (!text) return;
-    if (!menu.hidden) { const el = menu.querySelector('.menu-say'); el.textContent = text; el.classList.remove('is-in'); void el.offsetWidth; el.classList.add('is-in'); return; }
+    const said = !menu.hidden && menu.querySelector('.menu-say');   // only the actions tab has a line; elsewhere she uses her bubble
+    if (said) { said.textContent = text; said.classList.remove('is-in'); void said.offsetWidth; said.classList.add('is-in'); return; }
     const p = bubble.querySelector('p');
     p.textContent = text.length > 150 ? text.slice(0, 146).replace(/\s+\S*$/, '') + '…' : text;
     const box = bubble.querySelector('.bubble-actions');
@@ -852,7 +873,7 @@
     measure(); reground(); setFrame(frame); paintAccessory(); paintState(); showWhenReady();
   }
   // A puff of smoke, and at its thickest she changes; the smoke drifts off and she hops out as the other one.
-  function setForm(next) {
+  function setForm(next, line) {
     next = next === 'cat' ? 'cat' : 'girl';
     if (!Cat() || morphing || next === form) return '';
     if (asleep && S.out.exhausted) { say(refuse(nl('tiredNo'))); return ''; }
@@ -862,7 +883,7 @@
     (next === 'cat' ? Cat().load() : Promise.resolve()).then(() => (motion() && !tucked ? Cat().smoke(pet) : null)).then(() => {
       applyForm(next); app.store.set('yuki-form', next);
       setPose('happy', 2, 1200); if (motion()) retrigger('is-hop');
-      puff('star', 3, .8); say(cl(next === 'cat' ? 'toCat' : 'toGirl'));
+      puff('star', 3, .8); say(line || cl(next === 'cat' ? 'toCat' : 'toGirl'));
     }).catch(() => say(cl('missing'))).finally(() => { morphing = false; });
     return '';
   }
@@ -1166,17 +1187,35 @@
       <div class="menu-body" data-body="${menuTab}">${body}</div>`;
     paintMenu();
   }
+  // Two wardrobes, one per form. The panel opens on the current form's; picking from the other one makes her change
+  // form wearing it.
   function renderWardrobe() {
+    const view = Cat() && wardrobe()?.cat ? wearView || form : 'girl';
+    const tabs = view === 'girl' && !(Cat() && wardrobe()?.cat) ? '' : `<div class="wear-forms" role="tablist">${['girl', 'cat'].map(f => `<button type="button" role="tab" data-wear-view="${f}" aria-selected="${f === view}">${f === 'cat' ? '🐾' : '✨'} ${esc(cl(f === 'cat' ? 'catWear' : 'girlWear'))}</button>`).join('')}</div>
+      ${view !== form ? `<small class="wear-hint">${esc(cl(view === 'cat' ? 'wearToCat' : 'wearToGirl'))}</small>` : ''}`;
+    return `<div class="wardrobe">${tabs}${view === 'cat' ? catWardrobe() : girlWardrobe()}</div>`;
+  }
+  function catWardrobe() {
+    const c = t(), L = app.locale(), W = wardrobe().cat, fest = festival();
+    const btn = (attr, on, inner, title) => `<button type="button" ${attr} aria-pressed="${on}"${title ? ` title="${esc(title)}" aria-label="${esc(title)}"` : ''}>${inner}</button>`;
+    const autoIcon = fest ? window.NIANSIA_FESTIVAL.motif(fest.primary.motifs[0]) : '✦';
+    const looks = Object.entries(W.looks).map(([id, l]) => btn(`data-cat-look="${id}"`, catHead === (l.head || 'none') && catNeck === (l.neck || 'none'),
+      `<span class="look-ic">${l.head ? W.head[l.head].svg : ''}${l.neck ? W.neck[l.neck].svg : ''}</span><span>${esc(l.name[L])}</span>`));
+    const slot = (key, table, choice) => `<div class="wardrobe-accs">${btn(`data-cat-${key}="auto"`, choice === 'auto', `${autoIcon}<span>${c.accAuto}</span>`, c.accAuto)}${btn(`data-cat-${key}="none"`, choice === 'none', `<span>${c.accNone}</span>`)}${Object.entries(table).map(([id, a]) => btn(`data-cat-${key}="${id}"`, choice === id, a.svg, a.name[L])).join('')}</div>`;
+    return `<p>${esc(cl('looksLabel'))}</p><div class="wardrobe-looks">${btn('data-cat-look="auto"', catHead === 'auto' && catNeck === 'auto', `<span class="look-ic">${autoIcon}</span><span>${c.accAuto}</span>`)}${btn('data-cat-look="none"', catHead === 'none' && catNeck === 'none', '<span class="look-ic">🐱</span><span>' + esc(cl('lookNone')) + '</span>')}${looks.join('')}</div>
+      <p>${esc(cl('headLabel'))}</p>${slot('head', W.head, catHead)}
+      <p>${esc(cl('neckLabel'))}</p>${slot('neck', W.neck, catNeck)}`;
+  }
+  function girlWardrobe() {
     const c = t(), L = app.locale(), list = wardrobe()?.outfits() || [], accs = wardrobe()?.accessories || {};
     const fest = festival();
-    return `<div class="wardrobe">${form === 'cat' ? `<p class="wardrobe-note">🐾 ${esc(cl('wearNote'))}</p>` : ''}
-      <p>${c.outfitsLabel}</p><div class="wardrobe-outfits"><button type="button" data-outfit="auto" aria-pressed="${outfitChoice === 'auto'}"><span>✦ ${c.accAuto}</span></button>${list.map(o => `<button type="button" data-outfit="${o.id}" aria-pressed="${o.id === outfitChoice}" title="${esc(o.name?.[L] || o.id)}"><img src="${o.sheet}${o.thumb || 'heads.webp'}" alt="" loading="lazy" width="48" height="48"><span>${esc(o.name?.[L] || o.id)}</span></button>`).join('')}</div>
+    return `<p>${c.outfitsLabel}</p><div class="wardrobe-outfits"><button type="button" data-outfit="auto" aria-pressed="${outfitChoice === 'auto'}"><span>✦ ${c.accAuto}</span></button>${list.map(o => `<button type="button" data-outfit="${o.id}" aria-pressed="${o.id === outfitChoice}" title="${esc(o.name?.[L] || o.id)}"><img src="${o.sheet}${o.thumb || 'heads.webp'}" alt="" loading="lazy" width="48" height="48"><span>${esc(o.name?.[L] || o.id)}</span></button>`).join('')}</div>
       ${list.length < 2 ? `<small>${c.moreOutfits}</small>` : ''}
       <p>${c.accessoriesLabel}</p><div class="wardrobe-accs">
         <button type="button" data-acc="auto" aria-pressed="${accChoice === 'auto'}" title="${esc(c.accAuto)}">${fest ? window.NIANSIA_FESTIVAL.motif(fest.primary.motifs[0]) : '✦'}<span>${c.accAuto}</span></button>
         <button type="button" data-acc="none" aria-pressed="${accChoice === 'none'}"><span>${c.accNone}</span></button>
         ${Object.entries(accs).map(([id, a]) => `<button type="button" data-acc="${id}" aria-pressed="${accChoice === id}" title="${esc(a.name[L])}" aria-label="${esc(a.name[L])}">${a.svg}</button>`).join('')}
-      </div></div>`;
+      </div>`;
   }
   function placeMenu() {
     const box = pet.getBoundingClientRect(), mw = menu.offsetWidth, mh = menu.offsetHeight;
@@ -1189,7 +1228,7 @@
   function toggleMenu(force) {
     const open = force ?? menu.hidden;
     if (!open) { closeMenu(); return; }
-    menuTab = 'act'; renderMenu(); menu.hidden = false; bubble.hidden = true; hit.setAttribute('aria-expanded', 'true');
+    menuTab = 'act'; wearView = ''; renderMenu(); menu.hidden = false; bubble.hidden = true; hit.setAttribute('aria-expanded', 'true');
     menu.classList.remove('is-in'); void menu.offsetWidth; menu.classList.add('is-in');
     placeMenu();
     menu.querySelector('button')?.focus({preventScroll: true});
@@ -1201,9 +1240,15 @@
     if (event.target.closest('[data-sound]')) { app.store.set('yuki-sound', soundOn() ? '0' : '1'); if (!soundOn()) song?.stop(); renderMenu(); placeMenu(); menu.querySelector('[data-sound]')?.focus({preventScroll: true}); return; }
     if (event.target.closest('[data-form-toggle]')) { setForm(form === 'cat' ? 'girl' : 'cat'); return; }
     if (event.target.closest('[data-stay]')) { const text = setStay(!stay); renderMenu(); placeMenu(); say(text); menu.querySelector('[data-stay]')?.focus({preventScroll: true}); return; }
+    const wv = event.target.closest('[data-wear-view]');
+    if (wv) { wearView = wv.dataset.wearView; renderMenu(); placeMenu(); menu.querySelector(`[data-wear-view="${wearView}"]`)?.focus({preventScroll: true}); return; }
+    const cw = event.target.closest('[data-cat-look],[data-cat-head],[data-cat-neck]');
+    if (cw) { pickCatWear(cw); return; }
     const o = event.target.closest('[data-outfit]');
+    if (o && form === 'cat') { outfitChoice = o.dataset.outfit; app.store.set('yuki-outfit', outfitChoice); loadOutfit(outfitChoice); setForm('girl', t().outfitChanged); return; }
     if (o) { setOutfit(o.dataset.outfit); renderMenu(); say(t().outfitChanged); return; }
     const a = event.target.closest('[data-acc]');
+    if (a && form === 'cat') { accChoice = a.dataset.acc; app.store.set('yuki-acc', accChoice); paintAccessory(); setForm('girl'); return; }
     if (a) { setAccessory(a.dataset.acc); renderMenu(); menu.querySelector(`[data-acc="${a.dataset.acc}"]`)?.focus({preventScroll: true}); return; }
     const b = event.target.closest('[data-pet-act]'); if (!b) return;
     const key = b.dataset.petAct;
@@ -1222,6 +1267,23 @@
   function setOutfit(id) {
     outfitChoice = id; loadOutfit(id); app.store.set('yuki-outfit', id);
     setPose('trick', 2, 1100); pet.classList.remove('is-spinning'); void pet.offsetWidth; pet.classList.add('is-spinning'); puff('star', 3, .6);
+  }
+  // A themed look sets both pieces; auto / none set both to that. Picked from the catgirl, she turns into the cat to wear it.
+  function pickCatWear(button) {
+    const {catLook, catHead: h, catNeck: n} = button.dataset, look = wardrobe().cat.looks[catLook], L = app.locale();
+    const attr = catLook ? `[data-cat-look="${catLook}"]` : h ? `[data-cat-head="${h}"]` : `[data-cat-neck="${n}"]`;
+    const ids = setCatWear(catLook ? look ? look.head || 'none' : catLook : h, catLook ? look ? look.neck || 'none' : catLook : n);
+    const text = look ? look.line[L] || look.line.en : ids.head || ids.neck ? cl('wearLine') : '';
+    if (form !== 'cat') { wearView = ''; setForm('cat', text); return; }
+    renderMenu(); placeMenu(); menu.querySelector(attr)?.focus({preventScroll: true});
+    if (ids.head || ids.neck) { setPose('happy', 2, 900); puff('heart', 2); }
+    if (text) say(text);
+  }
+  function setCatWear(head, neck) {
+    if (head) { catHead = head; app.store.set('yuki-cat-head', head); }
+    if (neck) { catNeck = neck; app.store.set('yuki-cat-neck', neck); }
+    paintCatWear();
+    return catWearIds();
   }
   function setAccessory(id) {
     accChoice = id; app.store.set('yuki-acc', id); paintAccessory();
@@ -1816,7 +1878,7 @@
   window.addEventListener('niansia:daypart', () => nightNudge(4000));
   window.addEventListener('niansia:theme', () => { if (!asleep) { setPose('happy', 2, 900); puff('star', 2, .5); } });
   window.addEventListener('niansia:locale', () => { if (!chat.hidden) renderChatShell(); if (!menu.hidden) renderMenu(); paintState(); });
-  window.addEventListener('niansia:festival', () => { loadOutfit(outfitChoice); paintAccessory(); if (!menu.hidden) renderMenu(); const l = festivalLine(); if (l) say(l); });
+  window.addEventListener('niansia:festival', () => { loadOutfit(outfitChoice); paintAccessory(); paintCatWear(); if (!menu.hidden) renderMenu(); const l = festivalLine(); if (l) say(l); });
   window.addEventListener('niansia:shell', () => requestAnimationFrame(() => { reground(); paintState(); }));
   window.addEventListener('niansia:layout', () => requestAnimationFrame(reground));
   window.addEventListener('niansia:motion', () => { if (!motion()) { walkTo = null; stopPlay(); } });
@@ -1853,6 +1915,7 @@
       return true;
     },
     setOutfit, setAccessory, festivalLine, outfit: () => outfitChoice, accessory: () => accChoice,
+    catWear: () => ({head: catHead, neck: catNeck, worn: catWearIds()}), setCatWear,
     form: () => form, setForm, meow: () => setForm(form === 'cat' ? 'girl' : 'cat'),
     level, rewards: () => REWARDS.map(r => ({...r, unlocked: level() >= r.lv, name: rc().name[r.id]})),
     offer: (text, actions) => { if (tucked || asleep) { pushMessage({who: 'yuki', text, links: actions}); return; } say(text, {ms: 12000, actions}); pushMessage({who: 'yuki', text, links: actions}); },

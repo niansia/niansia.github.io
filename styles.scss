@@ -794,7 +794,6 @@ html.film-open .yuki,html.film-open .yuki-chat{visibility:hidden;}
 /* catgirl <-> cat (assets/js/yuki-cat.js): one full-width switch under her name */
 .menu-form{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;margin:-2px 0 10px;padding:7px 10px;border:1px dashed color-mix(in srgb,var(--accent) 45%,var(--line));border-radius:11px;background:color-mix(in srgb,var(--accent) 7%,transparent);color:var(--ink);font:600 12px var(--sans);transition:background .2s,border-color .2s,transform .25s var(--spring);}
 .menu-form:hover{background:color-mix(in srgb,var(--accent) 14%,transparent);border-style:solid;transform:translateY(-1px);}
-.menu-body .wardrobe .wardrobe-note{margin:0 0 8px;padding:6px 10px;border-radius:9px;background:var(--wash);font:500 11.5px/1.5 var(--sans);letter-spacing:0;text-transform:none;color:var(--ink);}
 .menu-stats{display:flex;flex-direction:column;gap:6px;padding:10px;border-radius:12px;background:var(--rail);margin-bottom:10px;}
 .stat{display:grid;grid-template-columns:44px 1fr 24px;align-items:center;gap:8px;font-size:10.5px;color:var(--muted);}
 .stat i{height:7px;border-radius:99px;background:var(--line);overflow:hidden;}
@@ -1011,7 +1010,7 @@ button.brain-badge:hover{transform:translateY(-1px);border-color:var(--accent);}
 button.brain-badge:disabled{cursor:default;transform:none;border-color:var(--line);}
 
 /* ============ Wardrobe: head-anchored accessories ============ */
-.yuki-acc{position:absolute;z-index:1;left:calc(var(--ax,.5) * var(--w) + var(--adx,0) * var(--aw,.36) * var(--w));top:calc(var(--ay,.03) * var(--h) + var(--ady,0) * var(--aw,.36) * var(--w));width:calc(var(--aw,.36) * var(--w) * var(--aws,1));transform:translate(calc(var(--aax,.5) * -100%),calc(var(--aay,.9) * -100%)) rotate(var(--arot,0deg));transform-origin:50% 100%;pointer-events:none;filter:drop-shadow(0 1px 1px #0002);animation:acc-in .45s var(--spring);}
+.yuki-acc{position:absolute;z-index:1;left:calc(var(--ax,.5) * var(--w) + var(--adx,0) * var(--aw,.36) * var(--w));top:calc(var(--acy,var(--ay,.03)) * var(--h) + var(--ady,0) * var(--aw,.36) * var(--w));width:calc(var(--aw,.36) * var(--w) * var(--aws,1));transform:translate(calc(var(--aax,.5) * -100%),calc(var(--aay,.9) * -100%)) rotate(var(--arot,0deg));transform-origin:50% 100%;pointer-events:none;filter:drop-shadow(0 1px 1px #0002);animation:acc-in .45s var(--spring);}
 .yuki-acc[hidden]{display:none;}.yuki-acc svg{display:block;width:100%;height:auto;overflow:visible;}
 .yuki[data-pose='happy'] .yuki-acc,.yuki[data-pose='trick'] .yuki-acc{animation:acc-bounce .5s var(--spring);}
 @keyframes acc-in{from{opacity:0;transform:translate(calc(var(--aax,.5) * -100%),calc(var(--aay,.9) * -100% - 8px)) rotate(var(--arot,0deg)) scale(.6);}}
@@ -1024,7 +1023,7 @@ button.brain-badge:disabled{cursor:default;transform:none;border-color:var(--lin
 .menu-stay .stay-switch i{position:absolute;left:2px;top:2px;width:13px;height:13px;border-radius:50%;background:#fff;box-shadow:0 1px 3px #0003;transition:transform .25s var(--spring);}
 .menu-stay[aria-pressed='true'] .stay-switch{background:var(--accent);}
 .menu-stay[aria-pressed='true'] .stay-switch i{transform:translateX(13px);}
-.wardrobe{margin-top:8px;max-height:260px;overflow-y:auto;scrollbar-width:thin;animation:msg-in .3s var(--spring);}
+.wardrobe{margin-top:8px;max-height:300px;overflow-y:auto;scrollbar-width:thin;animation:msg-in .3s var(--spring);}
 .wardrobe p{margin:6px 2px 6px;font:10px var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.06em;}
 .wardrobe small{display:block;margin:4px 2px 2px;font-size:10.5px;color:var(--muted);line-height:1.5;}
 .wardrobe-outfits{display:grid;grid-template-columns:repeat(2,1fr);gap:5px;}
@@ -1033,8 +1032,16 @@ button.brain-badge:disabled{cursor:default;transform:none;border-color:var(--lin
 .wardrobe-accs{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;}
 .wardrobe-accs button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:42px;padding:5px;border-radius:9px;border:1px solid var(--line);font-size:10px;transition:transform .2s var(--spring),border-color .2s,background .2s;}
 .wardrobe-accs button svg{width:26px;height:22px;}
-.wardrobe-accs button:hover,.wardrobe-outfits button:hover{transform:translateY(-2px);border-color:var(--accent);}
-.wardrobe-accs button[aria-pressed='true'],.wardrobe-outfits button[aria-pressed='true']{border-color:var(--accent);background:var(--wash);box-shadow:inset 0 0 0 1px var(--accent);}
+.wardrobe-accs button:hover,.wardrobe-outfits button:hover,.wardrobe-looks button:hover{transform:translateY(-2px);border-color:var(--accent);}
+.wear-forms{position:sticky;top:0;z-index:1;display:grid;grid-template-columns:1fr 1fr;gap:3px;padding:3px;border-radius:11px;background:linear-gradient(var(--rail),var(--rail)),var(--surface);}
+.wear-forms button{padding:6px 8px;border-radius:8px;font-size:11.5px;color:var(--muted);transition:background .2s,color .2s,box-shadow .2s;}
+.wear-forms button[aria-selected='true']{background:var(--surface);color:var(--accent);box-shadow:0 1px 4px #0002;}
+.wardrobe .wear-hint{margin:6px 2px 0;color:var(--accent);}
+.wardrobe-looks{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;}
+.wardrobe-looks button{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 4px 5px;border-radius:9px;border:1px solid var(--line);font-size:10.5px;transition:transform .2s var(--spring),border-color .2s,background .2s;}
+.look-ic{display:flex;align-items:flex-end;justify-content:center;gap:1px;height:24px;font-size:16px;line-height:24px;}
+.look-ic svg{width:20px;height:22px;}
+.wardrobe-accs button[aria-pressed='true'],.wardrobe-outfits button[aria-pressed='true'],.wardrobe-looks button[aria-pressed='true']{border-color:var(--accent);background:var(--wash);box-shadow:inset 0 0 0 1px var(--accent);}
 /* ============ Festival: doodle banner, sky glow, ambient particles ============ */
 .fest-banner{position:relative;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:18px;margin:0 0 26px;padding:16px 18px;border-radius:18px;overflow:hidden;color:#fff;background:var(--fest-bg,linear-gradient(120deg,var(--accent),var(--accent-2)));box-shadow:0 14px 34px -18px #0007;animation:rise-in .6s var(--ease) backwards;}
 .fest-banner:before{content:'';position:absolute;inset:0;background:radial-gradient(circle,#fff5 1px,transparent 1.6px) 0 0/16px 16px;opacity:.5;pointer-events:none;}
@@ -1640,7 +1647,7 @@ button.brain-badge:disabled{cursor:default;transform:none;border-color:var(--lin
 .menu-tabs button i{position:absolute;top:4px;right:8px;width:6px;height:6px;border-radius:50%;background:var(--accent-2);}
 .menu-body{height:318px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;margin-right:-4px;padding-right:4px;animation:msg-in .25s var(--spring);}
 .menu-body .menu-say{margin-top:0;}
-.menu-body .wardrobe{margin-top:0;max-height:none;}
+.menu-body .wardrobe{margin-top:0;max-height:none;overflow:visible;}
 .menu-rewards{max-height:none;margin-top:8px;}
 .reward.is-next{opacity:.9;outline:1.5px dashed color-mix(in srgb,var(--accent) 55%,transparent);outline-offset:-1.5px;}
 .menu-lvbox{display:grid;gap:4px;}

@@ -108,7 +108,10 @@ def scaled(part: np.ndarray, factor: float) -> Image.Image:
 
 
 def head_anchor(cell: np.ndarray) -> list[float]:
-    """Crown of the head (between the ears) and head width, as fractions of the cell, for accessories."""
+    """Head geometry as fractions of the cell: [centre x, top (ear tips), head width, crown].
+    Props such as the patting hand, the neck cut and the head pivot are measured from the ear tips. Hats and headbands
+    rest on the crown instead: the top of the hair between the ears. The ears stick up above the hair, so the top edge
+    is first smoothed with an opening wider than an ear, which leaves the hair line, read at the head centre."""
     h, w = cell.shape[:2]
     alpha = cell[..., 3] > 60
     cx = head_centre(cell)
@@ -116,7 +119,25 @@ def head_anchor(cell: np.ndarray) -> list[float]:
     top = int(np.nonzero(band.any(axis=1))[0].min())
     row = np.nonzero(alpha[min(h - 1, top + int(h * .06))])[0]
     width = (row.max() - row.min()) if row.size else w * .4
-    return [round(cx / w, 4), round(top / h, 4), round(width / w, 4)]
+    head = alpha[:int(h * .3)]
+    edge = np.where(head.any(axis=0), head.argmax(axis=0), head.shape[0]).astype(float)
+    ear = int(w * .2) | 1
+    hair = ndimage.minimum_filter1d(ndimage.maximum_filter1d(edge, ear, mode='nearest'), ear, mode='nearest')
+    c = int(round(cx))
+    crown = float(hair[max(0, c - 2):c + 3].mean())
+    return [round(cx / w, 4), round(top / h, 4), round(width / w, 4), round(crown / h, 4)]
+
+
+def reanchor(folder: Path) -> None:
+    """Recompute the head anchors of an already built sheet (pet.webp + layout.json) in place."""
+    text = (folder / 'layout.json').read_text(encoding='utf-8')
+    layout = json.loads(text)
+    sheet = np.asarray(Image.open(folder / 'pet.webp').convert('RGBA'))
+    cw = layout['cell'][0]
+    layout['anchors'] = [head_anchor(sheet[:, i * cw:(i + 1) * cw]) for i in range(sheet.shape[1] // cw)]
+    indent = 2 if text.startswith('{\n') else None   # outfits are written compact by build_wardrobe.py
+    (folder / 'layout.json').write_text(json.dumps(layout, indent=indent) + '\n', encoding='utf-8')
+    print(folder.name, layout['anchors'][0])
 
 
 def skirt_hem(cell: np.ndarray) -> int:
@@ -192,7 +213,11 @@ def main(source: Path = SOURCE, out: Path = OUT, blink_origin: bool = True) -> N
 
 if __name__ == '__main__':
     # python tools/build_yuki_assets.py [sheet.png out_dir]  (defaults to the hoodie outfit)
-    if len(sys.argv) == 3:
+    # python tools/build_yuki_assets.py --anchors           (re-measure the anchors of the hoodie and every outfit)
+    if sys.argv[1:2] == ['--anchors']:
+        for folder in [OUT] + sorted(p for p in (OUT / 'outfits').iterdir() if (p / 'layout.json').exists()):
+            reanchor(folder)
+    elif len(sys.argv) == 3:
         main(Path(sys.argv[1]), Path(sys.argv[2]))
     else:
         main()
