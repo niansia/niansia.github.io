@@ -34,11 +34,18 @@
   const awayMin = clamp((now() - S.t) / 60000, 0, 30);
   S.food = clamp(S.food - awayMin * 1.2, 20, 100); S.energy = clamp(S.energy + awayMin * 1.5, 0, 100); S.mood = clamp(S.mood - awayMin * .5, 30, 100);
   S.visits += 1;
+  /* A need at 0 is a state, not just a number (see "empty needs" below). The flags persist with the needs and each one
+     ends only after the need has climbed back a little, so a state cannot flicker on and off. */
+  S.out = {starving: false, exhausted: false, sulky: false, ...(S.out || {})};
+  const OUT = {starving: ['food', 15], exhausted: ['energy', 30], sulky: ['mood', 20]};
   const save = () => { S.t = now(); app.store.set('yuki', JSON.stringify({...S, seen: S.seen.slice(-20)})); };
   const levelAt = xp => Math.floor(Math.sqrt(xp / 12)) + 1, level = () => levelAt(S.xp);
   function gain(food = 0, mood = 0, energy = 0, xp = 0) {
-    const before = level();
+    const before = level(), o = S.out;
+    // While a need is empty, only the care that refills it earns experience.
+    if ((o.starving || o.sulky || o.exhausted) && !((o.starving && food > 0) || (o.sulky && mood > 0) || (o.exhausted && energy > 0))) xp = 0;
     S.food = clamp(S.food + food, 0, 100); S.mood = clamp(S.mood + mood, 0, 100); S.energy = clamp(S.energy + energy, 0, 100); S.xp += xp;
+    onNeeds(checkNeeds());
     save(); paintState();
     if (level() > before) {
       const now_ = level(), got = REWARDS.filter(r => r.lv > before && r.lv <= now_);
@@ -50,7 +57,9 @@
     }
   }
   function moodKey() {
-    if (asleep) return 'asleep';
+    if (asleep) return S.out.exhausted ? 'exhausted' : 'asleep';
+    if (S.out.starving) return 'starving';
+    if (S.out.sulky) return 'sulky';
     if (S.food < 30) return 'hungry';
     if (S.energy < 25) return 'sleepy';
     if (S.mood < 40) return 'lonely';
@@ -87,6 +96,99 @@
   const al = key => (AL[app.locale()] || AL.en)[key];
   // Asked for something still locked: say which level unlocks it instead of silently doing something else.
   const lockedLine = id => { const r = REWARDS.find(x => x.id === id); return r && !unlocked(id) ? (AL[app.locale()] || AL.en).locked(`${r.icon} ${rc().name[id]}`, r.lv) : ''; };
+
+  /* ---------- empty needs ----------
+     Starving (fullness 0): she has no strength to play or perform, sits about yawning, her tummy growls, her mood drains
+     faster, and she asks to be fed; feeding her brings her back with a thank-you and a care bonus.
+     Exhausted (energy 0): she drops off to sleep wherever she is and cannot be woken, fed or played with until she has
+     30 energy back (she recovers twice as fast while passed out).
+     Sulking (mood 0): she turns her back, lashes her tail and refuses to play or perform until she is coaxed: three pats
+     (the first is swatted away), a snack, or a kind word in the chat.
+     While a need is empty only the care that refills it earns experience (see gain). The same rule, blocked(), gates the
+     menu, double-clicks, the small model's intents and the 1.5B model's @pet commands, so a reply can never promise
+     something she will not do; the 1.5B model is also told her condition so its tone follows. */
+  const NL = {
+    en: {hungryIn: 'Grrrumble… my tummy is completely empty. I can’t move. Could I have something to eat?', hungryNo: 'Too hungry… no strength to play. Feed me first, please?',
+      hungryTip: 'Starving: feed her first. She has no strength to play or perform.', hungryOut: 'I’m alive again! Thank you for feeding me ♡', hungryMurmur: 'Grrrumble…',
+      tiredIn: 'Out of battery… I need a little nap…', tiredNo: 'zzz… (fast asleep, she won’t wake up)', tiredPat: 'zzz… mm… five more minutes…',
+      tiredWake: 'zzz… (worn out: she can be woken once her energy is back to 30, now {n})', tiredPoke: 'Mm… don’t poke… zzz', tiredTip: 'Exhausted: let her sleep until her energy reaches 30 (now {n}).',
+      sulkyIn: 'Hmph… nobody plays with me. I’m not talking to you.', sulkyNo: 'No. I’m sulking.', sulkyPat1: 'Don’t touch me! …Hmph.', sulkyPat2: '…One more pat and I might forgive you.',
+      sulkyOut: 'Fine… I forgive you. Spend more time with me next time ♡', sulkyFood: '…That’s tasty. Okay, I’m not mad anymore.', sulkyNudge: '…(peeks at you, then turns away again)',
+      sulkyTip: 'Sulking: pat her three times, or coax her with a snack or a kind word ({n}/3).', feelStarving: 'My tummy is empty… I really want something to eat.', feelSulky: 'Hmph. I’m sulking.',
+      leadSulky: '(pouting) ', tailHungry: ' (tummy rumbling…)', leadTired: '(half asleep) '},
+    'zh-TW': {hungryIn: '咕嚕嚕……肚子餓扁了，沒力氣動了。可以給我一點吃的嗎？', hungryNo: '肚子好餓……沒力氣玩了。先餵我一點東西嘛。',
+      hungryTip: '餓扁了：先餵她，才有力氣玩和表演。', hungryOut: '活過來了！謝謝你餵我～現在又有力氣了 ♡', hungryMurmur: '咕嚕嚕……',
+      tiredIn: '沒電了……我要睡一下下……', tiredNo: 'zzz……（睡得很熟，叫不醒）', tiredPat: 'zzz……嗯……再五分鐘……',
+      tiredWake: 'zzz……（累癱了，體力回到 30 才叫得醒，現在 {n}）', tiredPoke: '唔……不要戳……zzz', tiredTip: '累癱了：讓她睡到體力 30 才叫得醒（現在 {n}）。',
+      sulkyIn: '哼……都沒人陪我玩。我不想理你了。', sulkyNo: '不要。我在生氣。', sulkyPat1: '不要摸！……哼。', sulkyPat2: '……再摸一下，我才考慮原諒你。',
+      sulkyOut: '好啦……原諒你了。下次要多陪我喔 ♡', sulkyFood: '……好吃。好啦，不生氣了。', sulkyNudge: '……（偷看你一眼，又轉回去）',
+      sulkyTip: '鬧脾氣中：摸摸她三次，或餵點心、說句好話哄她（{n}/3）。', feelStarving: '肚子餓扁了，好想吃東西……', feelSulky: '哼，我在鬧脾氣。',
+      leadSulky: '（嘟嘴）', tailHungry: '（肚子咕嚕咕嚕叫……）', leadTired: '（迷迷糊糊）'},
+    'zh-CN': {hungryIn: '咕噜噜……肚子饿扁了，没力气动了。可以给我一点吃的吗？', hungryNo: '肚子好饿……没力气玩了。先喂我一点东西嘛。',
+      hungryTip: '饿扁了：先喂她，才有力气玩和表演。', hungryOut: '活过来了！谢谢你喂我～现在又有力气了 ♡', hungryMurmur: '咕噜噜……',
+      tiredIn: '没电了……我要睡一下下……', tiredNo: 'zzz……（睡得很熟，叫不醒）', tiredPat: 'zzz……嗯……再五分钟……',
+      tiredWake: 'zzz……（累瘫了，体力回到 30 才叫得醒，现在 {n}）', tiredPoke: '唔……不要戳……zzz', tiredTip: '累瘫了：让她睡到体力 30 才叫得醒（现在 {n}）。',
+      sulkyIn: '哼……都没人陪我玩。我不想理你了。', sulkyNo: '不要。我在生气。', sulkyPat1: '不要摸！……哼。', sulkyPat2: '……再摸一下，我才考虑原谅你。',
+      sulkyOut: '好啦……原谅你了。下次要多陪我哦 ♡', sulkyFood: '……好吃。好啦，不生气了。', sulkyNudge: '……（偷看你一眼，又转回去）',
+      sulkyTip: '闹脾气中：摸摸她三次，或喂点心、说句好话哄她（{n}/3）。', feelStarving: '肚子饿扁了，好想吃东西……', feelSulky: '哼，我在闹脾气。',
+      leadSulky: '（嘟嘴）', tailHungry: '（肚子咕噜咕噜叫……）', leadTired: '（迷迷糊糊）'}};
+  const nl = (key, vars) => fill((NL[app.locale()] || NL.en)[key] ?? NL.en[key], vars);
+  // Told to the 1.5B model with the needs. It follows them for tone; what she actually does is enforced by blocked().
+  const LLM_CONDITION = {
+    starving: "CONDITION: starving. Yuki's tummy is completely empty (fullness 0). She feels weak and her tummy growls. She asks the visitor for food first and has no strength to play or perform: never write @pet play or @pet trick now; offer @pet feed instead. She still answers questions about Niansia and the projects, briefly.",
+    exhausted: 'CONDITION: exhausted. Yuki has no energy left (energy 0) and is fast asleep. She answers sleepily and very briefly and cannot play, perform or be woken: never write @pet play, @pet trick or @pet wake now. She still answers questions about Niansia, briefly.',
+    sulky: "CONDITION: sulking. Yuki's mood is at 0 because nobody played with her for a long time. She is a little grumpy and short, pouts, and refuses to perform or play (never write @pet play or @pet trick now) until the visitor pats her, says something kind, or gives her a snack. She still answers questions about Niansia, but curtly."};
+  let coax = 0, coaxAt = 0;
+  function checkNeeds() {
+    let change = '';
+    for (const [k, [need, back]] of Object.entries(OUT)) {
+      if (!S.out[k] && S[need] <= .5) { S.out[k] = true; change = k; }
+      else if (S.out[k] && S[need] >= back) { S.out[k] = false; change = change || `-${k}`; }
+    }
+    return change;
+  }
+  // What she refuses right now, as the line she says instead ('' when she is willing).
+  function blocked(action) {
+    if (asleep && S.out.exhausted && ['play', 'trick', 'wake', 'feed', 'lie'].includes(action)) return action === 'wake' ? nl('tiredWake', {n: Math.round(S.energy)}) : nl('tiredNo');
+    if (!['play', 'trick'].includes(action)) return '';
+    if (S.out.exhausted) return nl('tiredNo');
+    if (S.out.starving) return nl('hungryNo');
+    if (S.out.sulky) return nl('sulkyNo');
+    return '';
+  }
+  function refuse(text) {
+    if (asleep) puff('zzz', 1);
+    else if (S.out.sulky) { setPose('annoyed', 0, 1300); retrigger('is-shaking'); puff('anger', 1, .2); turnAway(); }
+    else { setPose('yawn', 3, 1200); puff('sweat', 1); }
+    return text;
+  }
+  function turnAway() {
+    const cx = pointer.t && now() - pointer.t < 8000 ? pointer.x : innerWidth / 2;
+    const away = cx > x ? -1 : 1;
+    if (dir !== away) { dir = away; place(); }
+  }
+  function needAlert() {
+    if (S.out.exhausted) return nl('tiredTip', {n: Math.round(S.energy)});
+    if (S.out.starving) return nl('hungryTip');
+    if (S.out.sulky) return nl('sulkyTip', {n: coax});
+    return '';
+  }
+  const suggestedAct = () => S.out.exhausted ? '' : S.out.starving ? 'feed' : S.out.sulky ? 'pat' : '';
+  function onNeeds(change) {
+    if (!change) return;
+    if (change === 'exhausted') {
+      coax = 0; stopPlay(); clearProps(); busy = ''; walkTo = null;
+      notify(nl('tiredIn'), {pose: 'yawn'});
+      setTimeout(() => { if (S.out.exhausted && !asleep) sleep(); }, motion() ? 900 : 0);
+    } else if (change === 'starving') {
+      notify(nl('hungryIn'), {pose: 'yawn', actions: [{label: t().petActions.feed, run: () => say(feed())}]});
+      puff('sweat', 1);
+    } else if (change === 'sulky') {
+      coax = 0;
+      if (!asleep) { turnAway(); puff('anger', 1, .2); notify(nl('sulkyIn'), {pose: 'annoyed'}); }
+    } else if (change === '-sulky') coax = 0;
+    if (!menu.hidden) { renderMenu(); placeMenu(); }
+  }
 
   /* ---------- DOM ---------- */
   const pet = document.createElement('div');
@@ -380,7 +482,19 @@
         const near = pointer.t && now() - pointer.t < 8000 && pointer.y > f.y - H * 2.2;
         const late = daypart() === 'night', drowsy = S.energy < 35 || late;   // after 23:00 she is sleepy whatever her energy
         const lively = S.energy > 40 && !late, lonely = S.mood < 55;
-        if (stay) {
+        // An empty need replaces her usual wandering: sulking she keeps her back turned, starving she flops about.
+        if (S.out.sulky) {
+          if (r < .35) { turnAway(); puff('anger', 1, .2); setPose('annoyed', 0, 1600); }
+          else if (r < .5) lookAround();
+          else if (form === 'cat' && r < .8) setPose('sit', 0, rand(6000, 10000));
+        }
+        else if (S.out.starving) {
+          if (r < .3) { setPose('yawn', 3, 1300); puff('sweat', 1); }
+          else if (r < .45) lieDown(14000);
+          else if (r < .55) say(nl('hungryMurmur'), {ms: 2200});
+          else if (r < .65) lookAround();
+        }
+        else if (stay) {
           if (drowsy && r < .25) { setPose('yawn', 3, 1300); puff('zzz', 1); }
           else if (r < .3) lookAround();
           else if (r < .42) stretch();
@@ -565,7 +679,16 @@
   }
   function patReact(fromRub) {
     interact();
+    if (asleep && S.out.exhausted) { puff('heart', 1); puff('zzz', 1); return nl('tiredPat'); }   // too worn out to wake
     if (asleep) { wake(true); return line('pet_wake'); }
+    if (S.out.sulky) {   // coaxing her round: the first pat is swatted away, the third wins her over
+      if (fromRub && now() - coaxAt < 900) return '';
+      coaxAt = now(); coax++;
+      if (coax === 1) { refuse(''); return nl('sulkyPat1'); }
+      if (coax === 2) { setPose('annoyed', 0, 1100); puff('heart', 1); gain(0, 4); if (!menu.hidden) paintMenu(); return nl('sulkyPat2'); }
+      coax = 0; gain(0, 22, 0, 4); setPose('pet', 4, 1600); puff('heart', 4);
+      return nl('sulkyOut');
+    }
     gain(0, fromRub ? 2 : 6, 0, fromRub ? 1 : 2);
     puff('heart', fromRub ? 1 : 3);
     window.NIANSIA_FX?.react('happy');
@@ -602,16 +725,23 @@
     setPose('happy', 2, 1200); paintState();
     if (!quiet) say(line('pet_wake'));
   }
+  // A meal for a starving Yuki brings her back (with a care bonus); one for a sulking Yuki wins her over.
+  function eaten(big) {
+    const starving = S.out.starving, sulky = S.out.sulky;
+    gain(35 * big, 4 * big + (sulky ? 18 : 0), 2, 3 + (starving ? 4 : 0));
+    return starving && !S.out.starving ? nl('hungryOut') : sulky && !S.out.sulky ? nl('sulkyFood') : '';
+  }
   function feed(want) {
     interact();
     if (lockedLine(want)) { setPose('annoyed', 0, 900); return lockedLine(want); }
+    const no = blocked('feed'); if (no) return refuse(no);
     if (asleep) wake(true);
     if (S.food > 92) { setPose('annoyed', 0, 1200); return line('full'); }
     stopPlay(); clearTimeout(lieTimer); clearProps(); clearInterval(munchTimer);
     const menu_ = ['fish', ...['taiyaki', 'cake'].filter(unlocked)];
     const kind = menu_.includes(want) ? want : pick(menu_);
     busy = 'eat'; setPose('eat', 0);
-    if (!motion() || !propsEl) { busy = ''; gain(35, 4, 2, 3); setPose('happy', 2, 900); return al(kind); }
+    if (!motion() || !propsEl) { busy = ''; const after = eaten(1); setPose('happy', 2, 900); return after ? `${al(kind)} ${after}` : al(kind); }
     propsEl.innerHTML = Props.food(kind);
     const food = propsEl.querySelector('.yp-food');
     pet.classList.add('is-chewing');
@@ -622,13 +752,15 @@
     later(2750, () => {
       if (propsEl) propsEl.innerHTML = ''; pet.classList.remove('is-chewing', 'is-biting'); busy = '';
       const big = kind === 'cake' ? 1.4 : kind === 'taiyaki' ? 1.2 : 1;
-      gain(35 * big, 4 * big, 2, 3); setPose('happy', 2, 1300); puff('heart', kind === 'fish' ? 2 : 4);
+      const after = eaten(big); setPose('happy', 2, 1300); puff('heart', kind === 'fish' ? 2 : 4);
+      if (after) { puff('star', 3, .8); say(after); }
     });
     return al(kind);
   }
   function trick(want) {
     interact();
     if (lockedLine(want)) { setPose('annoyed', 0, 900); return lockedLine(want); }
+    const no = blocked('trick'); if (no) return refuse(no);
     if (asleep) wake(true);
     if (busy === 'lie') { busy = ''; clearTimeout(lieTimer); }
     stopPlay(); clearProps(); clearInterval(danceTimer);
@@ -677,6 +809,7 @@
   }
   function poke() {
     interact();
+    if (asleep && S.out.exhausted) { puff('zzz', 1); gain(0, -2); return nl('tiredPoke'); }
     setPose('annoyed', 0, 1400);
     pet.classList.remove('is-shaking'); void pet.offsetWidth; pet.classList.add('is-shaking');
     puff('anger', 1, .2); gain(0, -4);
@@ -722,6 +855,7 @@
   function setForm(next) {
     next = next === 'cat' ? 'cat' : 'girl';
     if (!Cat() || morphing || next === form) return '';
+    if (asleep && S.out.exhausted) { say(refuse(nl('tiredNo'))); return ''; }
     morphing = true; interact(); closeMenu();
     if (asleep) wake(true);
     stopPlay(); clearProps(); endButterfly(); busy = ''; walkTo = null; headProps.innerHTML = '';
@@ -737,6 +871,7 @@
   function startPlay(want) {
     interact();
     if (lockedLine(want)) { setPose('annoyed', 0, 900); return lockedLine(want); }
+    const no = blocked('play'); if (no) return refuse(no);
     if (asleep) wake(true);
     if (S.energy < 15) { setPose('yawn', 3, 1200); return line('tooSleepy'); }
     if (busy === 'lie') { busy = ''; clearTimeout(lieTimer); }
@@ -897,7 +1032,7 @@
   hit.addEventListener('pointermove', event => {
     lastActive = now();
     if (down) {
-      if (!down.moved && Math.hypot(event.clientX - down.x, event.clientY - down.y) > 6 && !tucked) {
+      if (!down.moved && Math.hypot(event.clientX - down.x, event.clientY - down.y) > 6 && !tucked && !(asleep && S.out.exhausted)) {   // passed out, she is too heavy to pick up (a click still pats her)
         down.moved = true; dragging = true; grounded = false; walkTo = null; stopPlay(); endButterfly();
         leaping = false; afterLand = null; setGait('walk'); setLook(0); pet.classList.remove('is-wiggling');
         if (asleep) wake(true);
@@ -967,11 +1102,11 @@
     return {span, into: clamp(xp - xpFor(lv), 0, span)};
   }
   function statBar(key, cls) {
-    const v = shownOf(key);
-    return `<div class="stat ${cls}" data-need="${key}"><span>${t().stats[key]}</span><i><b style="width:${v}%"></b></i><em>${Math.round(v)}</em></div>`;
+    const v = shownOf(key), empty = S[key] <= .5 ? ' is-empty' : '';
+    return `<div class="stat ${cls}${empty}" data-need="${key}"><span>${t().stats[key]}</span><i><b style="width:${v}%"></b></i><em>${Math.round(v)}</em></div>`;
   }
   function drawNeeds() {
-    menu.querySelectorAll('[data-need]').forEach(el => { const v = shown[el.dataset.need]; el.querySelector('b').style.width = `${v}%`; el.querySelector('em').textContent = Math.round(v); });
+    menu.querySelectorAll('[data-need]').forEach(el => { const v = shown[el.dataset.need]; el.querySelector('b').style.width = `${v}%`; el.querySelector('em').textContent = Math.round(v); el.classList.toggle('is-empty', S[el.dataset.need] <= .5); });
     const {into, span} = xpParts(shown.xp);
     menu.querySelectorAll('.menu-xp').forEach(el => { el.querySelector('.xp-bar b').style.width = `${into / span * 100}%`; el.querySelector('.xp-text').textContent = rc().xp(Math.round(into), span); });
   }
@@ -985,6 +1120,8 @@
     }
     const head = menu.querySelector('.menu-head small');
     if (head) head.textContent = t().moodWords[moodKey()];
+    const alert = menu.querySelector('.menu-alert');
+    if (alert) alert.textContent = needAlert();
     menu.querySelector('.menu-avatar')?.setAttribute('data-face', asleep ? 2 : S.mood > 70 ? 1 : 0);
     if (!menu.querySelector('[data-need], .menu-xp')) return;   // outfit / settings tabs keep `shown`, so the bars glide on the way back
     const from = {...(shown || S)}, ms = app.motion('ui') ? 700 : 0, t0 = performance.now();
@@ -1007,10 +1144,17 @@
     const {span, into} = xpParts(shownOf('xp'));
     const xp = `<button type="button" class="menu-xp" data-tab="lv"><span class="xp-bar"><b style="width:${(into / span * 100).toFixed(1)}%"></b></span><span class="xp-text">${esc(r.xp(Math.round(into), span))}</span><span class="xp-next">${next ? `${esc(r.next)} ${next.icon} ${esc(r.name[next.id])} · ${r.at(next.lv)}` : esc(r.all)}</span></button>`;
     const sw = (attr, on, ic, label) => `<button type="button" class="menu-wardrobe menu-stay" ${attr} aria-pressed="${on}">${svg(ic)}<span>${label}</span><b class="stay-switch" aria-hidden="true"><i></i></b></button>`;
+    // Refused actions stay clickable (she says why) but look faded; the care that would help is highlighted.
+    const actBtn = ([key, ic, label]) => {
+      const no = blocked(key), hint = key === suggestedAct();
+      return `<button type="button" role="menuitem" data-pet-act="${key}"${no ? ` class="is-blocked" aria-disabled="true" title="${esc(no)}"` : hint ? ' class="is-suggested"' : ''}>${svg(ic)}<span>${label}</span>${key === 'chat' && unread ? `<em>${unread}</em>` : ''}</button>`;
+    };
+    const tip = needAlert();
     const body = {
       act: `<p class="menu-say" aria-live="polite">${esc(bubble.hidden ? line('pet_pat') : bubble.querySelector('p').textContent)}</p>
+        ${tip ? `<p class="menu-alert" role="status">${esc(tip)}</p>` : ''}
         <div class="menu-stats">${statBar('food', 'is-food')}${statBar('mood', 'is-mood')}${statBar('energy', 'is-energy')}${xp}</div>
-        <div class="menu-actions">${acts.map(([key, ic, label]) => `<button type="button" role="menuitem" data-pet-act="${key}">${svg(ic)}<span>${label}</span>${key === 'chat' && unread ? `<em>${unread}</em>` : ''}</button>`).join('')}</div>`,
+        <div class="menu-actions">${acts.map(actBtn).join('')}</div>`,
       lv: `<div class="menu-stats menu-lvbox"><div class="lv-big"><b>Lv ${lv}</b><span>${esc(r.title)}</span></div>${xp}</div>
         <div class="menu-rewards">${REWARDS.map(x => `<div class="reward${lv >= x.lv ? ' is-on' : ''}${next === x ? ' is-next' : ''}"><span class="reward-icon">${lv >= x.lv ? x.icon : '🔒'}</span><span><b>${esc(r.name[x.id])}</b><small>${esc(r.desc[x.id])}</small></span><em>${r.at(x.lv)}</em></div>`).join('')}</div>`,
       wear: renderWardrobe(),
@@ -1086,6 +1230,8 @@
   function act(full) {
     interact();
     const [name, arg] = String(full).split(':');
+    const no = ['wake', 'lie'].includes(name) && blocked(name);
+    if (no) return refuse(no);
     switch (name) {
       case 'pat': return patReact(false);
       case 'feed': return feed(arg);
@@ -1147,9 +1293,12 @@
   }
   function llmNow() {
     const {view, projectId} = app.view();
+    const state = S.out.exhausted ? 'exhausted' : S.out.starving ? 'starving' : S.out.sulky ? 'sulky' : '';
     return {page: view === 'projects' && projectId ? `projects/${projectId}` : view, lang: app.locale(), theme: app.theme(),
-      food: Math.round(S.food), mood: Math.round(S.mood), energy: Math.round(S.energy), asleep: asleep ? ' · asleep' : ''};
+      food: Math.round(S.food), mood: Math.round(S.mood), energy: Math.round(S.energy), asleep: asleep ? ' · asleep' : '', condition: LLM_CONDITION[state] || ''};
   }
+  // The model may still answer "Play time!" while she is starving: a refused @pet command replaces its reply with hers.
+  const refusalIn = commands => commands.map(cmd => /^@pet (\w+)$/.exec(cmd)?.[1]).map(a => a && blocked(a)).find(Boolean) || '';
   async function quickIntent(text) {
     try { await brain.load(); const c = brain.classify(brain.extract(text).text); return QUICK.has(c.intent) && c.confidence >= .92; } catch { return false; }
   }
@@ -1174,15 +1323,17 @@
     let el = null;
     const live = () => { typing(false); el = appendMessage({who: 'yuki', text: ''}); return el; };
     try {
-      const r = await LLM().reply({text, history: llmHistory, now: llmNow()}, body => {
-        (el || live()).querySelector('p').textContent = body;
+      const r = await LLM().reply({text, history: llmHistory, now: llmNow()}, (body, commands = []) => {
+        (el || live()).querySelector('p').textContent = refusalIn(commands) || body;
         const log = chat.querySelector('.chat-log'); if (log) log.scrollTop = log.scrollHeight;
       });
       if (!el) live();
-      const links = runCommands(r.commands);
-      const m = {who: 'yuki', text: r.text || '…', links, meta: `${LLM().label} · ${r.seconds.toFixed(1)}s`};
+      const no = refusalIn(r.commands);
+      if (no) refuse('');
+      const links = runCommands(r.commands.filter(cmd => !refusalIn([cmd])));
+      const m = {who: 'yuki', text: no || r.text || '…', links, meta: `${LLM().label} · ${r.seconds.toFixed(1)}s`};
       el.remove(); messages.push(m); if (messages.length > 60) messages.shift(); appendMessage(m, false);
-      remember(text, r.raw);
+      remember(text, no || r.raw);
       if (chat.hidden) say(firstSentence(m.text));
       return m;
     } catch {
@@ -1310,6 +1461,12 @@
     if (conf < .38 && intent !== 'oos') intent = ret[0]?.score > .12 ? 'project_find' : 'oos';
     if (intent === 'oos' && ret[0]?.score > .2) intent = 'project_find';
     const reply = perform(intent, {ent, ret, text});
+    // Her condition colours the small model's replies too; answers about Niansia stay complete (pet actions speak for themselves).
+    if (reply.text && !/^pet_|^(compliment|love|hide|show)$/.test(intent)) {
+      if (asleep && S.out.exhausted) reply.text = nl('leadTired') + reply.text;
+      else if (S.out.sulky) reply.text = nl('leadSulky') + reply.text;
+      else if (S.out.starving) reply.text += nl('tailHungry');
+    }
     reply.meta = ok ? `${intent} · ${Math.round(conf * 100)}%` : 'rules';
     if (!ok) reply.text = `${reply.text}\n${t().brainOff}`;
     return reply;
@@ -1395,7 +1552,8 @@
       case 'hide': return {text: tuck(true)};
       case 'show': return {text: tuck(false)};
       case 'pet_status': {
-        const feeling = S.food < 35 ? line('feelingHungry') : S.energy < 30 ? line('feelingSleepy') : S.mood < 45 ? line('feelingLonely') : line('feelingGood');
+        const feeling = S.out.starving ? nl('feelStarving') : S.out.sulky ? nl('feelSulky')
+          : S.food < 35 ? line('feelingHungry') : S.energy < 30 ? line('feelingSleepy') : S.mood < 45 ? line('feelingLonely') : line('feelingGood');
         return out('pet_status', {food: Math.round(S.food), mood: Math.round(S.mood), energy: Math.round(S.energy), level: level(), feeling});
       }
       case 'time_date': {
@@ -1403,7 +1561,9 @@
         return out('time_date', {time: new Intl.DateTimeFormat(L, {timeStyle: 'short'}).format(d), date: new Intl.DateTimeFormat(L, {dateStyle: 'full'}).format(d)});
       }
       case 'nav_home': app.navigate('home', '', {quiet: true}); return out('nav_home');
-      case 'compliment': case 'love': gain(0, 6, 0, 3); setPose('happy', 2, 1200); puff('heart', 4); return out(intent);
+      case 'compliment': case 'love':
+        if (S.out.sulky) { coax = 0; gain(0, 22, 0, 4); setPose('pet', 4, 1600); puff('heart', 4); return {text: nl('sulkyOut')}; }   // a kind word wins her over
+        gain(0, 6, 0, 3); setPose('happy', 2, 1200); puff('heart', 4); return out(intent);
       case 'happy': trick(); return out('happy');
       case 'insult': poke(); return out('insult');
       case 'comfort': puff('heart', 2); gain(0, 2); return out('comfort');
@@ -1443,6 +1603,7 @@
   }
   function nudge() {
     nudges++;
+    if (S.out.sulky) { turnAway(); notify(nl('sulkyNudge'), {pose: 'annoyed'}); return; }
     if (S.food < 30) { notify(line('hungry'), {actions: [{label: t().petActions.feed, run: () => say(feed())}]}); return; }
     if (S.energy < 22) { notify(line('sleepy'), {pose: 'yawn'}); return; }
     const unseen = projects().filter(p => !S.seen.includes(p.id));
@@ -1453,9 +1614,11 @@
   setInterval(() => {
     const stamp = now();
     S.food = clamp(S.food - (asleep ? .15 : .3), 0, 100);
-    S.energy = clamp(S.energy + (asleep ? 1.6 : -.15), 0, 100);
+    S.energy = clamp(S.energy + (asleep ? (S.out.exhausted ? 3.2 : 1.6) : -.15), 0, 100);   // passed out, she recovers twice as fast
     if (stamp - lastInteract > 120000) S.mood = clamp(S.mood - .2, 0, 100);
+    if (S.out.starving) S.mood = clamp(S.mood - .3, 0, 100);   // hunger makes her grumpy: left unfed, she ends up sulking too
     if (asleep && S.energy >= 100 && stamp - sleptAt > 120000 && stamp - lastActive < 60000) { wake(false); }
+    onNeeds(checkNeeds());
     save(); paintState();
     if (document.hidden || dragging) return;
     if (!asleep && !busy && stamp - lastActive > 360000) { sleep(); return; }
@@ -1474,7 +1637,7 @@
       clearTimeout(titleTimer);
       if (titleBackup) { document.title = titleBackup; titleBackup = ''; }
       const minutes = Math.round((now() - hiddenAt) / 60000);
-      if (hiddenAt && minutes >= 5) { if (asleep) wake(true); notify(line('welcomeBack', {minutes})); }
+      if (hiddenAt && minutes >= 5 && !S.out.exhausted) { if (asleep) wake(true); notify(line('welcomeBack', {minutes})); }
       hiddenAt = 0;
     }
   });
@@ -1564,11 +1727,17 @@
     return stay ? t().stayOn : t().stayOff;
   }
   pet.classList.toggle('is-staying', stay);
+  // Local testing only (scratchpad yuki_needs_test.py): set her needs directly, since a reload lifts fullness to 20 at least.
+  if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) window.YUKI_TEST = {
+    needs: patch => { Object.assign(S, patch); onNeeds(checkNeeds()); save(); paintState(); return {...S, out: {...S.out}}; },
+    state: () => ({...S, out: {...S.out}, asleep, mood: moodKey(), coax})
+  };
 
   window.YUKI = {
     stay: on => on === undefined ? stay : setStay(on),
     walkTo: target => walk(clamp(target, ...bounds(floorOf(floorKind)))), stretch,
     move(name) {
+      if (asleep && S.out.exhausted) return false;
       if (asleep) wake(true);
       if (busy || dragging || tucked || !grounded || leaping) return false;
       walkTo = null; onArrive = null; setGait('walk');
@@ -1603,10 +1772,12 @@
   pet.dataset.pose = 'idle'; setFrame(0);
   tucked = app.store.get('yuki-tucked', coarse.matches || innerWidth < 720 ? '1' : '0') === '1';
   pet.classList.toggle('is-tucked', tucked);
+  checkNeeds();   // a need that recovered while she was away ends quietly; one still empty carries on
   requestAnimationFrame(() => {
     reground();
     setTimeout(showWhenReady, 3000); // loadOutfit (or the cat's sheet) shows her once the look has loaded
     blink(); schedule(); paintState();
+    if (S.out.exhausted) setTimeout(() => { if (!asleep) sleep(); }, 2600);   // still worn out: back to sleep after saying hello
     const fest = festival(), greetedKey = app.store.get('yuki-fest-greeted', '');
     const part = daypart();
     let greet = S.visits === 1 ? line('firstVisit')

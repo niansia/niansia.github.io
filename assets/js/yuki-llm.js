@@ -40,7 +40,9 @@
     const locale = now.lang, copy = window.NIANSIA_COPY[locale];
     const parts = [template.header, fill(template.profile, copy), template.projectsTitle,
       ...window.NIANSIA_PROJECTS[locale].map(p => fill(template.project, p)), fill(template.now, now)];
-    return parts.slice(0, 3).join('\n\n') + '\n' + parts.slice(3, -1).join('\n') + '\n\n' + parts.at(-1);
+    // A need at 0 adds one CONDITION line after NOW (the training prompt had none; tested on the fp16 weights, it steers
+    // the tone in Chinese but not reliably in English, so yuki-pet.js still enforces what she will actually do).
+    return parts.slice(0, 3).join('\n\n') + '\n' + parts.slice(3, -1).join('\n') + '\n\n' + parts.at(-1) + (now.condition ? `\n${now.condition}` : '');
   }
   function load(onProgress) {
     if (engine) return Promise.resolve(engine);
@@ -81,7 +83,7 @@
     for await (const chunk of stream) {
       raw += chunk.choices[0]?.delta?.content || '';
       const part = split(raw);
-      if (!part.pending) onText?.(part.body);
+      if (!part.pending) onText?.(part.body, part.commands);
     }
     const {commands, body} = split(raw);
     return {raw: raw.trim(), text: body, commands: validate(commands), seconds: (performance.now() - started) / 1000};

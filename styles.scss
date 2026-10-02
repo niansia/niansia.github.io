@@ -807,6 +807,20 @@ html.film-open .yuki,html.film-open .yuki-chat{visibility:hidden;}
 .menu-actions button:hover .yicon{animation:wiggle .5s ease;}
 .menu-actions .yicon{width:19px;height:19px;color:var(--accent);}
 .menu-actions em{position:absolute;right:6px;top:4px;min-width:15px;height:15px;border-radius:99px;background:var(--accent-2);color:#fff;font:700 9px/15px var(--mono);font-style:normal;}
+/* empty needs (yuki-pet.js "empty needs"): the empty bar pulses, a tip says how to help, refused actions fade, the helpful one glows */
+.stat.is-empty em{color:#d6455d;font-weight:700;}
+.stat.is-empty i{box-shadow:0 0 0 1px color-mix(in srgb,#d6455d 60%,transparent);animation:need-pulse 1.4s ease-in-out infinite;}
+@keyframes need-pulse{50%{box-shadow:0 0 0 3px color-mix(in srgb,#d6455d 22%,transparent);}}
+.menu-alert{margin:-4px 0 10px;padding:7px 10px;border-radius:10px;font-size:11px;line-height:1.55;color:color-mix(in srgb,#d6455d 75%,var(--ink));background:color-mix(in srgb,#d6455d 9%,var(--surface));border:1px dashed color-mix(in srgb,#d6455d 40%,transparent);}
+.menu-actions button.is-blocked{opacity:.42;}
+.menu-actions button.is-blocked .yicon{color:var(--muted);}
+.menu-actions button.is-blocked:hover .yicon{animation:none;}
+.menu-actions button.is-suggested{background:var(--wash);box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--accent) 70%,transparent);}
+.menu-actions button.is-suggested .yicon{animation:wiggle 1.8s ease-in-out infinite;}
+.yuki[data-mood='sulky'] .yuki-tail{animation-duration:.55s;}
+.yuki[data-mood='starving'] .yuki-tail,.yuki[data-mood='exhausted'] .yuki-tail{animation-duration:4.2s;}
+.yuki[data-mood='starving'] .yuki-figure{filter:saturate(.78) brightness(.97);}
+@media (prefers-reduced-motion:reduce){.stat.is-empty i,.menu-actions button.is-suggested .yicon{animation:none;}}
 /* chat panel */
 .yuki-chat{position:fixed;right:24px;bottom:90px;z-index:45;width:min(380px,calc(100vw - 32px));height:min(560px,calc(100dvh - 140px));display:flex;flex-direction:column;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow-lg);overflow:hidden;}
 .yuki-chat[hidden]{display:none;}.yuki-chat.is-in{animation:chat-in .42s var(--spring);transform-origin:90% 100%;}
