@@ -7,6 +7,9 @@
      once; another window, app or system popup after a 10-second countdown shown on the page. The first strike brings a
      warning on return, the second voids the attempt, as in a real exam room. A reload is not a strike, but a page left
      for longer than a few seconds is (a heartbeat records when the page was last open).
+   The panel can swap Yuki for an exam proctor (an original character, assets/study/proctor/*.webp, cut from a sheet by
+   tools/build_proctor_assets.py): same timers and rules, stricter lines in the voice of a cram-school teacher. With him,
+   leaving the page during a focus round is called out too (no strike outside an exam), and he talks now and then.
    Timers run on end times, so a throttled background tab or a reload does not lose them; nothing leaves the browser.
    Needs assets/js/yuki-cat.js and the cat sheet; without them the companion stays hidden. */
 (() => {
@@ -66,6 +69,14 @@
       rest: ['辛苦了！休息一下，喝口水', '完成一轮了，伸个懒腰吧', '做得好～休息时间'], back: ['休息结束，回来继续吧', '再一轮就好！'],
       pat: ['呼噜呼噜……♡', '读书辛苦了', '喵～'], proctor: ['开始作答！我会安静监考～', '专心写，我在旁边看着哦', '加油！不会的先跳过'], patExam: ['嘘～考试中', '专心写题目！', '（安静地看着你）']}
   };
+  // The proctor's lines: the same moments as Yuki's, plus `leave` (back from another tab during a focus round) and `idle`.
+  const P = tw ? {"name": "監考老師", "hide": "讓監考老師先離開", "show": "請監考老師回來", "who": "陪讀", "whoYuki": "Yuki", "whoProf": "監考老師", "warnTitle": "這樣切出去，會當兵的啦！", "warnBody": "考試中不能切換視窗！不想計時就按「結束考試」；再切一次，本次考試作廢。", "voidTitle": "本次考試作廢", "voidBody": "切出去兩次，作廢。高高興興去考試，快快樂樂去當兵——下次不要再切出去了。", "upTitle": "時間到，筆放下！收卷！", "say": {"hello": ["監考老師到。手機蓋起來，眼睛看題目。", "準備好就開始，我幫你看時間。", "該記的一個都不能少，少一個就全部都不要記了。"], "focus": ["計時開始。不怕是一種幸福，題目來就寫。", "開始！早讀晚讀還是要讀，現在讀最划算。", "開始。逃得了和尚逃不了廟，該背的遲早要背。"], "rest": ["收卷！休息一下。喝水可以，滑手機不行。", "一輪結束。起來走走，看看遠方。", "筆放下，休息時間。考上好學校，回來請老師喝一瓶好茶。"], "back": ["休息時間到，回座位！", "回座位。這一輪考的是你自己，不是隔壁。"], "pat": ["摸我也沒用，題目還是要寫。", "有問題舉手，沒問題寫題目。", "老師也是人，難免少一個負號；你算完記得驗算。"], "proctor": ["開始作答。我在後面看著。", "開始！不會的先跳過，那種題目是給電腦做的，人不要硬解。", "開始作答，答案卡記得畫。"], "patExam": ["考試中不要回頭！", "看題目，不要看我。", "專心寫，我都看得到。"], "leave": ["這樣切出去，會當兵的啦！", "切出去滑一下？滑著滑著就滑去成功嶺了。", "剛剛那幾分鐘，國安局都看到了。小心被抓去當兵。", "一心多用？你以為你幾位元？1 位元都不到。專心。", "逃得了和尚逃不了廟，該讀的遲早要讀。回來！"], "idle": ["這題是民國 84 年的考古題，當年這樣做的人，現在應該升上校了。", "肚子餓了才種稻子？等稻子熟了早就餓死了。現在不讀，考前來不及。", "不會的題目別硬微，微完變更大坨，火更大。先跳過。", "會的題目拿到分叫實力展現；不會的硬做，叫展個鬼。", "「恰有一解」的恰，不是很兇的意思。題目看清楚。", "題庫沒人在問為什麼的，先寫，寫多了就懂了。", "唸不完怎麼辦？賭不會考？別賭了，繼續讀。", "你家前後左右都賣豆漿，你家的極限就是豆漿。身邊都在讀書，你的極限就是上榜。", "隔壁著火你家跟著燒，叫連續燒；你一輪接一輪讀，叫連續讀。", "愛吃海產的去中山，愛吃肉包的去中正，愛喝牛奶的去中興。先過一階再挑。", "五位數乘五位數心算比計算機快的，站出來讓大家崇拜一下。沒有就乖乖算。", "讀書不能ㄨㄚˊㄨㄚˊ，ㄨㄚˊ 完還是要讀。", "這會驚動國安局的。好好讀，不要被抓去當兵。", "螞蟻呼吸的聲音都聽得到？那你半夜會聽到行軍的聲音，扣、扣、扣……", "高高興興去考試，快快樂樂去當兵——你不會，你現在有在讀。", "房子不會有 i 坪。算出奇怪的東西，趕快回頭檢查。", "人都會犯錯，對牆壁吐舌頭一千次也會咬到一次。錯了改掉就好。"]}} : {"name": "监考老师", "hide": "让监考老师先离开", "show": "请监考老师回来", "who": "陪读", "whoYuki": "Yuki", "whoProf": "监考老师", "warnTitle": "这样切出去，会当兵的啦！", "warnBody": "考试中不能切换窗口！不想计时就按“结束考试”；再切一次，本次考试作废。", "voidTitle": "本次考试作废", "voidBody": "切出去两次，作废。高高兴兴去考试，快快乐乐去当兵——下次不要再切出去了。", "upTitle": "时间到，笔放下！收卷！", "say": {"hello": ["监考老师到。手机盖起来，眼睛看题目。", "准备好就开始，我帮你看时间。", "该记的一个都不能少，少一个就全部都不要记了。"], "focus": ["计时开始。不怕是一种幸福，题目来就写。", "开始！早读晚读还是要读，现在读最划算。", "开始。逃得了和尚逃不了庙，该背的迟早要背。"], "rest": ["收卷！休息一下。喝水可以，刷手机不行。", "一轮结束。起来走走，看看远方。", "笔放下，休息时间。考上好学校，回来请老师喝一瓶好茶。"], "back": ["休息时间到，回座位！", "回座位。这一轮考的是你自己，不是隔壁。"], "pat": ["摸我也没用，题目还是要写。", "有问题举手，没问题写题目。", "老师也是人，难免少一个负号；你算完记得验算。"], "proctor": ["开始作答。我在后面看着。", "开始！不会的先跳过，那种题目是给电脑做的，人不要硬解。", "开始作答，答题卡记得画。"], "patExam": ["考试中不要回头！", "看题目，不要看我。", "专心写，我都看得到。"], "leave": ["这样切出去，会当兵的啦！", "切出去刷一下？刷着刷着就刷去成功岭了。", "刚刚那几分钟，国安局都看到了。小心被抓去当兵。", "一心多用？你以为你几比特？1 比特都不到。专心。", "逃得了和尚逃不了庙，该读的迟早要读。回来！"], "idle": ["这题是民国 84 年的考古题，当年这样做的人，现在应该升上校了。", "肚子饿了才种稻子？等稻子熟了早就饿死了。现在不读，考前来不及。", "不会的题目别硬微，微完变更大坨，火更大。先跳过。", "会的题目拿到分叫实力展现；不会的硬做，叫展个鬼。", "“恰有一解”的恰，不是很凶的意思。题目看清楚。", "题库没人在问为什么的，先写，写多了就懂了。", "念不完怎么办？赌不会考？别赌了，继续读。", "你家前后左右都卖豆浆，你家的极限就是豆浆。身边都在读书，你的极限就是上榜。", "隔壁着火你家跟着烧，叫连续烧；你一轮接一轮读，叫连续读。", "爱吃海产的去中山，爱吃肉包的去中正，爱喝牛奶的去中兴。先过一阶再挑。", "五位数乘五位数心算比计算机快的，站出来让大家崇拜一下。没有就乖乖算。", "读书不能ㄨㄚˊㄨㄚˊ，ㄨㄚˊ 完还是要读。", "这会惊动国安局的。好好读，不要被抓去当兵。", "蚂蚁呼吸的声音都听得到？那你半夜会听到行军的声音，扣、扣、扣……", "高高兴兴去考试，快快乐乐去当兵——你不会，你现在有在读。", "房子不会有 i 坪。算出奇怪的东西，赶快回头检查。", "人都会犯错，对墙壁吐舌头一千次也会咬到一次。错了改掉就好。"]}};
+  P.remind = tw ? m => `剩 ${m} 分鐘，答案卡畫了沒？` : m => `剩 ${m} 分钟，答题卡画了没？`;
+  P.upBody = tw ? s => `雙手離開桌面。「${s}」模擬考完成，考上好學校記得回來請老師喝茶。` : s => `双手离开桌面。“${s}”模拟考完成，考上好学校记得回来请老师喝茶。`;
+  // Yuki's poses mapped to the proctor's five pictures
+  const PROF_OF = {sit: 'calm', curl: 'calm', belly: 'tea', stretch: 'bell', happy: 'warn', swipe: 'shout', crouch: 'shout'};
+  const PROF_MOVE = {shout: 'is-shake', bell: 'is-ring'};
+  const profSrc = n => `/assets/study/proctor/${n}.webp?v=1`;
   const PRESETS = [[25, 5], [50, 10]];
   const store = {get(k, d) { try { return JSON.parse(localStorage.getItem(`niansia-study-${k}`)) ?? d; } catch { return d; } },
     set(k, v) { try { localStorage.setItem(`niansia-study-${k}`, JSON.stringify(v)); } catch {} }};
@@ -75,7 +86,10 @@
   const esc = s => String(s).replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
 
   // focus timer state: the preset, the phase, and either an end time (running) or the time left (paused)
-  let S = {preset: 0, phase: 'idle', end: 0, left: 0, sound: false, tab: 'focus', ...store.get('timer', {})};
+  let S = {preset: 0, phase: 'idle', end: 0, left: 0, sound: false, tab: 'focus', who: 'yuki', ...store.get('timer', {})};
+  const isProf = () => S.who === 'prof';
+  const lines = k => (isProf() ? P.say : T.say)[k];          // what the current companion says
+  const tx = k => (isProf() && P[k] !== undefined ? P[k] : T[k]);
   const save = () => store.set('timer', S);
   const tally = () => { const t = store.get('tally', {}); return t.day === day() ? t : {day: day(), rounds: 0, minutes: 0}; };
   // mock exam state: subject, start/end times, strikes, reminders already given, and a heartbeat (last time the page was open)
@@ -97,7 +111,8 @@
   root.className = 'sb';
   root.innerHTML = `<div class="sb-bubble" role="status" aria-live="polite" hidden></div>
     <section class="sb-panel" hidden aria-label="${T.name}">
-      <header><b>${T.name}</b><button type="button" class="sb-x" data-sb="close" aria-label="${T.close}">×</button></header>
+      <header><b class="sb-name">${T.name}</b><button type="button" class="sb-x" data-sb="close" aria-label="${T.close}">×</button></header>
+      <div class="sb-who" role="group" aria-label="${P.who}"><span>${P.who}</span><button type="button" data-who="yuki">${P.whoYuki}</button><button type="button" data-who="prof">${P.whoProf}</button></div>
       <div class="sb-exam"></div>
       <div class="sb-tabs" role="tablist"><button type="button" role="tab" data-tab="focus">${T.tabs.focus}</button><button type="button" role="tab" data-tab="mock">${T.tabs.mock}</button></div>
       <div class="sb-pane" data-pane="focus">
@@ -118,11 +133,11 @@
       </div>
       <button type="button" class="sb-bye" data-sb="hide">${T.hide}</button>
     </section>
-    <button type="button" class="sb-cat" aria-label="${T.open}" aria-expanded="false"><span class="yuki-cat" aria-hidden="true"></span><em class="sb-chip"></em></button>
-    <button type="button" class="sb-call" data-sb="show" hidden>🐾 <span>${T.show}</span></button>
+    <button type="button" class="sb-cat" aria-label="${T.open}" aria-expanded="false"><span class="yuki-cat" aria-hidden="true"></span><img class="sb-prof" alt="" aria-hidden="true" decoding="async"><em class="sb-chip"></em></button>
+    <button type="button" class="sb-call" data-sb="show" hidden><span class="sb-call-txt">🐾 ${T.show}</span></button>
     <div class="sb-grace" role="alert" hidden><b>⚠ ${T.graceTitle}</b><strong class="sb-grace-n"></strong><span class="sb-grace-msg"></span></div>
     <div class="sb-modal" hidden><div class="sb-dialog" role="alertdialog" aria-modal="true" aria-labelledby="sb-dlg-title"></div></div>`;
-  const $ = s => root.querySelector(s), catEl = $('.yuki-cat');
+  const $ = s => root.querySelector(s), catEl = $('.yuki-cat'), profEl = $('.sb-prof');
 
   let bubbleTimer = 0, frameTimer = 0;
   function say(text, ms = 3800) {
@@ -130,10 +145,24 @@
     clearTimeout(bubbleTimer); bubbleTimer = setTimeout(() => { b.hidden = true; }, ms);
   }
   function pose(name, then, ms) {
-    Cat.paint(catEl, name);
+    paintPet(name);
     clearTimeout(frameTimer);
-    if (then) frameTimer = setTimeout(() => Cat.paint(catEl, then), ms);
+    if (then) frameTimer = setTimeout(() => paintPet(then), ms);
   }
+  // Yuki is drawn from her sheet; the proctor swaps pictures, shakes when he shouts and rings his bell at time up
+  function paintPet(name) {
+    if (!isProf()) { Cat.paint(catEl, name); return; }
+    const n = PROF_OF[name] || 'calm';
+    if (profEl.dataset.pose === n) return;
+    profEl.dataset.pose = n; profEl.src = profSrc(n);
+    motion(profEl, PROF_MOVE[n]);
+  }
+  function motion(el, cls) {
+    el.classList.remove('is-hop', 'is-shake', 'is-ring');
+    if (!cls || reduced) return;
+    void el.offsetWidth; el.classList.add(cls);
+  }
+  const preloadProf = () => Object.values(PROF_OF).forEach(n => { new Image().src = profSrc(n); });
   // while you focus she naps beside you; on a break she rolls on her back; in an exam she sits up and watches
   const restPose = () => pose(examOn() ? 'sit' : S.phase === 'rest' ? 'belly' : S.phase === 'focus' ? 'curl' : 'sit');
   const fmt = ms => { const s = Math.max(0, Math.ceil(ms / 1000)); return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`; };
@@ -145,6 +174,10 @@
 
   function paint() {
     const e = nextExam(), left = remaining(), on = examOn();
+    root.classList.toggle('is-prof', isProf());
+    $('.sb-name').textContent = tx('name'); $('.sb-panel').setAttribute('aria-label', tx('name'));
+    $('.sb-bye').textContent = tx('hide'); $('.sb-call-txt').textContent = isProf() ? tx('show') : `🐾 ${T.show}`;
+    root.querySelectorAll('[data-who]').forEach(b => { b.setAttribute('aria-pressed', String(b.dataset.who === S.who)); b.disabled = on; b.title = on ? T.lockTab : ''; });
     $('.sb-exam').innerHTML = e ? `<span>${T.exam[e.id]} · ${e.date}</span><b>${e.days > 0 ? T.left(e.days) : T.today}</b>` : '';
     $('.sb-exam').hidden = !e;
     const tab = on ? 'mock' : S.tab;
@@ -193,10 +226,10 @@
     if (S.phase === 'focus') {
       const t = tally(); t.rounds += 1; t.minutes += PRESETS[S.preset][0]; store.set('tally', t);
       S.phase = 'rest'; S.end = Date.now() + PRESETS[S.preset][1] * 60000; S.left = 0;
-      pose('stretch', 'belly', 2200); say(pick(T.say.rest), 6000);
+      pose('stretch', 'belly', 2200); say(pick(lines('rest')), 6000);
     } else {
       S.phase = 'idle'; S.end = 0; S.left = 0;
-      pose('happy', 'sit', 2600); say(pick(T.say.back), 6000);
+      pose('happy', 'sit', 2600); say(pick(lines('back')), 6000);
     }
     chime(); save(); paint();
   }
@@ -210,8 +243,11 @@
     box.querySelector('.is-main, button')?.focus({preventScroll: true});
   }
   function closeDialog() { $('.sb-modal').hidden = true; $('.sb-dialog').innerHTML = ''; }
-  const card = (title, body, extra = '') => `<span class="sb-dlg-pet" aria-hidden="true"><span class="sb-dlg-cat yuki-cat"></span></span><h3 id="sb-dlg-title">${esc(title)}</h3><p>${esc(body)}</p>${extra}`;
-  function paintDialogCat(name) { const c = $('.sb-dlg-cat'); if (c) Cat.paint(c, name); }
+  const card = (title, body, extra = '') => `<span class="sb-dlg-pet" aria-hidden="true"><span class="sb-dlg-cat yuki-cat"></span><img class="sb-dlg-prof" alt=""></span><h3 id="sb-dlg-title">${esc(title)}</h3><p>${esc(body)}</p>${extra}`;
+  function paintDialogCat(name) {
+    if (isProf()) { const i = $('.sb-dlg-prof'); if (i) { const n = PROF_OF[name] || 'calm'; i.src = profSrc(n); motion(i, PROF_MOVE[n]); } return; }
+    const c = $('.sb-dlg-cat'); if (c) Cat.paint(c, name);
+  }
 
   /* ---------- mock exam ---------- */
   function ask(subject) {
@@ -231,7 +267,7 @@
       const minutes = minutesOf(subject), now = Date.now();
       X = {subject, minutes, start: now, end: now + minutes * 60000, strikes: 0, told: [], beat: now};
       saveX(); chime();
-      countdown = setTimeout(() => { closeDialog(); pose('happy', 'sit', 1300); say(pick(T.say.proctor), 4200); paint(); }, 900);
+      countdown = setTimeout(() => { closeDialog(); pose('happy', 'sit', 1300); say(pick(lines('proctor')), 4200); paint(); }, 900);
     };
     step();
   }
@@ -246,9 +282,9 @@
     if (!examOn()) return;
     const subject = X.subject, used = record(status);
     X = null; saveX(); awayNow = false;
-    if (status === 'done') { chime(true); dialog(card(T.upTitle, T.upBody(T.subj[subject])), [['ok', T.ok, true]]); paintDialogCat('stretch'); pose('stretch', 'happy', 2200); }
+    if (status === 'done') { chime(true); dialog(card(tx('upTitle'), tx('upBody')(T.subj[subject])), [['ok', T.ok, true]]); paintDialogCat('stretch'); pose('stretch', 'happy', 2200); }
     if (status === 'early') { dialog(card(T.earlyTitle, T.earlyBody(T.subj[subject], used)), [['ok', T.ok, true]]); paintDialogCat('sit'); }
-    if (status === 'void') { dialog(card(T.voidTitle, T.voidBody), [['ok', T.ok, true]]); paintDialogCat('crouch'); pose('crouch', 'sit', 2600); }
+    if (status === 'void') { dialog(card(tx('voidTitle'), tx('voidBody')), [['ok', T.ok, true]]); paintDialogCat('crouch'); pose('crouch', 'sit', 2600); }
     paint();
   }
   // A strike is one trip away from the page, however it happened (tab, window, app, or a page left open elsewhere).
@@ -263,8 +299,8 @@
   function back() {
     if (!awayNow && !pending) return;
     awayNow = false;
-    if (pending === 'warn') { dialog(card(T.warnTitle, T.warnBody), [['ok', T.warnOk, true]]); paintDialogCat('swipe'); pose('swipe', 'sit', 1500); }
-    if (pending === 'void') { X = null; saveX(); dialog(card(T.voidTitle, T.voidBody), [['ok', T.ok, true]]); paintDialogCat('crouch'); pose('crouch', 'sit', 2600); }
+    if (pending === 'warn') { dialog(card(tx('warnTitle'), tx('warnBody')), [['ok', T.warnOk, true]]); paintDialogCat('swipe'); pose('swipe', 'sit', 1500); }
+    if (pending === 'void') { X = null; saveX(); dialog(card(tx('voidTitle'), tx('voidBody')), [['ok', T.ok, true]]); paintDialogCat('crouch'); pose('crouch', 'sit', 2600); }
     pending = ''; paint();
   }
   /* Focus lost while the page stays visible (a system notification, another window or app): a banner says so and counts
@@ -291,26 +327,38 @@
       graceLeft -= 1;
       if (graceLeft > 0) { graceBanner(T.graceBody, graceLeft); return; }
       stopGrace(true); strike();
-      graceBanner(pending === 'void' ? T.voidBody : T.graceStruck);
+      graceBanner(pending === 'void' ? tx('voidBody') : T.graceStruck);
     }, 1000);
   }
   addEventListener('pagehide', () => { leaving = true; });   // a reload is not a strike; the heartbeat catches a page left for longer
   addEventListener('pageshow', () => { leaving = false; });
+  let hiddenAt = 0;
   document.addEventListener('visibilitychange', () => {
     if (document.hidden && counting) { clearTimeout(countdown); counting = false; closeDialog(); restPose(); }   // left during the countdown: it simply does not start
-    if (document.hidden) { stopGrace(); strike(); } else back();   // another tab counts at once, without the grace
+    if (document.hidden) { stopGrace(); strike(); hiddenAt = Date.now(); }   // another tab counts at once, without the grace
+    else {
+      // the proctor notices a trip away from a focus round too (only a telling-off: no strikes outside an exam)
+      if (isProf() && !examOn() && running() && S.phase === 'focus' && hiddenAt && Date.now() - hiddenAt > 2000 && !store.get('hidden', false)) {
+        const away = Math.round((Date.now() - hiddenAt) / 1000);
+        pose('swipe', 'curl', 2600); say(`${pick(P.say.leave)}${tw ? `（離開 ${away} 秒）` : `（离开 ${away} 秒）`}`, 6500);
+      }
+      hiddenAt = 0; back();
+    }
     tick();
   });
   addEventListener('blur', () => { if (examOn() && !document.hidden) startGrace(); });
   addEventListener('focus', () => { stopGrace(); if (!document.hidden) back(); });
 
+  let lastIdle = Date.now();
   function tick() {
     if (running() && remaining() <= 0) finish();
+    // the proctor fills a long focus round with a cram-school aside every seven minutes or so
+    if (isProf() && running() && S.phase === 'focus' && !document.hidden && Date.now() - lastIdle > 7 * 60000 && remaining() > 90000) { lastIdle = Date.now(); say(pick(P.say.idle), 7500); }
     if (examOn()) {
       const xl = X.end - Date.now();
       if (xl <= 0) { endExam('done'); return; }
       if (!document.hidden) X.beat = Date.now();
-      [15, 5].forEach(m => { if (xl <= m * 60000 && xl > (m - 1) * 60000 && !X.told.includes(m) && !awayNow) { X.told.push(m); say(T.remind(m), 6000); } });
+      [15, 5].forEach(m => { if (xl <= m * 60000 && xl > (m - 1) * 60000 && !X.told.includes(m) && !awayNow) { X.told.push(m); say(tx('remind')(m), 6000); if (isProf()) pose('happy', 'sit', 2400); } });
       saveX();
     }
     paint();
@@ -318,7 +366,7 @@
   function go() {
     if (running()) { S.left = remaining(); S.end = 0; }   // pause
     else {
-      if (S.phase === 'idle') { S.phase = 'focus'; say(pick(T.say.focus)); pose('happy', 'curl', 1400); }
+      if (S.phase === 'idle') { S.phase = 'focus'; say(pick(lines('focus'))); pose('happy', 'curl', 1400); lastIdle = Date.now(); }
       S.end = Date.now() + (S.left || PRESETS[S.preset][S.phase === 'rest' ? 1 : 0] * 60000); S.left = 0;
     }
     save(); paint();
@@ -333,8 +381,11 @@
     store.set('hidden', away); root.classList.toggle('is-away', away);
     $('.sb-call').hidden = !away; if (away) toggle(false);
   }
-  const hop = () => { if (reduced) return; catEl.classList.remove('is-hop'); void catEl.offsetWidth; catEl.classList.add('is-hop'); };
+  const hop = () => { if (reduced) return; const el = isProf() ? profEl : catEl; el.classList.remove('is-hop'); void el.offsetWidth; el.classList.add('is-hop'); };
   catEl.addEventListener('animationend', event => { if (event.animationName === 'sb-hop') catEl.classList.remove('is-hop'); });   // back to breathing
+  root.addEventListener('animationend', event => {   // the proctor's one-off moves end; his breathing loop never does
+    if (event.target.matches?.('.sb-prof,.sb-dlg-prof') && event.animationName !== 'sb-breathe') event.target.classList.remove('is-hop', 'is-shake', 'is-ring');
+  });
 
   root.addEventListener('click', event => {
     const b = event.target.closest('button,input'); if (!b) return;
@@ -348,10 +399,15 @@
     if (b.classList.contains('sb-cat')) {
       const open = $('.sb-panel').hidden;
       toggle(open);
-      if (open) { pose('happy', null); setTimeout(restPose, 1300); say(pick(examOn() ? T.say.patExam : T.say.pat), 2600); hop(); }
+      if (open) { pose('happy', null); setTimeout(restPose, 1300); say(pick(lines(examOn() ? 'patExam' : 'pat')), 2600); hop(); }
       return;
     }
     if (b.dataset.tab) { if (!examOn()) { S.tab = b.dataset.tab; save(); paint(); } return; }
+    if (b.dataset.who) {
+      if (examOn() || b.dataset.who === S.who) return;
+      S.who = b.dataset.who; save(); if (isProf()) preloadProf();
+      profEl.dataset.pose = ''; paint(); restPose(); say(pick(lines('hello'))); hop(); return;
+    }
     if (b.dataset.subject) { ask(b.dataset.subject); return; }
     if (b.dataset.preset !== undefined) { if (S.phase === 'idle') { S.preset = Number(b.dataset.preset); S.left = 0; save(); paint(); } return; }
     const k = b.dataset.sb;
@@ -360,7 +416,7 @@
     if (k === 'reset') reset();
     if (k === 'stop' && examOn()) { const m = Math.round((Date.now() - X.start) / 60000); dialog(card(T.endTitle, T.endBody(m)), [['end', T.endYes, false], ['keep', T.endNo, true]]); paintDialogCat('sit'); }
     if (k === 'hide') setAway(true);
-    if (k === 'show') { setAway(false); pose('happy', 'sit', 1500); say(pick(T.say.hello)); hop(); }
+    if (k === 'show') { setAway(false); pose('happy', 'sit', 1500); say(pick(lines('hello'))); hop(); }
     if (k === 'sound') { S.sound = b.checked; save(); }
   });
   document.addEventListener('keydown', event => {
@@ -435,8 +491,26 @@
 .sb-count.is-pop{animation:sb-pop .9s ease-out both;}
 @keyframes sb-pop{0%{transform:scale(.4);opacity:0;}30%{transform:scale(1.12);opacity:1;}60%{transform:scale(1);}100%{transform:scale(1);}}
 @keyframes sb-hop{40%{transform:translateY(-12%);}70%{transform:translateY(-2%);}}
-@media(max-width:600px){.sb{right:10px;bottom:10px;}.sb-cat{width:calc(var(--sbw) * .75);height:calc(var(--sbh) * .75);}}
-@media(prefers-reduced-motion:reduce){.sb-cat,.sb-cat *{animation:none!important;}}`;
+.sb-who{display:flex;align-items:center;gap:4px;margin:-2px 0 10px;font-size:12px;color:var(--muted,#766b73);}
+.sb-who span{margin-right:2px;}
+.sb-who button{padding:3px 10px;border-radius:99px;border:1px solid var(--line,#2a22301a);background:var(--paper,#fffdf9);color:var(--ink,#2a2230);font:600 12px/1.3 inherit;cursor:pointer;}
+.sb-who button[aria-pressed='true']{border-color:var(--accent,#c0673a);background:var(--accent,#c0673a);color:#fff;}
+.sb-who button:disabled:not([aria-pressed='true']){opacity:.45;cursor:not-allowed;}
+.sb-prof,.sb-dlg-prof{display:none;}
+.sb.is-prof .sb-cat .yuki-cat,.sb.is-prof .sb-dlg-pet .yuki-cat{display:none;}
+.sb.is-prof .sb-cat{width:96px;height:140px;}
+.sb.is-prof .sb-prof{display:block;width:100%;height:100%;object-fit:contain;object-position:50% 100%;transform-origin:50% 100%;animation:sb-breathe 3.4s ease-in-out infinite;}
+.sb.is-prof .sb-dlg-pet{width:110px;height:150px;}
+.sb.is-prof .sb-dlg-prof{display:block;width:100%;height:100%;object-fit:contain;object-position:50% 100%;transform-origin:50% 100%;}
+.sb-prof.is-hop,.sb-dlg-prof.is-hop{animation:sb-hop .45s ease-out;}
+.sb-prof.is-shake,.sb-dlg-prof.is-shake{animation:sb-shake .6s ease-in-out 2;}
+.sb-prof.is-ring,.sb-dlg-prof.is-ring{animation:sb-ring .5s ease-in-out 4;}
+.sb.is-prof .sb-chip{right:-10px;}
+@keyframes sb-breathe{0%,100%{transform:scaleY(1);}50%{transform:scaleY(1.015) translateY(-1px);}}
+@keyframes sb-shake{0%,100%{transform:translateX(0) rotate(0);}20%{transform:translateX(-6px) rotate(-4deg);}40%{transform:translateX(6px) rotate(4deg);}60%{transform:translateX(-4px) rotate(-2deg);}80%{transform:translateX(3px) rotate(1deg);}}
+@keyframes sb-ring{0%,100%{transform:rotate(0);}25%{transform:rotate(-3deg);}75%{transform:rotate(3deg);}}
+@media(max-width:600px){.sb{right:10px;bottom:10px;}.sb-cat{width:calc(var(--sbw) * .75);height:calc(var(--sbh) * .75);}.sb.is-prof .sb-cat{width:72px;height:105px;}}
+@media(prefers-reduced-motion:reduce){.sb-cat,.sb-cat *,.sb-dlg-prof{animation:none!important;}}`;
 
   Cat.load().then(L => {
     const h = Math.round(64 / L.stand[1]);   // the box follows the sheet's cell; a standing cat is about 64 px tall
@@ -444,6 +518,8 @@
     root.style.setProperty('--sbh', `${h}px`); root.style.setProperty('--sbw', `${Math.round(h * L.cell[0] / L.cell[1])}px`);
     document.head.append(css); document.body.append(root);
     setAway(!!store.get('hidden', false));
+    if (isProf()) preloadProf();
+    root.classList.toggle('is-prof', isProf());
     if (running() && remaining() <= 0) finish(); else restPose();
     // An exam carried over from the last page: time up, or the page was left for longer than a reload takes.
     if (X && X.voided) { X = null; saveX(); }
@@ -453,6 +529,6 @@
     }
     paint();
     setInterval(tick, 1000);
-    if (!store.get('hidden', false) && !examOn()) setTimeout(() => say(pick(T.say.hello)), 1200);
+    if (!store.get('hidden', false) && !examOn()) setTimeout(() => say(pick(lines('hello'))), 1200);
   }).catch(() => {});
 })();
