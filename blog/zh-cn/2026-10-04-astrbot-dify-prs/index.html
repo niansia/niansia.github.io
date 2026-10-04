@@ -3,15 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>2026 年 9 月：作品与考卷分享区上线，开始准备 CVPR · Niansia</title>
-<meta name="description" content="这个月把 Taiwan Exam、考卷分享区、LumiGrid 网页版和 Adversarial Lab 放上线，网站也搬到 niansia.com；接下来的重心是 11 月中的 CVPR 2027 投稿。">
-<link rel="canonical" href="https://niansia.com/blog/zh-cn/2026-09-29-now/">
-<link rel="alternate" hreflang="en" href="https://niansia.com/blog/en/2026-09-29-now/"><link rel="alternate" hreflang="zh-Hant-TW" href="https://niansia.com/blog/zh-tw/2026-09-29-now/"><link rel="alternate" hreflang="zh-Hans-CN" href="https://niansia.com/blog/zh-cn/2026-09-29-now/"><link rel="alternate" hreflang="x-default" href="https://niansia.com/blog/en/2026-09-29-now/">
+<title>替 AstrBot 和 Dify 回报 bug、送 PR · Niansia</title>
+<meta name="description" content="这两天在 AstrBot 回报并修了 WebChat 附件互相覆盖的问题，在 Dify 回报两个 bug，其中一个自己送了 PR。记下流程、踩到的坑，还有几件没想到的小事。">
+<link rel="canonical" href="https://niansia.com/blog/zh-cn/2026-10-04-astrbot-dify-prs/">
+<link rel="alternate" hreflang="en" href="https://niansia.com/blog/en/2026-10-04-astrbot-dify-prs/"><link rel="alternate" hreflang="zh-Hant-TW" href="https://niansia.com/blog/zh-tw/2026-10-04-astrbot-dify-prs/"><link rel="alternate" hreflang="zh-Hans-CN" href="https://niansia.com/blog/zh-cn/2026-10-04-astrbot-dify-prs/"><link rel="alternate" hreflang="x-default" href="https://niansia.com/blog/en/2026-10-04-astrbot-dify-prs/">
 <meta property="og:type" content="article"><meta property="og:site_name" content="Niansia">
-<meta property="og:title" content="2026 年 9 月：作品与考卷分享区上线，开始准备 CVPR · Niansia"><meta property="og:description" content="这个月把 Taiwan Exam、考卷分享区、LumiGrid 网页版和 Adversarial Lab 放上线，网站也搬到 niansia.com；接下来的重心是 11 月中的 CVPR 2027 投稿。">
-<meta property="og:url" content="https://niansia.com/blog/zh-cn/2026-09-29-now/"><meta property="og:image" content="https://niansia.com/assets/og/blog-2026-09-29-now-zh-cn.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta property="og:title" content="替 AstrBot 和 Dify 回报 bug、送 PR · Niansia"><meta property="og:description" content="这两天在 AstrBot 回报并修了 WebChat 附件互相覆盖的问题，在 Dify 回报两个 bug，其中一个自己送了 PR。记下流程、踩到的坑，还有几件没想到的小事。">
+<meta property="og:url" content="https://niansia.com/blog/zh-cn/2026-10-04-astrbot-dify-prs/"><meta property="og:image" content="https://niansia.com/assets/og/blog-2026-10-04-astrbot-dify-prs-zh-cn.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
 <meta property="og:locale" content="zh_CN">
-<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://niansia.com/assets/og/blog-2026-09-29-now-zh-cn.jpg">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://niansia.com/assets/og/blog-2026-10-04-astrbot-dify-prs-zh-cn.jpg">
 
 <meta name="theme-color" content="#fbf6ee" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#15142a" media="(prefers-color-scheme: dark)">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://*.firebasedatabase.app; connect-src 'self' https://*.firebasedatabase.app wss://*.firebasedatabase.app; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; frame-src https://*.firebasedatabase.app; object-src 'none'; base-uri 'self'; form-action 'none'">
@@ -102,30 +102,35 @@ footer{max-width:760px;margin:0 auto;padding:26px 20px 50px;border-top:1px solid
 .ask b{display:block;font-size:15.5px;}.ask small{display:block;color:var(--muted);font-size:13px;}
 .ask .btn{flex:none;margin:0;}.ask .btn[aria-disabled]{opacity:.55;pointer-events:none;}
 </style>
-<link rel="alternate" type="application/rss+xml" title="Niansia · Blog" href="/blog/zh-cn/feed.xml"><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BlogPosting", "headline": "2026 年 9 月：作品与考卷分享区上线，开始准备 CVPR", "description": "这个月把 Taiwan Exam、考卷分享区、LumiGrid 网页版和 Adversarial Lab 放上线，网站也搬到 niansia.com；接下来的重心是 11 月中的 CVPR 2027 投稿。", "datePublished": "2026-09-29", "dateModified": "2026-09-29", "inLanguage": "zh-Hans", "author": {"@type": "Person", "name": "Niansia", "url": "https://niansia.com/", "email": "mailto:niansia930202@gmail.com", "sameAs": ["https://github.com/niansia"]}, "mainEntityOfPage": "https://niansia.com/blog/zh-cn/2026-09-29-now/", "keywords": ""}</script>
+<link rel="alternate" type="application/rss+xml" title="Niansia · Blog" href="/blog/zh-cn/feed.xml"><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BlogPosting", "headline": "替 AstrBot 和 Dify 回报 bug、送 PR", "description": "这两天在 AstrBot 回报并修了 WebChat 附件互相覆盖的问题，在 Dify 回报两个 bug，其中一个自己送了 PR。记下流程、踩到的坑，还有几件没想到的小事。", "datePublished": "2026-10-04", "dateModified": "2026-10-04", "inLanguage": "zh-Hans", "author": {"@type": "Person", "name": "Niansia", "url": "https://niansia.com/", "email": "mailto:niansia930202@gmail.com", "sameAs": ["https://github.com/niansia"]}, "mainEntityOfPage": "https://niansia.com/blog/zh-cn/2026-10-04-astrbot-dify-prs/", "keywords": "开源贡献, AstrBot, Dify"}</script>
 <script defer src="/assets/js/site-stats.js?v=3"></script>
 <script defer src="/assets/js/lightbox.js"></script>
 
 </head>
 <body>
-<header class="top"><a class="me" href="/zh-cn/" title="回到 Niansia 的个人网站" data-nz-title="Niansia"><img src="/assets/icons/author.webp" alt="" width="24" height="24"><b>~/niansia</b></a> / <a href="/blog/zh-cn/">blog</a><span class="sp"></span><span class="langs"><a href="/blog/en/2026-09-29-now/" hreflang="en">EN</a><a href="/blog/zh-tw/2026-09-29-now/" hreflang="zh-Hant">繁</a><a href="/blog/zh-cn/2026-09-29-now/" aria-current="page" hreflang="zh-Hans">简</a></span></header>
-<main><p class="kicker">近况</p><h1>2026 年 9 月：作品与考卷分享区上线，开始准备 CVPR</h1><p class="lede">这个月把 Taiwan Exam、考卷分享区、LumiGrid 网页版和 Adversarial Lab 放上线，网站也搬到 niansia.com；接下来的重心是 11 月中的 CVPR 2027 投稿。</p><div class="meta"><time datetime="2026-09-29">2026-09-29</time><span>1 分钟阅读</span></div><article><h2>这个月做完的</h2>
+<header class="top"><a class="me" href="/zh-cn/" title="回到 Niansia 的个人网站" data-nz-title="Niansia"><img src="/assets/icons/author.webp" alt="" width="24" height="24"><b>~/niansia</b></a> / <a href="/blog/zh-cn/">blog</a><span class="sp"></span><span class="langs"><a href="/blog/en/2026-10-04-astrbot-dify-prs/" hreflang="en">EN</a><a href="/blog/zh-tw/2026-10-04-astrbot-dify-prs/" hreflang="zh-Hant">繁</a><a href="/blog/zh-cn/2026-10-04-astrbot-dify-prs/" aria-current="page" hreflang="zh-Hans">简</a></span></header>
+<main><p class="kicker">随笔</p><h1>替 AstrBot 和 Dify 回报 bug、送 PR</h1><p class="lede">这两天在 AstrBot 回报并修了 WebChat 附件互相覆盖的问题，在 Dify 回报两个 bug，其中一个自己送了 PR。记下流程、踩到的坑，还有几件没想到的小事。</p><div class="meta"><time datetime="2026-10-04">2026-10-04</time><span>3 分钟阅读</span><span class="tag">开源贡献</span><span class="tag">AstrBot</span><span class="tag">Dify</span></div><article><h2>为什么做这件事</h2>
+<p>除了自己的项目，我也想多参与别人的大型项目：读别人的 codebase、照别人的规矩写、让不认识的人审我的代码。这两天挑了两个自己会用到的项目：聊天机器人框架 <a href="https://github.com/AstrBotDevs/AstrBot" rel="noopener noreferrer">AstrBot</a>，和 LLM 应用平台 <a href="https://github.com/langgenius/dify" rel="noopener noreferrer">Dify</a>。</p>
+<h2>AstrBot：同名的截屏会互相盖掉</h2>
+<p>在 WebChat 里粘贴截屏，浏览器给的文件名几乎都是 <code>image.png</code>。AstrBot 存附件时直接用原文件名，所以第二张会盖掉第一张，前面那则消息的图片就跟着变了。更麻烦的是，删掉一个对话时，另一个对话还在用的同名文件也会一起被删。</p>
+<p>我先在自己电脑上跑起一个真的 AstrBot，把问题重现出来，再发了 <a href="https://github.com/AstrBotDevs/AstrBot/issues/10352" rel="noopener noreferrer">issue #10352</a>。接着送了 <a href="https://github.com/AstrBotDevs/AstrBot/pull/10356" rel="noopener noreferrer">PR #10356</a>：存盘时在文件名前面加上时间戳，画面上仍然显示原本的文件名，也补了测试。</p>
+<p>送出后，审查机器人 Sourcery 很快留了两则意见。第一则说扩展名特别长的时候，加上前缀的文件名会超过 255 bytes，我写测试确认后发现它是对的，于是补了一个 commit 修掉，第二则是时间戳撞名的可能，我回复说明几率极低、而且项目其他地方也是同样的命名方式，所以不改。</p>
+<p>还有个小插曲：一个当天才注册的帐号，一分钟内在我的 PR 按了三次 Approve。后来才知道这种帐号会到处乱按，GitHub 也不会把它算进去，真正有效的只有维护者的审查。</p>
+<h2>Dify：英文、表单，还有速度</h2>
+<p>Dify 的规矩明显更严：issue 一律用英文，要照固定表单填，前面还有六个自我检查要勾。</p>
+<p>让我最意外的是竞争。Dify 一天有十几个新 issue，同一种 bug 常被好几个人分别回报，像「分页遇到相同时间戳会漏数据」就有四篇。所以每次发之前，我都会用好几组关键字，把 open 和 closed 的 issue、PR 都搜一遍。</p>
+<p>第一个是 <a href="https://github.com/langgenius/dify/issues/43465" rel="noopener noreferrer">#43465</a>：HTTP 请求节点把 <code>Array[Object]</code> 变量塞进 request body 时，用的是 Python 的格式（单引号、<code>True</code>、<code>None</code>），不是 JSON。结果 JSON body 被「修复」成不同的数据，<code>null</code> 变成字符串 <code>"None"</code>，第二笔数据甚至被吞进第一笔的字段里。发出去才几个小时，就有另一位贡献者留言接手，在 Dify 拆出去的工作流引擎 graphon 开了修正的 PR。被确认是真的 bug 很开心，但也有点可惜，因为我原本也想自己修。</p>
+<p>这件事让我学到：想自己修，就要在 issue 里先讲，而且当天就把 PR 送出去。</p>
+<p>所以第二个 <a href="https://github.com/langgenius/dify/issues/43469" rel="noopener noreferrer">#43469</a>，我在最后加了一句「I'll open a PR with a fix.」。问题是 Webhook 触发器收到 JSON 数组时会直接回 500，而 SendGrid 这类服务送事件时刚好就是数组。同一天我送了 <a href="https://github.com/langgenius/dify/pull/43470" rel="noopener noreferrer">PR #43470</a>：没有设置 body 参数时照常触发工作流，原始内容可以从 raw 变量拿到；有设置 body 参数时回 400 并说明原因，不再是 500。新加的三个测试在修正前会失败、修正后通过，webhook 相关的 148 个测试也都过了，送出前把项目要求的 lint 和类型检查也跑过一遍。</p>
+<h2>几件没想到的事</h2>
 <ul>
-<li><strong>Taiwan Exam 正式公开</strong>：让 AI 依现行课纲出原创学测仿真考的 Agent Skill，9 月 28 日上线，也做了一支介绍视频。</li>
-<li><strong>LumiGrid 可以直接在浏览器试</strong>：低光图像增强的两个网络都在访客的设备上运行，照片不会上传。</li>
-<li><strong>Adversarial Lab 上线</strong>：FGSM／PGD 攻击、决策地图和对抗训练模型，全部在浏览器里跑，也拆成了独立的开源 repo。</li>
-<li><strong>Taiwan Exam 考卷分享区</strong>：大家把生成的考卷分享出来，没有付费 AI 的同学也能下载练习；第一批 21 份已经上线，上传的文件都会先扫毒、清除隐藏内容并检查个资。</li>
-<li><strong>网站搬到 niansia.com</strong>：旧网址会自动转过来；同时补齐 HTTPS、DNSSEC、挡 AI 训练爬虫等基本防护，也开了博客和留言板。</li>
-<li><strong>LINE 学测社群</strong>：我管理的两个 116 学测、分科社群，合计五千多人，现在放在关于页和考卷分享区。</li>
+<li><strong>Dify issue 上的 <code>review: medium</code> 标签，不是在评 issue 写得好不好</strong>，是 ghfind 对发文者 GitHub 帐号的分数，同一个人发的每篇都一样，所以不用太在意。</li>
+<li><strong>新贡献者的 PR，CI 要等维护者按核准才会跑</strong>。看到一整排 <code>action_required</code> 不是出错，只是在排队。</li>
+<li><strong>在 Windows 上跑 Dify 的测试有不少坑</strong>：python-magic 一 import 就卡住、默认设置会对整个项目算覆盖率而慢到不行、dotenv-linter 会抱怨 CRLF，其实只是 Windows 下载代码时自动转换了换行。</li>
+<li><strong>写 issue 时，「不用开服务器就能跑的最小重现程序 + 实际输出 + 代码链接」比长篇描述有用得多</strong>。接手修 #43465 的那位贡献者，留言里的理解和我写的根因一模一样。</li>
 </ul>
 <h2>接下来</h2>
-<ul>
-<li><strong>CVPR 2027</strong>：视觉语言模型（VLM）相关题目，截止日是 11 月 16 日（AoE）。</li>
-<li><strong>ICCV 2027</strong>：Diffusion Transformer（DiT）相关题目，准备中。</li>
-<li><strong>COLM 2027</strong>：预计投稿，题目还在规划。</li>
-</ul>
-<h2>关于这个 blog</h2>
-<p>之后每个月会在这里写一篇近况，也会记录读过的论文和自己的看法。有问题想问，可以用匿名提问箱，回答后会整理在 Q&amp;A。</p></article><div class="ask"><div><b>Q&amp;A</b><small>匿名提问，在这里回答。</small></div><a class="btn primary" href="https://forms.gle/yNUw4eLZeeqf3Arb6" target="_blank" rel="noopener noreferrer">匿名提问 ↗</a></div><h2 style="margin-top:48px">其他文章</h2><a class="card" href="/blog/zh-cn/2026-10-04-astrbot-dify-prs/"><span class="type post">随笔</span><b>替 AstrBot 和 Dify 回报 bug、送 PR</b><small>这两天在 AstrBot 回报并修了 WebChat 附件互相覆盖的问题，在 Dify 回报两个 bug，其中一个自己送了 PR。记下流程、踩到的坑，还有几件没想到的小事。</small></a><a class="card" href="/blog/zh-cn/2026-10-01-siglip2/"><span class="type paper">论文笔记</span><b>SigLIP 2：为什么一个「看图说话」的模型特别会抓假图？</b><small>把骨干从 CLIP 换成 SigLIP 2，干扰图的分数一下子跳了一大截，比我花好几天调的任何技巧都有效。读完论文，我有两个猜测：一是它后段加入的自监督目标，二是它没有 CLS token、我改用 patch 平均。好的骨干提高起点，好的训练方法把起点推得更远。</small></a><a class="card" href="/blog/zh-cn/2026-10-01-ntire2026-report/"><span class="type paper">论文笔记</span><b>NTIRE 2026 比赛报告：冠军赢在模型，还是赢在数据？</b><small>这份报告是我专题的「考卷」。读完才发现，前两名除了模型大，训练数据也大得多、新得多，甚至涵盖了官方训练集刻意留给测试集的商用生成器。排行榜的差距同时混了模型、数据和运算，比较时要拆开来看。</small></a><div class="btns"><a class="btn" href="/blog/zh-cn/">全部文章</a><a class="btn primary" href="/zh-cn/#blog">回到作品集</a></div></main>
+<p>两个 PR 都还在等审查，合并的话，我就算是 AstrBot 和 Dify 的正式贡献者了。手上还有一些整理好的问题，之后会照影响大小一天发一个。比起自己写项目，这种「先读懂别人的系统，再小心地改一点点」的工作很不一样，也比我想的有趣。</p></article><div class="ask"><div><b>Q&amp;A</b><small>匿名提问，在这里回答。</small></div><a class="btn primary" href="https://forms.gle/yNUw4eLZeeqf3Arb6" target="_blank" rel="noopener noreferrer">匿名提问 ↗</a></div><h2 style="margin-top:48px">其他文章</h2><a class="card" href="/blog/zh-cn/2026-10-01-siglip2/"><span class="type paper">论文笔记</span><b>SigLIP 2：为什么一个「看图说话」的模型特别会抓假图？</b><small>把骨干从 CLIP 换成 SigLIP 2，干扰图的分数一下子跳了一大截，比我花好几天调的任何技巧都有效。读完论文，我有两个猜测：一是它后段加入的自监督目标，二是它没有 CLS token、我改用 patch 平均。好的骨干提高起点，好的训练方法把起点推得更远。</small></a><a class="card" href="/blog/zh-cn/2026-10-01-ntire2026-report/"><span class="type paper">论文笔记</span><b>NTIRE 2026 比赛报告：冠军赢在模型，还是赢在数据？</b><small>这份报告是我专题的「考卷」。读完才发现，前两名除了模型大，训练数据也大得多、新得多，甚至涵盖了官方训练集刻意留给测试集的商用生成器。排行榜的差距同时混了模型、数据和运算，比较时要拆开来看。</small></a><a class="card" href="/blog/zh-cn/2026-09-30-rine/"><span class="type paper">论文笔记</span><b>RINE：中间层真的比最后一层更懂「假」吗？</b><small>RINE 用 CLIP 中间层的特征侦测生成图，和我自己的实验结论大致相同；但在「野外干扰」下，最有用的层会换人，增强的广度也比从哪一层拿特征更关键。</small></a><div class="btns"><a class="btn" href="/blog/zh-cn/">全部文章</a><a class="btn primary" href="/zh-cn/#blog">回到作品集</a></div></main>
 <aside class="author" aria-label="由 Niansia 制作"><a class="an-face" href="/zh-cn/" tabindex="-1" aria-hidden="true" data-nz-title="Niansia"><img src="/assets/icons/author.webp" alt="" width="56" height="56" loading="lazy"></a><div class="an-text"><b>由 Niansia 制作</b><small>阳明交大资工硕士生，研究 AI 安全、电脑视觉与视觉语言模型。</small></div><a class="btn primary an-go" href="/zh-cn/" data-nz-title="Niansia">前往 niansia.com →</a></aside>
 <footer>有问题或想法？写信到 <a href="mailto:niansia930202@gmail.com">niansia930202@gmail.com</a> · <a href="/zh-cn/">niansia.com</a> · <a href="https://github.com/niansia">github.com/niansia</a><span class="stats" data-stats hidden> · <i class="live-dot"></i> <b data-stat="online">–</b> 人在线 · <b data-stat="total">–</b> 次造访</span></footer>
 </body>

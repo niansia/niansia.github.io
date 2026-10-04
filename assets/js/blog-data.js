@@ -3,6 +3,21 @@ window.NIANSIA_BLOG = {
  "posts": {
   "en": [
    {
+    "slug": "2026-10-04-astrbot-dify-prs",
+    "type": "post",
+    "title": "Reporting bugs and sending PRs to AstrBot and Dify",
+    "description": "In AstrBot I reported and fixed WebChat attachments overwriting each other; in Dify I reported two bugs and sent a PR for one of them. Notes on the process, the pitfalls, and a few things I didn't expect.",
+    "date": "2026-10-04",
+    "minutes": 4,
+    "tags": [
+     "open source",
+     "AstrBot",
+     "Dify"
+    ],
+    "lang": "en",
+    "url": "/blog/en/2026-10-04-astrbot-dify-prs/"
+   },
+   {
     "slug": "2026-10-01-siglip2",
     "type": "paper",
     "title": "SigLIP 2: why is a model trained to describe images so good at catching fakes?",
@@ -207,6 +222,21 @@ window.NIANSIA_BLOG = {
   ],
   "zh-TW": [
    {
+    "slug": "2026-10-04-astrbot-dify-prs",
+    "type": "post",
+    "title": "替 AstrBot 和 Dify 回報 bug、送 PR",
+    "description": "這兩天在 AstrBot 回報並修了 WebChat 附件互相覆蓋的問題，在 Dify 回報兩個 bug，其中一個自己送了 PR。記下流程、踩到的坑，還有幾件沒想到的小事。",
+    "date": "2026-10-04",
+    "minutes": 3,
+    "tags": [
+     "開源貢獻",
+     "AstrBot",
+     "Dify"
+    ],
+    "lang": "zh-TW",
+    "url": "/blog/zh-tw/2026-10-04-astrbot-dify-prs/"
+   },
+   {
     "slug": "2026-10-01-siglip2",
     "type": "paper",
     "title": "SigLIP 2：為什麼一個「看圖說話」的模型特別會抓假圖？",
@@ -410,6 +440,21 @@ window.NIANSIA_BLOG = {
    }
   ],
   "zh-CN": [
+   {
+    "slug": "2026-10-04-astrbot-dify-prs",
+    "type": "post",
+    "title": "替 AstrBot 和 Dify 回报 bug、送 PR",
+    "description": "这两天在 AstrBot 回报并修了 WebChat 附件互相覆盖的问题，在 Dify 回报两个 bug，其中一个自己送了 PR。记下流程、踩到的坑，还有几件没想到的小事。",
+    "date": "2026-10-04",
+    "minutes": 3,
+    "tags": [
+     "开源贡献",
+     "AstrBot",
+     "Dify"
+    ],
+    "lang": "zh-CN",
+    "url": "/blog/zh-cn/2026-10-04-astrbot-dify-prs/"
+   },
    {
     "slug": "2026-10-01-siglip2",
     "type": "paper",
