@@ -6,7 +6,7 @@ window.NIANSIA_BLOG = {
     "slug": "2026-10-04-astrbot-dify-prs",
     "type": "post",
     "title": "Reporting bugs and sending PRs to AstrBot and Dify",
-    "description": "Reported WebChat attachments overwriting each other to AstrBot, with a fix PR; filed two issues with Dify, and sent a fix PR for the webhook 500.",
+    "description": "Reported WebChat attachments overwriting each other to AstrBot, with a fix PR (merged); filed two issues with Dify, and sent a fix PR for the webhook 500.",
     "date": "2026-10-04",
     "minutes": 1,
     "tags": [
@@ -225,7 +225,7 @@ window.NIANSIA_BLOG = {
     "slug": "2026-10-04-astrbot-dify-prs",
     "type": "post",
     "title": "替 AstrBot 和 Dify 回報 bug、送 PR",
-    "description": "向 AstrBot 提交了 WebChat 附件互相覆蓋的 issue 和修正 PR；向 Dify 提交了兩個 issue，其中 Webhook 回傳 500 的問題附上修正 PR。",
+    "description": "向 AstrBot 提交了 WebChat 附件互相覆蓋的 issue 和修正 PR（已合併）；向 Dify 提交了兩個 issue，其中 Webhook 回傳 500 的問題附上修正 PR。",
     "date": "2026-10-04",
     "minutes": 1,
     "tags": [
@@ -444,7 +444,7 @@ window.NIANSIA_BLOG = {
     "slug": "2026-10-04-astrbot-dify-prs",
     "type": "post",
     "title": "替 AstrBot 和 Dify 回报 bug、送 PR",
-    "description": "向 AstrBot 提交了 WebChat 附件互相覆盖的 issue 和修正 PR；向 Dify 提交了两个 issue，其中 Webhook 回传 500 的问题附上修正 PR。",
+    "description": "向 AstrBot 提交了 WebChat 附件互相覆盖的 issue 和修正 PR（已合并）；向 Dify 提交了两个 issue，其中 Webhook 回传 500 的问题附上修正 PR。",
     "date": "2026-10-04",
     "minutes": 1,
     "tags": [
