@@ -268,6 +268,10 @@ window.YUKI_LINES = {
    "It’s getting really late. One more page, then off to bed?",
    "Yawn… even I’m sleepy. Don’t stay up too late, okay?"
   ],
+  "proj-zerostel": [
+   "Zerostel records every step an AI agent takes. If it deletes something, one command brings it back!",
+   "It works with seven agents, from Claude Code to opencode, and never touches your .git~"
+  ],
   "proj-adversarial-lab": [
    "Adversarial Lab: under PGD at ε = 0.2, the normal model drops from 98.95% to 0.2%. Try fooling it yourself!",
    "The adversarially trained model still keeps 92.2% at ε = 0.2. Tougher than it looks~"
@@ -638,6 +642,10 @@ window.YUKI_LINES = {
    "已經很晚了，看完這一頁就去睡吧？",
    "呼啊……連我都睏了，別熬太晚喔。"
   ],
+  "proj-zerostel": [
+   "Zerostel 會記下 AI agent 的每一步，它刪掉的東西，一個指令就救回來！",
+   "從 Claude Code 到 opencode，七個 agent 都能用，而且完全不碰你的 .git～"
+  ],
   "proj-adversarial-lab": [
    "對抗樣本實驗室：一般模型在 ε = 0.2 的 PGD 攻擊下，準確率從 98.95% 掉到 0.2%。你也來騙騙看！",
    "對抗訓練過的模型在 ε = 0.2 還有 92.2%，比看起來堅強喔～"
@@ -1007,6 +1015,10 @@ window.YUKI_LINES = {
   "lateNight": [
    "已经很晚了，看完这一页就去睡吧？",
    "呼啊……连我都困了，别熬太晚喔。"
+  ],
+  "proj-zerostel": [
+   "Zerostel 会记下 AI agent 的每一步，它删掉的东西，一个指令就救回来！",
+   "从 Claude Code 到 opencode，七个 agent 都能用，而且完全不碰你的 .git～"
   ],
   "proj-adversarial-lab": [
    "对抗样本实验室：一般模型在 ε = 0.2 的 PGD 攻击下，准确率从 98.95% 掉到 0.2%。你也来骗骗看！",

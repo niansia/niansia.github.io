@@ -49,7 +49,7 @@
     builder: {icon: 'terminal', title: {en: 'Builder route', 'zh-TW': '實作路線', 'zh-CN': '实作路线'},
       sub: {en: 'For engineers: the projects, the demos and how this site works.', 'zh-TW': '給工程師：作品、試玩，以及這個網站怎麼運作。', 'zh-CN': '给工程师：作品、试玩，以及这个网站怎么运作。'},
       steps: [
-        {view: 'projects', target: '.project-directory', title: {en: 'Eleven public projects', 'zh-TW': '十一項公開作品', 'zh-CN': '十一项公开作品'},
+        {view: 'projects', target: '.project-directory', title: {en: 'Twelve public projects', 'zh-TW': '十二項公開作品', 'zh-CN': '十二项公开作品'},
           body: {en: 'Each one lists its status honestly, from pre-alpha to released, and links to the evidence behind it.', 'zh-TW': '每一項都誠實標示目前狀態，從 pre-alpha 到正式釋出，並附上背後的證據連結。', 'zh-CN': '每一项都诚实标示目前状态，从 pre-alpha 到正式发布，并附上背后的证据链接。'}},
         {view: 'projects', id: 'lumigrid', target: '.lg-try', title: {en: 'Runs in your browser', 'zh-TW': '直接在瀏覽器執行', 'zh-CN': '直接在浏览器运行'},
           body: {en: 'Drop in your own dark photo: both networks run on your device with WebGPU or WebAssembly, and nothing is uploaded.', 'zh-TW': '丟一張自己的暗照片進去：兩個網路都用 WebGPU 或 WebAssembly 在你的裝置上跑，不會上傳。', 'zh-CN': '丢一张自己的暗照片进去：两个网络都用 WebGPU 或 WebAssembly 在你的设备上跑，不会上传。'}},

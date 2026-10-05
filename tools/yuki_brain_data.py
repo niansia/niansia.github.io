@@ -242,7 +242,7 @@ INTENTS: dict[str, list[str]] = {
 }
 
 # Slot vocabularies used both to delexicalise training text and (mirrored in JS) user input.
-PROJECT_SAMPLES = ['taiwan exam', 'kcrashlab', 'contextsec', 'merriv', 'ai repo gardener', 'psg', 'noveltyaudit',
+PROJECT_SAMPLES = ['zerostel', 'taiwan exam', 'kcrashlab', 'contextsec', 'merriv', 'ai repo gardener', 'psg', 'noveltyaudit',
                    'research meeting coach', 'chromarecover', '學測', '會考', '模擬考']
 TOPICS = ['security', 'ai security', 'computer vision', 'vision', 'drivers', 'windows drivers', 'exams', 'agents',
           'coding agents', 'papers', 'novelty', 'model release', 'python', 'reproducibility', 'color', 'meetings',
@@ -460,6 +460,10 @@ LINES: dict[str, dict[str, list[str]]] = {
 
     # Opening a page. Every number is the one the project page itself shows (portfolio-data.js or its showcase data):
     # change them together.
+    'proj-zerostel': {'en': ['Zerostel records every step an AI agent takes. If it deletes something, one command brings it back!',
+                             'It works with seven agents, from Claude Code to opencode, and never touches your .git~'],
+                      'zh-TW': ['Zerostel 會記下 AI agent 的每一步，它刪掉的東西，一個指令就救回來！',
+                                '從 Claude Code 到 opencode，七個 agent 都能用，而且完全不碰你的 .git～']},
     'proj-adversarial-lab': {'en': ['Adversarial Lab: under PGD at ε = 0.2, the normal model drops from 98.95% to 0.2%. Try fooling it yourself!',
                                     'The adversarially trained model still keeps 92.2% at ε = 0.2. Tougher than it looks~'],
                              'zh-TW': ['對抗樣本實驗室：一般模型在 ε = 0.2 的 PGD 攻擊下，準確率從 98.95% 掉到 0.2%。你也來騙騙看！',

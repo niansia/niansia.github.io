@@ -13,7 +13,7 @@ window.NIANSIA_TERMINAL = {
     ['brief','brief','brief','Open the one-page brief for professors and interviewers','開啟給教授與面試官的一頁式簡介','打开给教授与面试官的一页式简介'],
     ['tour','tour [research|builder|fun]','tour research','Let Yuki show you around, step by step','讓 Yuki 一步一步帶你導覽','让 Yuki 一步一步带你导览'],
     ['palette','palette [search]','palette lumigrid','Open the command palette (Ctrl+K / ⌘K) to jump anywhere','開啟指令面板（Ctrl+K / ⌘K），快速跳到任何地方','打开命令面板（Ctrl+K / ⌘K），快速跳到任何地方'],
-    ['projects','projects','projects','Open all eleven projects','開啟全部十一項作品','打开全部十一项作品'],
+    ['projects','projects','projects','Open all twelve projects','開啟全部十二項作品','打开全部十二项作品'],
     ['ls','ls [path]','ls projects/','List files or projects','列出檔案或作品','列出文件或作品'],
     ['cd','cd <path>','cd projects','Go to a directory; .. goes back','切換目錄；.. 返回上一層','切换目录；.. 返回上一层'],
     ['cat','cat <file>','cat about.md','Read a profile or project file','閱讀介紹或作品檔案','阅读介绍或作品文件'],

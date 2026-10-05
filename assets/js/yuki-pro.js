@@ -6,6 +6,7 @@
 (() => {
   'use strict';
   const ALIASES = {
+    zerostel: ['zerostel', 'zero stel', '時光機', '时光机', '行車紀錄器', '行车记录仪'],
     'adversarial-lab': ['adversarial lab', 'adversarial-lab', 'adversarial', '對抗實驗室', '对抗实验室', '對抗樣本實驗室'],
     lumigrid: ['lumigrid', 'lumi grid', 'lumi-grid'],
     'taiwan-exam': ['taiwan exam', 'taiwan-exam', 'taiwanexam', '學測模擬考', '学测模拟考'],
@@ -16,6 +17,7 @@
     chromarecover: ['chromarecover', 'chroma recover', 'chroma']
   };
   const TOPICS = {
+    zerostel: 'agent agents coding agent claude code codex undo rewind rollback snapshot checkpoint timeline zero trust 復原 還原 回溯 快照 時間軸 零信任 刪檔 代理',
     'adversarial-lab': 'adversarial attack attacks robustness classifier security fgsm pgd perturbation 對抗 攻擊 擾動 穩健 分類器 資安 安全 試玩',
     lumigrid: 'low light low-light night dark enhancement brighten denoise exposure computer vision image photo 低光 夜景 暗 增亮 提亮 曝光 影像 照片 電腦視覺',
     'taiwan-exam': 'exam exams test gsat cap education pdf 考試 考卷 學測 會考 出題 題目 教育 模擬考 試題',

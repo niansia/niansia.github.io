@@ -5,6 +5,7 @@
   'use strict';
   const MARK = {project:'', lang:'', theme:''};
   const PROJECT_ALIASES = {
+    zerostel:['zerostel','zero stel','時光機','时光机','行車紀錄器','行车记录仪'],
     'adversarial-lab':['adversarial lab','adversarial-lab','對抗實驗室','对抗实验室'], lumigrid:['lumigrid','lumi grid','lumi-grid'],
     'taiwan-exam':['taiwan exam','taiwan-exam','taiwanexam','學測','学测','模擬考','模拟考','學測模擬考'],
     kcrashlab:['kcrashlab','kcrash lab','kcrash','crashlab'], contextsec:['contextsec','context sec','context-sec'],
@@ -15,6 +16,7 @@
   };
   // Extra retrieval vocabulary so topical questions ("anything about drivers?") find the right project.
   const PROJECT_TOPICS = {
+    zerostel:'agent agents coding agent claude code codex undo rewind rollback snapshot checkpoint timeline zero trust 復原 還原 回溯 快照 時間軸 零信任 刪檔 代理',
     'adversarial-lab':'adversarial attack attacks robustness classifier fgsm pgd perturbation mnist 對抗 攻擊 擾動 穩健 分類器 試玩',
     'taiwan-exam':'exam exams test gsat cap education pdf 考試 考卷 學測 會考 出題 題目 教育 模擬考 試題',
     kcrashlab:'windows driver drivers kernel crash reliability reproducible simulation 驅動 驅動程式 核心 當機 可靠性 模擬 重現',

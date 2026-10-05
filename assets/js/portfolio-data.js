@@ -1,6 +1,17 @@
 window.NIANSIA_PROJECTS = {
   "en": [
     {
+      "id": "zerostel",
+      "name": "Zerostel",
+      "url": "https://github.com/zerostel/zerostel",
+      "category": "AI agents",
+      "status": "Released · v0.1.1",
+      "description": "A flight recorder and time machine for AI coding agents. It puts every prompt, tool call, command, file change, duration and token count from agents such as Claude Code and Codex on one timeline, snapshots the project around each tool call that can change files, and puts the files back with one command, including changes made through the shell. It runs locally, never touches the project's .git, and records every supported agent the same way.",
+      "evidence": "Hooks tested on real sessions with Claude Code, Codex, Cursor CLI, Copilot CLI and opencode, and end to end with Gemini CLI and Antigravity. A keyed hash chain over the log that `zerostel verify` checks, your own guardrails in policy.json, an exportable session report, zero runtime dependencies on Windows, macOS and Linux, and single executables with build attestations.",
+      "reference": "https://github.com/zerostel/zerostel#zero-trust-in-practice",
+      "referenceLabel": "Zero trust, in practice"
+    },
+    {
       "id": "adversarial-lab",
       "name": "Adversarial Lab",
       "url": "https://github.com/niansia/adversarial-lab",
@@ -124,6 +135,17 @@ window.NIANSIA_PROJECTS = {
   ],
   "zh-TW": [
     {
+      "id": "zerostel",
+      "name": "Zerostel",
+      "url": "https://github.com/zerostel/zerostel",
+      "category": "AI agent",
+      "status": "已發布 · v0.1.1",
+      "description": "給 AI 寫程式工具用的行車紀錄器和時光機。Claude Code、Codex 這類 agent 的每個提示、工具呼叫、指令、檔案變更、耗時和 token 都記在同一條時間軸上；每次可能改到檔案的工具呼叫前後都替專案拍快照，一個指令就能把檔案復原，透過 shell 造成的變化也包含在內。全部在本機執行，不碰專案自己的 .git，每個支援的 agent 都用同一套方式記錄。",
+      "evidence": "hooks 已在 Claude Code、Codex、Cursor CLI、Copilot CLI、opencode 的真實工作階段測試，Gemini CLI 和 Antigravity 做過端到端測試。紀錄以帶金鑰的雜湊鏈串起來，可用 `zerostel verify` 檢查；可在 policy.json 自訂防護規則、匯出工作報告；執行時零相依套件，支援 Windows、macOS、Linux，另有附建置證明的單一執行檔。",
+      "reference": "https://github.com/zerostel/zerostel#zero-trust-in-practice",
+      "referenceLabel": "零信任的實際做法"
+    },
+    {
       "id": "adversarial-lab",
       "name": "Adversarial Lab",
       "url": "https://github.com/niansia/adversarial-lab",
@@ -246,6 +268,17 @@ window.NIANSIA_PROJECTS = {
     }
   ],
   "zh-CN": [
+    {
+      "id": "zerostel",
+      "name": "Zerostel",
+      "url": "https://github.com/zerostel/zerostel",
+      "category": "AI agent",
+      "status": "已发布 · v0.1.1",
+      "description": "给 AI 写代码工具用的行车记录仪和时光机。Claude Code、Codex 这类 agent 的每个提示、工具调用、命令、文件变更、耗时和 token 都记在同一条时间轴上；每次可能改到文件的工具调用前后都替项目拍快照，一个命令就能把文件恢复，通过 shell 造成的变化也包含在内。全部在本机运行，不碰项目自己的 .git，每个支持的 agent 都用同一套方式记录。",
+      "evidence": "hooks 已在 Claude Code、Codex、Cursor CLI、Copilot CLI、opencode 的真实会话测试，Gemini CLI 和 Antigravity 做过端到端测试。记录以带密钥的哈希链串起来，可用 `zerostel verify` 检查；可在 policy.json 自定义防护规则、导出工作报告；运行时零依赖，支持 Windows、macOS、Linux，另有附构建证明的单一可执行文件。",
+      "reference": "https://github.com/zerostel/zerostel#zero-trust-in-practice",
+      "referenceLabel": "零信任的实际做法"
+    },
     {
       "id": "adversarial-lab",
       "name": "Adversarial Lab",

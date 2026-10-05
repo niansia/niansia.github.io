@@ -55,11 +55,11 @@ CSP = ("default-src 'self'; script-src 'self' https://www.gstatic.com https://*.
 UI = {
     "en": {"notes": "Research notes", "notes_lede": "Short, honest write-ups of what I built, what worked, and what did not.", "min": "min read",
            "back": "Back to the portfolio", "more": "More notes", "open": "Open the interactive portfolio", "repo": "Source", "evidence": "Evidence", "contact": "Questions or ideas? Email",
-           "demo": "Try it in your browser", "film": "Watch the film", "all": "All projects", "read": "Read", "online": "online", "visits": "visits",
+           "demo": "Try it in your browser", "film": "Watch the film", "site": "Website", "all": "All projects", "read": "Read", "online": "online", "visits": "visits",
            "log": "Research log", "log_lede": "Dated snapshots of work in progress: screenshots, figures and small milestones.", "statement": "Research statement"},
     "zh-TW": {"notes": "研究筆記", "notes_lede": "把做過的東西、有效的方法，還有沒成功的地方，誠實地寫下來。", "min": "分鐘閱讀",
               "back": "回到作品集", "more": "其他筆記", "open": "打開互動式作品集", "repo": "原始碼", "evidence": "佐證", "contact": "有問題或想法？寫信到",
-              "demo": "在瀏覽器試試", "film": "觀看動畫", "all": "全部作品", "read": "閱讀", "online": "人在線", "visits": "次造訪",
+              "demo": "在瀏覽器試試", "film": "觀看動畫", "site": "官方網站", "all": "全部作品", "read": "閱讀", "online": "人在線", "visits": "次造訪",
               "log": "研究日誌", "log_lede": "有日期的工作紀錄：截圖、圖表和一些小里程碑。", "statement": "研究方向說明"},
 }
 UI["zh-CN"] = {k: T2S.convert(v) for k, v in UI["zh-TW"].items()}
@@ -1201,10 +1201,11 @@ def lint_sources_and_output() -> None:
 
 
 # ------------------------------------------------------------------------------------------------ share pages
-HERO = {"adversarial-lab": "/assets/og/adversarial-demo.jpg", "lumigrid": "/assets/work/cards/lumigrid.jpg", "taiwan-exam": "/assets/work/taiwan-exam-social-preview.png", "kcrashlab": "/assets/work/cards/kcrashlab.jpg",
+HERO = {"zerostel": "/assets/work/zerostel-demo.png", "adversarial-lab": "/assets/og/adversarial-demo.jpg", "lumigrid": "/assets/work/cards/lumigrid.jpg", "taiwan-exam": "/assets/work/taiwan-exam-social-preview.png", "kcrashlab": "/assets/work/cards/kcrashlab.jpg",
         "contextsec": "/assets/work/contextsec-decision-flow.svg", "merriv": "/assets/work/cards/merriv.jpg", "ai-repo-gardener": "/assets/work/ai-repo-gardener-demo.gif",
         "noveltyaudit": "/assets/work/cards/noveltyaudit.jpg", "research-meeting-coach": "/assets/work/research-meeting-coach.png", "chromarecover": "/assets/work/cards/chromarecover.jpg"}
-EXTRA = {"adversarial-lab": [("demo", "/lab/adversarial/?lang={loc}")],
+EXTRA = {"zerostel": [("site", "https://zerostel.com")],
+         "adversarial-lab": [("demo", "/lab/adversarial/?lang={loc}")],
          "lumigrid": [("demo", "/lab/lumigrid/?lang={loc}"), ("film", "/assets/film/lumigrid.html?lang={loc}")],
          "taiwan-exam": [("film", "/assets/film/taiwan-exam.html?lang={loc}")],
          "chromarecover": [("demo", "/lab/chromarecover/?lang={loc}"), ("film", "/assets/film/chromarecover.html?lang={loc}")]}
@@ -1428,7 +1429,7 @@ def og_jobs(projects: dict, notes: dict, pubs: dict | None = None) -> list[tuple
 
 # The home screen's "latest" card shows these at most ~390 px wide (570 px on a tablet), cropped to 2:1 by CSS;
 # the originals are 1200-1280 px photos and screenshots, so the card gets 960 x 480 WebP copies instead.
-HOME_THUMBS = {"adversarial": "assets/og/adversarial-demo.jpg", "lumigrid-out": "assets/lumigrid/0_out.jpg",
+HOME_THUMBS = {"zerostel": "assets/work/zerostel-demo.png", "adversarial": "assets/og/adversarial-demo.jpg", "lumigrid-out": "assets/lumigrid/0_out.jpg",
                "lumigrid-in": "assets/lumigrid/0_in.jpg", "taiwan-exam": "assets/work/taiwan-exam-social-preview.png"}
 
 
