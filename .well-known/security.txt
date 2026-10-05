@@ -1,4 +1,4 @@
 Contact: mailto:niansia930202@gmail.com
-Expires: 2027-09-29T00:00:00.000Z
+Expires: 2027-09-30T00:00:00.000Z
 Preferred-Languages: zh-Hant, en
 Canonical: https://niansia.com/.well-known/security.txt

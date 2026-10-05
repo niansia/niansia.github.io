@@ -81,6 +81,14 @@ window.NIANSIA_NOTES = {
 window.NIANSIA_LOG = {
  "en": [
   {
+   "slug": "2026-10-05-zerostel",
+   "title": "Zerostel is public",
+   "date": "2026-10-05",
+   "url": "/log/en/#2026-10-05-zerostel",
+   "thumb": "/assets/media/e599868972c36615-t.webp",
+   "alt": "zerostel log shows an agent deleting src/legacy with rm -rf; zerostel undo brings the files back"
+  },
+  {
    "slug": "2026-09-29-exam-gallery",
    "title": "The Taiwan Exam gallery is open",
    "date": "2026-09-29",
@@ -115,6 +123,14 @@ window.NIANSIA_LOG = {
  ],
  "zh-TW": [
   {
+   "slug": "2026-10-05-zerostel",
+   "title": "Zerostel 正式公開",
+   "date": "2026-10-05",
+   "url": "/log/zh-tw/#2026-10-05-zerostel",
+   "thumb": "/assets/media/e599868972c36615-t.webp",
+   "alt": "zerostel log 顯示 agent 用 rm -rf 刪掉 src/legacy，zerostel undo 把檔案救回來"
+  },
+  {
    "slug": "2026-09-29-exam-gallery",
    "title": "Taiwan Exam 考卷分享區上線",
    "date": "2026-09-29",
@@ -148,6 +164,14 @@ window.NIANSIA_LOG = {
   }
  ],
  "zh-CN": [
+  {
+   "slug": "2026-10-05-zerostel",
+   "title": "Zerostel 正式公开",
+   "date": "2026-10-05",
+   "url": "/log/zh-cn/#2026-10-05-zerostel",
+   "thumb": "/assets/media/e599868972c36615-t.webp",
+   "alt": "zerostel log 显示 agent 用 rm -rf 删掉 src/legacy，zerostel undo 把文件救回来"
+  },
   {
    "slug": "2026-09-29-exam-gallery",
    "title": "Taiwan Exam 考卷分享区上线",

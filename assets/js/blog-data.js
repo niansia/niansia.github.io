@@ -3,10 +3,25 @@ window.NIANSIA_BLOG = {
  "posts": {
   "en": [
    {
+    "slug": "2026-10-05-zerostel",
+    "type": "post",
+    "title": "Zerostel is public: a flight recorder and time machine for AI agents",
+    "description": "My open-source project Zerostel is live. It records every step an AI coding agent takes and puts the files back with one command when the agent breaks something.",
+    "date": "2026-10-05",
+    "minutes": 1,
+    "tags": [
+     "Zerostel",
+     "AI agents",
+     "open source"
+    ],
+    "lang": "en",
+    "url": "/blog/en/2026-10-05-zerostel/"
+   },
+   {
     "slug": "2026-10-04-astrbot-dify-prs",
     "type": "post",
     "title": "Reporting bugs and sending PRs to AstrBot and Dify",
-    "description": "Reported WebChat attachments overwriting each other to AstrBot, with a fix PR (merged); filed two issues with Dify, and sent a fix PR for the webhook 500.",
+    "description": "Filed two issues with fix PRs to AstrBot, and the fix for WebChat attachments overwriting each other is merged; filed two issues with Dify, and sent a fix PR for the webhook 500.",
     "date": "2026-10-04",
     "minutes": 1,
     "tags": [
@@ -222,10 +237,25 @@ window.NIANSIA_BLOG = {
   ],
   "zh-TW": [
    {
+    "slug": "2026-10-05-zerostel",
+    "type": "post",
+    "title": "Zerostel 正式公開：AI agent 的行車紀錄器和時光機",
+    "description": "我的開源專案 Zerostel 正式上線：記錄 AI 寫程式工具的每一步，改壞東西時一個指令就能復原。",
+    "date": "2026-10-05",
+    "minutes": 1,
+    "tags": [
+     "Zerostel",
+     "AI agent",
+     "開源"
+    ],
+    "lang": "zh-TW",
+    "url": "/blog/zh-tw/2026-10-05-zerostel/"
+   },
+   {
     "slug": "2026-10-04-astrbot-dify-prs",
     "type": "post",
     "title": "替 AstrBot 和 Dify 回報 bug、送 PR",
-    "description": "向 AstrBot 提交了 WebChat 附件互相覆蓋的 issue 和修正 PR（已合併）；向 Dify 提交了兩個 issue，其中 Webhook 回傳 500 的問題附上修正 PR。",
+    "description": "向 AstrBot 提交了兩個 issue 和修正 PR，其中 WebChat 附件互相覆蓋的修正已合併；向 Dify 提交了兩個 issue，其中 Webhook 回傳 500 的問題附上修正 PR。",
     "date": "2026-10-04",
     "minutes": 1,
     "tags": [
@@ -441,10 +471,25 @@ window.NIANSIA_BLOG = {
   ],
   "zh-CN": [
    {
+    "slug": "2026-10-05-zerostel",
+    "type": "post",
+    "title": "Zerostel 正式公开：AI agent 的行车纪录器和时光机",
+    "description": "我的开源项目 Zerostel 正式上线：记录 AI 写程序工具的每一步，改坏东西时一个指令就能复原。",
+    "date": "2026-10-05",
+    "minutes": 1,
+    "tags": [
+     "Zerostel",
+     "AI agent",
+     "开源"
+    ],
+    "lang": "zh-CN",
+    "url": "/blog/zh-cn/2026-10-05-zerostel/"
+   },
+   {
     "slug": "2026-10-04-astrbot-dify-prs",
     "type": "post",
     "title": "替 AstrBot 和 Dify 回报 bug、送 PR",
-    "description": "向 AstrBot 提交了 WebChat 附件互相覆盖的 issue 和修正 PR（已合并）；向 Dify 提交了两个 issue，其中 Webhook 回传 500 的问题附上修正 PR。",
+    "description": "向 AstrBot 提交了两个 issue 和修正 PR，其中 WebChat 附件互相覆盖的修正已合并；向 Dify 提交了两个 issue，其中 Webhook 回传 500 的问题附上修正 PR。",
     "date": "2026-10-04",
     "minutes": 1,
     "tags": [
