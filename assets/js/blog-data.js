@@ -3,6 +3,21 @@ window.NIANSIA_BLOG = {
  "posts": {
   "en": [
    {
+    "slug": "2026-10-07-vllm-astrbot-prs",
+    "type": "post",
+    "title": "Fix PRs for vLLM and AstrBot",
+    "description": "Sent vLLM a fix PR for parsing DeepSeek-V3/V3.1 tool calls; reported to AstrBot that Anthropic streaming drops tool calls without arguments and sent a fix, and the earlier command group fix is merged.",
+    "date": "2026-10-07",
+    "minutes": 1,
+    "tags": [
+     "open source",
+     "vLLM",
+     "AstrBot"
+    ],
+    "lang": "en",
+    "url": "/blog/en/2026-10-07-vllm-astrbot-prs/"
+   },
+   {
     "slug": "2026-10-05-zerostel",
     "type": "post",
     "title": "Zerostel is public: a flight recorder and time machine for AI agents",
@@ -21,7 +36,7 @@ window.NIANSIA_BLOG = {
     "slug": "2026-10-04-astrbot-dify-prs",
     "type": "post",
     "title": "Reporting bugs and sending PRs to AstrBot and Dify",
-    "description": "Filed two issues with fix PRs to AstrBot, and the fix for WebChat attachments overwriting each other is merged; filed two issues with Dify, and sent a fix PR for the webhook 500.",
+    "description": "Filed two issues with fix PRs to AstrBot, and both fixes are merged; filed two issues with Dify, and sent a fix PR for the webhook 500.",
     "date": "2026-10-04",
     "minutes": 1,
     "tags": [
@@ -237,6 +252,21 @@ window.NIANSIA_BLOG = {
   ],
   "zh-TW": [
    {
+    "slug": "2026-10-07-vllm-astrbot-prs",
+    "type": "post",
+    "title": "替 vLLM 和 AstrBot 送修正 PR",
+    "description": "向 vLLM 送出 DeepSeek-V3/V3.1 工具呼叫解析的修正 PR；向 AstrBot 回報 Anthropic 串流模式下無參數工具呼叫被丟掉的問題並附上修正，先前的指令組比對修正也已合併。",
+    "date": "2026-10-07",
+    "minutes": 1,
+    "tags": [
+     "開源貢獻",
+     "vLLM",
+     "AstrBot"
+    ],
+    "lang": "zh-TW",
+    "url": "/blog/zh-tw/2026-10-07-vllm-astrbot-prs/"
+   },
+   {
     "slug": "2026-10-05-zerostel",
     "type": "post",
     "title": "Zerostel 正式公開：AI agent 的行車紀錄器和時光機",
@@ -255,7 +285,7 @@ window.NIANSIA_BLOG = {
     "slug": "2026-10-04-astrbot-dify-prs",
     "type": "post",
     "title": "替 AstrBot 和 Dify 回報 bug、送 PR",
-    "description": "向 AstrBot 提交了兩個 issue 和修正 PR，其中 WebChat 附件互相覆蓋的修正已合併；向 Dify 提交了兩個 issue，其中 Webhook 回傳 500 的問題附上修正 PR。",
+    "description": "向 AstrBot 提交了兩個 issue 和修正 PR，兩個修正都已合併；向 Dify 提交了兩個 issue，其中 Webhook 回傳 500 的問題附上修正 PR。",
     "date": "2026-10-04",
     "minutes": 1,
     "tags": [
@@ -471,6 +501,21 @@ window.NIANSIA_BLOG = {
   ],
   "zh-CN": [
    {
+    "slug": "2026-10-07-vllm-astrbot-prs",
+    "type": "post",
+    "title": "替 vLLM 和 AstrBot 送修正 PR",
+    "description": "向 vLLM 送出 DeepSeek-V3/V3.1 工具调用解析的修正 PR；向 AstrBot 回报 Anthropic 串流模式下无参数工具调用被丢掉的问题并附上修正，先前的指令组比对修正也已合并。",
+    "date": "2026-10-07",
+    "minutes": 1,
+    "tags": [
+     "开源贡献",
+     "vLLM",
+     "AstrBot"
+    ],
+    "lang": "zh-CN",
+    "url": "/blog/zh-cn/2026-10-07-vllm-astrbot-prs/"
+   },
+   {
     "slug": "2026-10-05-zerostel",
     "type": "post",
     "title": "Zerostel 正式公开：AI agent 的行车纪录器和时光机",
@@ -489,7 +534,7 @@ window.NIANSIA_BLOG = {
     "slug": "2026-10-04-astrbot-dify-prs",
     "type": "post",
     "title": "替 AstrBot 和 Dify 回报 bug、送 PR",
-    "description": "向 AstrBot 提交了两个 issue 和修正 PR，其中 WebChat 附件互相覆盖的修正已合并；向 Dify 提交了两个 issue，其中 Webhook 回传 500 的问题附上修正 PR。",
+    "description": "向 AstrBot 提交了两个 issue 和修正 PR，两个修正都已合并；向 Dify 提交了两个 issue，其中 Webhook 回传 500 的问题附上修正 PR。",
     "date": "2026-10-04",
     "minutes": 1,
     "tags": [
