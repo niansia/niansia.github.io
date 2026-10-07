@@ -18,6 +18,20 @@ window.NIANSIA_BLOG = {
     "url": "/blog/en/2026-10-07-vllm-astrbot-prs/"
    },
    {
+    "slug": "2026-10-06-astrbot-background-log-export",
+    "type": "post",
+    "title": "A background task warning and log export for AstrBot",
+    "description": "Sent PRs for two AstrBot issues: a warning when a background task's result never reaches the user, and log export from the WebUI.",
+    "date": "2026-10-06",
+    "minutes": 1,
+    "tags": [
+     "open source",
+     "AstrBot"
+    ],
+    "lang": "en",
+    "url": "/blog/en/2026-10-06-astrbot-background-log-export/"
+   },
+   {
     "slug": "2026-10-05-zerostel",
     "type": "post",
     "title": "Zerostel is public: a flight recorder and time machine for AI agents",
@@ -267,6 +281,20 @@ window.NIANSIA_BLOG = {
     "url": "/blog/zh-tw/2026-10-07-vllm-astrbot-prs/"
    },
    {
+    "slug": "2026-10-06-astrbot-background-log-export",
+    "type": "post",
+    "title": "替 AstrBot 補上背景任務警告和日誌匯出",
+    "description": "針對 AstrBot 的兩個 issue 送出 PR：背景任務的結果沒送到使用者時補上警告日誌，以及在 WebUI 加上日誌匯出。",
+    "date": "2026-10-06",
+    "minutes": 1,
+    "tags": [
+     "開源貢獻",
+     "AstrBot"
+    ],
+    "lang": "zh-TW",
+    "url": "/blog/zh-tw/2026-10-06-astrbot-background-log-export/"
+   },
+   {
     "slug": "2026-10-05-zerostel",
     "type": "post",
     "title": "Zerostel 正式公開：AI agent 的行車紀錄器和時光機",
@@ -514,6 +542,20 @@ window.NIANSIA_BLOG = {
     ],
     "lang": "zh-CN",
     "url": "/blog/zh-cn/2026-10-07-vllm-astrbot-prs/"
+   },
+   {
+    "slug": "2026-10-06-astrbot-background-log-export",
+    "type": "post",
+    "title": "替 AstrBot 补上背景任务警告和日志导出",
+    "description": "针对 AstrBot 的两个 issue 送出 PR：背景任务的结果没送到用户时补上警告日志，以及在 WebUI 加上日志导出。",
+    "date": "2026-10-06",
+    "minutes": 1,
+    "tags": [
+     "开源贡献",
+     "AstrBot"
+    ],
+    "lang": "zh-CN",
+    "url": "/blog/zh-cn/2026-10-06-astrbot-background-log-export/"
    },
    {
     "slug": "2026-10-05-zerostel",
