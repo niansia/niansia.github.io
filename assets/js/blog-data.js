@@ -3,6 +3,21 @@ window.NIANSIA_BLOG = {
  "posts": {
   "en": [
    {
+    "slug": "2026-10-08-zerostel-0-3",
+    "type": "post",
+    "title": "Zerostel 0.3.0: failed tests listed, and guardrails that read commands like the shell",
+    "description": "Zerostel 0.3.0 is out. Check results list which tests failed, guardrail rules match a command the way the shell runs it, and the MCP tools say what they do to your machine.",
+    "date": "2026-10-08",
+    "minutes": 1,
+    "tags": [
+     "Zerostel",
+     "AI agents",
+     "open source"
+    ],
+    "lang": "en",
+    "url": "/blog/en/2026-10-08-zerostel-0-3/"
+   },
+   {
     "slug": "2026-10-07-vllm-astrbot-prs",
     "type": "post",
     "title": "Fix PRs for vLLM and AstrBot",
@@ -266,6 +281,21 @@ window.NIANSIA_BLOG = {
   ],
   "zh-TW": [
    {
+    "slug": "2026-10-08-zerostel-0-3",
+    "type": "post",
+    "title": "Zerostel 0.3.0：列出失敗的測試，護欄照 shell 的方式讀指令",
+    "description": "Zerostel 發布 0.3.0：檢查結果會列出哪些測試失敗，護欄規則改成照 shell 實際執行的方式比對指令，MCP 工具也標明會對電腦做什麼。",
+    "date": "2026-10-08",
+    "minutes": 1,
+    "tags": [
+     "Zerostel",
+     "AI agent",
+     "開源"
+    ],
+    "lang": "zh-TW",
+    "url": "/blog/zh-tw/2026-10-08-zerostel-0-3/"
+   },
+   {
     "slug": "2026-10-07-vllm-astrbot-prs",
     "type": "post",
     "title": "替 vLLM 和 AstrBot 送修正 PR",
@@ -528,6 +558,21 @@ window.NIANSIA_BLOG = {
    }
   ],
   "zh-CN": [
+   {
+    "slug": "2026-10-08-zerostel-0-3",
+    "type": "post",
+    "title": "Zerostel 0.3.0：列出失败的测试，护栏照 shell 的方式读指令",
+    "description": "Zerostel 发布 0.3.0：检查结果会列出哪些测试失败，护栏规则改成照 shell 实际运行的方式比对指令，MCP 工具也标明会对电脑做什么。",
+    "date": "2026-10-08",
+    "minutes": 1,
+    "tags": [
+     "Zerostel",
+     "AI agent",
+     "开源"
+    ],
+    "lang": "zh-CN",
+    "url": "/blog/zh-cn/2026-10-08-zerostel-0-3/"
+   },
    {
     "slug": "2026-10-07-vllm-astrbot-prs",
     "type": "post",
