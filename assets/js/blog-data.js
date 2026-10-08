@@ -21,7 +21,7 @@ window.NIANSIA_BLOG = {
     "slug": "2026-10-07-vllm-astrbot-prs",
     "type": "post",
     "title": "Fix PRs for vLLM and AstrBot",
-    "description": "Sent vLLM a fix for parsing DeepSeek-V3/V3.1 tool calls, and AstrBot two fixes, for tool calls without arguments dropped in Anthropic streaming and for replies stuck when the summary model is out of quota. The earlier command group fix is merged.",
+    "description": "Sent vLLM a fix for parsing DeepSeek-V3/V3.1 tool calls. Both fixes sent to AstrBot, for tool calls without arguments dropped in Anthropic streaming and for replies stuck when the summary model is out of quota, are merged.",
     "date": "2026-10-07",
     "minutes": 2,
     "tags": [
@@ -299,7 +299,7 @@ window.NIANSIA_BLOG = {
     "slug": "2026-10-07-vllm-astrbot-prs",
     "type": "post",
     "title": "替 vLLM 和 AstrBot 送修正 PR",
-    "description": "向 vLLM 送出 DeepSeek-V3/V3.1 工具呼叫解析的修正；向 AstrBot 送出兩個修正：Anthropic 串流模式下無參數的工具呼叫被丟掉、摘要模型額度用完時回覆卡住，先前的指令組比對修正也已合併。",
+    "description": "向 vLLM 送出 DeepSeek-V3/V3.1 工具呼叫解析的修正；向 AstrBot 送出的兩個修正（Anthropic 串流模式下無參數的工具呼叫被丟掉、摘要模型額度用完時回覆卡住）都已合併。",
     "date": "2026-10-07",
     "minutes": 1,
     "tags": [
@@ -577,7 +577,7 @@ window.NIANSIA_BLOG = {
     "slug": "2026-10-07-vllm-astrbot-prs",
     "type": "post",
     "title": "替 vLLM 和 AstrBot 送修正 PR",
-    "description": "向 vLLM 送出 DeepSeek-V3/V3.1 工具调用解析的修正；向 AstrBot 送出两个修正：Anthropic 串流模式下无参数的工具调用被丢掉、摘要模型额度用完时回复卡住，先前的指令组比对修正也已合并。",
+    "description": "向 vLLM 送出 DeepSeek-V3/V3.1 工具调用解析的修正；向 AstrBot 送出的两个修正（Anthropic 串流模式下无参数的工具调用被丢掉、摘要模型额度用完时回复卡住）都已合并。",
     "date": "2026-10-07",
     "minutes": 1,
     "tags": [
