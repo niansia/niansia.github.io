@@ -63,31 +63,31 @@ format:
           <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=M+PLUS+1+Code:wght@400;600&amp;display=swap&amp;text=%21%22%23%24%25%26%27%28%29%2A%2B%2C-.%2F0123456789%3A%3B%3C%3D%3E%3F%40ABCDEFGHIJKLMNOPQRSTUVWXYZ%5B%5C%5D%5E_%60abcdefghijklmnopqrstuvwxyz%7B%7C%7D~%E2%9D%AF%E2%9C%93%C2%B7%E2%86%91%E2%86%93%E2%86%90%E2%86%92%E2%86%97%E2%91%82%E2%9C%A6%E2%94%82%E2%94%9C%E2%94%94%E2%94%80%E2%96%88%E2%96%91%EF%BD%A5%CF%89%E2%86%B5">
           <script>try{var s=localStorage;if(s.getItem("niansia-style-v")!=="2"){s.removeItem("niansia-theme");s.setItem("niansia-style-v","2");}document.documentElement.dataset.theme=s.getItem("niansia-theme")||"sakura";}catch(e){document.documentElement.dataset.theme="sakura";}</script>
           <script src="/assets/js/portfolio-data.js" defer></script>
-          <script src="/assets/js/notes-data.js?v=yuki-87" defer></script>
-          <script src="/assets/js/blog-data.js?v=yuki-87" defer></script>
-          <script src="/assets/js/cv-data.js?v=yuki-87" defer></script>
-          <script src="/assets/js/site-stats.js?v=yuki-87" defer></script>
-          <script src="/assets/js/hobbies-data.js?v=yuki-87" defer></script>
-          <script src="/assets/js/submissions-data.js?v=yuki-87" defer></script>
-          <script src="/assets/js/publications-data.js?v=yuki-87" defer></script>
-          <script src="/assets/js/capstone-data.js?v=yuki-87" defer></script>
-          <script src="/assets/js/terminal-copy.js?v=yuki-87" defer></script>
-          <script src="/assets/js/terminal-commands.js?v=yuki-87" defer></script>
-          <script src="/assets/js/yuki-lines.js?v=yuki-87" defer></script>
-          <script src="/assets/js/yuki-brain.js?v=yuki-87" defer></script>
-          <script src="/assets/js/yuki-pro.js?v=yuki-87" defer></script>
-          <script src="/assets/js/festivals.js?v=yuki-87" defer></script>
-          <script src="/assets/js/yuki-wardrobe.js?v=yuki-87" defer></script>
-          <script src="/assets/js/community-data.js?v=yuki-87" defer></script>
-          <script src="/assets/js/guestbook.js?v=yuki-87" defer></script>
-          <script src="/assets/js/lab-terminal.js?v=yuki-87" defer></script>
-          <script src="/assets/js/cursor-fx.js?v=yuki-87" defer></script>
-          <script src="/assets/js/yuki-llm.js?v=yuki-87" defer></script>
-          <script src="/assets/js/yuki-props.js?v=yuki-87" defer></script>
-          <script src="/assets/js/yuki-cat.js?v=yuki-87" defer></script>
-          <script src="/assets/js/yuki-pet.js?v=yuki-87" defer></script>
-          <script src="/assets/js/command-palette.js?v=yuki-87" defer></script>
-          <script src="/assets/js/yuki-tour.js?v=yuki-87" defer></script>
+          <script src="/assets/js/notes-data.js?v=yuki-88" defer></script>
+          <script src="/assets/js/blog-data.js?v=yuki-88" defer></script>
+          <script src="/assets/js/cv-data.js?v=yuki-88" defer></script>
+          <script src="/assets/js/site-stats.js?v=yuki-88" defer></script>
+          <script src="/assets/js/hobbies-data.js?v=yuki-88" defer></script>
+          <script src="/assets/js/submissions-data.js?v=yuki-88" defer></script>
+          <script src="/assets/js/publications-data.js?v=yuki-88" defer></script>
+          <script src="/assets/js/capstone-data.js?v=yuki-88" defer></script>
+          <script src="/assets/js/terminal-copy.js?v=yuki-88" defer></script>
+          <script src="/assets/js/terminal-commands.js?v=yuki-88" defer></script>
+          <script src="/assets/js/yuki-lines.js?v=yuki-88" defer></script>
+          <script src="/assets/js/yuki-brain.js?v=yuki-88" defer></script>
+          <script src="/assets/js/yuki-pro.js?v=yuki-88" defer></script>
+          <script src="/assets/js/festivals.js?v=yuki-88" defer></script>
+          <script src="/assets/js/yuki-wardrobe.js?v=yuki-88" defer></script>
+          <script src="/assets/js/community-data.js?v=yuki-88" defer></script>
+          <script src="/assets/js/guestbook.js?v=yuki-88" defer></script>
+          <script src="/assets/js/lab-terminal.js?v=yuki-88" defer></script>
+          <script src="/assets/js/cursor-fx.js?v=yuki-88" defer></script>
+          <script src="/assets/js/yuki-llm.js?v=yuki-88" defer></script>
+          <script src="/assets/js/yuki-props.js?v=yuki-88" defer></script>
+          <script src="/assets/js/yuki-cat.js?v=yuki-88" defer></script>
+          <script src="/assets/js/yuki-pet.js?v=yuki-88" defer></script>
+          <script src="/assets/js/command-palette.js?v=yuki-88" defer></script>
+          <script src="/assets/js/yuki-tour.js?v=yuki-88" defer></script>
 
 execute:
   freeze: auto

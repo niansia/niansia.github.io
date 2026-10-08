@@ -3,6 +3,21 @@ window.NIANSIA_BLOG = {
  "posts": {
   "en": [
    {
+    "slug": "2026-10-09-kornia-homography",
+    "type": "post",
+    "title": "A NaN homography fix for kornia",
+    "description": "Reported to the computer vision library kornia that find_homography_dlt returns an all-NaN matrix on exact correspondences, and sent a fix PR.",
+    "date": "2026-10-09",
+    "minutes": 1,
+    "tags": [
+     "open source",
+     "kornia",
+     "computer vision"
+    ],
+    "lang": "en",
+    "url": "/blog/en/2026-10-09-kornia-homography/"
+   },
+   {
     "slug": "2026-10-08-zerostel-0-3",
     "type": "post",
     "title": "Zerostel 0.3.0: failed tests listed, and guardrails that read commands like the shell",
@@ -281,6 +296,21 @@ window.NIANSIA_BLOG = {
   ],
   "zh-TW": [
    {
+    "slug": "2026-10-09-kornia-homography",
+    "type": "post",
+    "title": "替 kornia 回報 homography 估計回傳 NaN 的問題並送修正",
+    "description": "向電腦視覺函式庫 kornia 回報 find_homography_dlt 在完全正確的對應點上回傳全 NaN 的問題，並送出修正 PR。",
+    "date": "2026-10-09",
+    "minutes": 1,
+    "tags": [
+     "開源貢獻",
+     "kornia",
+     "電腦視覺"
+    ],
+    "lang": "zh-TW",
+    "url": "/blog/zh-tw/2026-10-09-kornia-homography/"
+   },
+   {
     "slug": "2026-10-08-zerostel-0-3",
     "type": "post",
     "title": "Zerostel 0.3.0：列出失敗的測試，護欄照 shell 的方式讀指令",
@@ -558,6 +588,21 @@ window.NIANSIA_BLOG = {
    }
   ],
   "zh-CN": [
+   {
+    "slug": "2026-10-09-kornia-homography",
+    "type": "post",
+    "title": "替 kornia 回报 homography 估计回传 NaN 的问题并送修正",
+    "description": "向电脑视觉函数库 kornia 回报 find_homography_dlt 在完全正确的对应点上回传全 NaN 的问题，并送出修正 PR。",
+    "date": "2026-10-09",
+    "minutes": 1,
+    "tags": [
+     "开源贡献",
+     "kornia",
+     "电脑视觉"
+    ],
+    "lang": "zh-CN",
+    "url": "/blog/zh-cn/2026-10-09-kornia-homography/"
+   },
    {
     "slug": "2026-10-08-zerostel-0-3",
     "type": "post",
